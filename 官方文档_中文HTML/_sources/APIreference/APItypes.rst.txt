@@ -1,0 +1,2676 @@
+﻿=====
+类型
+=====
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+MuJoCo 定义了大量类型：
+
+- 四种\ :ref:`基本类型<tyPrimitive>`\ ：\ :ref:`mjtNum<mjtNum>`、\ :ref:`mjtByte<mjtByte>`、\ :ref:`mjtBool<mjtBool>` 和
+  :ref:`mjtSize<mjtSize>`。
+
+- 用于定义分类取值的 :ref:`C 枚举类型<tyEnums>`。这些类型可分为：
+
+  - 用于 :ref:`mjModel<tyModelEnums>` 的枚举。
+  - 用于 :ref:`mjData<tyDataEnums>` 的枚举。
+  - 用于抽象\ :ref:`可视化<tyVisEnums>`\ （visualization）的枚举。
+  - 供\ :ref:`经典渲染器<tyRenderEnums>`\ 使用的枚举。
+  - 供 :ref:`filament 渲染器<tyFilamentRenderEnums>`\ 使用的枚举。
+  - 供 :ref:`mjUI<tyUIEnums>` 用户界面包使用的枚举。
+  - 供\ :ref:`引擎插件<tyPluginEnums>`\ 使用的枚举。
+  - 用于\ :ref:`过程式模型操作<tySpecEnums>`\ 的枚举。
+
+  请注意，API 并不直接使用这些枚举类型，而是使用 int，并由文档和注释说明某些 int 对应于某些枚举类型。这是因为我们希望 API 与编译器无关，而 C
+  标准并未规定表示一个枚举类型必须使用多少字节。尽管如此，为了提高可读性，我们建议在调用以枚举类型为参数的 API 函数时使用这些类型。
+
+- :ref:`C 结构体类型<tyStructure>`。这些类型可分为：
+
+  - 主要结构体：
+
+    - :ref:`mjModel`。
+    - :ref:`mjOption`\ （嵌入在 :ref:`mjModel` 中）。
+    - :ref:`mjData`。
+
+  - :ref:`辅助结构体类型<tyAuxStructure>`，同样被引擎使用。
+  - 用于收集\ :ref:`仿真统计信息<tyStatStructure>`\ 的结构体。
+  - 用于\ :ref:`抽象可视化<tyVisStructure>`\ 的结构体。
+  - 供\ :ref:`经典渲染器<tyRenderStructure>`\ 使用的结构体。
+  - 供 :ref:`filament 渲染器<tyFilamentRenderStructure>`\ 使用的结构体。
+  - 供 :ref:`UI 框架<tyUIStructure>`\ 使用的结构体。
+  - 用于\ :ref:`过程式模型操作<tySpecStructure>`\ 的结构体。
+  - 供\ :ref:`引擎插件<tyPluginStructure>`\ 使用的结构体。
+
+- 若干用于用户自定义回调的\ :ref:`函数类型<tyFunction>`。
+- 关于需要详细说明的特定数据结构的\ :ref:`tyNotes`。
+
+
+
+.. _tyPrimitive:
+
+基本类型
+--------
+
+以下三种类型定义在 `mjtype.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjtype.h>`__ 中。
+
+
+.. _mjtNum:
+
+mjtNum
+^^^^^^
+
+这是整个仿真器中使用的浮点类型。在默认构建配置下，\ ``mjtNum`` 被定义为 ``double``。如果定义了符号 ``mjUSESINGLE``，则 ``mjtNum`` 被定义为
+``float``。
+
+目前只发布双精度版本的 MuJoCo，尽管整个代码库同样可以在单精度下工作。我们将来可能会发布单精度版本，但双精度版本将始终可用。因此，假定双精度来编写用户代码是安全的。不过，我们更倾向于编写既能在单精度下工作、也能在双精度下工作的代码。为此，我们提供了始终以正确浮点类型定义的数学工具函数。
+
+请注意，修改 ``mjtype.h`` 中的 ``mjUSESINGLE`` 并不会改变库的编译方式，反而会导致大量链接错误。一般来说，用户绝不应修改随预编译 MuJoCo 一同发布的头文件。
+
+.. code-block:: C
+
+   // floating point data type and minval
+   #ifndef mjUSESINGLE
+     typedef double mjtNum;
+     #define mjMINVAL    1E-15       // minimum value in any denominator
+   #else
+     typedef float mjtNum;
+     #define mjMINVAL    1E-15f
+   #endif
+
+
+.. _mjtByte:
+
+mjtByte
+^^^^^^^
+
+用于表示小整数和二进制数据的字节类型。
+
+.. code-block:: C
+
+   typedef unsigned char mjtByte;
+
+
+.. _mjtBool:
+
+mjtBool
+^^^^^^^
+
+用于表示真/假值的布尔类型。
+
+.. code-block:: C
+
+   #ifndef __cplusplus
+     typedef _Bool mjtBool;
+   #else
+     typedef bool mjtBool;
+   #endif
+
+
+.. _mjtSize:
+
+mjtSize
+^^^^^^^
+
+用于表示缓冲区大小的尺寸类型。
+
+.. code-block:: C
+
+   typedef int64_t mjtSize;
+
+
+.. _tyEnums:
+
+枚举类型
+--------
+
+所有枚举类型都使用 ``mjt`` 前缀。
+
+.. _tyModelEnums:
+
+模型
+^^^^
+
+以下枚举定义在 `mjtype.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjtype.h>`__ 中。
+
+
+.. _mjtDisableBit:
+
+mjtDisableBit
+~~~~~~~~~~~~~
+
+2 的幂常量。它们用作 :ref:`mjOption` 的字段 ``disableflags`` 的位掩码。运行时该字段为 ``m->opt.disableflags``。这些常量的个数由
+``mjNDISABLE`` 给出，它同时也是全局字符串数组 :ref:`mjDISABLESTRING` 的长度，该数组包含这些标志的文字描述。
+
+.. mujoco-include:: mjtDisableBit
+
+
+.. _mjtEnableBit:
+
+mjtEnableBit
+~~~~~~~~~~~~
+
+2 的幂常量。它们用作 :ref:`mjOption` 的字段 ``enableflags`` 的位掩码。运行时该字段为 ``m->opt.enableflags``。这些常量的个数由
+``mjNENABLE`` 给出，它同时也是全局字符串数组 :ref:`mjENABLESTRING` 的长度，该数组包含这些标志的文字描述。
+
+.. mujoco-include:: mjtEnableBit
+
+
+.. _mjtJoint:
+
+mjtJoint
+~~~~~~~~
+
+基本关节（joint）类型。这些值用于 ``m->jnt_type``。注释中的数字表示每种关节类型拥有多少个位置坐标。请注意，球关节以及自由关节的旋转部分以单位四元数（quaternion）表示，它们各有
+4 个位置坐标，但只有 3 个自由度（degree of freedom）。
+
+.. mujoco-include:: mjtJoint
+
+
+.. _mjtGeom:
+
+mjtGeom
+~~~~~~~
+
+MuJoCo 支持的几何类型。第一组是可以在模型中使用的“正式”geom 类型。第二组是不能在模型中使用、但被可视化器用来添加装饰元素的 geom 类型。这些值用于 ``m->geom_type`` 和
+``m->site_type``。
+
+.. mujoco-include:: mjtGeom
+
+
+.. _mjtProjection:
+
+mjtProjection
+~~~~~~~~~~~~~
+
+相机投影的类型。用于 ``m->cam_projection``。
+
+.. mujoco-include:: mjtProjection
+
+
+.. _mjtCamLight:
+
+mjtCamLight
+~~~~~~~~~~~
+
+相机和光源的动态模式，指定相机/光源的位置和朝向如何计算。这些值用于 ``m->cam_mode`` 和 ``m->light_mode``。
+
+.. mujoco-include:: mjtCamLight
+
+
+.. _mjtLightType:
+
+mjtLightType
+~~~~~~~~~~~~
+
+光源的类型，描述其位置、朝向及其他属性将如何与场景中的物体相互作用。这些值用于 ``m->light_type``。
+
+.. mujoco-include:: mjtLightType
+
+
+.. _mjtTexture:
+
+mjtTexture
+~~~~~~~~~~
+
+纹理类型，指定纹理将如何映射。这些值用于 ``m->tex_type``。
+
+.. mujoco-include:: mjtTexture
+
+
+.. _mjtTextureRole:
+
+mjtTextureRole
+~~~~~~~~~~~~~~
+
+纹理角色，指定渲染器（rendering）应如何解释该纹理。请注意，MuJoCo 内置渲染器只使用 RGB 纹理。这些值用于在材质的数组 ``m->mat_texid`` 中存储纹理索引。
+
+.. mujoco-include:: mjtTextureRole
+
+
+.. _mjtColorSpace:
+
+mjtColorSpace
+~~~~~~~~~~~~~
+
+纹理的颜色空间编码类型。
+
+.. mujoco-include:: mjtColorSpace
+
+
+.. _mjtIntegrator:
+
+mjtIntegrator
+~~~~~~~~~~~~~
+
+数值积分器（integrator）类型。这些值用于 ``m->opt.integrator``。
+
+.. mujoco-include:: mjtIntegrator
+
+.. _mjtCone:
+
+mjtCone
+~~~~~~~
+
+可用的摩擦锥类型。这些值用于 ``m->opt.cone``。
+
+.. mujoco-include:: mjtCone
+
+.. _mjtJacobian:
+
+mjtJacobian
+~~~~~~~~~~~
+
+可用的雅可比（Jacobian）类型。这些值用于 ``m->opt.jacobian``。
+
+.. mujoco-include:: mjtJacobian
+
+
+.. _mjtSolver:
+
+mjtSolver
+~~~~~~~~~
+
+可用的约束求解器（constraint solver）算法。这些值用于 ``m->opt.solver``。
+
+.. mujoco-include:: mjtSolver
+
+
+.. _mjtEq:
+
+mjtEq
+~~~~~
+
+等式约束（equality constraint）类型。这些值用于 ``m->eq_type``。
+
+.. mujoco-include:: mjtEq
+
+
+.. _mjtTendon:
+
+mjtTendon
+~~~~~~~~~
+
+肌腱（tendon）类型。这些值用于 ``m->tendon_type``。
+
+.. mujoco-include:: mjtTendon
+
+
+.. _mjtWrap:
+
+mjtWrap
+~~~~~~~
+
+肌腱缠绕对象的类型。这些值用于 ``m->wrap_type``。
+
+.. mujoco-include:: mjtWrap
+
+
+.. _mjtTrn:
+
+mjtTrn
+~~~~~~
+
+执行器（actuator）传动（transmission）类型。这些值用于 ``m->actuator_trntype``。
+
+.. mujoco-include:: mjtTrn
+
+
+.. _mjtDyn:
+
+mjtDyn
+~~~~~~
+
+执行器动力学类型。这些值用于 ``m->actuator_dyntype``。
+
+.. mujoco-include:: mjtDyn
+
+
+.. _mjtGain:
+
+mjtGain
+~~~~~~~
+
+执行器增益类型。这些值用于 ``m->actuator_gaintype``。
+
+.. mujoco-include:: mjtGain
+
+
+.. _mjtBias:
+
+mjtBias
+~~~~~~~
+
+执行器偏置类型。这些值用于 ``m->actuator_biastype``。
+
+.. mujoco-include:: mjtBias
+
+
+.. _mjtCtrlChart:
+
+mjtCtrlChart
+~~~~~~~~~~~~
+
+so3 执行器的姿态输入图表（chart）。这些值用于 ``m->actuator_ctrlspec``。
+
+.. mujoco-include:: mjtCtrlChart
+
+
+.. _mjtCtrlInput:
+
+mjtCtrlInput
+~~~~~~~~~~~~
+
+执行器的输入位标志：pid 和 dcmotor 执行器的输入子集，以及具有固定或仿射增益的执行器的声明输入。这些值用于 ``m->actuator_ctrlspec``。
+
+.. mujoco-include:: mjtCtrlInput
+
+
+.. _mjtObj:
+
+mjtObj
+~~~~~~
+
+MuJoCo 对象类型。例如，它们用于支持函数 :ref:`mj_name2id` 和 :ref:`mj_id2name`，以在对象名称与整数 id 之间转换。
+
+.. mujoco-include:: mjtObj
+
+
+.. _mjtSensor:
+
+mjtSensor
+~~~~~~~~~
+
+传感器（sensor）类型。这些值用于 ``m->sensor_type``。
+
+.. mujoco-include:: mjtSensor
+
+
+.. _mjtStage:
+
+mjtStage
+~~~~~~~~
+
+这些是 :ref:`mj_forwardSkip` 和 :ref:`mj_inverseSkip` 的 skipstage 参数所对应的计算阶段。
+
+.. mujoco-include:: mjtStage
+
+
+.. _mjtDataType:
+
+mjtDataType
+~~~~~~~~~~~
+
+这些是可能的传感器数据类型，用于 ``mjData.sensor_datatype``。
+
+.. mujoco-include:: mjtDataType
+
+
+.. _mjtConDataField:
+
+mjtConDataField
+~~~~~~~~~~~~~~~
+
+接触（contact）传感器返回的数据字段类型。
+
+.. mujoco-include:: mjtConDataField
+
+
+.. _mjtRayDataField:
+
+mjtRayDataField
+~~~~~~~~~~~~~~~
+
+测距仪（rangefinder）传感器返回的数据字段。
+
+.. mujoco-include:: mjtRayDataField
+
+
+.. _mjtCamOutBit:
+
+mjtCamOutBit
+~~~~~~~~~~~~
+
+相机输出类型位标志。这些用于 ``m->cam_output``。
+
+.. mujoco-include:: mjtCamOutBit
+
+
+.. _mjtSameFrame:
+
+mjtSameFrame
+~~~~~~~~~~~~
+
+元素相对其父刚体的坐标系（frame）对齐类型。在 :ref:`mj_kinematics` 期间用作快捷方式，也用作 :ref:`mj_local2global` 的最后一个参数。
+
+.. mujoco-include:: mjtSameFrame
+
+
+.. _mjtSleepPolicy:
+
+mjtSleepPolicy
+~~~~~~~~~~~~~~
+
+与某棵树关联的休眠策略。编译器会在 ``NEVER`` 和 ``ALLOWED`` 之间自动选择，但用户可以覆盖这一选择。只有用户可以设置 ``INIT`` 策略（初始化为休眠状态）。
+
+.. mujoco-include:: mjtSleepPolicy
+
+
+.. _mjtLRMode:
+
+mjtLRMode
+~~~~~~~~~
+
+执行器长度范围计算的模式。用于 ``mjLROpt.mode``。
+
+.. mujoco-include:: mjtLRMode
+
+
+.. _mjtFlexSelf:
+
+mjtFlexSelf
+~~~~~~~~~~~~
+
+柔性体（flex）自碰撞中间阶段的类型。
+
+.. mujoco-include:: mjtFlexSelf
+
+
+.. _mjtSDFType:
+
+mjtSDFType
+~~~~~~~~~~~
+
+调用 mjc_distance 和 mjc_gradient 时用于组合 SDF 的公式。
+
+.. mujoco-include:: mjtSDFType
+
+
+.. _tyDataEnums:
+
+数据
+^^^^
+
+以下枚举定义在 `mjtype.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjtype.h>`__ 中。
+
+
+
+.. _mjtState:
+
+mjtState
+~~~~~~~~
+
+作为整数位标志的状态分量元素，以及这些标志的若干便捷组合。由 :ref:`mj_getState`、\ :ref:`mj_setState` 和 :ref:`mj_stateSize` 使用。
+
+.. mujoco-include:: mjtState
+
+
+.. _mjtConstraint:
+
+mjtConstraint
+~~~~~~~~~~~~~
+
+约束类型。这些值不用于 mjModel，而是在每个仿真时间步构建活动约束列表时，用于 mjData 字段 ``d->efc_type``。
+
+.. mujoco-include:: mjtConstraint
+
+
+.. _mjtConstraintState:
+
+mjtConstraintState
+~~~~~~~~~~~~~~~~~~
+
+求解器（solver）在内部使用这些值来跟踪约束状态。
+
+.. mujoco-include:: mjtConstraintState
+
+
+.. _mjtWarning:
+
+mjtWarning
+~~~~~~~~~~
+
+警告类型。警告类型的数量由 ``mjNWARNING`` 给出，它同时也是数组 ``mjData.warning`` 的长度。
+
+.. mujoco-include:: mjtWarning
+
+
+.. _mjtTimer:
+
+mjtTimer
+~~~~~~~~
+
+计时器类型。计时器类型的数量由 ``mjNTIMER`` 给出，它同时也是数组 ``mjData.timer`` 的长度，以及包含计时器名称的字符串数组 :ref:`mjTIMERSTRING` 的长度。
+
+.. mujoco-include:: mjtTimer
+
+
+.. _mjtSleepState:
+
+mjtSleepState
+~~~~~~~~~~~~~
+
+对象的休眠状态。
+
+.. mujoco-include:: mjtSleepState
+
+
+.. _tyLogEnums:
+
+日志
+~~~~
+
+.. _mjtLogLevel:
+
+mjtLogLevel
+"""""""""""
+
+日志消息的严重级别。
+
+.. mujoco-include:: mjtLogLevel
+
+
+.. _mjtLogTopic:
+
+mjtLogTopic
+"""""""""""
+
+信息类消息的主题标识符。与 :ref:`mju_info` 配合用于基于主题的过滤。主题 0（``mjTOPIC_NONE``）始终通过默认处理程序的过滤器。其他主题必须在 :ref:`mjLogConfig` 位掩码中启用。由于主题从 1 开始编号，主题 ``t`` 的位掩码为
+``(1 << (t - 1))``。可过滤主题的数量由 ``mjNTOPIC`` 给出，它同时也是字符串数组 :ref:`mjTOPICSTRING` 的长度。
+
+.. mujoco-include:: mjtLogTopic
+
+
+.. _tyVisEnums:
+
+可视化
+^^^^^^
+
+以下枚举定义在 `mjvisualize.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjvisualize.h>`__ 中。
+
+
+.. _mjtCatBit:
+
+mjtCatBit
+~~~~~~~~~
+
+这些是抽象可视化器中 geom 的可用类别。该位掩码可用于函数 :ref:`mjr_render`，以指定应渲染哪些类别。
+
+.. mujoco-include:: mjtCatBit
+
+
+.. _mjtMouse:
+
+mjtMouse
+~~~~~~~~
+
+这些是抽象可视化器能够识别的鼠标动作。需要由用户截获鼠标事件并将其转换为这些动作，如 :ref:`simulate.cc <saSimulate>` 中所示。
+
+.. mujoco-include:: mjtMouse
+
+
+.. _mjtPertBit:
+
+mjtPertBit
+~~~~~~~~~~
+
+这些位掩码用于启用鼠标扰动的平移分量和旋转分量。对于普通鼠标，一次只能启用其中一个。对于 3D 鼠标（SpaceNavigator），两者可以同时启用。它们用于 ``mjvPerturb.active``。
+
+.. mujoco-include:: mjtPertBit
+
+
+.. _mjtCamera:
+
+mjtCamera
+~~~~~~~~~
+
+这些是可能的相机类型，用于 ``mjvCamera.type``。
+
+.. mujoco-include:: mjtCamera
+
+
+.. _mjtLabel:
+
+mjtLabel
+~~~~~~~~
+
+这些是可以带有文字标签的抽象可视化元素。用于 ``mjvOption.label``。对应的字符串数组为 :ref:`mjLABELSTRING`。
+
+.. mujoco-include:: mjtLabel
+
+
+.. _mjtFrame:
+
+mjtFrame
+~~~~~~~~
+
+这些是其空间坐标系可以被渲染的 MuJoCo 对象。用于 ``mjvOption.frame``。对应的字符串数组为 :ref:`mjFRAMESTRING`。
+
+.. mujoco-include:: mjtFrame
+
+
+.. _mjtVisFlag:
+
+mjtVisFlag
+~~~~~~~~~~
+
+这些是数组 ``mjvOption.flags`` 中的索引，其元素用于启用/禁用相应模型或装饰元素的可视化。对应的字符串数组为 :ref:`mjVISSTRING`。
+
+.. mujoco-include:: mjtVisFlag
+
+
+.. _mjtRndFlag:
+
+mjtRndFlag
+~~~~~~~~~~
+
+这些是数组 ``mjvScene.flags`` 中的索引，其元素用于启用/禁用 OpenGL 渲染效果。对应的字符串数组为 :ref:`mjRNDSTRING`。
+
+.. mujoco-include:: mjtRndFlag
+
+
+.. _mjtStereo:
+
+mjtStereo
+~~~~~~~~~
+
+这些是可能的立体渲染类型。它们用于 ``mjvScene.stereo``。
+
+.. mujoco-include:: mjtStereo
+
+
+
+.. _tyRenderEnums:
+
+渲染
+^^^^
+
+以下枚举定义在 `mjrender.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjrender.h>`__ 中。
+
+
+.. _mjtGridPos:
+
+mjtGridPos
+~~~~~~~~~~
+
+这些是文字叠加层的可能网格位置。它们用作函数 :ref:`mjr_overlay` 的参数。
+
+.. mujoco-include:: mjtGridPos
+
+
+.. _mjtFramebuffer:
+
+mjtFramebuffer
+~~~~~~~~~~~~~~
+
+这些是可能的帧缓冲区。它们用作函数 :ref:`mjr_setBuffer` 的参数。
+
+.. mujoco-include:: mjtFramebuffer
+
+
+.. _mjtDepthMap:
+
+mjtDepthMap
+~~~~~~~~~~~
+
+这些是深度映射选项。它们用作 :ref:`mjrContext` 结构体的 ``readPixelDepth`` 属性的取值，用于控制 :ref:`mjr_readPixels` 返回的深度如何从 ``znear`` 映射到 ``zfar``。
+
+.. mujoco-include:: mjtDepthMap
+
+
+.. _mjtFontScale:
+
+mjtFontScale
+~~~~~~~~~~~~
+
+这些是可能的字体大小。这些字体是预定义的位图，以三种不同的大小存储在动态库中。
+
+.. mujoco-include:: mjtFontScale
+
+
+.. _mjtFont:
+
+mjtFont
+~~~~~~~
+
+这些是可能的字体类型。
+
+.. mujoco-include:: mjtFont
+
+.. _mjrPixelFormat:
+
+mjrPixelFormat
+~~~~~~~~~~~~~~
+
+这些是可能的取值：
+
+.. mujoco-include:: mjrPixelFormat
+
+.. _mjrVertexAttributeUsage:
+
+mjrVertexAttributeUsage
+~~~~~~~~~~~~~~~~~~~~~~~
+
+这些是可能的取值：
+
+.. mujoco-include:: mjrVertexAttributeUsage
+
+.. _mjrVertexAttributeType:
+
+mjrVertexAttributeType
+~~~~~~~~~~~~~~~~~~~~~~
+
+这些是可能的取值：
+
+.. mujoco-include:: mjrVertexAttributeType
+
+.. _mjrIndexType:
+
+mjrIndexType
+~~~~~~~~~~~~
+
+这些是可能的取值：
+
+.. mujoco-include:: mjrIndexType
+
+.. _mjrMeshPrimitiveType:
+
+mjrMeshPrimitiveType
+~~~~~~~~~~~~~~~~~~~~
+
+这些是可能的取值：
+
+.. mujoco-include:: mjrMeshPrimitiveType
+
+
+.. _tyFilamentRenderEnums:
+
+Filament 渲染
+^^^^^^^^^^^^^^
+
+以下枚举定义在 `mjrfilament.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjrfilament.h>`__ 中。
+
+
+.. _mjrGraphicsApi:
+
+mjrGraphicsApi
+~~~~~~~~~~~~~~
+
+Filament 渲染所使用的底层图形 API。
+
+.. mujoco-include:: mjrGraphicsApi
+
+
+.. _mjrDrawMode:
+
+mjrDrawMode
+~~~~~~~~~~~
+
+Filament 渲染中如何绘制场景内对象的高层控制。
+
+.. mujoco-include:: mjrDrawMode
+
+
+.. _mjrQuality:
+
+mjrQuality
+~~~~~~~~~~
+
+渲染质量等级，针对不同选项影响性能和视觉保真度。
+
+.. mujoco-include:: mjrQuality
+
+
+.. _mjrToneMapper:
+
+mjrToneMapper
+~~~~~~~~~~~~~
+
+可用于后处理阶段调色的色调映射算子。
+
+.. mujoco-include:: mjrToneMapper
+
+
+.. _mjrShadowType:
+
+mjrShadowType
+~~~~~~~~~~~~~
+
+可用的阴影算法类型。
+
+.. mujoco-include:: mjrShadowType
+
+
+.. _mjrAmbientOcclusionType:
+
+mjrAmbientOcclusionType
+~~~~~~~~~~~~~~~~~~~~~~~
+
+可用的环境光遮蔽算法类型。
+
+.. mujoco-include:: mjrAmbientOcclusionType
+
+
+.. _mjrDitheringType:
+
+mjrDitheringType
+~~~~~~~~~~~~~~~~
+
+可用的抖动算法类型。
+
+.. mujoco-include:: mjrDitheringType
+
+
+.. _tyUIEnums:
+
+用户界面
+^^^^^^^^
+
+以下枚举定义在 `mjui.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjui.h>`__ 中。
+
+
+.. _mjtButton:
+
+mjtButton
+~~~~~~~~~
+
+UI 框架中使用的鼠标按键 ID。
+
+.. mujoco-include:: mjtButton
+
+
+.. _mjtEvent:
+
+mjtEvent
+~~~~~~~~
+
+UI 框架中使用的事件类型。
+
+.. mujoco-include:: mjtEvent
+
+
+.. _mjtItem:
+
+mjtItem
+~~~~~~~
+
+UI 框架中使用的条目类型。
+
+.. mujoco-include:: mjtItem
+
+
+.. _mjtSection:
+
+mjtSection
+~~~~~~~~~~
+
+UI 分区的状态。
+
+.. mujoco-include:: mjtSection
+
+
+
+.. _tySpecEnums:
+
+Spec
+^^^^
+
+以下枚举定义在 `mjspec.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjspec.h>`__ 中。
+
+.. _mjtGeomInertia:
+
+mjtGeomInertia
+~~~~~~~~~~~~~~
+
+惯性推断的类型。
+
+.. mujoco-include:: mjtGeomInertia
+
+.. _mjtBuiltin:
+
+mjtBuiltin
+~~~~~~~~~~
+
+内置过程式纹理的类型。
+
+.. mujoco-include:: mjtBuiltin
+
+.. _mjtMark:
+
+mjtMark
+~~~~~~~
+
+过程式纹理的标记类型。
+
+.. mujoco-include:: mjtMark
+
+.. _mjtLimited:
+
+mjtLimited
+~~~~~~~~~~
+
+限位（limit）指定方式的类型。
+
+.. mujoco-include:: mjtLimited
+
+.. _mjtAlignFree:
+
+mjtAlignFree
+~~~~~~~~~~~~
+
+是否将自由关节与惯性坐标系对齐。
+
+.. mujoco-include:: mjtAlignFree
+
+.. _mjtPassthrough:
+
+mjtPassthrough
+~~~~~~~~~~~~~~
+
+编译器将哪些资源\ :ref:`按引用<CAssetReference>`\ 保留、而不加载到 :ref:`mjModel` 中，这是一个位掩码；参见
+:ref:`compiler/passthrough<compiler-passthrough>`。
+
+.. mujoco-include:: mjtPassthrough
+
+.. _mjtEmbed:
+
+mjtEmbed
+~~~~~~~~
+
+资源的负载是位于模型中，还是该资源采用\ :ref:`按引用<CAssetReference>`\ 方式；参见
+:ref:`texture/embed<asset-texture-embed>`。
+
+.. mujoco-include:: mjtEmbed
+
+.. _mjtInertiaFromGeom:
+
+mjtInertiaFromGeom
+~~~~~~~~~~~~~~~~~~
+
+是否根据子 geom 推断刚体（body）的惯性。
+
+.. mujoco-include:: mjtInertiaFromGeom
+
+.. _mjtOrientation:
+
+mjtOrientation
+~~~~~~~~~~~~~~
+
+朝向指定方式的类型。
+
+.. mujoco-include:: mjtOrientation
+
+.. _mjtMeshInertia:
+
+mjtMeshInertia
+~~~~~~~~~~~~~~
+
+网格（mesh）惯性计算的类型。
+
+.. mujoco-include:: mjtMeshInertia
+
+.. _mjtMeshBuiltin:
+
+mjtMeshBuiltin
+~~~~~~~~~~~~~~
+
+内置过程式网格的类型。
+
+.. mujoco-include:: mjtMeshBuiltin
+
+.. _mjtFlexSection:
+
+mjtFlexSection
+~~~~~~~~~~~~~~
+
+一维 flex :ref:`弹性<flex-elasticity>`\ 的横截面，参见\ :ref:`截面<flex-elasticity-section>`。
+
+.. mujoco-include:: mjtFlexSection
+
+.. _mjtConflict:
+
+mjtConflict
+~~~~~~~~~~~
+
+attach 的冲突解决模式。
+
+.. mujoco-include:: mjtConflict
+
+.. _mjtScaling:
+
+mjtScaling
+~~~~~~~~~~
+
+坐标系\ :ref:`缩放<frame-scale>`\ 的物理策略，参见\ :ref:`缩放策略<frame-scaling>`。
+
+.. mujoco-include:: mjtScaling
+
+.. _mjtActuator:
+
+mjtActuator
+~~~~~~~~~~~
+
+某个执行器所采用的\ :ref:`执行器元素<actuator>`\ 写法：\ :ref:`general<actuator-general>` 或其某个\ :ref:`快捷方式<CActShortcuts>`。由 ``mjs_setTo*`` 函数和解析器设置；快捷方式的参数只会从以相同快捷方式写出的默认类（default class）继承。
+
+.. mujoco-include:: mjtActuator
+
+
+.. _mjtCTimer:
+
+mjtCTimer
+~~~~~~~~~
+
+编译器计时类别，用于 :ref:`mjs_getTimer`。顶层计时器（``TOTAL``、\ ``ASSETS``）测量墙上时间（wall-clock time）。资源子计时器测量所有资源的 CPU 时间之和；在多线程编译时，它们的总和可能超过 ``ASSETS`` 的墙上时间。
+
+.. mujoco-include:: mjtCTimer
+
+
+.. _tyPluginEnums:
+
+插件
+^^^^
+
+以下枚举定义在 `mjplugin.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjplugin.h>`__ 中。
+详情参见 :ref:`exPlugin`。
+
+
+.. _mjtPluginCapabilityBit:
+
+mjtPluginCapabilityBit
+~~~~~~~~~~~~~~~~~~~~~~
+
+引擎插件（plugin）声明的能力。
+
+.. mujoco-include:: mjtPluginCapabilityBit
+
+
+
+.. _tyStructure:
+
+结构体类型
+----------
+
+物理仿真的三个核心结构体类型是 :ref:`mjModel`、\ :ref:`mjOption`\ （嵌入在 :ref:`mjModel` 中）和 :ref:`mjData`。关于这些结构体的入门性讨论见\ :ref:`概览<ModelAndData>`。
+
+
+.. _mjModel:
+
+mjModel
+^^^^^^^
+
+这是保存 MuJoCo 模型的主要数据结构。仿真器将其视为常量。关于 :ref:`mjModel` 中数据结构的一些具体细节，见下文的 :ref:`tyNotes`。
+
+.. mujoco-include:: mjModel
+
+
+
+.. _mjOption:
+
+mjOption
+^^^^^^^^
+
+这是包含仿真选项的数据结构。它对应于 MJCF 元素 :ref:`option <option>`。它的一个实例嵌入在 mjModel 中。
+
+.. mujoco-include:: mjOption
+
+
+.. _mjData:
+
+mjData
+^^^^^^
+
+这是保存仿真状态的主要数据结构。它是所有函数读取其可修改输入、并写入其输出的工作区。
+
+.. mujoco-include:: mjData
+
+
+
+.. _tyAuxStructure:
+
+辅助结构体
+^^^^^^^^^^
+
+这些结构体类型用于引擎中，其名称带有 ``mj`` 前缀。\ :ref:`mjVisual` 和 :ref:`mjStatistic` 嵌入在 :ref:`mjModel` 中，\ :ref:`mjContact` 嵌入在 :ref:`mjData` 中，而 :ref:`mjVFS` 是用于加载资源的库级结构体。
+
+
+.. _mjVisual:
+
+mjVisual
+~~~~~~~~
+
+这是包含抽象可视化选项的数据结构。它对应于 MJCF 元素 :ref:`visual <visual>`。它的一个实例嵌入在 mjModel 中。
+
+.. mujoco-include:: mjVisual
+
+
+.. _mjStatistic:
+
+mjStatistic
+~~~~~~~~~~~
+
+这是包含模型统计量的数据结构，这些统计量由编译器预先计算或由用户设置。它对应于 MJCF 元素 :ref:`statistic <statistic>`。它的一个实例嵌入在 mjModel 中。
+
+.. mujoco-include:: mjStatistic
+
+
+.. _mjPreContact:
+
+mjPreContact
+~~~~~~~~~~~~
+
+这是保存一个接触信息的数据结构，由精测阶段（narrow-phase）碰撞检测器填充。
+
+.. mujoco-include:: mjPreContact
+
+.. _mjContact:
+
+mjContact
+~~~~~~~~~
+
+这是保存一个接触信息的数据结构。\ ``mjData.contact`` 是预先分配的 mjContact 数据结构数组，运行时由碰撞检测器找到的接触填充。其余的接触信息随后由仿真器填入。
+
+.. mujoco-include:: mjContact
+
+
+.. _mjResource:
+
+mjResource
+~~~~~~~~~~
+
+资源是对文件系统中某个文件的抽象。name 字段是该资源的唯一名称，其余字段由\ :ref:`资源提供者 <exProvider>`\ 填充。
+
+.. mujoco-include:: mjResource
+
+
+.. _mjVFS:
+
+mjVFS
+~~~~~
+
+这是虚拟文件系统的数据结构。它只能通过编程方式构造，在 MJCF 中没有对应项。
+
+.. mujoco-include:: mjVFS
+
+
+.. _mjLROpt:
+
+mjLROpt
+~~~~~~~
+
+用于配置自动\ :ref:`执行器长度范围计算<CLengthRange>`\ 的选项。
+
+.. mujoco-include:: mjLROpt
+
+.. _mjCache:
+
+mjCache
+~~~~~~~
+
+编译器使用的资源缓存，用于避免重复的缓慢重新编译。参见\ :ref:`资源缓存<Assetcache>`。
+
+.. mujoco-include:: mjCache
+
+
+.. _tyLogStructure:
+
+日志
+^^^^
+
+.. _mjLogMessage:
+
+mjLogMessage
+~~~~~~~~~~~~
+
+传递给 :ref:`mjfLogHandler` 回调的结构化日志消息。包含严重级别、信息类消息的可选主题、一行主题说明、可选的多行正文，以及可选的源码位置（函数名、文件名、行号）。
+
+.. mujoco-include:: mjLogMessage
+
+
+.. _mjLogConfig:
+
+mjLogConfig
+~~~~~~~~~~~
+
+默认日志处理程序的配置。控制消息是否打印到控制台和/或写入日志文件（默认：\ ``MUJOCO_LOG.TXT``）。\ ``logto_file`` 字段用于启用文件日志，\ ``logfile`` 指定文件路径。\ ``topics`` 字段是 :ref:`mjtLogTopic` 取值的位掩码：第 ``(topic - 1)`` 位启用该主题。主题 0（``mjTOPIC_NONE``）始终通过。
+
+.. mujoco-include:: mjLogConfig
+
+
+.. _tyStatStructure:
+
+仿真统计
+^^^^^^^^
+
+这些结构体都嵌入在 :ref:`mjData` 中，用于收集与仿真相关的统计信息。
+
+
+.. _mjWarningStat:
+
+mjWarningStat
+~~~~~~~~~~~~~
+
+这是保存一种警告类型信息的数据结构。\ ``mjData.warning`` 是预先分配的 mjWarningStat 数据结构数组，每种警告类型对应一个。
+
+.. mujoco-include:: mjWarningStat
+
+.. _mjTimerStat:
+
+mjTimerStat
+~~~~~~~~~~~
+
+该数据结构保存一个计时器的信息。 ``mjData.timer`` 是预先分配好的 mjTimerStat 数据结构数组，每种计时器类型对应一个元素。
+
+.. mujoco-include:: mjTimerStat
+
+
+.. _mjSolverStat:
+
+mjSolverStat
+~~~~~~~~~~~~
+
+该数据结构保存一次求解器（solver）迭代的信息。 ``mjData.solver`` 是预先分配好的 mjSolverStat 数据结构数组，求解器的每次迭代对应一个元素，最多
+mjNSOLVER 个。实际的求解器迭代次数由 ``mjData.solver_niter`` 给出。
+
+.. mujoco-include:: mjSolverStat
+
+
+
+.. _tyVisStructure:
+
+可视化
+^^^^^^^^^^^^^
+
+这些结构体类型的名称以 ``mjv`` 为前缀。
+
+.. _mjvPerturb:
+
+mjvPerturb
+~~~~~~~~~~
+
+该数据结构保存鼠标扰动的信息。
+
+.. mujoco-include:: mjvPerturb
+
+
+.. _mjvCamera:
+
+mjvCamera
+~~~~~~~~~
+
+该数据结构描述一个抽象相机。
+
+.. mujoco-include:: mjvCamera
+
+
+.. _mjvGLCamera:
+
+mjvGLCamera
+~~~~~~~~~~~
+
+该数据结构描述一个 OpenGL 相机。
+
+.. mujoco-include:: mjvGLCamera
+
+
+.. _mjvGeom:
+
+mjvGeom
+~~~~~~~
+
+该数据结构描述一个抽象的可视化 geom，它既可以对应模型中的某个 geom，也可以对应由可视化器构造的装饰元素。
+
+.. mujoco-include:: mjvGeom
+
+
+.. _mjvLight:
+
+mjvLight
+~~~~~~~~
+
+该数据结构描述一个 OpenGL 光源。
+
+.. mujoco-include:: mjvLight
+
+
+.. _mjvOption:
+
+mjvOption
+~~~~~~~~~
+
+该结构包含用于启用和禁用各种元素可视化的选项。
+
+.. mujoco-include:: mjvOption
+
+
+.. _mjvScene:
+
+mjvScene
+~~~~~~~~
+
+该结构包含在 OpenGL 中渲染（rendering）3D 场景所需的全部内容。
+
+.. mujoco-include:: mjvScene
+
+
+.. _mjvFigure:
+
+mjvFigure
+~~~~~~~~~
+
+该结构包含在 OpenGL 中渲染 2D 绘图所需的全部内容。用于存放线条点等数据的缓冲区是预先分配好的，用户需要先填充这些缓冲区，然后再以该数据结构为参数调用函数
+:ref:`mjr_figure` 。
+
+.. mujoco-include:: mjvFigure
+
+
+.. _tyRenderStructure:
+
+渲染
+^^^^^^^^^
+
+这些结构体类型的名称以 ``mjr`` 为前缀。
+
+.. _mjrRect:
+
+mjrRect
+~~~~~~~
+
+该结构指定一个矩形。
+
+.. mujoco-include:: mjrRect
+
+
+.. _mjrVertexAttribute:
+
+mjrVertexAttribute
+~~~~~~~~~~~~~~~~~~
+
+该结构指定单个顶点的属性。
+
+.. mujoco-include:: mjrVertexAttribute
+
+
+
+.. _mjrRendererInfo:
+
+mjrRendererInfo
+~~~~~~~~~~~~~~~
+
+该结构包含可用渲染器及其当前上下文的信息。
+
+.. mujoco-include:: mjrRendererInfo
+
+
+.. _mjrContext:
+
+mjrContext
+~~~~~~~~~~
+
+该结构包含自定义的 OpenGL 渲染上下文，以及所有已上传到 GPU 的 OpenGL 资源的 id。
+
+.. mujoco-include:: mjrContext
+
+
+.. _tyFilamentRenderStructure:
+
+Filament 渲染
+^^^^^^^^^^^^^^^^^^
+
+这些结构体类型的名称以 ``mjrf`` 为前缀。它们定义在
+`mjrfilament.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjrfilament.h>`__ 中。
+
+该 API 定义了七种关键类型： :ref:`mjrfContext<mjrfContext>` 、 :ref:`mjrfTexture<mjrfTexture>` 、
+:ref:`mjrfMesh<mjrfMesh>` 、 :ref:`mjrfLight<mjrfLight>` 、 :ref:`mjrfRenderable<mjrfRenderable>` 、
+:ref:`mjrfScene<mjrfScene>` 和 :ref:`mjrfRenderTarget<mjrfRenderTarget>` 。
+
+每个对象都通过 `create` 函数创建，并通过 `destroy` 函数销毁，例如 `mjrf_createTexture` 和
+`mjrf_destroyTexture` 。除 :ref:`Context<mjrfContext>` 对象自身外，创建所有对象都需要一个 :ref:`Context<mjrfContext>` 。此外， `create` 函数接受一个指向配置结构体（例如 `mjrTextureConfig` ）的指针，该结构体描述待创建对象的参数。每个这样的结构体都有对应的 `default` 函数（例如 `mjrf_defaultTextureConfig` ），可用于将结构体初始化为默认值。除非另有说明，默认值均视为 `0` 或 `NULL` 。
+
+
+.. _mjrfContext:
+
+mjrfContext
+~~~~~~~~~~~
+
+Context 是 filament 渲染库的主入口。它管理负责渲染图像的所有 filament 核心对象。所有其他对象（例如 Texture、Mesh、Scene 等）都需要一个 Context 才能创建。
+
+除此之外，与 Context 配合使用的主要函数是 :ref:`mjrf_render()<mjrf_render>` ，它负责实际渲染图像。
+
+Filament 使用单独的线程进行渲染。尽管如此，该 API 并不是线程安全的；调用应当在单个线程中发起。由于 filament 具有异步特性，部分 API 会提供句柄或回调，用于在操作完成时发出信号。（注意：对于 WASM 构建，filament 不使用单独的线程。）
+
+:ref:`mjrfContext<mjrfContext>` 与经典的 :ref:`mjrContext<mjrContext>` 有两点关键区别。首先，filament 上下文会自行管理底层的图形上下文，这意味着用户无需事先初始化 EGL 或类似的库。其次，filament 上下文独立于 MuJoCo 模型，这意味着可以用单个 :ref:`mjrfContext<mjrfContext>` 实例为多个模型渲染图像。
+
+.. _mjrfContextConfig:
+
+mjrfContextConfig
+~~~~~~~~~~~~~~~~~
+
+创建 :ref:`filament 图形上下文<mjrfContext>` 的参数。
+
+.. mujoco-include:: mjrfContextConfig
+
+
+.. _mjrfTexture:
+
+mjrfTexture
+~~~~~~~~~~~
+
+纹理是一种 2D 或 3D（立方体贴图）图像，可在不增加几何复杂度的前提下为渲染的模型增添颜色或凹凸感等视觉细节。纹理本质上是一块保存像素数据的内存缓冲区，同时带有图像尺寸、像素格式（例如 8 位 RGB）等元数据。
+
+.. _mjrfTextureConfig:
+
+mjrfTextureConfig
+~~~~~~~~~~~~~~~~~
+
+创建 :ref:`纹理<mjrfTexture>` 的参数。
+
+.. mujoco-include:: mjrfTextureConfig
+
+
+.. _mjrfTextureData:
+
+mjrfTextureData
+~~~~~~~~~~~~~~~
+
+:ref:`纹理<mjrfTexture>` 的二进制数据载荷。
+
+.. mujoco-include:: mjrfTextureData
+
+
+.. _mjrfMesh:
+
+mjrfMesh
+~~~~~~~~
+
+网格（mesh）描述待渲染对象的表面几何。它由一组顶点（即 VertexBuffer）、一组描述顶点处理顺序的索引（即 IndexBuffer），以及一个图元类型组成；图元类型定义了渲染表面时顶点应如何被解释（例如三角形、线段等）。
+
+Filament 并不直接支持法线。它会把法线、切线和副切线编码为一个 4 分量四元数（quaternion），用来描述顶点的“朝向”。理想情况下，应当对资产进行预处理，离线生成这些数据；不过如有需要，我们会即时计算（但会带来性能开销）。
+
+顶点数据可以交错存放，也可以不交错。交错数据假定各属性按照 attributes 数组中指定的顺序紧密排列，中间没有填充。此外，每个属性的 `data` 指针被假定指向该类型的第一个元素。对于非交错数据，则假定每个属性存放在各自独立的数组中。
+
+此外，应当计算网格的包围范围，以便 filament 渲染器执行基于视锥体的剔除。或者，也可以在运行时计算包围范围（但会有少量性能开销）。如果没有提供（或计算）包围范围，则不会执行视锥体剔除。
+
+
+.. _mjrfMeshConfig:
+
+mjrfMeshConfig
+~~~~~~~~~~~~~~~~~
+
+创建 :ref:`网格<mjrfMesh>` 的参数。
+
+.. mujoco-include:: mjrfMeshConfig
+
+
+.. _mjrfMeshData:
+
+mjrfMeshData
+~~~~~~~~~~~~
+
+:ref:`网格<mjrfMesh>` 的二进制数据。
+
+.. mujoco-include:: mjrfMeshData
+
+
+.. _mjrfScene:
+
+mjrfScene
+~~~~~~~~~
+
+Scene 是一组 :ref:`Lights<mjrfLight>` 和 :ref:`Renderables<mjrfRenderable>` 的集合，描述了要渲染的内容。
+
+
+.. _mjrfSceneParams:
+
+mjrfSceneParams
+~~~~~~~~~~~~~~~
+
+创建 :ref:`场景<mjrfScene>` 的参数。
+
+.. mujoco-include: mjrfSceneParams
+
+
+.. _mjrfLight:
+
+mjrfLight
+~~~~~~~~~
+
+光源是照明的来源。（没有光源，渲染出的图像将是一片漆黑。）光源有多种类型，例如平行光、聚光灯、点光源和图像光源。
+
+场景中的主光源是图像光源（有时也称为环境光）。这种光源“包围”整个场景，并被定义为一张 3D 纹理。立方体贴图的每个“像素”被解释为从特定方向投射到场景中的颜色。
+
+用于基于图像照明的纹理可以使用 filament 的 `cmgen` 工具生成。应将该工具配置为从源图像输出 KTX 文件。该工具会计算额外的数据（即球谐函数），并将这些信息编码到 KTX 文件中。
+
+平行光是下一种最常见的光源，通常用于模拟太阳：即沿单一方向发射的、颜色均匀的光。
+
+Filament 仅支持单个图像光源和单个平行光。点光源和聚光灯则可以定义任意多个。除基于图像的光源外，每个光源都可以选择是否投射阴影。每个投射阴影的光源都会带来性能开销。
+
+
+.. _mjrfLightParams:
+
+mjrfLightParams
+~~~~~~~~~~~~~~~
+
+创建 :ref:`光源<mjrfLight>` 的参数。
+
+.. mujoco-include:: mjrfLightParams
+
+
+.. _mjrfRenderable:
+
+mjrfRenderable
+~~~~~~~~~~~~~~
+
+Renderable 是要绘制的单个对象。它由一个 :ref:`mjrfMesh<mjrfMesh>` （即前文所述的形状或表面几何）与一个 :ref:`mjrfMaterial<mjrfMaterial>` （即对表面如何与光源相互作用以产生最终视觉外观的描述）组合而成。
+
+
+.. _mjrfRenderableParams:
+
+mjrfRenderableParams
+~~~~~~~~~~~~~~~~~~~~
+
+创建 :ref:`renderable<mjrfRenderable>` 的参数。
+
+.. mujoco-include:: mjrfRenderableParams
+
+
+.. _mjrfMaterial:
+
+mjrfMaterial
+~~~~~~~~~~~~
+
+材质描述 renderable 表面的属性，实际上决定了表面如何与光源相互作用，从而在输出图像中产生最终的像素颜色。根据材质属性取值的不同，表面将应用不同的光照模型。目前支持三种光照模型：
+
+1. Metallic-roughness（PBR）：这是基于标准金属度-粗糙度工作流渲染模型时的首选模型。
+
+2. Specular-glossiness（非 PBR）：这是一种旧式模型，旨在与经典的 :ref:`mjr<ClassicRendering>` 渲染器兼容，但并非 100% 相同。
+
+3. Unlit：该模型忽略光照，用于渲染 UX 或装饰性元素，例如接触力和标签。
+
+.. mujoco-include:: mjrfMaterial
+
+
+.. _mjrfRenderTarget:
+
+mjrfRenderTarget
+~~~~~~~~~~~~~~~~
+
+RenderTarget 是保存渲染操作结果的内存缓冲区。（这是直接渲染到屏幕的一种替代方式。）
+
+
+.. _mjrfRenderTargetConfig:
+
+mjrfRenderTargetConfig
+~~~~~~~~~~~~~~~~~~~~~~
+
+创建 :ref:`渲染目标<mjrfRenderTarget>` 的参数。
+
+.. mujoco-include:: mjrfRenderTargetConfig
+
+
+.. _mjrfRenderRequest:
+
+mjrfRenderRequest
+~~~~~~~~~~~~~~~~~
+
+一次渲染操作。
+
+.. mujoco-include:: mjrfRenderRequest
+
+
+.. _mjrfReadRequest:
+
+mjrfReadRequest
+~~~~~~~~~~~~~~~~~~~~~
+
+一次像素读取操作。
+
+.. mujoco-include:: mjrfReadRequest
+
+
+.. _mjrfFrameStats:
+
+mjrfFrameStats
+~~~~~~~~~~~~~~
+
+关于单帧渲染的信息。
+
+.. mujoco-include:: mjrfFrameStats
+
+
+.. _mjrfAmbientOcclusionOpts:
+
+mjrfAmbientOcclusionOpts
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+环境光遮蔽的渲染选项。环境光遮蔽是一种渲染效果，用于模拟狭小空间中环境光被遮挡的现象。
+
+.. mujoco-include:: mjrfAmbientOcclusionOpts
+
+
+.. _mjrfAntialiasingOpts:
+
+mjrfAntialiasingOpts
+~~~~~~~~~~~~~~~~~~~~
+
+抗锯齿的渲染选项，用于减轻或消除渲染图像中线条和边缘的锯齿状外观。
+
+.. mujoco-include:: mjrfAntialiasingOpts
+
+
+.. _mjrfBloomOpts:
+
+mjrfBloomOpts
+~~~~~~~~~~~~~
+
+泛光效果的渲染选项。该效果模拟相机或人眼对强光的散射。
+
+.. mujoco-include:: mjrfBloomOpts
+
+
+.. _mjrfColorGradingOpts:
+
+mjrfColorGradingOpts
+~~~~~~~~~~~~~~~~~~~~
+
+色彩分级（例如色调映射、色彩校正等）的渲染选项。色彩分级允许通过调整曝光、对比度、饱和度和白平衡等参数来调整渲染图像的最终外观。它还决定了 GPU 处理的 HDR（高动态范围）颜色如何转换为可在显示器上显示的 LDR（低动态范围）颜色。
+
+.. mujoco-include:: mjrfColorGradingOpts
+
+
+.. _mjrfDepthOfFieldOpts:
+
+mjrfDepthOfFieldOpts
+~~~~~~~~~~~~~~~~~~~~
+
+景深效果的渲染选项，用于模拟相机对焦。
+
+.. mujoco-include:: mjrfDepthOfFieldOpts
+
+
+.. _mjrfDitheringOpts:
+
+mjrfDitheringOpts
+~~~~~~~~~~~~~~~~~
+
+抖动效果的渲染选项。通过向最终渲染图像中加入噪声，有助于提高渐变的平滑度。
+
+.. mujoco-include:: mjrfDitheringOpts
+
+
+.. _mjrfFogOpts:
+
+mjrfFogOpts
+~~~~~~~~~~~
+
+雾效的渲染选项，可帮助增强深度感知，并减少远处物体的“突然出现”现象。
+
+.. mujoco-include:: mjrfFogOpts
+
+
+.. _mjrfHazeOpts:
+
+mjrfHazeOpts
+~~~~~~~~~~~~
+
+薄雾效果的渲染选项。薄雾是一种特殊效果，可以添加到无限大平面上，使其与天空盒自然融合。
+
+.. mujoco-include:: mjrfHazeOpts
+
+
+.. _mjrfHeadlightOpts:
+
+mjrfHeadlightOpts
+~~~~~~~~~~~~~~~~~
+
+头灯的渲染选项。头灯是一种特殊的“额外”光源，可用于查看场景中光线昏暗的区域。
+
+.. mujoco-include:: mjrfHeadlightOpts
+
+
+.. _mjrfMaterialOpts:
+
+mjrfMaterialOpts
+~~~~~~~~~~~~~~~~
+
+用于配置着色器材质如何解释颜色、镜面反射等材质属性的渲染选项。
+
+.. mujoco-include:: mjrfMaterialOpts
+
+
+.. _mjrfReflectionOpts:
+
+mjrfReflectionOpts
+~~~~~~~~~~~~~~~~~~
+
+反射的渲染选项。反射只能应用于具有反射材质的平面。
+
+.. mujoco-include:: mjrfReflectionOpts
+
+
+.. _mjrfShadowOpts:
+
+mjrfShadowOpts
+~~~~~~~~~~~~~~
+
+阴影的渲染选项，包括使用硬阴影还是软阴影。
+
+.. mujoco-include:: mjrfShadowOpts
+
+
+.. _mjrfSkyboxOpts:
+
+mjrfSkyboxOpts
+~~~~~~~~~~~~~~
+
+天空盒的渲染选项。
+
+.. mujoco-include:: mjrfSkyboxOpts
+
+
+.. _mjrfVignetteOpts:
+
+mjrfVignetteOpts
+~~~~~~~~~~~~~~~~
+
+渐晕效果的渲染选项，类似相机镜头，会使图像边缘变暗。
+
+.. mujoco-include:: mjrfVignetteOpts
+
+
+.. _mjrfRenderOpts:
+
+mjrfRenderOpts
+~~~~~~~~~~~~~~
+
+将所有渲染选项合并到单个结构体中。
+
+.. mujoco-include:: mjrfRenderOpts
+
+
+.. _tyUIStructure:
+
+用户界面
+^^^^^^^^^^^^^^
+
+关于 UI 框架的高层描述，参见 :ref:`UI` 。
+这些结构体类型的名称以 ``mjui`` 为前缀，主结构体 :ref:`mjUI` 本身除外。
+
+
+.. _mjuiState:
+
+mjuiState
+~~~~~~~~~
+
+该 C 结构体表示窗口、键盘和鼠标的全局状态、输入事件描述符，以及所有窗口矩形（包括可见的 UI 矩形）。每个应用程序只有一个 ``mjuiState`` ，即使存在多个 UI 也是如此。该结构体通常定义为全局变量。
+
+.. mujoco-include:: mjuiState
+
+
+.. _mjuiThemeSpacing:
+
+mjuiThemeSpacing
+~~~~~~~~~~~~~~~~
+
+该结构定义主题中 UI 项的间距。
+
+.. mujoco-include:: mjuiThemeSpacing
+
+
+.. _mjuiThemeColor:
+
+mjuiThemeColor
+~~~~~~~~~~~~~~
+
+该结构定义主题中 UI 项的颜色。
+
+.. mujoco-include:: mjuiThemeColor
+
+
+.. _mjuiItem:
+
+mjuiItem
+~~~~~~~~
+
+该结构定义一个 UI 项。
+
+.. mujoco-include:: mjuiItem
+
+
+.. _mjuiSection:
+
+mjuiSection
+~~~~~~~~~~~
+
+该结构定义 UI 的一个分区。
+
+.. mujoco-include:: mjuiSection
+
+
+.. _mjuiDef:
+
+mjuiDef
+~~~~~~~
+
+该结构定义用于简化 UI 构造的定义表中的一项。它包含定义一个 UI 项所需的全部内容。辅助函数会执行一些转换，因此多个 mjuiDef 可以定义为一张静态表。
+
+.. mujoco-include:: mjuiDef
+
+
+.. _mjUI:
+
+mjUI
+~~~~
+
+该 C 结构体表示一个完整的 UI。同一个应用程序可以有多个 UI，例如分别位于窗口的左侧和右侧。它通常定义为全局变量。如前所述，它以静态方式分配了数量上限的受支持 UI 分区（ :ref:`mjuiSection<mjuiSection>` ），每个分区又有数量上限的受支持项（ :ref:`mjuiItem<mjuiItem>` ）。它还包含颜色和间距主题、启用/禁用回调、虚拟窗口描述符、文本编辑状态以及鼠标焦点。其中一些字段仅在 UI 初始化时设置一次，另一些则会在运行时变化。
+
+.. mujoco-include:: mjUI
+
+
+
+.. _tySpecStructure:
+
+模型编辑
+^^^^^^^^^^^^^
+
+下面的结构体定义在
+`mjspec.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjspec.h>`__ 中，除顶层的 :ref:`mjSpec` 结构体外，均以 ``mjs`` 为前缀。更多细节参见 :doc:`模型编辑
+<../programming/modeledit>` 一章。
+
+.. _mjSpec:
+
+mjSpec
+~~~~~~
+
+模型规格（Model specification）。
+
+.. mujoco-include:: mjSpec
+
+
+.. _mjsElement:
+
+mjsElement
+~~~~~~~~~~
+
+对应任意元素的特殊类型。该结构体是所有其他元素的第一个成员；在底层 C++ 实现中，它不是作为成员包含，而是通过类继承包含。通过继承包含使编译器能够把 ``mjsElement`` 通过 ``static_cast`` 转换为正确的 C++ 对象类。下方结构体的其他所有属性在设计上都是用户可设置的，与它们不同，修改 ``mjsElement`` 的内容是不允许的，并会导致未定义行为。
+
+.. mujoco-include:: mjsElement
+
+
+.. _mjsCompiler:
+
+mjsCompiler
+~~~~~~~~~~~
+
+编译器选项。
+
+.. mujoco-include:: mjsCompiler
+
+
+.. _mjsAuthored:
+
+mjsAuthored
+~~~~~~~~~~~
+
+``mjModel`` 结构体的作者标记（authored）追踪位掩码。
+
+.. mujoco-include:: mjsAuthored
+
+
+.. _mjsBody:
+
+mjsBody
+~~~~~~~
+
+刚体规格（Body specification）。
+
+.. mujoco-include:: mjsBody
+
+
+.. _mjsFrame:
+
+mjsFrame
+~~~~~~~~
+
+坐标系规格（Frame specification）。
+
+.. mujoco-include:: mjsFrame
+
+
+.. _mjsJoint:
+
+mjsJoint
+~~~~~~~~
+
+关节规格（Joint specification）。
+
+.. mujoco-include:: mjsJoint
+
+
+.. _mjsGeom:
+
+mjsGeom
+~~~~~~~
+
+Geom 规格（Geom specification）。
+
+.. mujoco-include:: mjsGeom
+
+
+.. _mjsSite:
+
+mjsSite
+~~~~~~~
+
+Site 规格（Site specification）。
+
+.. mujoco-include:: mjsSite
+
+
+.. _mjsCamera:
+
+mjsCamera
+~~~~~~~~~
+
+相机规格（Camera specification）。
+
+.. mujoco-include:: mjsCamera
+
+
+.. _mjsLight:
+
+mjsLight
+~~~~~~~~
+
+光源规格（Light specification）。
+
+.. mujoco-include:: mjsLight
+
+
+.. _mjsFlex:
+
+mjsFlex
+~~~~~~~
+
+柔性体规格（Flex specification）。
+
+实验性的整数 ``elastic3d`` 用于为非插值的 3D 柔性体选择材料： ``0`` （默认值）为 Saint Venant-Kirchhoff（StVK）弹性，
+``1`` 为简化的 Stable Neo-Hookean（SNH）弹性。其他取值会被拒绝。
+SNH 需要 :ref:`离散积分器<option-integrator>` 。该设置只能通过 :ref:`mjSpec` 使用，没有对应的 MJCF 属性。启用了 SNH 的规格无法保存为 MJCF；编译后的模型可以保存为 MJB。
+SNH 会先将每个单元的材料 Hessian 投影到半正定，再将其映射到顶点坐标。
+离散求解器和 Rayleigh 阻尼复用这一投影后的算子。能量和弹性力保持不变，仍通过求逆来定义。材料阻尼的瞬时功率非正，但投影并不保证无翻转（inversion-free）运动，也不保证在任意时间步长下的稳定性。
+
+.. mujoco-include:: mjsFlex
+
+
+.. _mjsMesh:
+
+mjsMesh
+~~~~~~~
+
+网格规格（Mesh specification）。
+
+.. mujoco-include:: mjsMesh
+
+
+.. _mjsHField:
+
+mjsHField
+~~~~~~~~~
+
+高度场规格（Height field specification）。
+
+.. mujoco-include:: mjsHField
+
+
+.. _mjsSkin:
+
+mjsSkin
+~~~~~~~
+
+蒙皮规格（Skin specification）。
+
+.. mujoco-include:: mjsSkin
+
+
+.. _mjsTexture:
+
+mjsTexture
+~~~~~~~~~~
+
+纹理规格（Texture specification）。
+
+.. mujoco-include:: mjsTexture
+
+
+.. _mjsMaterial:
+
+mjsMaterial
+~~~~~~~~~~~
+
+材质规格（Material specification）。
+
+.. mujoco-include:: mjsMaterial
+
+
+.. _mjsPair:
+
+mjsPair
+~~~~~~~
+
+接触对规格（Pair specification）。
+
+.. mujoco-include:: mjsPair
+
+
+.. _mjsExclude:
+
+mjsExclude
+~~~~~~~~~~
+
+排除规格（Exclude specification）。
+
+.. mujoco-include:: mjsExclude
+
+
+.. _mjsEquality:
+
+mjsEquality
+~~~~~~~~~~~
+
+等式约束规格（Equality specification）。
+
+.. mujoco-include:: mjsEquality
+
+
+.. _mjsTendon:
+
+mjsTendon
+~~~~~~~~~
+
+肌腱规格（Tendon specification）。
+
+.. mujoco-include:: mjsTendon
+
+
+.. _mjsWrap:
+
+mjsWrap
+~~~~~~~
+
+包绕对象规格（Wrapping object specification）。
+
+.. mujoco-include:: mjsWrap
+
+
+.. _mjsActuator:
+
+mjsActuator
+~~~~~~~~~~~
+
+执行器规格（Actuator specification）。
+
+.. mujoco-include:: mjsActuator
+
+
+.. _mjsSensor:
+
+mjsSensor
+~~~~~~~~~
+
+传感器规格（Sensor specification）。
+
+.. mujoco-include:: mjsSensor
+
+
+.. _mjsNumeric:
+
+mjsNumeric
+~~~~~~~~~~
+
+自定义数值字段规格（Custom numeric field specification）。
+
+.. mujoco-include:: mjsNumeric
+
+
+.. _mjsText:
+
+mjsText
+~~~~~~~
+
+自定义文本规格（Custom text specification）。
+
+.. mujoco-include:: mjsText
+
+
+.. _mjsTuple:
+
+mjsTuple
+~~~~~~~~
+
+元组规格（Tuple specification）。
+
+.. mujoco-include:: mjsTuple
+
+
+.. _mjsKey:
+
+mjsKey
+~~~~~~
+
+关键帧规格（Keyframe specification）。
+
+.. mujoco-include:: mjsKey
+
+
+.. _mjsDefault:
+
+mjsDefault
+~~~~~~~~~~
+
+默认值规格（Default specification）。
+
+.. mujoco-include:: mjsDefault
+
+
+.. _mjsPlugin:
+
+mjsPlugin
+~~~~~~~~~
+
+插件规格（Plugin specification）。
+
+.. mujoco-include:: mjsPlugin
+
+
+.. _mjsOrientation:
+
+mjsOrientation
+~~~~~~~~~~~~~~
+
+备选的朝向指定方式。
+
+.. mujoco-include:: mjsOrientation
+
+
+.. _ArrayHandles:
+
+.. _mjByteVec:
+
+.. _mjString:
+
+.. _mjStringVec:
+
+.. _mjIntVec:
+
+.. _mjIntVecVec:
+
+.. _mjFloatVec:
+
+.. _mjFloatVecVec:
+
+.. _mjDoubleVec:
+
+数组句柄
+~~~~~~~~~~~~~
+
+C++ 字符串和向量类型的 C 句柄。在 C 中使用时，请使用所提供的 :ref:`getter<AttributeGetters>` 和 :ref:`setter<AttributeSetters>` 。
+
+.. code-block:: C++
+
+   #ifdef __cplusplus
+     // C++: defined to be compatible with corresponding std types
+     using mjString      = std::string;
+     using mjStringVec   = std::vector<std::string>;
+     using mjIntVec      = std::vector<int>;
+     using mjIntVecVec   = std::vector<std::vector<int>>;
+     using mjFloatVec    = std::vector<float>;
+     using mjFloatVecVec = std::vector<std::vector<float>>;
+     using mjDoubleVec   = std::vector<double>;
+     using mjByteVec     = std::vector<std::byte>;
+   #else
+     // C: opaque types
+     typedef void mjString;
+     typedef void mjStringVec;
+     typedef void mjIntVec;
+     typedef void mjIntVecVec;
+     typedef void mjFloatVec;
+     typedef void mjFloatVecVec;
+     typedef void mjDoubleVec;
+     typedef void mjByteVec;
+   #endif
+
+
+.. _tyPluginStructure:
+
+插件
+^^^^^^^
+
+这些结构体类型的名称以 ``mjp`` 为前缀。更多细节参见 :ref:`exPlugin` 。
+
+
+.. _mjpPlugin:
+
+mjpPlugin
+~~~~~~~~~
+
+该结构包含单个引擎插件的定义。它主要包含一组回调函数，由编译器和引擎在计算流水线的各个阶段触发。
+
+.. mujoco-include:: mjpPlugin
+
+.. _mjSDF:
+
+mjSDF
+~~~~~
+
+:ref:`有符号距离函数<Signeddistancefunction>` API 使用的数据结构，用于计算 SDF geom 之间的距离和梯度。
+
+.. mujoco-include:: mjSDF
+
+.. _mjpResourceProvider:
+
+mjpResourceProvider
+~~~~~~~~~~~~~~~~~~~
+
+该数据结构包含 :ref:`资源提供者 <exProvider>` 的定义。它包含一组用于打开和读取资源的回调函数。
+
+.. mujoco-include:: mjpResourceProvider
+
+.. _mjpDecoder:
+
+mjpDecoder
+~~~~~~~~~~~~~~~~~~~
+
+该数据结构定义一个解码器。它包含一组回调函数，用于将 :ref:`mjResource` 解码为 :ref:`mjSpec` 。
+
+.. mujoco-include:: mjpDecoder
+
+.. _mjpEncoder:
+
+mjpEncoder
+~~~~~~~~~~~~~~~~~~~
+
+该数据结构定义一个编码器。它包含一组回调函数，用于将 :ref:`mjSpec` 和 :ref:`mjModel` 编码为 :ref:`mjResource` 。
+
+.. mujoco-include:: mjpEncoder
+
+
+
+.. _tyBatchStructure:
+
+批量仿真
+^^^^^^^^^^^^^^^^^^
+
+这些类型由 :ref:`批量 API<Batchedsimulation>` 使用，声明于 `mjbatch.h
+<https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjbatch.h>`__ 中。
+
+
+.. _mjBatch:
+
+mjBatch
+~~~~~~~
+
+指向对同一模型的 ``nsim`` 个仿真及运行这些仿真的线程池的不透明句柄，由 :ref:`mjb_makeBatch` 创建，由 :ref:`mjb_deleteBatch` 释放。参见 :ref:`批量仿真<siBatch>` 。
+
+
+.. _mjBatchConfig:
+
+mjBatchConfig
+~~~~~~~~~~~~~
+
+:ref:`mjb_makeBatch` 的参数，由 :ref:`mjb_defaultConfig` 设置为默认值。
+
+.. mujoco-include:: mjBatchConfig
+
+
+.. _mjBatchRecord:
+
+mjBatchRecord
+~~~~~~~~~~~~~
+
+由 :ref:`mjb_rollout` 在每个子步之后记录的字段或状态。 ``buf`` 按调用顺序保存该次调用中 ``n`` 个仿真的 ``n x nstep x size`` 个值，其中 ``size`` 是该字段每个仿真的元素数量；对于由 :ref:`mjtState` 位 ``spec`` 给出的状态，则为 ``mj_stateSize(m, spec)`` ，此时这些值的类型为 :ref:`mjtNum` 。
+
+.. mujoco-include:: mjBatchRecord
+
+
+
+.. _tyFunction:
+
+函数类型
+--------------
+
+MuJoCo 的回调函数都有对应的函数类型。它们定义在 `mjdata.h
+<https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjdata.h>`__ 和 `mjui.h
+<https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjui.h>`__ 中。实际的回调函数记录在
+:doc:`全局变量<APIglobals>` 页面中。
+
+
+.. _tyPhysicsCallbacks:
+
+物理回调
+^^^^^^^^^^^^^^^^^
+
+这些函数类型由 :ref:`物理回调<glPhysics>` 使用。
+
+
+.. _mjfGeneric:
+
+mjfGeneric
+~~~~~~~~~~
+
+.. code-block:: C
+
+   typedef void (*mjfGeneric)(const mjModel* m, mjData* d);
+
+这是回调函数 :ref:`mjcb_passive` 和 :ref:`mjcb_control` 的函数类型。
+
+
+.. _mjfConFilt:
+
+mjfConFilt
+~~~~~~~~~~
+
+.. code-block:: C
+
+   typedef int (*mjfConFilt)(const mjModel* m, mjData* d, int geom1, int geom2);
+
+这是回调函数 :ref:`mjcb_contactfilter` 的函数类型。返回值为 1 表示丢弃，0 表示继续进行碰撞检查。
+
+
+.. _mjfSensor:
+
+mjfSensor
+~~~~~~~~~
+
+.. code-block:: C
+
+   typedef void (*mjfSensor)(const mjModel* m, mjData* d, int stage);
+
+这是回调函数 :ref:`mjcb_sensor` 的函数类型。
+
+
+.. _mjfTime:
+
+mjfTime
+~~~~~~~
+
+.. code-block:: C
+
+   typedef mjtNum (*mjfTime)(void);
+
+这是回调函数 :ref:`mjcb_time` 的函数类型。
+
+
+.. _mjfAct:
+
+mjfAct
+~~~~~~
+
+.. code-block:: C
+
+   typedef mjtNum (*mjfAct)(const mjModel* m, const mjData* d, int id);
+
+这是回调函数 :ref:`mjcb_act_dyn` 、 :ref:`mjcb_act_gain` 和 :ref:`mjcb_act_bias` 的函数类型。
+
+.. _mjfCollision:
+
+mjfCollision
+~~~~~~~~~~~~
+
+.. code-block:: C
+
+   typedef int (*mjfCollision)(const mjModel* m, const mjData* d,
+                               mjPreContact* con, int g1, int g2, mjtNum margin);
+
+这是碰撞表 :ref:`mjCOLLISIONFUNC` 中回调函数的函数类型。
+
+
+.. _tyLogCallbacks:
+
+日志回调
+^^^^^^^^^^^^^
+
+.. _mjfLogHandler:
+
+mjfLogHandler
+~~~~~~~~~~~~~
+
+.. code-block:: C
+
+   typedef void (*mjfLogHandler)(const mjLogMessage*);
+
+这是通过 :ref:`mju_setLogHandler` 安装的日志处理回调的函数类型。该处理函数以结构化的 :ref:`mjLogMessage` 数据形式接收
+所有错误、警告和提示信息。它必须是线程安全的。
+
+回调内部不得调用 :ref:`mju_error` 。
+
+
+.. _tyUICallbacks:
+
+UI 回调
+^^^^^^^^^^^^
+
+这些函数类型由 UI 框架使用。
+
+.. _mjfItemEnable:
+
+mjfItemEnable
+~~~~~~~~~~~~~
+
+.. code-block:: C
+
+   typedef int (*mjfItemEnable)(int category, void* data);
+
+这是 UI 框架使用的谓词函数的函数类型，用于判断每个条目是启用还是禁用。
+
+.. _tyRPCallbacks:
+
+资源提供者回调
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+这些回调由 :ref:`资源提供者<exProvider>` 使用。
+
+.. _mjfOpenResource:
+
+mjfOpenResource
+~~~~~~~~~~~~~~~
+
+.. code-block:: C
+
+   typedef int (*mjfOpenResource)(mjResource* resource);
+
+该回调用于打开资源；失败时返回零。注意，
+如果该回调返回零，则不会调用 ``close`` 回调。
+因此， ``open`` 回调有责任在返回零之前清理所有已分配的
+内存或资源，以避免内存泄漏。
+
+.. _mjfReadResource:
+
+mjfReadResource
+~~~~~~~~~~~~~~~
+
+.. code-block:: C
+
+   typedef int (*mjfReadResource)(mjResource* resource, const void** buffer);
+
+该回调用于读取资源。返回存入缓冲区的字节数，出错时返回 -1。
+
+.. _mjfCloseResource:
+
+mjfCloseResource
+~~~~~~~~~~~~~~~~
+
+.. code-block:: C
+
+   typedef void (*mjfCloseResource)(mjResource* resource);
+
+该回调用于关闭资源，并负责释放所有已分配的内存。
+
+.. _mjfGetResourceDir:
+
+mjfGetResourceDir
+~~~~~~~~~~~~~~~~~
+
+.. code-block:: C
+
+   typedef void (*mjfGetResourceDir)(mjResource* resource, const char** dir, int* ndir);
+
+该回调用于返回资源所在的目录：将 dir 设置为目录字符串，ndir 为该目录字符串的
+长度。
+
+.. _mjfResourceModified:
+
+mjfResourceModified
+~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: C
+
+   typedef int (*mjfResourceModified)(const mjResource* resource);
+
+该回调用于检查资源自上次读取以来是否被修改。
+如果资源自上次打开以来被修改，则返回正值；如果未被修改，则返回 0；
+如果无法确定，则返回负值。
+
+.. _mjfDecode:
+
+mjfDecode
+~~~~~~~~~
+
+.. code-block:: C
+
+   typedef mjSpec* (*mjfDecode)(mjResource* resource, const mjVFS* vfs, char* error, int error_sz);
+
+
+该回调接收一个已打开的资源，并负责将其解码为 :ref:`mjSpec` 。
+资源和返回的 spec 的所有权由调用方负责。
+解码失败时，回调应返回 NULL；并且如果 ``error`` 不为 NULL，则将失败原因的描述写入 ``error`` （大小为 ``error_sz`` ）。
+
+.. _mjfCanDecode:
+
+mjfCanDecode
+~~~~~~~~~~~~
+
+.. code-block:: C
+
+   typedef int (*mjfCanDecode)(const mjResource* resource);
+
+
+该回调接收一个已打开的资源，并负责在该资源可被 :ref:`mjpDecoder<mjpDecoder>` 解码时返回 true。
+
+.. _mjfEncode:
+
+mjfEncode
+~~~~~~~~~
+
+.. code-block:: C
+
+   typedef mjtSize (*mjfEncode)(const mjSpec* s, const mjModel* m, const mjVFS* vfs,
+                                mjResource* resource);
+
+
+该回调用表示给定 spec 的字节填充 :ref:`mjResource<mjResource>` 的 `data` 成员，字节采用所属插件（plugin）关联的格式。
+调用时也可以传入与之关联的已编译 :ref:`mjModel` 。
+
+
+.. _tyBatchCallbacks:
+
+批量回调
+^^^^^^^^^^^^^^^
+
+该函数类型由 :ref:`批量 API<Batchedsimulation>` 使用。
+
+
+.. _mjfBatchFunc:
+
+mjfBatchFunc
+~~~~~~~~~~~~
+
+.. code-block:: C
+
+   typedef void (*mjfBatchFunc)(const mjModel* m, mjData* d, int sim, void* arg);
+
+这是 :ref:`mjb_apply` 在批量线程上对仿真 ``sim`` 运行的函数类型。模型已应用该仿真各自独立的字段， ``d`` 保存其状态。
+
+
+.. _tyNotes:
+
+注记
+-----
+
+本节包含关于 MuJoCo 结构体类型中数据结构约定的各种注记。
+
+
+.. _tyNotesCom:
+
+c 坐标系变量
+^^^^^^^^^^^^^^^^^
+
+:ref:`mjData` 包含两个带 ``c`` 前缀的数组，用于内部计算： ``cdof`` 和
+``cinert`` ，二者均由 :ref:`mj_comPos` 计算。 ``c`` 前缀表示这些量是相对于“c 坐标系”（frame）的，
+即原点位于局部运动学子树质心（ ``mjData.subtree_com`` ）、姿态与世界坐标系一致的坐标系。
+这一选择提高了远离全局原点的机构的运动学计算精度。
+
+``cdof``:
+  这些 6D 运动向量（3 个转动、3 个平移）描述自由度（degree of freedom）的瞬时轴线，
+  被所有雅可比（Jacobian）函数使用。计算解析雅可比所需的最小计算是先执行 :ref:`mj_kinematics` ，
+  再执行 :ref:`mj_comPos` 。
+
+``cinert``:
+  这些 10 维向量描述刚体在 c 坐标系中的惯性属性，被复合刚体算法（Composite Rigid Body）
+  （ :ref:`mj_crb` ）使用。这 10 个数是长度为 (6, 3, 1) 的打包数组，语义如下：
+
+  ``cinert[0-5]``: 刚体惯性矩阵（inertia matrix）的上三角部分。
+
+  ``cinert[6-8]``: 刚体质量乘以刚体质心相对于 c 坐标系原点的偏移。
+
+  ``cinert[9]``: 刚体质量。
+
+.. _tyNotesConvex:
+
+凸包
+^^^^^^^^^^^^
+
+凸包描述符存储在 :ref:`mjModel` 中：
+
+.. code-block:: C
+
+   int*      mesh_graphadr;     // graph data address; -1: no graph      (nmesh x 1)
+   int*      mesh_graph;        // convex graph data                     (nmeshgraph x 1)
+
+如果网格（mesh） ``N`` 在 :ref:`mjModel` 中存有凸包（这是可选的），则 ``m->mesh_graphadr[N]`` 是网格 ``N`` 的凸包数据
+在 ``m->mesh_graph`` 中的偏移量。每个网格的凸包数据是一条记录，格式如下：
+
+.. code-block:: C
+
+   int numvert;
+   int numface;
+   int vert_edgeadr[numvert];
+   int vert_globalid[numvert];
+   int edge_localid[numvert+3*numface];
+   int face_globalid[3*numface];
+
+注意，凸包包含的是完整网格顶点的一个子集。我们用 ``globalid`` 这一命名表示完整网格中的顶点索引，用 ``localid`` 表示凸包中的顶点索引。
+各字段的含义如下：
+
+``numvert``
+   凸包中的顶点数。
+
+``numface``
+   凸包中的面数。
+
+``vert_edgeadr[numvert]``
+   对凸包中的每个顶点，这是该顶点的边记录在 edge_localid 中的偏移量。
+
+``vert_globalid[numvert]``
+   对凸包中的每个顶点，这是它在完整网格中对应的顶点索引
+
+``edge_localid[numvert+3*numface]``
+   它包含一系列边记录，凸包中的每个顶点对应一条。每条边记录是一个以 -1 结尾的顶点索引数组（采用 localid 格式）。
+   例如，假设顶点 7 的记录为：3, 4, 5, 9, -1。
+   这表示顶点 7 属于 4 条边，这些边的另一端分别是顶点 3, 4, 5, 9。这样，
+   每条边都被表示两次，分别位于其两个顶点的边记录中。注意，对于封闭的三角形网格
+   （例如这里使用的凸包），边数为 ``3*numface/2`` 。因此，当每条边被表示两次时，共有 ``3*numface edges`` 。
+   并且由于我们在每条边记录末尾使用分隔符 -1（每个顶点一个分隔符）， ``edge_localid`` 的长度为 ``numvert+3*numface`` 。
+
+``face_globalid[3*numface]``
+   对凸包的每个面，它包含该面三个顶点在完整网格中的索引

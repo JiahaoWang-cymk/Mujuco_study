@@ -1,0 +1,332 @@
+﻿模型编辑
+-------------
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+可以使用 :ref:`mjSpec` 结构体及相关 API 来创建和修改模型（model）。
+该数据结构与 MJCF 一一对应，实际上，MuJoCo 自带的 XML 解析器（包括 MJCF 和 URDF）在加载模型时也使用这套 API。
+
+
+.. _meOverview:
+
+概述
+~~~~~~~~
+
+该 API 对传统的“使用 XML 文件创建和编辑模型”的工作流进行了扩展，将 *解析* 和 *编译* 两个步骤拆分开来。正如 :ref:`概览一章<Instance>` 中所总结的，传统工作流如下：
+
+ 1. 创建 XML 模型描述文件（MJCF 或 URDF）及相关资产。 |br|
+ 2. 调用 :ref:`mj_loadXML` ，得到一个 :ref:`mjModel` 实例。
+
+使用 :ref:`mjSpec` 的工作流如下：
+
+ 1. 使用 :ref:`mj_makeSpec` 创建一个空的 :ref:`mjSpec` ，或使用 :ref:`mj_parseXML` 解析现有的 XML 文件。
+ 2. 通过添加、修改和删除元素，以编程方式编辑 :ref:`mjSpec` 数据结构。
+ 3. 使用 :ref:`mj_compile` 将 :ref:`mjSpec` 编译为 :ref:`mjModel` 实例。
+
+ 编译之后， :ref:`mjSpec` 仍然可以编辑，因此步骤 2 和步骤 3 可以互换。
+
+
+.. _Load:
+.. _meLoading:
+
+模型解析与加载
+~~~~~~~~~~~~~~~~~~~~~~~
+
+如 :ref:`模型实例 <Instance>` 中所总结的，模型描述文件（MJCF、MJZ、URDF、USD）通过 :ref:`mj_parse` （在 Python 中为 ``mjSpec.from_file()`` / ``mjSpec.from_string()`` ）被解析为
+:ref:`mjSpec` 。模型格式根据内容类型或文件扩展名推断，并将解析为 :ref:`mjSpec` 的工作委托给相应的
+:ref:`解码器 <exDecoder>` 插件（plugin）。
+
+.. code-block:: C
+
+   char error[1000] = "";
+   mjSpec* spec = mj_parse(vfs, "robot.xml", NULL, NULL, error, sizeof(error));
+
+为方便起见， :ref:`mj_loadXML` （或 Python 中的 ``MjModel.from_xml_path()`` ）将解析和编译合并为一步，直接从 XML 文件或 ``.mjz`` 归档文件返回编译好的 :ref:`mjModel` 。
+
+另外，也可以使用 :ref:`mj_loadModel` （或 Python 中的 ``MjModel.from_binary_path()`` ）直接从二进制 MJB 文件加载预编译的 :ref:`mjModel` 。
+
+.. _Compile:
+.. _meCompilation:
+
+模型编译
+~~~~~~~~~~~~~~~~~
+
+一旦创建了高层的 :ref:`mjSpec` （通过解析文件、加载归档文件或以编程方式构造），就可以使用 :ref:`mj_compile` 将其编译为 :ref:`mjModel` 。
+
+编译与加载相互独立，无论 :ref:`mjSpec` 是如何构造的，编译的工作方式都完全相同。解析器和编译器都会执行大量错误检查，并在遇到第一个错误时中止。解析器使用自定义模式（schema）来验证文件结构、元素和属性，而编译器则应用语义检查，并执行一步测试仿真以捕获运行时错误。
+
+解析和编译都极其迅速，通常不到一秒，这使得交互式模型设计、实时编辑和快速重新加载变得流畅自然。
+
+.. _Save:
+.. _meSaving:
+
+模型编码与保存
+~~~~~~~~~~~~~~~~~~~~~~~
+模型规格（spec）和编译后的模型可以使用 :ref:`mj_encode` 序列化到文件，或使用 :ref:`mj_saveXMLString` 或 :ref:`mj_saveXML` 直接保存为 XML 字符串。
+
+:ref:`mj_encode` 函数为模型序列化提供了统一的入口：
+
+.. code-block:: C
+
+   char error[1024] = "";
+   mjtSize bytes_written = mj_encode(spec, model, "robot.mjz", NULL, vfs, error, sizeof(error));
+
+输出格式根据文件扩展名（不区分大小写）或显式给出的 ``content_type`` 自动选择：
+
+- **MJCF XML** （ ``.xml`` ）：使用 :ref:`mj_saveXML` 将 spec 展平为单个 MJCF XML 文件。如果显式传入了 :ref:`mjModel` 参数， :ref:`mj_encode` 会在保存之前将 ``mjModel`` 中被修改的值复制回 spec。在计算章节中，我们给出了一个 MJCF 文件的 `示例 <_static/example.xml>`__ 以及对应的 `保存后的示例 <_static/example_saved.xml>`__ 。
+- **MJZ 归档文件** （ ``.mjz`` 或 ``.zip`` ）：通过内置的 ``mjz_encoder`` ，将 spec 及所有相关的外部资产（网格、纹理、被包含的 XML）打包为自包含的 Zip 归档文件。
+- **MJB 二进制** （ ``.mjb`` ）：通过 :ref:`mj_saveModel` 以 MuJoCo 二进制格式序列化编译后的 :ref:`mjModel` 。
+  MJB 文件是独立的，不引用外部文件，加载速度比 XML 更快，但与版本绑定，且无法反编译回 XML。需要已编译的 ``model`` ； **不会** 序列化 ``spec`` 中的任何内容。
+- **TXT** （ ``.txt`` ）：通过 :ref:`mj_printModel` 写出人类可读的文本转储。适用于差异比较和调试。
+  需要已编译的 ``model`` ； **不会** 序列化 ``spec`` 中的任何内容。
+
+spec 以 MJCF 形式保存有两种方式，由其编译器属性
+:ref:`savecompiled<compiler-savecompiled>` 选择：
+
+- "true"（默认值）：保存上一次编译得到的模型值，采用规范表示法。例如，与其自由关节 :ref:`对齐<body-freejoint-align>` 的刚体（body）以对齐后的位姿保存，而拟合到网格的 geom 则以拟合得到的尺寸保存。spec 必须已经编译过。
+- "false"：按 spec 中书写的方式保存模型。位姿是元素在其 :ref:`坐标系<frame>` 中的位姿，以默认值书写的属性会被保留，每个数值都被精确保存。朝向、角度和 ``fromto`` 以书写时所用的表示法保存，除非
+  :ref:`savecanonical<compiler-savecanonical>` 为 "true"。spec 无需已经编译。
+
+在这两种情况下，保存的文件都会编译为同一个模型，但 MJCF 无法表达 spec 所保存内容的情况除外。例如，被挂接模型的元素使用其自身的编译器设置进行编译，而保存的文件只有一个 :ref:`compiler<compiler>` 元素。按书写方式保存时，被挂接模型的角度单位和欧拉序列会被转换，而如果某个设置不同且会改变编译所推断的内容，例如
+:ref:`inertiafromgeom<compiler-inertiafromgeom>` ，则会报错并给出说明；按编译值保存时，这样的模型编译结果可能不同。解析器没有保存在 spec 中的内容不会被保存：文件顶部那条注释之外的其他注释、 :ref:`include<include>` 元素，以及会被展开为其他元素的元素，例如
+:ref:`replicate<replicate>` 、 :ref:`flexcomp<body-flexcomp>` 、 :ref:`attach<body-attach>` 和执行器（actuator）快捷方式。
+
+按书写方式保存的 spec 在两种情况下需要先编译。编译所计算出的惯性（inertial）由 :ref:`saveinertial<compiler-saveinertial>` 保存，它们是上一次编译的结果，因此必须在任何结构性编辑（添加、删除或挂接元素）之后重新编译，这与按编译值保存时相同。另外，等待编译的 :ref:`关键帧<keyframe>` （keyframe）——例如在 :ref:`mjs_attach` 或 :ref:`mjs_delete` 改变了含有关键帧的 spec 的运动学树（kinematic tree）之后——会在编译组装好它们的向量之后才被保存。
+
+需要注意的是，保存的 XML 会考虑所有已定义的默认值。当模型中有大量重复值时，这一点很有用，例如从不支持默认值的 URDF 加载的模型。在这种情况下，可以添加默认类（default class），设置相关元素的类，然后保存；得到的 XML 将使用这些默认值，可读性更好。
+
+.. _MJZArchives:
+
+MJZ 归档文件
+~~~~~~~~~~~~
+
+复杂的 MuJoCo 模型通常由多个文件组成：一个主 MJCF XML 文件、被包含的 XML 子树，以及外部资产文件（网格、纹理、高度场）。 **MJZ** 格式（扩展名 ``.mjz`` 或 ``.zip`` ）提供了一种便捷的方式，可将整个模型及其引用的所有资产打包为单个 **Zip 归档文件** 。
+
+根 XML 文件的查找
+^^^^^^^^^^^^^^^^^^
+
+解码 ``.mjz`` 归档文件时，MuJoCo 按以下顺序查找根模型 XML 文件：
+
+1. 归档文件根目录下的 ``model.xml`` 。这是 **MJZ** :ref:`编码器 <exEncoder>` 生成的默认格式，也是可移植性最好的选项。
+2. 归档文件根目录下的 ``<archive_stem>.xml`` （例如 ``my_model.mjz`` 内的 ``my_model.xml`` ）。
+3. 与归档文件同名的顶层目录内的 ``<archive_stem>/<archive_stem>.xml`` （例如
+   ``my_model/my_model.xml`` ）。
+4. 与归档文件同名的顶层目录内的 ``<archive_stem>/model.xml`` （例如 ``my_model/model.xml`` ）。
+
+选项 2 到 4 是为了向后兼容旧版归档文件和常见的 zip 打包布局而存在的，但如果归档文件被重命名，则容易失败。
+
+.. _meCustomFormats:
+
+自定义格式
+~~~~~~~~~~~~~~
+可以使用 :ref:`mjp_registerDecoder` 和 :ref:`mjp_registerEncoder` 添加对新文件格式的支持。
+当对非原生的扩展名或内容类型调用 :ref:`mj_parse` 和 :ref:`mj_encode` 时，会通过 :ref:`mjp_findDecoder` 和 :ref:`mjp_findEncoder` 找到相应的插件。关于编写自定义格式插件的更多细节，参见 :ref:`解码器 <exDecoder>` 和 :ref:`编码器 <exEncoder>` 。
+
+
+.. _meUsage:
+
+用法
+~~~~~
+
+这里我们介绍用于程序化模型编辑的 C API，但它同样在 :ref:`Python
+绑定<PyModelEdit>` 中提供。高级用户可以参考 `user_api_test.cc
+<https://github.com/google-deepmind/mujoco/blob/main/test/user/user_api_test.cc>`__ 以及
+`xml_native_reader.cc <https://github.com/google-deepmind/mujoco/blob/main/src/xml/xml_native_reader.cc>`__ 中的 MJCF 解析器，以获得更多用法示例。在创建新的 :ref:`mjSpec` 或将现有 XML 文件解析为 :ref:`mjSpec` 之后，程序化编辑就对应于设置属性。例如，要更改时间步长（timestep），可以这样做：
+
+.. code-block:: C
+
+   mjSpec* spec = mj_makeSpec();
+   spec->opt.timestep = 0.01;
+   ...
+   mjModel* model = mj_compile(spec, NULL);
+
+长度可变的属性是 C++ 的向量和字符串，它们 :ref:`以不透明类型的形式暴露给 C<ArrayHandles>` 。
+在 C 中，使用所提供的 :ref:`getter<AttributeGetters>` 和 :ref:`setter<AttributeSetters>` ：
+
+.. code-block:: C
+
+   mjs_setString(spec->modelname, "my_model");
+
+在 C++ 中，可以直接使用向量和字符串：
+
+.. code-block:: C++
+
+   std::string modelname = "my_model";
+   *spec->modelname = modelname;
+
+.. _meMjsElements:
+
+模型元素
+^^^^^^^^^^^^^^
+与 MJCF 对应的模型元素以带有 ``mjs`` 前缀的 C 结构体形式暴露给用户。其定义列在结构体参考的 :ref:`模型编辑<tySpecStructure>` 一节下。例如，MJCF 的
+:ref:`geom<body-geom>` 对应于 :ref:`mjsGeom` 。
+
+所有元素的全局默认值由 :ref:`mjs_defaultGeom` 等 :ref:`初始化函数<ElementInitialization>` 设置。
+这些函数定义在 `user_init.c
+<https://github.com/google-deepmind/mujoco/blob/main/src/user/user_init.c>`__ 中，是所有默认值的权威来源。
+
+元素不能直接创建；它们由相应的构造函数返回给用户，例如
+:ref:`mjs_addGeom` 。例如，要向世界刚体（world body）添加一个盒状 geom，可以这样做：
+
+.. code-block:: C
+
+   mjSpec* spec = mj_makeSpec();                                  // make an empty spec
+   mjsBody* world = mjs_findBody(spec, "world");                  // find the world body
+   mjsGeom* my_geom = mjs_addGeom(world, NULL);                   // add a geom to the world
+   my_geom->type = mjGEOM_BOX;                                    // set geom type
+   my_geom->size[0] = my_geom->size[1] = my_geom->size[2] = 0.5;  // set box size
+   mjModel* model = mj_compile(spec, NULL);                       // compile to mjModel
+   ...
+   mj_deleteModel(model);                                         // free model
+   mj_deleteSpec(spec);                                           // free spec
+
+传给 :ref:`mjs_addGeom` 的第二个参数 ``NULL`` 是可选的默认类指针。以程序方式使用默认值时，默认类需要显式传入元素构造函数。所有元素的全局默认值（未传入默认类时使用）可以在
+`user_init.c <https://github.com/google-deepmind/mujoco/blob/main/src/user/user_init.c>`__ 中查看。
+
+元素通过名称引用，名称通过 :ref:`mjs_setName` 设置。资产也不例外：通过 :ref:`mjs_addMesh` 、 :ref:`mjs_addTexture` 或 :ref:`mjs_addHField` 添加的网格、纹理或高度场必须指定名称，即使它是从文件加载的。在省略名称时以资产的文件名为其命名，只是 XML 解析器提供的一种便利功能。
+
+.. _meMemory:
+
+内存管理
+^^^^^^^^^^^^^^^^^
+
+如上面的示例所示，模型元素从不由用户直接分配，而是由构造函数返回。库拥有所有元素的所有权，并在使用 :ref:`mj_deleteSpec` 删除父级 :ref:`mjSpec` 时释放它们。用户只需负责释放 :ref:`mjSpec` 结构体。
+
+.. _meAttachment:
+
+挂接
+^^^^^^^^^^
+
+该框架引入了一项强大的新功能：挂接和删除模型子树。这一功能已被用于实现 MJCF 中的 :ref:`attach<body-attach>` 和 :ref:`replicate<replicate>` 元元素（meta-element）。挂接允许用户将一个模型中的子树移动或复制到另一个模型中，同时复制或移动相关的被引用资产，以及来自运动学树之外的引用元素（例如执行器和传感器）。类似地，删除子树会从模型中移除所有相关联的元素。默认行为（“浅拷贝”）是在挂接时将子级移入父级，因此之后对子级的更改也会改变父级。或者，用户可以在挂接时使用 :ref:`mjs_setDeepCopy` 选择生成一份全新的副本。解析 XML 时，该标志会被临时设置为 true。可以 :ref:`将刚体或 mjSpec 挂接到坐标系<mjs_attach>` ：
+
+.. code-block:: C
+
+   mjSpec* parent = mj_makeSpec();
+   mjSpec* child = mj_makeSpec();
+   parent->compiler.degree = 0;
+   child->compiler.degree = 1;
+   mjsElement* frame = mjs_addFrame(mjs_findBody(parent, "world"), NULL)->element;
+   mjsElement* body = mjs_addBody(mjs_findBody(child, "world"), NULL)->element;
+   mjsBody* attached_body_1 = mjs_asBody(mjs_attach(frame, body, "attached-", "-1"));
+
+或者 :ref:`将刚体或 mjSpec 挂接到 site<mjs_attach>` ：
+
+.. code-block:: C
+
+   mjSpec* parent = mj_makeSpec();
+   mjSpec* child = mj_makeSpec();
+   mjsElement* site = mjs_addSite(mjs_findBody(parent, "world"), NULL)->element;
+   mjsElement* body = mjs_addBody(mjs_findBody(child, "world"), NULL)->element;
+   mjsBody* attached_body_2 = mjs_asBody(mjs_attach(site, body, "attached-", "-2"));
+
+或者 :ref:`将坐标系或 mjSpec 挂接到刚体<mjs_attach>` ：
+
+.. code-block:: C
+
+   mjSpec* parent = mj_makeSpec();
+   mjSpec* child = mj_makeSpec();
+   mjsElement* body = mjs_addBody(mjs_findBody(parent, "world"), NULL)->element;
+   mjsElement* frame = mjs_addFrame(mjs_findBody(child, "world"), NULL)->element;
+   mjsFrame* attached_frame = mjs_asFrame(mjs_attach(body, frame, "attached-", "-1"));
+
+请注意，在上面的示例中，父模型和子模型的 ``compiler.degree`` 取值不同，它对应 :ref:`compiler/angle<compiler-angle>` 属性，用于指定角度的解释单位。编译器标志在挂接时会被保留，因此子模型将使用子级的标志编译，而父模型将使用父级的标志编译。
+
+还请注意，一旦子级以引用方式挂接到父级，该子级就不能再单独编译，也不能再整体挂接一次。其中尚未挂接的刚体和坐标系可以被挂接，前提是它们不包含任何已挂接的内容。父级的元素（包括以引用方式挂接到它上面的元素）只能以副本的形式挂接到该父级，参见 :ref:`mjs_setDeepCopy` 。
+
+.. admonition:: 已知问题
+   :class: note
+
+   目前存在以下已知限制：
+
+   - 如果父级和子级不是同一个 mjSpec，则子模型的所有资产都会被复制进来，无论它们是否被引用。
+   - 以引用方式多次挂接的子级，会在第一次挂接时将其资产移到父级。后续挂接的元素只有在前缀和后缀相同时才能找到这些资产。
+   - 不会检查循环引用，循环引用会导致无限循环。
+   - 挂接带有 :ref:`关键帧<keyframe>` 的模型时，其关键帧会立即添加到父级，但它们的向量以及父级自身关键帧的向量，只会在下一次编译时才为合并后的模型组装好。在此之前它们为空。
+
+.. _meAttributeMerging:
+
+属性合并
+^^^^^^^^^^^^^^^^^
+
+使用 :ref:`mjs_attach` 将子 spec（或子 spec 中的某个元素）挂接到父 spec 时，子级的全局属性可能与父级的冲突。当父级和子级都为同一字段指定了作者设定值且这些值不同时，就会发生冲突。请注意，对于基于 XML 的模型，显式写出某个值（即使它与默认值相同）也算作作者设定，并可能触发冲突。
+:ref:`compiler/conflict<compiler-conflict>` 属性控制如何解决此类冲突。只有一方指定了作者设定值的字段永远不会冲突。
+
+:at-val:`warning` （默认）
+   父级的值优先。每当检测到冲突，就会发出警告，但不会修改父级的值。这保持了原有的挂接行为。
+
+:at-val:`merge`
+   属性值按照下表所述的逐字段策略合并。当只有子级指定了作者设定值时，该值会被父级采用。
+
+:at-val:`error`
+   任何冲突都会导致编译错误。不会修改任何值。
+
+下表描述了 :at-val:`merge` 模式下使用的逐字段合并策略。
+
+.. list-table:: 属性合并行为（ :at-val:`merge` 模式）
+   :widths: 15 60 25
+   :header-rows: 1
+   :name: meAttributeMergingTable
+
+   * - 行为
+     - 字段
+     - 理由
+   * - **最小值**
+     - **option**: :ref:`timestep<option-timestep>`, :ref:`tolerance<option-tolerance>`, :ref:`ls_tolerance<option-ls_tolerance>`,
+       :ref:`noslip_tolerance<option-noslip_tolerance>`, :ref:`ccd_tolerance<option-ccd_tolerance>`,
+       :ref:`sleep_tolerance<option-sleep_tolerance>`,
+       |br| **visual**: :ref:`znear<visual-map-znear>`, :ref:`realtime<visual-global-realtime>`
+     - 保持精度和稳定性。
+   * - **最大值**
+     - **option**: :ref:`iterations<option-iterations>`, :ref:`ls_iterations<option-ls_iterations>`,
+       :ref:`noslip_iterations<option-noslip_iterations>`, :ref:`ccd_iterations<option-ccd_iterations>`,
+       :ref:`sdf_iterations<option-sdf_iterations>`, :ref:`sdf_initpoints<option-sdf_initpoints>`,
+       |br| **size**: :ref:`memory<size-memory>`, :ref:`nkey<size-nkey>`, :ref:`nuserdata<size-nuserdata>`,
+       :ref:`nuser_body<size-nuser_body>`, :ref:`nuser_jnt<size-nuser_jnt>`, :ref:`nuser_geom<size-nuser_geom>`, :ref:`nuser_site<size-nuser_site>`,
+       :ref:`nuser_cam<size-nuser_cam>`, :ref:`nuser_tendon<size-nuser_tendon>`, :ref:`nuser_actuator<size-nuser_actuator>`, :ref:`nuser_sensor<size-nuser_sensor>`
+       |br| **visual**: :ref:`zfar<visual-map-zfar>`
+     - 确保有足够的资源和限制。
+   * - **或（并集）**
+     - **option**: :ref:`disableflags<option-flag>`, :ref:`enableflags<option-flag>`,
+       :ref:`disableactuator<option-actuatorgroupdisable>`
+     - 合并两个模型的标志。
+   * - **报错**
+     - **option**: :ref:`gravity<option-gravity>`, :ref:`wind<option-wind>`, :ref:`magnetic<option-magnetic>`,
+       :ref:`density<option-density>`, :ref:`viscosity<option-viscosity>`, :ref:`integrator<option-integrator>`,
+       :ref:`cone<option-cone>`, :ref:`jacobian<option-jacobian>`, :ref:`solver<option-solver>`,
+       :ref:`impratio<option-impratio>`,
+       :ref:`o_margin<option-o_margin>`, :ref:`o_solref<option-o_solref>`, :ref:`o_solimp<option-o_solimp>`,
+       :ref:`o_friction<option-o_friction>`
+     - 当非默认值发生冲突时引发错误。
+
+.. _meDefault:
+
+默认类
+^^^^^^^^^^^^^^^
+新 API 完全支持默认类，不过使用它们需要理解默认值是如何实现的。如 :ref:`默认设置 <CDefault>` 一节所述，默认类首先被加载为一棵虚拟元素树，然后用于初始化引用它们的元素。在编辑带有默认值的模型时，这种初始化是显式的：
+
+.. code-block:: C
+
+   mjSpec* spec = mj_makeSpec();
+   mjsDefault* main = mjs_getSpecDefault(spec);
+   main->geom.type = mjGEOM_BOX;
+   mjsGeom* geom = mjs_addGeom(mjs_findBody(spec, "world"), main);
+
+需要注意的是，在默认类已被用于初始化元素之后再更改它，不会改变已初始化元素的属性。
+
+.. admonition:: 未来可能的变更
+   :class: note
+
+   上面描述的行为，即默认值只在初始化时应用，是旧的、仅基于 XML 的加载流水线的遗留物。未来的 API 变更可能允许在初始化之后更改并应用默认值。如果您认为该功能对您很重要，请在 GitHub 上告诉我们。
+
+
+.. _meRecompilation:
+
+就地重新编译
+^^^^^^^^^^^^^^^^^^^^^^
+
+可以随时使用 :ref:`mj_compile` 进行编译，以获得新的 mjModel 实例。相比之下，
+:ref:`mj_recompile` 会就地更新现有的 mjModel 和 mjData 对，同时保留仿真状态。这使得模型编辑可以在 **仿真期间** 进行，例如添加或移除刚体。
+

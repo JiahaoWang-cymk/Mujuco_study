@@ -1,0 +1,131 @@
+﻿.. _StudioArchitecture:
+
+============
+架构
+============
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+MuJoCo Studio 的架构建立在三个核心理念之上：
+
+1. **仿真与可视化解耦**：物理仿真与 UI／渲染（rendering）运行在不同的线程上，不共享任何可变状态，仅通过带类型的 :ref:`Snapshot 与 Event
+   消息通道 <StudioMessaging>` 进行通信。因此，任何 :ref:`Python 插件 <StudioPythonPlugins>` 无需修改即可同时用于本地的
+   :ref:`NativeViewer <StudioNativeViewers>` 窗口和远程的 :ref:`WebViewer <StudioWebViewers>` 浏览器会话。
+2. **通过插件实现可组合的扩展性**：内置功能——包括标准的 Studio UI（``studio_app.App``）、实时物理步进（``step_control.StepControl``）以及轨迹历史回放（``sim_history.SimHistory``）——都实现为模块化的
+   :ref:`查看器与仿真插件 <StudioPythonPlugins>`，应用程序可以对其进行混合搭配、替换，或通过自定义 UI 面板、3D 叠加层和步进后端加以扩展。
+3. **共享的 C++ 组件**：核心 UI 面板、3D 视口交互、物理步进节奏控制、轨迹历史缓冲区以及 :ref:`Filament <FilamentRendering>` 渲染都实现为模块化的 C++
+   库，既可编译为原生机器码（附带 Python 绑定），也可编译为 WebAssembly（附带 JavaScript 绑定），从而确保在 C++、Python 和浏览器目标之间行为一致。
+
+.. _StudioThreads:
+
+线程模型
+========
+
+在 Python 中，Studio 将物理仿真与渲染及 UI 呈现分离到两个执行上下文中，二者通过 :ref:`消息通道 <StudioMessaging>`
+（``SimEndpoint`` ↔ ``ViewerEndpoint``）连接，使查看器和仿真可以运行在不同的线程上，或者运行在相互独立的进程中：
+
+.. image:: ../images/studio/threads_light.svg
+   :width: 100%
+   :align: center
+   :class: only-light
+
+.. image:: ../images/studio/threads_dark.svg
+   :width: 100%
+   :align: center
+   :class: only-dark
+
+这种解耦设计提供了三项架构保证：
+
+- **零共享状态争用**：与旧版的 :ref:`被动查看器 <PyViewerPassive>` 不同——后者要求用户脚本在修改 :ref:`mjModel` 或 :ref:`mjData` 之前先获取
+  ``with viewer.lock():``——Studio 的仿真线程独占权威的物理结构体。每一步之后，\ ``ViewerHandle.sync()`` 会通过 :ref:`mj_getState`
+  （``mjSTATE_INTEGRATION``）将扁平的积分状态向量提取到一个不可变的 ``StateSnapshot(state, state_sig)`` 中。查看器线程通过 :ref:`mj_setState`
+  将最新的快照应用到它私有的 :ref:`mjData` 副本上，并以显示刷新率在本地运行 :ref:`mj_forward`，而不会阻塞物理计算。
+- **后台查看器守护线程**：\ :ref:`原生 <StudioNativeViewers>` 和 :ref:`Web <StudioWebViewers>` 两种 Python 启动器都会在后台守护线程上启动查看器循环
+  (`launch_thread.py
+  <https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/launch_thread.py>`__)，同时在调用线程上运行仿真同步循环或调用方的 ``with`` 代码块。查看器线程上未处理的异常会被立即记录，并在
+  ``ViewerHandle.close()`` 运行时在仿真线程上重新抛出。
+- **统一的插件契约**：由于 :ref:`查看器插件 <StudioViewerPlugins>` 和 :ref:`仿真插件 <StudioSimPlugins>` 仅通过带类型的 ``Snapshot`` 和 ``Event``
+  消息通信，而不通过共享内存，因此插件类无需修改即可同时用于原生桌面窗口和远程的 :ref:`WebViewer <StudioWebViewer>` 浏览器会话。
+
+Python 与 C++
+=============
+
+Studio 会根据各运行环境调整其执行模型：
+
+- **Python**\ （``mujoco.studio``）：仿真端点和查看器端点各自持有独立的 :ref:`mjModel` 与 :ref:`mjData` 实例，并仅通过有方向的 ``Snapshot`` 和 ``Event``
+  通道通信。
+- **C++ 桌面端**\ （:ref:`mujoco::studio::App <StudioCpp>`）：在专用的后台线程上运行物理计算，并与主 UI 和渲染循环同步。
+- **C++ WebAssembly**\ （:ref:`MuJoCo Live <StudioLive>`）：在浏览器单线程的 ``requestAnimationFrame`` 循环内，依次驱动物理更新、Dear ImGui 布局和 Filament WebGL 渲染。
+
+.. _StudioCppComponents:
+
+C++ 组件
+--------
+
+在 Python SDK 和 C++ 应用程序之下，是位于 `studio/
+<https://github.com/google-deepmind/mujoco/tree/main/studio>`__ 中的一层共享的可复用 C++ 组件：
+
+- **UI 与交互**\ （`ux/ <https://github.com/google-deepmind/mujoco/tree/main/studio/ux>`__）：内置的 Dear ImGui
+  面板——模型层级、物理与渲染选项、执行器控制、关节滑块、传感器与求解器曲线图、\ ``SimHistory`` 时间线拖动条、\ ``Console``、画中画视图，以及 ``imgui_widgets.h``
+  中的自定义控件——此外还有 ``interaction.h`` 中的 3D 鼠标拾取、相机运动和刚体扰动。通过 ``mujoco.studio.ux`` 暴露给 Python，该模块在执行 C++ 代码期间会释放 Python GIL。
+- **仿真状态管理**\ （`sim/ <https://github.com/google-deepmind/mujoco/tree/main/studio/sim>`__）：通过 ``StepControl`` 实现实时步进节奏控制和控制噪声，通过
+  ``SimHistory`` 实现环形缓冲区轨迹记录与回放，通过 ``SimProfiler`` 实现性能分析，通过 ``ModelHolder`` 实现模型生命周期管理，并由 Python 的
+  ``step_control`` 和 ``sim_history`` 模块进行封装。
+- **渲染与窗口管理**\ （`hal/ <https://github.com/google-deepmind/mujoco/tree/main/studio/hal>`__、`render/
+  <https://github.com/google-deepmind/mujoco/tree/main/studio/render>`__）：通过 ``FilamentRenderer`` 和 ``ModelScene`` 实现硬件抽象的 :ref:`Filament
+  <FilamentRendering>` 渲染，以及跨 OpenGL、Vulkan 和 WebGL 的 SDL2 与离屏窗口管理。
+
+由于这些 C++ 库可以编译为原生二进制文件，通过 ``pybind11`` 绑定到 Python，并通过 Emscripten 编译为带 JavaScript 绑定的 WebAssembly，因此任何需要在 C++、Python 和
+JavaScript/WebAssembly 各端之间共享的组件或自定义控件，都应当用 C++ 实现，并绑定到 Python 和 JS。纯 Python 插件在主机 CPU 上执行——在 :ref:`WebViewer <StudioWebViewer>`
+中将其 UI 绘制列表流式传输到浏览器——而 C++ 组件既可以在主机上原生运行， *也* 可以在客户端的 WebAssembly 浏览器应用内运行，例如 :ref:`MuJoCo Live
+<StudioLive>` 和 ``WebViewer`` 浏览器客户端。
+
+.. _StudioMessaging:
+.. _StudioSnapshotsVsEvents:
+
+消息传递
+========
+
+由于仿真循环和查看器循环运行在不同的线程上，且不共享可变状态（参见 :ref:`线程模型
+<StudioThreads>`），所有状态更新和命令都以 `messages.py
+<https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/messages.py>`__ 中定义的带类型消息的形式跨越端点边界。
+
+Snapshot 与 Event
+-----------------
+
+通信分为两个 ``Message`` 基类，二者具有不同的投递语义。按照惯例，自定义消息子类以 ``*Snapshot`` 或 ``*Event`` 结尾：
+
+.. list-table::
+   :widths: 18 24 23 35
+   :header-rows: 1
+
+   * - 基类
+     - 通道类型
+     - 投递保证
+     - 示例
+   * - ``messages.Snapshot``
+     - ``SnapshotChannel`` 是一个“最新值优先”的字典，每个 ``Snapshot`` 子类占一个槽位，以 ``type(msg)`` 为键。
+     - 取出（drain）时，每种类型仅投递最新的一个快照。
+     - ``StateSnapshot``, ``StepControlSnapshot``, ``SimHistorySnapshot``, ``MjOptionSnapshot``, ``PerturbSnapshot``
+   * - ``messages.Event``
+     - ``EventChannel`` 是一个严格有序的先进先出队列。
+     - 每个入队的事件都会按顺序投递，不会丢弃任何事件。
+     - ``ModelEvent``, ``LoadModelEvent``, ``StateEvent``, ``KeyframeEvent``, ``ResetEvent``, ``SingleStepEvent``,
+       ``RequestPauseEvent``, ``ThreadPoolEvent``, ``HotReloadEvent``
+
+选择类型
+--------
+
+在为 GUI 控件或插件通信设计自定义消息时：
+
+- **对于滑块、开关和设置等连续的 GUI 选项，使用** ``Snapshot``，此时消息携带完整的当前值，且只有最新值才有意义，例如 ``StepControlSnapshot``、\ ``MjOptionSnapshot``，或某个插件自己的
+  ``FooConfigSnapshot``。如果用户拖动滑块时查看器的渲染速度快于仿真的步进速度，中间值会自动合并，而不是排队堆积。
+- **对于离散的 GUI 按钮动作和一次性命令，使用** ``Event``，例如 ``ResetEvent``、\ ``SingleStepEvent``、\ ``RequestPauseEvent``、\ ``LoadModelEvent`` 和
+  ``KeyframeEvent``；此外，当同一个类的不同局部更新会在 ``SnapshotChannel`` 的按类型槽位中相互覆盖时，也应使用 ``Event``——例如，\ ``StateEvent(state, state_sig)``
+  会应用有针对性的状态覆盖，其 ``state_sig`` 位掩码各不相同，因此每个分量都会按顺序应用。
+
+有关按时间顺序排列的 :ref:`生命周期事件表 <StudioLifecycle>`、\ :ref:`基于差异的同步 <StudioDiffSync>` 和 :ref:`处理器优先级 <StudioPriorities>`，请参见
+:ref:`Python 插件 <StudioPythonPlugins>`。

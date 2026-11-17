@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html class="no-js" data-content_root="../" lang="zh-CN">
+<head><meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="light dark" name="color-scheme"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="../_static/favicons/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+<link href="../_static/favicons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="apple-touch-icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-192x192.png" rel="icon" sizes="192x192" type="image/png"/><link href="../genindex.html" rel="index" title="索引"/><link href="../search.html" rel="search" title="搜索"/><link href="../APIreference/index.html" rel="next" title="API 参考"/><link href="samples.html" rel="prev" title="代码示例"/>
+<link as="image" href="../_static/banner.svg" rel="prefetch"/>
+<!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+<title>扩展 - MuJoCo 文档（中文）</title>
+<link href="../_static/pygments.css?v=b86133f3" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo.css?v=7bdb33bb" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css?v=05624691" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo-extensions.css?v=8dab3a3b" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides.css?v=8d83ad8c" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides_mjwarp.css?v=e08d3b36" rel="stylesheet" type="text/css"/>
+<link href="../_static/zh_overrides.css?v=ee52c62c" rel="stylesheet" type="text/css"/>
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #16213a;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #2a4fd6;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #2a4fd6;
+  --color-brand-content: #2a4fd6;
+  --color-background-secondary: #f4f6f9;
+  --color-sidebar-background: #f4f6f9;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+      }
+    }
+  }
+</style></head>
+<body>
+<script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+<symbol id="svg-toc" viewbox="0 0 24 24">
+<title>Contents</title>
+<svg fill="currentColor" stroke="currentColor" stroke-width="0" viewbox="0 0 1024 1024">
+<path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"></path>
+</svg>
+</symbol>
+<symbol id="svg-menu" viewbox="0 0 24 24">
+<title>Menu</title>
+<svg class="feather-menu" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<line x1="3" x2="21" y1="12" y2="12"></line>
+<line x1="3" x2="21" y1="6" y2="6"></line>
+<line x1="3" x2="21" y1="18" y2="18"></line>
+</svg>
+</symbol>
+<symbol id="svg-arrow-right" viewbox="0 0 24 24">
+<title>Expand</title>
+<svg class="feather-chevron-right" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</symbol>
+<symbol id="svg-sun" viewbox="0 0 24 24">
+<title>Light mode</title>
+<svg class="feather-sun" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" x2="12" y1="1" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="23"></line>
+<line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+<line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+<line x1="1" x2="3" y1="12" y2="12"></line>
+<line x1="21" x2="23" y1="12" y2="12"></line>
+<line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+<line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
+</svg>
+</symbol>
+<symbol id="svg-moon" viewbox="0 0 24 24">
+<title>Dark mode</title>
+<svg class="icon-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+</svg>
+</symbol>
+<symbol id="svg-sun-with-moon" viewbox="0 0 24 24">
+<title>Auto light/dark, in light mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z" style="opacity: 50%"></path>
+<line x1="14.5" x2="14.5" y1="3.25" y2="1.25"></line>
+<line x1="14.5" x2="14.5" y1="15.85" y2="17.85"></line>
+<line x1="10.044" x2="8.63" y1="5.094" y2="3.68"></line>
+<line x1="19" x2="20.414" y1="14.05" y2="15.464"></line>
+<line x1="8.2" x2="6.2" y1="9.55" y2="9.55"></line>
+<line x1="20.8" x2="22.8" y1="9.55" y2="9.55"></line>
+<line x1="10.044" x2="8.63" y1="14.006" y2="15.42"></line>
+<line x1="19" x2="20.414" y1="5.05" y2="3.636"></line>
+<circle cx="14.5" cy="9.55" r="3.6"></circle>
+</svg>
+</symbol>
+<symbol id="svg-moon-with-sun" viewbox="0 0 24 24">
+<title>Auto light/dark, in dark mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"></path>
+<line style="opacity: 50%" x1="18" x2="18" y1="3.705" y2="2.5"></line>
+<line style="opacity: 50%" x1="18" x2="18" y1="11.295" y2="12.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="4.816" y2="3.964"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="10.212" y2="11.063"></line>
+<line style="opacity: 50%" x1="14.205" x2="13.001" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="21.795" x2="23" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="10.184" y2="11.036"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="4.789" y2="3.937"></line>
+<circle cx="18" cy="7.5" r="2.169" style="opacity: 50%"></circle>
+</svg>
+</symbol>
+<symbol id="svg-pencil" viewbox="0 0 24 24">
+<svg class="icon-tabler-pencil-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
+<path d="M13.5 6.5l4 4"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+<symbol id="svg-eye" viewbox="0 0 24 24">
+<svg class="icon-tabler-eye-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
+<path d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+</svg>
+<input aria-label="Toggle site navigation sidebar" class="sidebar-toggle" id="__navigation" name="__navigation" type="checkbox"/>
+<input aria-label="Toggle table of contents sidebar" class="sidebar-toggle" id="__toc" name="__toc" type="checkbox"/>
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+<div class="page">
+<header class="mobile-header">
+<div class="header-left">
+<label class="nav-overlay-icon" for="__navigation">
+<span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+</label>
+</div>
+<div class="header-center">
+<a href="../index.html"><div class="brand">MuJoCo 文档（中文）</div></a>
+</div>
+<div class="header-right">
+<div class="theme-toggle-container theme-toggle-header">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-header-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+</header>
+<aside class="sidebar-drawer">
+<div class="sidebar-container">
+<div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+<div class="sidebar-logo-container">
+<img alt="Logo" class="sidebar-logo" src="../_static/banner.svg"/>
+</div>
+<span class="sidebar-brand-text">MuJoCo 文档（中文）</span>
+</a><form action="../search.html" class="sidebar-search-container" method="get" role="search">
+<input aria-label="搜索" class="sidebar-search" name="q" placeholder="搜索"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">入门教程</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">概览</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../computation/index.html">计算</a><input aria-label="Toggle navigation of 计算" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../computation/fluid.html">流体力</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computation/speculative.html">推测接触</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">建模</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../XMLreference.html">XML 参考</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">编程</a><input aria-label="Toggle navigation of 编程" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="simulation.html">仿真</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html">可视化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rendering.html">渲染</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui.html">用户界面</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modeledit.html">模型编辑</a></li>
+<li class="toctree-l2"><a class="reference internal" href="samples.html">代码示例</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">扩展</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../APIreference/index.html">API 参考</a><input aria-label="Toggle navigation of API 参考" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APItypes.html">类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIfunctions.html">函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIglobals.html">全局变量</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../studio/index.html">Studio</a><input aria-label="Toggle navigation of Studio" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../studio/web_viewers.html">Web 查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/native_viewers.html">原生查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/architecture.html">架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/python_plugins.html">Python 插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python.html">Python</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjx.html">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../unity.html">Unity 插件</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/building.html">构建</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcf_file_format_plugin.html">文件格式插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/importing.html">导入</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/exporting.html">导出</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">模型库</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">更新日志</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<div class="main">
+<div class="content">
+<div class="article-container">
+<a class="back-to-top muted-link" href="#">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+</svg>
+<span>Back to top</span>
+</a>
+<div class="content-icon-container">
+<div class="view-this-page">
+<a class="muted-link" href="../_sources/programming/extension.rst.txt" title="View this page">
+<svg><use href="#svg-eye"></use></svg>
+<span class="visually-hidden">View this page</span>
+</a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-content-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+<article id="furo-main-content" role="main">
+<section id="exextension">
+<span id="id1"></span><h1 data-bi="bi-1">扩展<a class="headerlink" href="#exextension" title="链接到此标题。">#</a></h1><div class="en-orig en-h" data-for="bi-1" lang="en">Extensions</div>
+<div class="mt-notice admonition note">
+<p class="admonition-title">备注</p>
+<p>本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 <code class="docutils literal notranslate"><span class="pre">术语表.md</span></code> 。</p>
+</div>
+<p data-bi="bi-2">本节介绍 MuJoCo 为用户自行编写的扩展所提供的机制。目前，扩展性通过 <a class="reference internal" href="#explugin"><span class="std std-ref">引擎插件</span></a>、<a class="reference internal" href="#exdecoder"><span class="std std-ref">解码器</span></a> 和 <a class="reference internal" href="#exprovider"><span class="std std-ref">资源提供者</span></a> 来提供。</p><div class="en-orig" data-for="bi-2" lang="en">This section describes MuJoCo’s mechanisms for user-authored extensions. At present, extensibility is provided by
+via <a class="reference internal" href="#explugin"><span class="std std-ref">engine plugins</span></a>, <a class="reference internal" href="#exdecoder"><span class="std std-ref">decoders</span></a>, and <a class="reference internal" href="#exprovider"><span class="std std-ref">resource providers</span></a>.</div>
+<section id="explugin">
+<span id="id2"></span><h2 data-bi="bi-3">引擎插件<a class="headerlink" href="#explugin" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-3" lang="en">Engine plugins</div>
+<p data-bi="bi-4">引擎插件（engine plugin）允许将用户自定义的逻辑插入 MuJoCo 计算流水线的各个部分。例如，自定义的传感器和执行器类型都可以实现为插件。插件功能在 MJCF 模型的 XML 内容中被引用，因此即使仿真需求超出了 MuJoCo 内置的能力，MJCF 仍可保持为对系统的抽象物理描述。</p><div class="en-orig" data-for="bi-4" lang="en">Engine plugins allow user-defined logic to be inserted into various parts of MuJoCo’s
+computational pipeline. For example, custom sensor and actuator types can be implemented as plugins. Plugin features are
+referenced in the XML content of an MJCF model, allowing MJCF to remain an abstract physical description of
+a system even if the simulation requirements extend beyond MuJoCo’s built-in capabilities.</div>
+<p data-bi="bi-5">插件机制的设计目的是克服 MuJoCo 的 <a class="reference internal" href="../APIreference/APIglobals.html#glphysics"><span class="std std-ref">物理回调</span></a> 的缺点。这些全局回调（<a class="reference internal" href="simulation.html#sisimulation"><span class="std std-ref">用法示例</span></a>）仍然可用，并且适用于快速原型开发，或在用户希望用 Python 实现功能时使用，但作为扩展功能的稳定机制，它们通常已不推荐使用。插件机制的核心特性是：</p><div class="en-orig" data-for="bi-5" lang="en">The plugin mechanism was designed to overcome the disadvantages of MuJoCo’s <a class="reference internal" href="../APIreference/APIglobals.html#glphysics"><span class="std std-ref">physics callbacks</span></a>. These
+global callbacks (<a class="reference internal" href="simulation.html#sisimulation"><span class="std std-ref">usage example</span></a>) are still available and useful for fast prototyping or when
+the user wishes to implement functionality in Python, but are generally deprecated as a stable mechanism for extended
+functionality. The central features of the plugin mechanism are:</div>
+<ul class="simple">
+<li><p data-bi="bi-6"><strong>线程安全：</strong> 插件实例（见下文）是线程局部的，从而避免冲突。</p><div class="en-orig" data-for="bi-6" lang="en"><strong>Thread safety:</strong> Plugin instances (see below) are thread-local, avoiding collisions.</div></li>
+<li><p data-bi="bi-7"><strong>有状态性：</strong> 插件可以是有状态的，其状态会被正确地（反）序列化。</p><div class="en-orig" data-for="bi-7" lang="en"><strong>Statefulness:</strong> Plugins can be stateful, and their state will be (de)serialized correctly.</div></li>
+<li><p data-bi="bi-8"><strong>互操作性：</strong> 不同的插件可以共存而互不干扰。</p><div class="en-orig" data-for="bi-8" lang="en"><strong>Interoperability:</strong> Different plugins can coexist without interference.</div></li>
+</ul>
+<p data-bi="bi-9">插件的使用者和开发者都应当熟悉两个关键概念：</p><div class="en-orig" data-for="bi-9" lang="en">Both users and developers of plugins should familiarize themselves with two key concepts:</div>
+<dl>
+<dt data-bi="bi-10">插件（Plugin）<div class="en-orig" data-for="bi-10" lang="en">Plugin</div></dt><dd><p data-bi="bi-11"><strong>插件</strong> 是一组实现其功能的函数和静态属性的集合，被打包在一个 <a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a> 结构体中。插件函数是 <strong>无状态</strong> 的：它们只依赖于传递给它们的参数。当插件需要内部状态时，它会声明该状态，并允许 MuJoCo 对其进行管理并传入。这使得完整仿真状态的（反）序列化成为可能。因此，插件可以被视为功能中的“纯逻辑”部分，并且通常被打包为 C 库。插件既不是模型元素，也不与特定的模型元素相关联。</p><div class="en-orig" data-for="bi-11" lang="en">A <strong>plugin</strong> is a collection of functions and static attributes that implement its capabilities, bundled into an
+<a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a> struct. Plugin functions are <strong>stateless</strong>: they depend only on the
+arguments passed to them. When a plugin requires an internal state, it declares this state
+and allows MuJoCo to manage it and pass it in. This enables (de)serialization of the full simulation state.
+A plugin can therefore be regarded as the “pure logic” part of the functionality and is often bundled as a C library.
+A plugin is neither a model element nor is it associated with specific model elements.</div>
+</dd>
+<dt data-bi="bi-12">插件实例（Plugin instance）<div class="en-orig" data-for="bi-12" lang="en">Plugin instance</div></dt><dd><p data-bi="bi-13">插件 <strong>实例</strong> 表示由插件所操作的、自包含的运行时状态：当执行插件逻辑时，实例状态由引擎传入。插件实例本身是类型为 <a class="reference internal" href="../APIreference/APItypes.html#mjtobj"><span class="std std-ref">mjOBJ_PLUGIN</span></a> 的模型元素。共有 <code class="docutils literal notranslate"><span class="pre">mjModel.nplugin</span></code> 个实例，其 id 位于 <code class="docutils literal notranslate"><span class="pre">[0</span> <span class="pre">nplugin-1]</span></code> 范围内。与其他元素一样，实例可以有名称，<a class="reference internal" href="../APIreference/APIfunctions.html#mj-name2id"><span class="std std-ref">mj_name2id</span></a> 和 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-id2name"><span class="std std-ref">mj_id2name</span></a> 在 id 与名称之间进行映射。与只被加载一次并放入全局表中的插件代码不同，同一个插件可以定义多个实例，并且这些实例与其他模型元素之间存在一对多的关系。</p><div class="en-orig" data-for="bi-13" lang="en">A plugin <strong>instance</strong> represents the self-contained runtime state that is operated on by the
+plugin: when the plugin logic is executed, the instance state is passed in by the engine.
+A plugin instance is itself a model element of type <a class="reference internal" href="../APIreference/APItypes.html#mjtobj"><span class="std std-ref">mjOBJ_PLUGIN</span></a>.
+There are <code class="docutils literal notranslate"><span class="pre">mjModel.nplugin</span></code> instances with id’s in <code class="docutils literal notranslate"><span class="pre">[0</span> <span class="pre">nplugin-1]</span></code>. Like other elements, instances
+can have names, with <a class="reference internal" href="../APIreference/APIfunctions.html#mj-name2id"><span class="std std-ref">mj_name2id</span></a> and <a class="reference internal" href="../APIreference/APIfunctions.html#mj-id2name"><span class="std std-ref">mj_id2name</span></a> mapping between id’s and names. Unlike the
+plugin code which is loaded once into a global table, multiple instances of the same plugin can be defined and have a
+one-to-many relationship with other model elements.</div>
+<dl class="simple">
+<dt data-bi="bi-14"><strong>一对一：</strong><div class="en-orig" data-for="bi-14" lang="en"><strong>one-to-one:</strong></div></dt><dd><p data-bi="bi-15">在这种最简单的情形下，每个实例在模型中只被引用一次。例如，两个传感器（sensor）可以声明它们的值由同一个插件的两个插件实例计算得出。在这种情况下，每次计算传感器输出时，插件逻辑都会被单独执行。</p><div class="en-orig" data-for="bi-15" lang="en">In this simplest case, each instance is referenced once in the model. For example,
+two sensors may declare that their values are computed by two plugin instances of the same plugin.
+In this case, every time the sensor output is computed, the plugin logic will be executed separately.</div>
+</dd>
+<dt data-bi="bi-16"><strong>一对多：</strong><div class="en-orig" data-for="bi-16" lang="en"><strong>one-to-many:</strong></div></dt><dd><p data-bi="bi-17">或者，多个元素的行为也可以由单个插件实例来支撑。有两种主要场景适合这样做：</p><div class="en-orig" data-for="bi-17" lang="en">Alternatively, the behavior of multiple elements can be backed by a single plugin instance. There are
+two main scenarios where this is useful:</div>
+</dd>
+</dl>
+<ul class="simple">
+<li><p data-bi="bi-18">不同元素类型的值与同一个物理实体和同一次计算相关联。例如，考虑一个带有内部温度计的电机。这会表现为一个执行器（actuator）和一个传感器，二者都与同一个插件实例相关联，该实例同时计算力矩输出和温度读数。</p><div class="en-orig" data-for="bi-18" lang="en">The values of different element types are linked to the same physical entity and computation. For example
+consider a motor with an internal thermometer. This would manifest as an actuator and sensor, both associated with
+the same plugin instance which computes both torque outputs and temperature readings.</div></li>
+<li><p data-bi="bi-19">将多个相关元素的计算批量合并在一起是有利的，例如计算值是神经网络的输出时。这里的典型例子是一个配备了 <code class="docutils literal notranslate"><span class="pre">N</span></code> 个电机的机器人，其电机动力学（dynamics）由神经网络建模。在这种情况下，在一次前向传播中产生全部 N 个执行器的力矩输出，可以比分别为每个电机计算快得多。</p><div class="en-orig" data-for="bi-19" lang="en">It is advantageous to batch the computation of multiple related elements together, for example where the computed
+value is the output of a neural network. The canonical example here is a robot that is equipped with <code class="docutils literal notranslate"><span class="pre">N</span></code> motors,
+where motor dynamics are modeled as a neural network. In this case, it can be substantially faster to produce the
+torque output of all N actuators in a single forward pass than for each motor separately.</div></li>
+</ul>
+</dd>
+</dl>
+<p data-bi="bi-20">下面，我们首先从用户的角度来描述插件：</p><div class="en-orig" data-for="bi-20" lang="en">Below, we begin by describing plugins from a user perspective:</div>
+<ul class="simple">
+<li><p data-bi="bi-21">插件能力的类型。</p><div class="en-orig" data-for="bi-21" lang="en">Types of plugin capabilities.</div></li>
+<li><p data-bi="bi-22">如何在 MJCF 模型中声明和配置插件。</p><div class="en-orig" data-for="bi-22" lang="en">How plugins are declared and configured in an MJCF model.</div></li>
+<li><p data-bi="bi-23">插件状态如何被纳入 <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a>，以及当存在插件实例时，用户需要做什么才能安全地复制和序列化 <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 结构体。</p><div class="en-orig" data-for="bi-23" lang="en">How plugin states are incorporated into <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a>, and what users need to do to safely duplicate and serialize
+<a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> structs when plugin instances are present.</div></li>
+</ul>
+<p data-bi="bi-24">接下来，我们描述与插件的使用者和开发者都相关的插件注册事宜。之后是面向插件开发者的一节。</p><div class="en-orig" data-for="bi-24" lang="en">Next, we describe the logistics of plugin registration that are relevant to both users and developers of plugins. This
+is followed by a section that targets plugin developers.</div>
+<section id="excapabilities">
+<span id="id3"></span><h3 data-bi="bi-25">插件能力<a class="headerlink" href="#excapabilities" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-25" lang="en">Plugin capabilities</div>
+<p data-bi="bi-26">插件由其关联的 <a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a> 结构体的内容来描述。<code class="docutils literal notranslate"><span class="pre">capabilityflags</span></code> 成员是一个整数位域，用于描述插件的能力，其位的语义定义在枚举 <a class="reference internal" href="../APIreference/APItypes.html#mjtplugincapabilitybit"><span class="std std-ref">mjtPluginCapabilityBit</span></a> 中。使用位域使得插件可以支持多种类型的计算。目前支持的插件能力有：</p><div class="en-orig" data-for="bi-26" lang="en">A plugin is described by the contents of its associated <a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a> struct. The <code class="docutils literal notranslate"><span class="pre">capabilityflags</span></code> member is an
+integer bitfield describing the plugin’s capabilities, where bit semantics are defined in the enum
+<a class="reference internal" href="../APIreference/APItypes.html#mjtplugincapabilitybit"><span class="std std-ref">mjtPluginCapabilityBit</span></a>. Using a bitfield allows plugins to support multiple types of computation. The currently
+supported plugin capabilities are:</div>
+<ul class="simple">
+<li><p data-bi="bi-27">执行器插件</p><div class="en-orig" data-for="bi-27" lang="en">Actuator plugin</div></li>
+<li><p data-bi="bi-28">传感器插件</p><div class="en-orig" data-for="bi-28" lang="en">Sensor plugin</div></li>
+<li><p data-bi="bi-29">被动力（passive force）插件</p><div class="en-orig" data-for="bi-29" lang="en">Passive force plugin</div></li>
+<li><p data-bi="bi-30">有符号距离场插件</p><div class="en-orig" data-for="bi-30" lang="en">Signed distance field plugin</div></li>
+</ul>
+<p data-bi="bi-31">未来将根据需要添加更多能力。</p><div class="en-orig" data-for="bi-31" lang="en">Additional capabilities will be added in the future as required.</div>
+</section>
+<section id="mjcf">
+<span id="exdeclaration"></span><h3 data-bi="bi-32">在 MJCF 中声明<a class="headerlink" href="#mjcf" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-32" lang="en">Declaration in MJCF</div>
+<p data-bi="bi-33">首先，必须通过 <code class="docutils literal notranslate"><span class="pre">&lt;extension&gt;&lt;plugin&gt;</span></code> 声明插件依赖。解析模型时，如果声明了任何插件但该插件未被注册（见下文），则会引发模型编译错误。如果只有单个 MJCF 元素由插件支撑，则可以就地隐式创建实例。如果多个元素由同一个插件支撑，则必须显式声明实例：</p><div class="en-orig" data-for="bi-33" lang="en">First, a plugin dependency must be declared through <code class="docutils literal notranslate"><span class="pre">&lt;extension&gt;&lt;plugin&gt;</span></code>. When the model is parsed, if any plugin
+is declared but not registered (see below), a model compilation error is raised. If only a single MJCF element is
+backed by a plugin, instances can be implicitly created in-place. If multiple elements are backed by the same plugin,
+instance declaration must be explicit:</div>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;mujoco&gt;</span>
+<span class="w">  </span><span class="nt">&lt;extension&gt;</span>
+<span class="w">    </span><span class="nt">&lt;plugin</span><span class="w"> </span><span class="na">plugin=</span><span class="s">"mujoco.test.simple_sensor_plugin"</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;plugin</span><span class="w"> </span><span class="na">plugin=</span><span class="s">"mujoco.test.actuator_sensor_plugin"</span><span class="nt">&gt;</span>
+<span class="w">      </span><span class="nt">&lt;instance</span><span class="w"> </span><span class="na">name=</span><span class="s">"explicit_instance"</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/plugin&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/extension&gt;</span>
+<span class="w">  </span>...
+<span class="w">  </span><span class="nt">&lt;sensor&gt;</span>
+<span class="w">    </span><span class="nt">&lt;plugin</span><span class="w"> </span><span class="na">name=</span><span class="s">"sensor0"</span><span class="w"> </span><span class="na">plugin=</span><span class="s">"mujoco.test.simple_sensor_plugin"</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;plugin</span><span class="w"> </span><span class="na">name=</span><span class="s">"sensor1"</span><span class="w"> </span><span class="na">plugin=</span><span class="s">"mujoco.test.simple_sensor_plugin"</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;plugin</span><span class="w"> </span><span class="na">name=</span><span class="s">"sensor2"</span><span class="w"> </span><span class="na">instance=</span><span class="s">"explicit_instance"</span><span class="nt">/&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/sensor&gt;</span>
+<span class="w">  </span>...
+<span class="w">  </span><span class="nt">&lt;actuator&gt;</span>
+<span class="w">    </span><span class="nt">&lt;plugin</span><span class="w"> </span><span class="na">name=</span><span class="s">"actuator2"</span><span class="w"> </span><span class="na">instance=</span><span class="s">"explicit_instance"</span><span class="nt">/&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/actuator&gt;</span>
+<span class="nt">&lt;/mujoco&gt;</span>
+</pre></div>
+</div>
+<p data-bi="bi-34">在上面的示例中，<code class="docutils literal notranslate"><span class="pre">sensor0</span></code> 和 <code class="docutils literal notranslate"><span class="pre">sensor1</span></code> 各自由一个简单的插件支撑，该插件不在元素之间共享计算，因此通过直接引用插件标识符，为每个传感器隐式创建了一个实例。相反，<code class="docutils literal notranslate"><span class="pre">sensor2</span></code> 和 <code class="docutils literal notranslate"><span class="pre">actuator2</span></code> 由一个共享计算的插件支撑，因此它们必须引用一个显式声明的共享实例。</p><div class="en-orig" data-for="bi-34" lang="en">In the example above, <code class="docutils literal notranslate"><span class="pre">sensor0</span></code> and <code class="docutils literal notranslate"><span class="pre">sensor1</span></code> are each backed by a simple plugin that does not share computation
+among elements, so an instance is implicitly created for each sensor by directly referencing the plugin identifier.
+In contrast, <code class="docutils literal notranslate"><span class="pre">sensor2</span></code> and <code class="docutils literal notranslate"><span class="pre">actuator2</span></code> are backed by a plugin that shares computation, so they must reference a
+shared instance that was explicitly declared.</div>
+</section>
+<section id="exconfiguration">
+<span id="id4"></span><h3 data-bi="bi-35">在 MJCF 中配置<a class="headerlink" href="#exconfiguration" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-35" lang="en">Configuration in MJCF</div>
+<p data-bi="bi-36">插件可以声明自定义属性，用来表示专门的可配置参数。例如，直流电机模型可以将电阻、电感和电容作为配置属性公开。在 MJCF 中，这些属性的值可以通过 <code class="docutils literal notranslate"><span class="pre">&lt;config&gt;</span></code> 元素来指定，其中每个 <code class="docutils literal notranslate"><span class="pre">&lt;config&gt;</span></code> 都有一个键和一个值。有效的键和值由插件开发者指定，但会在插件注册时向 MuJoCo 声明，以便 MuJoCo 模型编译器（model compiler）可以对无效值报错。</p><div class="en-orig" data-for="bi-36" lang="en">Plugins can declare custom attributes that represent specialized configurable parameters. For example, a DC motor model
+may expose the resistance, inductance, and capacitance as configuration attributes. In MJCF, the values of these
+attributes can be specified via <code class="docutils literal notranslate"><span class="pre">&lt;config&gt;</span></code> elements, where each <code class="docutils literal notranslate"><span class="pre">&lt;config&gt;</span></code> has a key and a value. Valid keys and
+values are specified by the plugin developers, but are declared to MuJoCo during plugin registration time so that the
+MuJoCo model compiler can raise errors for invalid values.</div>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;mujoco&gt;</span>
+<span class="w">  </span><span class="nt">&lt;extension&gt;</span>
+<span class="w">    </span><span class="nt">&lt;plugin</span><span class="w"> </span><span class="na">plugin=</span><span class="s">"mujoco.test.simple_actuator_plugin"</span><span class="nt">&gt;</span>
+<span class="w">      </span><span class="nt">&lt;instance</span><span class="w"> </span><span class="na">name=</span><span class="s">"explicit_instance"</span><span class="nt">&gt;</span>
+<span class="w">        </span><span class="nt">&lt;config</span><span class="w"> </span><span class="na">key=</span><span class="s">"resistance"</span><span class="w"> </span><span class="na">value=</span><span class="s">"1.0"</span><span class="nt">/&gt;</span>
+<span class="w">        </span><span class="nt">&lt;config</span><span class="w"> </span><span class="na">key=</span><span class="s">"inductance"</span><span class="w"> </span><span class="na">value=</span><span class="s">"2.0"</span><span class="nt">/&gt;</span>
+<span class="w">      </span><span class="nt">&lt;/instance&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/plugin&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/extension&gt;</span>
+<span class="w">  </span>...
+<span class="w">  </span><span class="nt">&lt;actuator&gt;</span>
+<span class="w">    </span><span class="nt">&lt;plugin</span><span class="w"> </span><span class="na">name=</span><span class="s">"actuator0"</span><span class="w"> </span><span class="na">instance=</span><span class="s">"explicit_instance"</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;plugin</span><span class="w"> </span><span class="na">name=</span><span class="s">"actuator1"</span><span class="w"> </span><span class="na">plugin=</span><span class="s">"mujoco.test.simple_actuator_plugin"</span><span class="nt">&gt;</span>
+<span class="w">        </span><span class="nt">&lt;config</span><span class="w"> </span><span class="na">key=</span><span class="s">"resistance"</span><span class="w"> </span><span class="na">value=</span><span class="s">"3.0"</span><span class="nt">/&gt;</span>
+<span class="w">        </span><span class="nt">&lt;config</span><span class="w"> </span><span class="na">key=</span><span class="s">"inductance"</span><span class="w"> </span><span class="na">value=</span><span class="s">"4.0"</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/plugin&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/actuator&gt;</span>
+<span class="nt">&lt;/mujoco&gt;</span>
+</pre></div>
+</div>
+<p data-bi="bi-37">在上面的示例中，<code class="docutils literal notranslate"><span class="pre">actuator0</span></code> 引用的是一个预先存在的插件实例，该实例通过 <code class="docutils literal notranslate"><span class="pre">&lt;instance&gt;</span></code> 元素创建并配置；而 <code class="docutils literal notranslate"><span class="pre">actuator1</span></code> 则是在原地隐式创建并配置一个新的插件实例。请注意，直接向 <code class="docutils literal notranslate"><span class="pre">actuator0</span></code> 添加 <code class="docutils literal notranslate"><span class="pre">&lt;config&gt;</span></code> 子元素将会出错，因为那里并没有创建新的插件实例。</p><div class="en-orig" data-for="bi-37" lang="en">In the example above, <code class="docutils literal notranslate"><span class="pre">actuator0</span></code> refers to a pre-existing plugin instance that was created and configured via the
+<code class="docutils literal notranslate"><span class="pre">&lt;instance&gt;</span></code> element, while <code class="docutils literal notranslate"><span class="pre">actuator1</span></code> is implicitly creating and configuring a new plugin instance in-place. Note
+that it would be an error to add <code class="docutils literal notranslate"><span class="pre">&lt;config&gt;</span></code> child elements directly to <code class="docutils literal notranslate"><span class="pre">actuator0</span></code> because a new plugin instance is
+not being created there.</div>
+</section>
+<section id="expluginstate">
+<span id="id5"></span><h3 data-bi="bi-38">插件状态<a class="headerlink" href="#expluginstate" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-38" lang="en">Plugin state</div>
+<p data-bi="bi-39">虽然插件代码应当是无状态的，但各个插件实例可以持有与时间相关的状态，这些状态旨在随 MuJoCo 物理一同演化，例如热力学耦合的执行器模型中的温度变量。另外，插件实例也可能希望对其运行过程中可能开销很大的部分进行记忆化（memoize）。例如，由预训练神经网络支撑的传感器或执行器插件，会希望在模型编译时预加载其权重。区分这两种每实例的插件载荷非常重要。术语 <strong>插件状态</strong>（plugin state）指插件实例中由 <em>浮点</em> 值构成的、与时间相关的状态，而术语 <strong>插件数据</strong>（plugin data）则指由记忆化载荷构成的 <em>任意数据结构</em>，它们应被视为插件计算的实现细节。</p><div class="en-orig" data-for="bi-39" lang="en">While plugin code should be stateless, individual plugin instances are permitted to hold time-dependent state that is
+intended to evolve alongside MuJoCo physics, for example temperature variables in thermodynamically coupled actuator
+models. Separately, it may also be desirable for plugin instances to memoize potentially expensive parts of their
+operation. For example, sensor or actuator plugins that are backed by pretrained neural networks will want to preload
+their weights at model compilation time. It is important for us to distinguish between these two types of per-instance
+plugin payload. The term <strong>plugin state</strong> refers to the time-dependent state of the plugin instance that consists of
+<em>floating point</em> values, while the term <strong>plugin data</strong> refers to <em>arbitrary data structures</em> consisting of memoized
+payload that should be considered implementation detail for the plugin’s computation.</div>
+<p data-bi="bi-40">关键在于，插件数据必须仅能通过插件配置属性、插件状态以及 <a class="reference internal" href="../computation/index.html#gestate"><span class="std std-ref">MuJoCo 状态变量</span></a> 重新构建。这意味着插件数据不要求可序列化，并且 MuJoCo 在复制或存储数据时不会对其进行序列化。另一方面，插件状态被视为物理的组成部分，必须与 MuJoCo 的其他状态变量一起序列化，才能忠实地恢复物理。</p><div class="en-orig" data-for="bi-40" lang="en">Crucially, plugin data must be reconstructible only from plugin configuration attributes, the plugin state,
+and <a class="reference internal" href="../computation/index.html#gestate"><span class="std std-ref">MuJoCo state variables</span></a>. This means that the plugin data is not expected to be serializable, and will
+not be serialized by MuJoCo when it copies or stores data. On the other hand, plugin state is considered an integral
+part of the physics and must be serialized alongside MuJoCo’s other state variables in order for the physics to be
+faithfully restored.</div>
+<p data-bi="bi-41">插件必须通过其 <a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a> 结构体的 <code class="docutils literal notranslate"><span class="pre">nstate</span></code> 回调，声明每个实例所需的浮点数个数。请注意，这个数目可能取决于实例的具体配置。在 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-makedata"><span class="std std-ref">mj_makeData</span></a> 期间，MuJoCo 会在 <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 的 <code class="docutils literal notranslate"><span class="pre">plugin_state</span></code> 字段中为每个插件实例分配所需数量的槽位。<a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 中的 <code class="docutils literal notranslate"><span class="pre">plugin_stateadr</span></code> 字段指明了每个插件实例可在整个 <code class="docutils literal notranslate"><span class="pre">plugin_state</span></code> 数组中的哪个位置找到其状态值。</p><div class="en-orig" data-for="bi-41" lang="en">Plugins must declare the number of floating point values required for each instance via the <code class="docutils literal notranslate"><span class="pre">nstate</span></code> callback of its
+<a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a> struct. Note that this number can depend on the exact configuration of the instance. During
+<a class="reference internal" href="../APIreference/APIfunctions.html#mj-makedata"><span class="std std-ref">mj_makeData</span></a>, MuJoCo allocates the requisite number of slots in the <code class="docutils literal notranslate"><span class="pre">plugin_state</span></code> field of <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> for
+each plugin instance. The <code class="docutils literal notranslate"><span class="pre">plugin_stateadr</span></code> field in <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> indicates the position within the overall
+<code class="docutils literal notranslate"><span class="pre">plugin_state</span></code> array at which each plugin instance can find its state values.</div>
+<p data-bi="bi-42">然而，从 MuJoCo 的角度来看，插件数据是完全不透明的。在 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-makedata"><span class="std std-ref">mj_makeData</span></a> 期间，MuJoCo 会调用相应 <a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a> 的 <code class="docutils literal notranslate"><span class="pre">init</span></code> 回调。在该回调中，插件被允许分配或以其他方式创建其运行所需的任意数据结构，并将其指针存储在正在创建的 <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 的 <code class="docutils literal notranslate"><span class="pre">plugin_data</span></code> 字段中。在 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-deletedata"><span class="std std-ref">mj_deleteData</span></a> 期间，MuJoCo 会调用同一个 <a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a> 的 <code class="docutils literal notranslate"><span class="pre">destroy</span></code> 回调，插件负责释放与该实例相关联的内部资源。</p><div class="en-orig" data-for="bi-42" lang="en">Plugin data, however, is entirely opaque from MuJoCo’s point of view. During <a class="reference internal" href="../APIreference/APIfunctions.html#mj-makedata"><span class="std std-ref">mj_makeData</span></a>, MuJoCo calls the
+<code class="docutils literal notranslate"><span class="pre">init</span></code> callback from the relevant <a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a>. In this callback, the plugin is permitted to allocate or otherwise
+create an arbitrary data structure that it requires to function and stores its pointer in the <code class="docutils literal notranslate"><span class="pre">plugin_data</span></code> field of
+<a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> that is being created. During <a class="reference internal" href="../APIreference/APIfunctions.html#mj-deletedata"><span class="std std-ref">mj_deleteData</span></a>, MuJoCo calls the <code class="docutils literal notranslate"><span class="pre">destroy</span></code> callback from the same
+<a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a>, and the plugin is responsible for deallocating its internal resources associated with the instance.</div>
+<p data-bi="bi-43"><code class="docutils literal notranslate"><span class="pre">init</span></code> 回调应通过发出 <a class="reference internal" href="../APIreference/APIfunctions.html#mju-warning"><span class="std std-ref">mju_warning</span></a> 并返回 -1 来报告无效配置，此时 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-makedata"><span class="std std-ref">mj_makeData</span></a>（以及模型编译）会失败。插件回调不应调用 <a class="reference internal" href="../APIreference/APIfunctions.html#mju-error"><span class="std std-ref">mju_error</span></a>：不返回的错误处理程序（如 Python 绑定和模型编译器的错误处理程序）会跳过位于栈上的、插件中以及 MuJoCo 自身中的 C++ 对象的析构函数。</p><div class="en-orig" data-for="bi-43" lang="en">The <code class="docutils literal notranslate"><span class="pre">init</span></code> callback should report an invalid configuration by issuing a <a class="reference internal" href="../APIreference/APIfunctions.html#mju-warning"><span class="std std-ref">mju_warning</span></a> and returning -1, upon
+which <a class="reference internal" href="../APIreference/APIfunctions.html#mj-makedata"><span class="std std-ref">mj_makeData</span></a> (and model compilation) fails. Plugin callbacks should not call <a class="reference internal" href="../APIreference/APIfunctions.html#mju-error"><span class="std std-ref">mju_error</span></a>: error
+handlers which do not return, like those of the Python bindings and the model compiler, skip the destructors of C++
+objects on the stack, in the plugin and in MuJoCo itself.</div>
+<p data-bi="bi-44">当通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-copydata"><span class="std std-ref">mj_copyData</span></a> 复制 <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 时，MuJoCo 会复制插件状态。然而，插件代码负责为新复制的 <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 设置插件数据。为此，MuJoCo 会对每个存在的插件实例调用 <a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a> 中的 <code class="docutils literal notranslate"><span class="pre">copy</span></code> 回调。</p><div class="en-orig" data-for="bi-44" lang="en">When <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> is being copied via <a class="reference internal" href="../APIreference/APIfunctions.html#mj-copydata"><span class="std std-ref">mj_copyData</span></a>, MuJoCo will copy over the plugin state. However, the plugin
+code is responsible for setting up the plugin data for the newly copied <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a>. To facilitate this, MuJoCo calls
+the <code class="docutils literal notranslate"><span class="pre">copy</span></code> callback from <a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a> for each plugin instance present.</div>
+<section id="exactuatoract">
+<span id="id6"></span><h4 data-bi="bi-45">执行器状态<a class="headerlink" href="#exactuatoract" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-45" lang="en">Actuator states</div>
+<p data-bi="bi-46">在编写有状态的执行器插件时，对于执行器状态保存在何处有两种选择。一种是如上所述使用 <code class="docutils literal notranslate"><span class="pre">plugin_state</span></code>，另一种是通过在 <a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a> 上实现相应的回调来使用 <code class="docutils literal notranslate"><span class="pre">mjData.act</span></code>。</p><div class="en-orig" data-for="bi-46" lang="en">When writing stateful actuator plugins, there are two choices for where to save the actuator state. One option is using
+<code class="docutils literal notranslate"><span class="pre">plugin_state</span></code> as described above, and the other is to use <code class="docutils literal notranslate"><span class="pre">mjData.act</span></code> by implementing the callback on
+<a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a>.</div>
+<p data-bi="bi-47">使用后一种选项时，执行器插件的状态会被添加到 <code class="docutils literal notranslate"><span class="pre">mjData.act</span></code> 中，并且 MuJoCo 会在各时间步之间自动对 <code class="docutils literal notranslate"><span class="pre">mjData.act_dot</span></code> 的值进行积分。这种方法的一个优点是，像 <a class="reference internal" href="../APIreference/APIfunctions.html#mjd-transitionfd"><span class="std std-ref">mjd_transitionFD</span></a> 这样的有限差分函数的工作方式与对原生执行器相同。<code class="docutils literal notranslate"><span class="pre">mjpPlugin.advance</span></code> 回调将在 <code class="docutils literal notranslate"><span class="pre">act_dot</span></code> 被积分之后调用，如果内置积分器（integrator）不合适，执行器插件可以在此时覆盖 <code class="docutils literal notranslate"><span class="pre">act</span></code> 的值。</p><div class="en-orig" data-for="bi-47" lang="en">When using the latter option, the actuator plugin’s state will be added to <code class="docutils literal notranslate"><span class="pre">mjData.act</span></code>, and MuJoCo will
+automatically integrate <code class="docutils literal notranslate"><span class="pre">mjData.act_dot</span></code> values between timesteps. One advantage of this approach is that
+finite-differencing functions like <a class="reference internal" href="../APIreference/APIfunctions.html#mjd-transitionfd"><span class="std std-ref">mjd_transitionFD</span></a> will work as they do for native actuators. The
+<code class="docutils literal notranslate"><span class="pre">mjpPlugin.advance</span></code> callback will be called after <code class="docutils literal notranslate"><span class="pre">act_dot</span></code> is integrated, and actuator plugins may overwrite
+the <code class="docutils literal notranslate"><span class="pre">act</span></code> values at that point, if the built-in integrator is not appropriate.</div>
+<p data-bi="bi-48">用户可以在执行器插件上指定 <a class="reference internal" href="../XMLreference.html#actuator-plugin-dyntype"><span class="std std-ref">dyntype</span></a> 属性，以便在用户输入与执行器状态之间引入滤波器或积分器。这样做时，由 <code class="docutils literal notranslate"><span class="pre">dyntype</span></code> 引入的状态变量将被放置在 <code class="docutils literal notranslate"><span class="pre">act</span></code> 数组中插件状态变量的 <em>之后</em>。</p><div class="en-orig" data-for="bi-48" lang="en">Users may specify the <a class="reference internal" href="../XMLreference.html#actuator-plugin-dyntype"><span class="std std-ref">dyntype</span></a> attribute on actuator plugins, to introduce a filter or
+an integrator between user inputs and actuator states. When they do, the state variable introduced by
+<code class="docutils literal notranslate"><span class="pre">dyntype</span></code> will be placed <em>after</em> the plugin’s state variables in the <code class="docutils literal notranslate"><span class="pre">act</span></code> array.</div>
+</section>
+</section>
+<section id="exregistration">
+<span id="id7"></span><h3 data-bi="bi-49">注册<a class="headerlink" href="#exregistration" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-49" lang="en">Registration</div>
+<p data-bi="bi-50">插件必须先在 MuJoCo 中注册，才能在 MJCF 模型中被引用。</p><div class="en-orig" data-for="bi-50" lang="en">Plugins must be registered with MuJoCo before they can be referenced in MJCF models.</div>
+<p data-bi="bi-51">旨在支持特定应用程序的一次性插件（或为帮助排查模型问题而实现的临时插件）可以被静态链接到应用程序中。这可以简单到只需在 <code class="docutils literal notranslate"><span class="pre">main</span></code> 函数中准备一个 <a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a> 结构体，然后将其传递给 <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-registerplugin"><span class="std std-ref">mjp_registerPlugin</span></a>，以便向 MuJoCo 注册。</p><div class="en-orig" data-for="bi-51" lang="en">One-off plugins that are intended to support a specific application (or throwaway plugins that are implemented to help
+troubleshoot issues with a model) can be statically linked into the application. This can be as simple as preparing an
+<a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a> struct in the <code class="docutils literal notranslate"><span class="pre">main</span></code> function, then passing it to <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-registerplugin"><span class="std std-ref">mjp_registerPlugin</span></a> to be registered with
+MuJoCo.</div>
+<p data-bi="bi-52">一般来说，可复用的插件预期会被打包为库，并应在库加载时注册。在兼容 GCC 的编译器中，这可以通过在用 <code class="docutils literal notranslate"><span class="pre">__attribute__((constructor))</span></code> 声明的函数中调用 <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-registerplugin"><span class="std std-ref">mjp_registerPlugin</span></a> 来实现，而在 MSVC 中，则可以通过向 C 运行时初始化中注入代码来实现。MuJoCo 提供了一个便利宏 <a class="reference internal" href="../APIreference/APIglobals.html#mjplugin-lib-init"><span class="std std-ref">mjPLUGIN_LIB_INIT</span></a>，它会根据所用的编译器展开为上述两种构造之一。</p><div class="en-orig" data-for="bi-52" lang="en">Generally, reusable plugins are expected to be packaged as libraries and should be registered when the library is
+loaded. In GCC-compatible compilers, this can be achieved by calling <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-registerplugin"><span class="std std-ref">mjp_registerPlugin</span></a> in a function that is
+declared with <code class="docutils literal notranslate"><span class="pre">__attribute__((constructor))</span></code>, while in MSVC this can be done by injecting code into the C runtime
+initialization. MuJoCo provides a convenience macro <a class="reference internal" href="../APIreference/APIglobals.html#mjplugin-lib-init"><span class="std std-ref">mjPLUGIN_LIB_INIT</span></a> that expands to either of these constructs
+depending on the compiler used.</div>
+<p data-bi="bi-53">对于以上述动态库形式交付的插件，其使用者可以使用函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-loadpluginlibrary"><span class="std std-ref">mj_loadPluginLibrary</span></a> 加载该库。这是加载包含 MuJoCo 插件的动态库的首选方式（而不是比如直接调用 <code class="docutils literal notranslate"><span class="pre">dlopen</span></code> 或 <code class="docutils literal notranslate"><span class="pre">LoadLibraryA</span></code>），因为 MuJoCo 期望动态库自动注册插件的确切方式可能会随时间变化，而 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-loadpluginlibrary"><span class="std std-ref">mj_loadPluginLibrary</span></a> 预期也会随之演进，以反映最佳实践。</p><div class="en-orig" data-for="bi-53" lang="en">Users of plugins that are delivered as dynamic libraries as described above can load the library using the function
+<a class="reference internal" href="../APIreference/APIfunctions.html#mj-loadpluginlibrary"><span class="std std-ref">mj_loadPluginLibrary</span></a>. This is the preferred way to load dynamic libraries containing MuJoCo plugins (rather than,
+say, calling <code class="docutils literal notranslate"><span class="pre">dlopen</span></code> or <code class="docutils literal notranslate"><span class="pre">LoadLibraryA</span></code> directly) since the exact way in which MuJoCo expects dynamic libraries to
+auto-register plugins may change over time, but <a class="reference internal" href="../APIreference/APIfunctions.html#mj-loadpluginlibrary"><span class="std std-ref">mj_loadPluginLibrary</span></a> is expected to also evolve to reflect the
+best practices.</div>
+<p data-bi="bi-54">对于需要能够加载任意用户提供的 MJCF 模型的应用程序，可能希望自动扫描并加载在特定目录中找到的所有动态库。这样，带来了需要插件的 MJCF 的用户，就可以被告知将所需的插件库放置在相应的目录中。例如，<a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate</span></a> 交互式查看器应用程序就是这样做的。<a class="reference internal" href="../APIreference/APIfunctions.html#mj-loadallpluginlibraries"><span class="std std-ref">mj_loadAllPluginLibraries</span></a> 函数正是为这种扫描并加载的用例而提供的。目录中某个加载失败的库（例如因为缺少其某个依赖项）会被跳过并给出警告，而不会中止应用程序。</p><div class="en-orig" data-for="bi-54" lang="en">For applications that need to be able to load arbitrary user-provided MJCF models, it may be desirable to automatically
+scan and load all dynamic libraries found without a specific directory. Users who bring along an MJCF that requires a
+plugin can then be instructed to place the requisite plugin libraries in the relevant directory. For example, this is
+what is done in the <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate</span></a> interactive viewer application. The <a class="reference internal" href="../APIreference/APIfunctions.html#mj-loadallpluginlibraries"><span class="std std-ref">mj_loadAllPluginLibraries</span></a> function is
+provided for this scan-and-load use case. A library in the directory that fails to load, for example because one of its
+dependencies is missing, is skipped with a warning rather than aborting the application.</div>
+</section>
+<section id="exwriting">
+<span id="id8"></span><h3 data-bi="bi-55">编写插件<a class="headerlink" href="#exwriting" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-55" lang="en">Writing plugins</div>
+<p data-bi="bi-56">本节面向开发者，内容尚不完整。我们鼓励希望编写自己插件的人联系 MuJoCo 开发团队寻求帮助。对于有经验的开发者，一个很好的起点是 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/test/engine/engine_plugin_test.cc">相关测试</a> 以及 <a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/plugin">官方插件目录</a> 中的官方插件。</p><div class="en-orig" data-for="bi-56" lang="en">This section, targeted at developers, is incomplete. We encourage people who wish to write their own plugins
+to contact the MuJoCo development team for help. A good starting point for experienced developers is the
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/test/engine/engine_plugin_test.cc">associated tests</a> and the
+first-party plugins in the <a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/plugin">first-party plugin directory</a>.</div>
+<p data-bi="bi-57">本节未来的版本将包括：</p><div class="en-orig" data-for="bi-57" lang="en">A future version of this section will include:</div>
+<ul class="simple">
+<li><p data-bi="bi-58"><a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a> 结构体的内容。</p><div class="en-orig" data-for="bi-58" lang="en">The content of the <a class="reference internal" href="../APIreference/APItypes.html#mjpplugin"><span class="std std-ref">mjpPlugin</span></a> struct.</div></li>
+<li><p data-bi="bi-59">为定义一个插件，需要提供哪些函数和属性。</p><div class="en-orig" data-for="bi-59" lang="en">Which functions and properties need to be provided in order to define a plugin.</div></li>
+<li><p data-bi="bi-60">如何为插件声明自定义的 MJCF 属性。</p><div class="en-orig" data-for="bi-60" lang="en">How to declare custom MJCF attributes for a plugin.</div></li>
+<li><p data-bi="bi-61">为确保当 <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 被复制、步进或重置时插件仍能正确工作，开发者需要牢记的事项。</p><div class="en-orig" data-for="bi-61" lang="en">Things that developers need to keep in mind in order to ensure that plugins function correctly when <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> is
+copied, stepped, or reset.</div></li>
+</ul>
+<p data-bi="bi-62">官方插件目录有以下几个：</p><div class="en-orig" data-for="bi-62" lang="en">There are several first-party plugin directories:</div>
+<section id="actuator">
+<h4>actuator<a class="headerlink" href="#actuator" title="链接到此标题。">#</a></h4>
+<p data-bi="bi-63"><a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/plugin/actuator">actuator/</a> 目录中的插件实现自定义执行器，目前只有一个 PID 控制器。详情请参见 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/plugin/actuator/README.md">README</a>。</p><div class="en-orig" data-for="bi-63" lang="en">The plugins in the <a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/plugin/actuator">actuator/</a> directory
+implement custom actuators, so far only a PID controller. See the <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/plugin/actuator/README.md">README</a> for details.</div>
+</section>
+<section id="sensor">
+<h4>sensor<a class="headerlink" href="#sensor" title="链接到此标题。">#</a></h4>
+<p data-bi="bi-64"><a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/plugin/sensor">sensor/</a> 目录中的插件实现自定义传感器。目前唯一的传感器插件是触摸网格传感器，详情请参见 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/plugin/sensor/README.md">README</a>。</p><div class="en-orig" data-for="bi-64" lang="en">The plugins in the <a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/plugin/sensor">sensor/</a> directory implement
+custom sensors. Currently the sole sensor plugin is the touch grid sensor, see the <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/plugin/sensor/README.md">README</a> for details.</div>
+</section>
+<section id="sdf">
+<span id="exsdf"></span><h4>sdf<a class="headerlink" href="#sdf" title="链接到此标题。">#</a></h4>
+<p data-bi="bi-65"><a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/plugin/sdf">sdf/</a> 目录中的插件以无网格的方式指定自定义形状，其做法是定义在查询点处计算有符号距离场及其梯度的方法。该形状随后在 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/engine/engine_collision_driver.c">engine_collision_driver.c</a> 顶部的碰撞表中充当一种新的 geom 类型。有关可用的 SDF 以及如何编写自己的隐式几何的更多信息，请参见 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/plugin/sdf/README.md">README</a>。本节其余部分将更详细地介绍碰撞算法和插件引擎接口。</p><div class="en-orig" data-for="bi-65" lang="en">The plugins in the <a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/plugin/sdf">sdf/</a> directory
+specify custom shapes in a mesh-free manner, by defining methods computing a signed distance field and its gradient at
+query points. This shape then acts as a new geom type in the collision table at the top of <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/engine/engine_collision_driver.c">engine_collision_driver.c</a>. For more information
+concerning the available SDFs and how to write your own implicit geometry, please see the <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/plugin/sdf/README.md">README</a>. The rest of this section will give more
+detail concerning the collision algorithm and the plugin engine interface.</div>
+<p data-bi="bi-66">碰撞点是通过梯度下降最小化函数 A + B + abs(max(A, B)) 找到的，其中 A 和 B 是两个相碰撞的 SDF。由于 SDF 是非凸的，需要多个起始点才能收敛到多个局部极小值。起始点的数量通过 <a class="reference internal" href="../XMLreference.html#option-sdf-initpoints"><span class="std std-ref">sdf_initpoints</span></a> 设置，并使用 Halton 序列在轴对齐包围盒的交集内部初始化。梯度下降的迭代次数通过 <a class="reference internal" href="../XMLreference.html#option-sdf-iterations"><span class="std std-ref">sdf_iterations</span></a> 设置。</p><div class="en-orig" data-for="bi-66" lang="en">Collision points are found by minimizing the function A + B + abs(max(A, B)), where A and B are the two colliding
+SDFs, via gradient descent. Because SDFs are non-convex, multiple starting points are required in order to converge to
+multiple local minima. The number of starting points is set using <a class="reference internal" href="../XMLreference.html#option-sdf-initpoints"><span class="std std-ref">sdf_initpoints</span></a>, and
+are initialized using the Halton sequence inside the intersection of the axis-aligned bounding boxes. The number of
+gradient descent iterations is set using <a class="reference internal" href="../XMLreference.html#option-sdf-iterations"><span class="std std-ref">sdf_iterations</span></a>.</div>
+<p data-bi="bi-67">虽然 <em>精确</em> 的 SDF——即编码到表面的精确有符号距离——是首选，但任何在表面处值为零、远离表面时单调增长、且在内部为负的函数都可以进行碰撞。对于这类函数，仍然可以找到碰撞，只是可能需要增加起始点的数量。请注意，如果在零水平集附近 <span class="math">\(\|\nabla f\| \neq 1\)</span>，则接触穿透深度会相应缩放，梯度下降的投影步骤也会发生畸变，因此建议在表面附近使 <span class="math">\(\|\nabla f\| \approx 1\)</span>。</p><div class="en-orig" data-for="bi-67" lang="en">While <em>exact</em> SDFs—encoding the precise signed distance to the surface—are preferred, collisions are possible with
+any function whose value vanishes at the surface and grows monotonically away from it, with a negative sign in the
+interior. For such functions, it is still possible to find collisions, albeit with a possibly
+increased number of starting points. Note that if <span class="math">\(\|\nabla f\| \neq 1\)</span> near the zero level set, contact
+penetration depth is scaled accordingly and gradient-descent projection steps are distorted, so
+<span class="math">\(\|\nabla f\| \approx 1\)</span> near the surface is recommended.</div>
+<p data-bi="bi-68">编译器会调用 <code class="docutils literal notranslate"><span class="pre">sdf_distance</span></code> 方法，使用 <a class="reference external" href="https://github.com/aparis69/MarchingCubeCpp">MarchingCubeCpp</a> 所实现的 marching cubes 算法生成用于渲染的可视化网格。</p><div class="en-orig" data-for="bi-68" lang="en">The <code class="docutils literal notranslate"><span class="pre">sdf_distance</span></code> method is called by the compiler to produce a visual mesh for rendering using the marching cubes
+algorithm implemented by <a class="reference external" href="https://github.com/aparis69/MarchingCubeCpp">MarchingCubeCpp</a>.</div>
+<p data-bi="bi-69">对梯度下降算法的未来改进，例如利用 SDF 性质的线搜索，可能会减少迭代次数和／或起始点数量。</p><div class="en-orig" data-for="bi-69" lang="en">Future improvement to the gradient descent algorithm, such as a line search which takes advantage of the properties of
+SDFs, might reduce the number of iterations and/or starting points.</div>
+<p data-bi="bi-70">对于 sdf 插件，需要指定以下方法</p><div class="en-orig" data-for="bi-70" lang="en">For the sdf plugin, the following methods need to be specified</div>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">sdf_distance</span></code>:</dt><dd><p data-bi="bi-71">返回以局部坐标给出的查询点的有符号距离。</p><div class="en-orig" data-for="bi-71" lang="en">Returns the signed distance of the query point given in local coordinates.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">sdf_staticdistance</span></code>:</dt><dd><p data-bi="bi-72">这是上一个函数的静态版本，以配置属性作为额外输入。之所以需要此函数，是因为网格的创建发生在模型编译期间，此时插件对象尚未被实例化。</p><div class="en-orig" data-for="bi-72" lang="en">This is the static version of the previous function, taking config attributes as additional inputs. This function is
+required because mesh creation occurs during model compilation before the plugin object has been instantiated.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">sdf_gradient</span></code>:</dt><dd><p data-bi="bi-73">计算 SDF 在查询点处以局部坐标表示的梯度。</p><div class="en-orig" data-for="bi-73" lang="en">Computes the gradient in local coordinates of the SDF at the query point.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">sdf_aabb</span></code>:</dt><dd><p data-bi="bi-74">计算以局部坐标表示的轴对齐包围盒。在调用 marching cubes 算法之前，该体积会被均匀地体素化。</p><div class="en-orig" data-for="bi-74" lang="en">Computes the axis-aligned bounding box in local coordinates. This volume is voxelized uniformly before the call to
+the marching cubes algorithm.</div>
+</dd>
+</dl>
+</section>
+</section>
+</section>
+<section id="exdecoder">
+<span id="id11"></span><h2 data-bi="bi-75">解码器<a class="headerlink" href="#exdecoder" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-75" lang="en">Decoders</div>
+<p data-bi="bi-76">解码器插件将资产加载能力扩展到 MJCF 和 URDF 之外。它们与其他 MuJoCo 插件类似地进行 <a class="reference internal" href="../APIreference/APIglobals.html#mjplugin-lib-init"><span class="std std-ref">注册</span></a>。</p><div class="en-orig" data-for="bi-76" lang="en">Decoder plugins extend asset loading capabilities beyond MJCF and URDF. They are <a class="reference internal" href="../APIreference/APIglobals.html#mjplugin-lib-init"><span class="std std-ref">registered</span></a>
+similarly to other MuJoCo plugins.</div>
+<p data-bi="bi-77">MuJoCo 自带两个用于常见网格格式的内置解码器：</p><div class="en-orig" data-for="bi-77" lang="en">MuJoCo ships with two built-in decoders for common mesh formats:</div>
+<ul class="simple">
+<li><p data-bi="bi-78"><strong>OBJ 解码器</strong>（<code class="docutils literal notranslate"><span class="pre">plugin/obj_decoder</span></code>）-- <a class="reference external" href="https://en.wikipedia.org/wiki/Wavefront_.obj_file">Wavefront OBJ</a>。</p><div class="en-orig" data-for="bi-78" lang="en"><strong>OBJ decoder</strong> (<code class="docutils literal notranslate"><span class="pre">plugin/obj_decoder</span></code>) – <a class="reference external" href="https://en.wikipedia.org/wiki/Wavefront_.obj_file">Wavefront OBJ</a>.</div></li>
+<li><p data-bi="bi-79"><strong>STL 解码器</strong>（<code class="docutils literal notranslate"><span class="pre">plugin/stl_decoder</span></code>）-- <a class="reference external" href="https://en.wikipedia.org/wiki/STL_(file_format)">STL</a>。</p><div class="en-orig" data-for="bi-79" lang="en"><strong>STL decoder</strong> (<code class="docutils literal notranslate"><span class="pre">plugin/stl_decoder</span></code>) – <a class="reference external" href="https://en.wikipedia.org/wiki/STL_(file_format)">STL</a>.</div></li>
+</ul>
+<p data-bi="bi-80">此外，我们还提供以下可选的解码器插件：</p><div class="en-orig" data-for="bi-80" lang="en">Additionally, we provide the following optional decoder plugins:</div>
+<ul class="simple">
+<li><p data-bi="bi-81"><strong>USD 解码器</strong>（<code class="docutils literal notranslate"><span class="pre">plugin/usd_decoder</span></code>）-- <a class="reference external" href="https://openusd.org/release/index.html">Universal Scene Description</a>。</p><div class="en-orig" data-for="bi-81" lang="en"><strong>USD decoder</strong> (<code class="docutils literal notranslate"><span class="pre">plugin/usd_decoder</span></code>) – <a class="reference external" href="https://openusd.org/release/index.html">Universal Scene Description</a>.</div></li>
+</ul>
+<p data-bi="bi-82">这些插件也可作为如何编写自定义解码器的示例。obj 解码器或许是最容易理解的，而 USD 解码器由于要支持整个场景，因此更为复杂。</p><div class="en-orig" data-for="bi-82" lang="en">These plugins also serve as examples for how to write custom decoders. The obj decoder is perhaps the simplest to
+understand, while the USD decoder is more complex due to its support for entire scenes.</div>
+<section id="exdecoderinterface">
+<span id="id12"></span><h3 data-bi="bi-83">解码器接口<a class="headerlink" href="#exdecoderinterface" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-83" lang="en">Decoder interface</div>
+<p data-bi="bi-84">解码器由 <a class="reference internal" href="../APIreference/APItypes.html#mjpdecoder"><span class="std std-ref">mjpDecoder</span></a> 结构体描述，该结构体具有以下字段：</p><div class="en-orig" data-for="bi-84" lang="en">A decoder is described by the <a class="reference internal" href="../APIreference/APItypes.html#mjpdecoder"><span class="std std-ref">mjpDecoder</span></a> struct, which has the following fields:</div>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">content_type</span></code></dt><dd><p data-bi="bi-85">标识格式的、类似 MIME 的内容类型字符串。例如 <code class="docutils literal notranslate"><span class="pre">"model/obj"</span></code> 或 <code class="docutils literal notranslate"><span class="pre">"model/stl"</span></code>。当 MJCF 中的某个网格资产指定了 <code class="docutils literal notranslate"><span class="pre">content-type</span></code> 属性时，该字符串会被用来查找合适的解码器。</p><div class="en-orig" data-for="bi-85" lang="en">A MIME-like content type string identifying the format. For example, <code class="docutils literal notranslate"><span class="pre">"model/obj"</span></code>, or <code class="docutils literal notranslate"><span class="pre">"model/stl"</span></code>.
+When a mesh asset specifies a <code class="docutils literal notranslate"><span class="pre">content-type</span></code> attribute in MJCF, this string is used
+to find the appropriate decoder.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">extension</span></code></dt><dd><p data-bi="bi-86">文件扩展名字符串（包含点号），在未指定内容类型时用于匹配。对于具有多个扩展名的格式，多个扩展名可以用竖线（<code class="docutils literal notranslate"><span class="pre">|</span></code>）分隔，例如 <code class="docutils literal notranslate"><span class="pre">.usd|.usda|.usdc|.usdz</span></code>。</p><div class="en-orig" data-for="bi-86" lang="en">A file extension string (including the dot) used for matching when no content type is specified. Multiple
+extensions can be separated by pipes (<code class="docutils literal notranslate"><span class="pre">|</span></code>) for formats with multiple extensions such as <code class="docutils literal notranslate"><span class="pre">.usd|.usda|.usdc|.usdz</span></code>.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">can_decode</span></code></dt><dd><p data-bi="bi-87">类型为 <a class="reference internal" href="../APIreference/APItypes.html#mjfcandecode"><span class="std std-ref">mjfCanDecode</span></a> 的回调，用于判断解码器是否能处理给定的资源。它通常通过检查文件扩展名来实现，但也可以检查文件内容以区分不同格式。例如，URDF 和 MJCF 文件的扩展名都是 <code class="docutils literal notranslate"><span class="pre">.xml</span></code>。如果解码器能够处理该资源，则返回非零值。</p><div class="en-orig" data-for="bi-87" lang="en">A callback of type <a class="reference internal" href="../APIreference/APItypes.html#mjfcandecode"><span class="std std-ref">mjfCanDecode</span></a> that determines whether the decoder can handle a given resource. This is
+typically implemented by checking the file extension but may also check the file contents to differentiate between
+formats. For example, URDF and MJCF files both have a <code class="docutils literal notranslate"><span class="pre">.xml</span></code> extension. Returns nonzero if the decoder can handle
+the resource.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">decode</span></code></dt><dd><p data-bi="bi-88">类型为 <a class="reference internal" href="../APIreference/APItypes.html#mjfdecode"><span class="std std-ref">mjfDecode</span></a> 的回调，用于执行实际的解码。它接收一个 <a class="reference internal" href="../APIreference/APItypes.html#mjresource"><span class="std std-ref">mjResource</span></a>，并返回一个新分配的、包含已解码资产数据的 <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a>。调用方获得所返回 spec 的所有权，并负责使用 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-deletespec"><span class="std std-ref">mj_deleteSpec</span></a> 将其释放。失败时返回 <code class="docutils literal notranslate"><span class="pre">NULL</span></code>，此时解码器应将人类可读的原因写入大小为 <code class="docutils literal notranslate"><span class="pre">error_sz</span></code> 的 <code class="docutils literal notranslate"><span class="pre">error</span></code> 缓冲区（如果 <code class="docutils literal notranslate"><span class="pre">error</span></code> 不为 <code class="docutils literal notranslate"><span class="pre">NULL</span></code>）。该消息会被传播给用户，例如通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-parse"><span class="std std-ref">mj_parse</span></a> 的 <code class="docutils literal notranslate"><span class="pre">error</span></code> 参数，或作为网格资产的编译器错误。非致命问题可以通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mju-warning"><span class="std std-ref">mju_warning</span></a> 报告。解码器不应调用 <a class="reference internal" href="../APIreference/APIfunctions.html#mju-error"><span class="std std-ref">mju_error</span></a>，参见 <a class="reference internal" href="#expluginstate"><span class="std std-ref">插件状态</span></a>。</p><div class="en-orig" data-for="bi-88" lang="en">A callback of type <a class="reference internal" href="../APIreference/APItypes.html#mjfdecode"><span class="std std-ref">mjfDecode</span></a> that performs the actual decoding. It receives an <a class="reference internal" href="../APIreference/APItypes.html#mjresource"><span class="std std-ref">mjResource</span></a> and
+returns a newly allocated <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> containing the decoded asset data. The caller takes
+ownership of the returned spec and is responsible for freeing it with <a class="reference internal" href="../APIreference/APIfunctions.html#mj-deletespec"><span class="std std-ref">mj_deleteSpec</span></a>. Returns <code class="docutils literal notranslate"><span class="pre">NULL</span></code> on
+failure, in which case the decoder should write a human-readable reason into the <code class="docutils literal notranslate"><span class="pre">error</span></code> buffer of size
+<code class="docutils literal notranslate"><span class="pre">error_sz</span></code>, if <code class="docutils literal notranslate"><span class="pre">error</span></code> is not <code class="docutils literal notranslate"><span class="pre">NULL</span></code>. This message is propagated to the user, e.g. via the <code class="docutils literal notranslate"><span class="pre">error</span></code>
+argument of <a class="reference internal" href="../APIreference/APIfunctions.html#mj-parse"><span class="std std-ref">mj_parse</span></a> or as a compiler error for mesh assets. Non-fatal issues can be reported with
+<a class="reference internal" href="../APIreference/APIfunctions.html#mju-warning"><span class="std std-ref">mju_warning</span></a>. Decoders should not call <a class="reference internal" href="../APIreference/APIfunctions.html#mju-error"><span class="std std-ref">mju_error</span></a>, see <a class="reference internal" href="#expluginstate"><span class="std std-ref">plugin state</span></a>.</div>
+</dd>
+</dl>
+<p data-bi="bi-89">当为网格资产调用解码器时，编译器会引用由 <code class="docutils literal notranslate"><span class="pre">decode</span></code> 回调所返回的 spec 中的第一个网格元素。</p><div class="en-orig" data-for="bi-89" lang="en">When a decoder is invoked for a mesh asset, the compiler will reference the first mesh element in the spec returned
+by the <code class="docutils literal notranslate"><span class="pre">decode</span></code> callback.</div>
+<p data-bi="bi-90">当为模型资产调用解码器时，由 <code class="docutils literal notranslate"><span class="pre">decode</span></code> 回调所返回的 spec 可以包含任意数量的任意类型的元素。</p><div class="en-orig" data-for="bi-90" lang="en">When a decoder is invoked for a model asset, the spec returned by the <code class="docutils literal notranslate"><span class="pre">decode</span></code> callback may contain any number of
+elements of any type.</div>
+</section>
+<section id="exdecoderregistration">
+<span id="id13"></span><h3 data-bi="bi-91">注册<a class="headerlink" href="#exdecoderregistration" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-91" lang="en">Registration</div>
+<p data-bi="bi-92">解码器必须先注册才能使用。注册通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-registerdecoder"><span class="std std-ref">mjp_registerDecoder</span></a> 执行。<a class="reference internal" href="../APIreference/APIfunctions.html#mjp-defaultdecoder"><span class="std std-ref">mjp_defaultDecoder</span></a> 函数用默认值初始化一个 <a class="reference internal" href="../APIreference/APItypes.html#mjpdecoder"><span class="std std-ref">mjpDecoder</span></a> 结构体。<a class="reference internal" href="../APIreference/APIglobals.html#mjplugin-lib-init"><span class="std std-ref">mjPLUGIN_LIB_INIT</span></a> 宏用于定义初始化函数，该函数会在库加载时注册解码器。</p><div class="en-orig" data-for="bi-92" lang="en">Decoders must be registered before they can be used. Registration is performed via
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjp-registerdecoder"><span class="std std-ref">mjp_registerDecoder</span></a>. The <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-defaultdecoder"><span class="std std-ref">mjp_defaultDecoder</span></a> function initializes an <a class="reference internal" href="../APIreference/APItypes.html#mjpdecoder"><span class="std std-ref">mjpDecoder</span></a> struct with
+default values. The <a class="reference internal" href="../APIreference/APIglobals.html#mjplugin-lib-init"><span class="std std-ref">mjPLUGIN_LIB_INIT</span></a> macro is used to define the initialization function that registers the
+decoder when the library is loaded.</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjPLUGIN_LIB_INIT</span><span class="p">(</span><span class="n">my_format_decoder</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">mjpDecoder</span><span class="w"> </span><span class="n">decoder</span><span class="p">;</span>
+<span class="w">  </span><span class="n">mjp_defaultDecoder</span><span class="p">(</span><span class="o">&amp;</span><span class="n">decoder</span><span class="p">);</span>
+<span class="w">  </span><span class="n">decoder</span><span class="p">.</span><span class="n">content_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"model/my-format"</span><span class="p">;</span>
+<span class="w">  </span><span class="n">decoder</span><span class="p">.</span><span class="n">extension</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">".myf|.myfa|.myfc"</span><span class="p">;</span>
+<span class="w">  </span><span class="n">decoder</span><span class="p">.</span><span class="n">decode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyDecode</span><span class="p">;</span>
+<span class="w">  </span><span class="n">decoder</span><span class="p">.</span><span class="n">can_decode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyCanDecode</span><span class="p">;</span>
+<span class="w">  </span><span class="n">mjp_registerDecoder</span><span class="p">(</span><span class="o">&amp;</span><span class="n">decoder</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="exdecoderexample">
+<span id="id14"></span><h3 data-bi="bi-93">示例<a class="headerlink" href="#exdecoderexample" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-93" lang="en">Example</div>
+<p data-bi="bi-94">下面是一个读取假想二进制网格格式的最小解码器：</p><div class="en-orig" data-for="bi-94" lang="en">Below is a minimal decoder that reads a hypothetical binary mesh format:</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;mujoco.h&gt;</span>
+
+<span class="k">static</span><span class="w"> </span><span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="nf">MyDecode</span><span class="p">(</span><span class="n">mjResource</span><span class="o">*</span><span class="w"> </span><span class="n">resource</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">mjVFS</span><span class="o">*</span><span class="w"> </span><span class="n">vfs</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">error_sz</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">nbytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mju_readResource</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">bytes</span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">nbytes</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"> </span><span class="n">snprintf</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="n">error_sz</span><span class="p">,</span><span class="w"> </span><span class="s">"failed to read resource '%s'"</span><span class="p">,</span><span class="w"> </span><span class="n">resource</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="cm">/* ... parse bytes into vertex/face arrays ... */</span>
+
+<span class="w">  </span><span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">spec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span>
+<span class="w">  </span><span class="n">mjsMesh</span><span class="o">*</span><span class="w"> </span><span class="n">mesh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_addMesh</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">  </span><span class="n">mjs_setString</span><span class="p">(</span><span class="n">mesh</span><span class="o">-&gt;</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">resource</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+<span class="w">  </span><span class="n">mjs_setFloat</span><span class="p">(</span><span class="n">mesh</span><span class="o">-&gt;</span><span class="n">uservert</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">nvert</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
+<span class="w">  </span><span class="n">mjs_setInt</span><span class="p">(</span><span class="n">mesh</span><span class="o">-&gt;</span><span class="n">userface</span><span class="p">,</span><span class="w"> </span><span class="n">faces</span><span class="p">,</span><span class="w"> </span><span class="n">nface</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">spec</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">MyCanDecode</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">mjResource</span><span class="o">*</span><span class="w"> </span><span class="n">resource</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="cm">/* check file extension */</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resource</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">;</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">strcmp</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="s">".myf"</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">mjPLUGIN_LIB_INIT</span><span class="p">(</span><span class="n">my_format_decoder</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">mjpDecoder</span><span class="w"> </span><span class="n">decoder</span><span class="p">;</span>
+<span class="w">  </span><span class="n">mjp_defaultDecoder</span><span class="p">(</span><span class="o">&amp;</span><span class="n">decoder</span><span class="p">);</span>
+<span class="w">  </span><span class="n">decoder</span><span class="p">.</span><span class="n">content_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"model/my-format"</span><span class="p">;</span>
+<span class="w">  </span><span class="n">decoder</span><span class="p">.</span><span class="n">extension</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">".myf"</span><span class="p">;</span>
+<span class="w">  </span><span class="n">decoder</span><span class="p">.</span><span class="n">decode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyDecode</span><span class="p">;</span>
+<span class="w">  </span><span class="n">decoder</span><span class="p">.</span><span class="n">can_decode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyCanDecode</span><span class="p">;</span>
+<span class="w">  </span><span class="n">mjp_registerDecoder</span><span class="p">(</span><span class="o">&amp;</span><span class="n">decoder</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p data-bi="bi-95">一旦注册，当 MuJoCo 遇到具有匹配文件扩展名或内容类型的资产时，就会自动使用该解码器：</p><div class="en-orig" data-for="bi-95" lang="en">Once registered, the decoder is used automatically when MuJoCo encounters an asset with a matching file extension
+or content type:</div>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;asset&gt;</span>
+<span class="w">  </span><span class="nt">&lt;mesh</span><span class="w"> </span><span class="na">file=</span><span class="s">"my_mesh.myf"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/asset&gt;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="exencoder">
+<span id="id15"></span><h2 data-bi="bi-96">编码器<a class="headerlink" href="#exencoder" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-96" lang="en">Encoders</div>
+<p data-bi="bi-97">编码器插件将资产序列化和模型保存的能力扩展到原生格式（XML、MJB、TXT）之外。编码器与其他 MuJoCo 插件类似地进行 <a class="reference internal" href="../APIreference/APIglobals.html#mjplugin-lib-init"><span class="std std-ref">注册</span></a>。</p><div class="en-orig" data-for="bi-97" lang="en">Encoder plugins extend asset serialization and model saving capabilities beyond native formats (XML, MJB, TXT).
+Encoders are <a class="reference internal" href="../APIreference/APIglobals.html#mjplugin-lib-init"><span class="std std-ref">registered</span></a> similarly to other MuJoCo plugins.</div>
+<p data-bi="bi-98">MuJoCo 自带一个用于 <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> 归档文件的内置 Zip 编码器（<code class="docutils literal notranslate"><span class="pre">src/xml/mjz/mjz_encoder.cc</span></code>）。</p><div class="en-orig" data-for="bi-98" lang="en">MuJoCo ships with a built-in Zip encoder for <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> archives (<code class="docutils literal notranslate"><span class="pre">src/xml/mjz/mjz_encoder.cc</span></code>).</div>
+<section id="exencoderinterface">
+<span id="id16"></span><h3 data-bi="bi-99">编码器接口<a class="headerlink" href="#exencoderinterface" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-99" lang="en">Encoder interface</div>
+<p data-bi="bi-100">编码器由 <a class="reference internal" href="../APIreference/APItypes.html#mjpencoder"><span class="std std-ref">mjpEncoder</span></a> 结构体描述，该结构体具有以下字段：</p><div class="en-orig" data-for="bi-100" lang="en">An encoder is described by the <a class="reference internal" href="../APIreference/APItypes.html#mjpencoder"><span class="std std-ref">mjpEncoder</span></a> struct, which has the following fields:</div>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">content_type</span></code></dt><dd><p data-bi="bi-101">标识输出格式的、类似 MIME 的内容类型字符串（例如 <code class="docutils literal notranslate"><span class="pre">"application/zip"</span></code>）。当使用显式的 <code class="docutils literal notranslate"><span class="pre">content_type</span></code> 参数调用 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a> 时，该字符串会被用来查找合适的编码器。</p><div class="en-orig" data-for="bi-101" lang="en">A MIME-like content type string identifying the output format (e.g. <code class="docutils literal notranslate"><span class="pre">"application/zip"</span></code>). When <a class="reference internal" href="../APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a> is
+called with an explicit <code class="docutils literal notranslate"><span class="pre">content_type</span></code> argument, this string is used to find the appropriate encoder.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">extension</span></code></dt><dd><p data-bi="bi-102">文件扩展名字符串（包含点号），在未指定内容类型时用于格式匹配。多个扩展名可以用竖线（<code class="docutils literal notranslate"><span class="pre">|</span></code>）分隔，例如 <code class="docutils literal notranslate"><span class="pre">.mjz|.zip</span></code>。</p><div class="en-orig" data-for="bi-102" lang="en">A file extension string (including the dot) used for format matching when no content type is specified. Multiple
+extensions can be separated by pipes (<code class="docutils literal notranslate"><span class="pre">|</span></code>) such as <code class="docutils literal notranslate"><span class="pre">.mjz|.zip</span></code>.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">encode</span></code></dt><dd><p data-bi="bi-103">类型为 <a class="reference internal" href="../APIreference/APItypes.html#mjfencode"><span class="std std-ref">mjfEncode</span></a> 的回调，用于执行实际的序列化。它接收一个 <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a>、一个可选的已编译 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>、一个可选的 <a class="reference internal" href="../APIreference/APItypes.html#mjvfs"><span class="std std-ref">mjVFS</span></a>，以及一个输出 <a class="reference internal" href="../APIreference/APItypes.html#mjresource"><span class="std std-ref">mjResource</span></a>。成功时返回写入的字节数，失败时返回 -1。</p><div class="en-orig" data-for="bi-103" lang="en">A callback of type <a class="reference internal" href="../APIreference/APItypes.html#mjfencode"><span class="std std-ref">mjfEncode</span></a> that performs the actual serialization. It receives an <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a>, an
+optional compiled <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>, an optional <a class="reference internal" href="../APIreference/APItypes.html#mjvfs"><span class="std std-ref">mjVFS</span></a>, and an output <a class="reference internal" href="../APIreference/APItypes.html#mjresource"><span class="std std-ref">mjResource</span></a>. Returns the number of
+bytes written on success, or -1 on failure.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">close_resource</span></code></dt><dd><p data-bi="bi-104">一个可选的回调，用于释放由 <code class="docutils literal notranslate"><span class="pre">encode</span></code> 回调在 <code class="docutils literal notranslate"><span class="pre">mjResource.data</span></code> 内部分配的所有内存。</p><div class="en-orig" data-for="bi-104" lang="en">An optional callback that frees any memory allocated inside <code class="docutils literal notranslate"><span class="pre">mjResource.data</span></code> by the <code class="docutils literal notranslate"><span class="pre">encode</span></code> callback.</div>
+</dd>
+</dl>
+</section>
+<section id="exencoderregistration">
+<span id="id17"></span><h3 data-bi="bi-105">注册<a class="headerlink" href="#exencoderregistration" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-105" lang="en">Registration</div>
+<p data-bi="bi-106">编码器必须先注册，才能通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a> 使用。注册通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-registerencoder"><span class="std std-ref">mjp_registerEncoder</span></a> 执行。<a class="reference internal" href="../APIreference/APIfunctions.html#mjp-defaultencoder"><span class="std std-ref">mjp_defaultEncoder</span></a> 函数用默认值初始化一个 <a class="reference internal" href="../APIreference/APItypes.html#mjpencoder"><span class="std std-ref">mjpEncoder</span></a> 结构体。<a class="reference internal" href="../APIreference/APIglobals.html#mjplugin-lib-init"><span class="std std-ref">mjPLUGIN_LIB_INIT</span></a> 宏定义了初始化函数，该函数会在插件库加载时注册编码器。</p><div class="en-orig" data-for="bi-106" lang="en">Encoders must be registered before they can be used via <a class="reference internal" href="../APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a>. Registration is performed via
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjp-registerencoder"><span class="std std-ref">mjp_registerEncoder</span></a>. The <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-defaultencoder"><span class="std std-ref">mjp_defaultEncoder</span></a> function initializes an <a class="reference internal" href="../APIreference/APItypes.html#mjpencoder"><span class="std std-ref">mjpEncoder</span></a> struct with default
+values. The <a class="reference internal" href="../APIreference/APIglobals.html#mjplugin-lib-init"><span class="std std-ref">mjPLUGIN_LIB_INIT</span></a> macro defines the initialization function that registers the encoder when the
+plugin library is loaded.</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjPLUGIN_LIB_INIT</span><span class="p">(</span><span class="n">my_format_encoder</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">mjpEncoder</span><span class="w"> </span><span class="n">encoder</span><span class="p">;</span>
+<span class="w">  </span><span class="n">mjp_defaultEncoder</span><span class="p">(</span><span class="o">&amp;</span><span class="n">encoder</span><span class="p">);</span>
+<span class="w">  </span><span class="n">encoder</span><span class="p">.</span><span class="n">content_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"application/x-myformat"</span><span class="p">;</span>
+<span class="w">  </span><span class="n">encoder</span><span class="p">.</span><span class="n">extension</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">".myf"</span><span class="p">;</span>
+<span class="w">  </span><span class="n">encoder</span><span class="p">.</span><span class="n">encode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyEncode</span><span class="p">;</span>
+<span class="w">  </span><span class="n">encoder</span><span class="p">.</span><span class="n">close_resource</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyCloseResource</span><span class="p">;</span>
+<span class="w">  </span><span class="n">mjp_registerEncoder</span><span class="p">(</span><span class="o">&amp;</span><span class="n">encoder</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="exprovider">
+<span id="id18"></span><h2 data-bi="bi-107">资源提供者<a class="headerlink" href="#exprovider" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-107" lang="en">Resource providers</div>
+<p data-bi="bi-108">资源提供者（<a class="reference internal" href="../APIreference/APItypes.html#mjpresourceprovider"><span class="std std-ref">mjpResourceProvider</span></a>）用于扩展 MuJoCo，使其能够加载并不一定来自操作系统文件系统或虚拟文件系统（<a class="reference internal" href="../APIreference/APItypes.html#mjvfs"><span class="std std-ref">mjVFS</span></a>）的资源文件（XML 文件、网格、纹理等）。例如，从
+Internet 下载资源文件就可以通过资源提供者来实现。MuJoCo 通过 <a class="reference internal" href="../APIreference/APItypes.html#mjresource"><span class="std std-ref">mjResource</span></a> 结构体来对这些扩展进行抽象处理。</p><div class="en-orig" data-for="bi-108" lang="en">Resource providers (<a class="reference internal" href="../APIreference/APItypes.html#mjpresourceprovider"><span class="std std-ref">mjpResourceProvider</span></a>) extend MuJoCo to load assets (XML files, meshes, textures, and etc.)
+that don’t necessarily come from the OS filesystem or the Virtual File System (<a class="reference internal" href="../APIreference/APItypes.html#mjvfs"><span class="std std-ref">mjVFS</span></a>). For example, downloading
+assets from the Internet could be implemented as a resource provider. These extensions are handled abstractly in MuJoCo
+via the <a class="reference internal" href="../APIreference/APItypes.html#mjresource"><span class="std std-ref">mjResource</span></a> struct.</div>
+<section id="exproviderstructure">
+<span id="id19"></span><h3 data-bi="bi-109">概述<a class="headerlink" href="#exproviderstructure" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-109" lang="en">Overview</div>
+<p data-bi="bi-110">创建新的资源提供者的方法是：通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-registerprovider"><span class="std std-ref">mjp_registerProvider</span></a> 把一个 <a class="reference internal" href="../APIreference/APItypes.html#mjpresourceprovider"><span class="std std-ref">mjpResourceProvider</span></a> 结构体注册到全局表中。资源提供者一经注册，所有加载函数都可以使用它。<a class="reference internal" href="../APIreference/APItypes.html#mjpresourceprovider"><span class="std std-ref">mjpResourceProvider</span></a> 结构体存储三类字段：</p><div class="en-orig" data-for="bi-110" lang="en">Creating a new resource provider works by registering a <a class="reference internal" href="../APIreference/APItypes.html#mjpresourceprovider"><span class="std std-ref">mjpResourceProvider</span></a> struct via
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjp-registerprovider"><span class="std std-ref">mjp_registerProvider</span></a> in a global table. Once a resource provider is registered it can be used by all loading
+functions. The <a class="reference internal" href="../APIreference/APItypes.html#mjpresourceprovider"><span class="std std-ref">mjpResourceProvider</span></a> struct stores three types of fields:</div>
+<dl class="simple">
+<dt data-bi="bi-111">资源前缀<div class="en-orig" data-for="bi-111" lang="en">Resource prefix</div></dt><dd><p data-bi="bi-112">资源通过其名称中的前缀来标识。所选前缀应符合有效的 <a class="reference external" href="https://en.wikipedia.org/wiki/Uniform_Resource_Identifier">Uniform Resource Identifier</a>（URI）方案语法。资源名称也应具有有效的 URI 语法，但这一点并不强制要求。语法为 <code class="docutils literal notranslate"><span class="pre">{prefix}:{filename}</span></code> 的资源名称将匹配使用方案 <code class="docutils literal notranslate"><span class="pre">prefix</span></code> 的提供者。例如，通过
+Internet 访问资源文件的资源提供者可能会使用 <code class="docutils literal notranslate"><span class="pre">http</span></code> 作为其方案，这时名为 <code class="docutils literal notranslate"><span class="pre">http://www.example.com/myasset.obj</span></code> 的资源就会与该资源提供者匹配。方案不区分大小写，因此 <code class="docutils literal notranslate"><span class="pre">HTTP://www.example.com/myasset.obj</span></code> 同样可以匹配。请注意冒号的重要性：URI 语法要求资源名称中的前缀后面必须紧跟一个冒号，才能与某个方案匹配。例如，<code class="docutils literal notranslate"><span class="pre">https://www.example.com/myasset.obj</span></code> 就不会匹配，因为其方案是 <code class="docutils literal notranslate"><span class="pre">https</span></code>。</p><div class="en-orig" data-for="bi-112" lang="en">Resources are identified by prefixes in their name. The chosen prefix should have a valid <a class="reference external" href="https://en.wikipedia.org/wiki/Uniform_Resource_Identifier">Uniform Resource
+Identifier</a> (URI) scheme syntax. Resource names should also have a valid URI syntax, however this isn’t enforced. A
+resource name with the syntax <code class="docutils literal notranslate"><span class="pre">{prefix}:{filename}</span></code> will match a provider using the scheme <code class="docutils literal notranslate"><span class="pre">prefix</span></code>.  For
+instance, a resource provider accessing assets via the Internet might use <code class="docutils literal notranslate"><span class="pre">http</span></code> as its scheme. In this case a
+resource with the name <code class="docutils literal notranslate"><span class="pre">http://www.example.com/myasset.obj</span></code> would match against this resource provider. Schemes are
+case-insensitive so that <code class="docutils literal notranslate"><span class="pre">HTTP://www.example.com/myasset.obj</span></code> will also match. Note the importance of the colon.
+URI syntax requires that a colon follows the prefix in a resource name in order to match against a scheme. For example
+<code class="docutils literal notranslate"><span class="pre">https://www.example.com/myasset.obj</span></code> would NOT be a match since the scheme is designated as <code class="docutils literal notranslate"><span class="pre">https</span></code>.</div>
+</dd>
+<dt data-bi="bi-113">回调函数<div class="en-orig" data-for="bi-113" lang="en">Callbacks</div></dt><dd><p data-bi="bi-114">资源提供者必须实现三个回调函数：<a class="reference internal" href="../APIreference/APItypes.html#mjfopenresource"><span class="std std-ref">open</span></a>、<a class="reference internal" href="../APIreference/APItypes.html#mjfreadresource"><span class="std std-ref">read</span></a> 和 <a class="reference internal" href="../APIreference/APItypes.html#mjfcloseresource"><span class="std std-ref">close</span></a>。另外两个回调函数 <a class="reference internal" href="../APIreference/APItypes.html#mjfgetresourcedir"><span class="std std-ref">getdir</span></a> 和 <a class="reference internal" href="../APIreference/APItypes.html#mjfresourcemodified"><span class="std std-ref">modified</span></a> 是可选的。下文会给出这些回调函数的更多细节。</p><div class="en-orig" data-for="bi-114" lang="en">There are three callbacks that a resource provider is required to implement: <a class="reference internal" href="../APIreference/APItypes.html#mjfopenresource"><span class="std std-ref">open</span></a>,
+<a class="reference internal" href="../APIreference/APItypes.html#mjfreadresource"><span class="std std-ref">read</span></a>, and <a class="reference internal" href="../APIreference/APItypes.html#mjfcloseresource"><span class="std std-ref">close</span></a>. The other two callback
+<a class="reference internal" href="../APIreference/APItypes.html#mjfgetresourcedir"><span class="std std-ref">getdir</span></a> and <a class="reference internal" href="../APIreference/APItypes.html#mjfresourcemodified"><span class="std std-ref">modified</span></a> are optional. More details on these callbacks
+are given below.</div>
+</dd>
+<dt data-bi="bi-115">数据指针<div class="en-orig" data-for="bi-115" lang="en">Data Pointer</div></dt><dd><p data-bi="bi-116">最后，还有一个不透明的数据指针，供提供者向回调函数传递数据。在同一个模型内，该数据指针保持不变。</p><div class="en-orig" data-for="bi-116" lang="en">Lastly, there’s an opaque data pointer for the provider to pass data into the callbacks. This data pointer is constant
+within a given model.</div>
+</dd>
+</dl>
+<p data-bi="bi-117">资源提供者通过回调函数工作：</p><div class="en-orig" data-for="bi-117" lang="en">Resource providers work via callbacks:</div>
+<ul class="simple">
+<li><p data-bi="bi-118"><a class="reference internal" href="../APIreference/APItypes.html#mjfopenresource"><span class="std std-ref">mjfOpenResource</span></a>：打开回调函数接受一个类型为 <a class="reference internal" href="../APIreference/APItypes.html#mjresource"><span class="std std-ref">mjResource</span></a> 的参数。应使用资源的 name 字段来验证该资源是否存在，并用资源所需的任何额外信息填充资源的 data 字段。失败时该回调函数应返回 0（false），否则返回 1（true）。</p><div class="en-orig" data-for="bi-118" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjfopenresource"><span class="std std-ref">mjfOpenResource</span></a>: The open callback takes a single parameter of type <a class="reference internal" href="../APIreference/APItypes.html#mjresource"><span class="std std-ref">mjResource</span></a>.  The
+name field of the resource should be used to verify that the resource exists and populate the resource data field with
+any extra information needed for the resource. On failure this callback should return 0 (false) or else 1 (true).</div></li>
+<li><p data-bi="bi-119"><a class="reference internal" href="../APIreference/APItypes.html#mjfreadresource"><span class="std std-ref">mjfReadResource</span></a>：读取回调函数的参数为一个 <a class="reference internal" href="../APIreference/APItypes.html#mjresource"><span class="std std-ref">mjResource</span></a> 和一个指向 void 指针的指针，称为 <code class="docutils literal notranslate"><span class="pre">buffer</span></code>。读取回调函数应让 <code class="docutils literal notranslate"><span class="pre">buffer</span></code> 指针指向可以读取该资源字节数据的位置，并返回 <code class="docutils literal notranslate"><span class="pre">buffer</span></code> 所指向的字节数。失败时该回调函数应返回 -1。</p><div class="en-orig" data-for="bi-119" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjfreadresource"><span class="std std-ref">mjfReadResource</span></a>: The read callback takes as arguments a <a class="reference internal" href="../APIreference/APItypes.html#mjresource"><span class="std std-ref">mjResource</span></a> and a pointer to a
+void pointer called the <code class="docutils literal notranslate"><span class="pre">buffer</span></code>. The read callback should point the <code class="docutils literal notranslate"><span class="pre">buffer</span></code> pointer to the location of where the
+bytes of the resource can be read and return the number of bytes pointed to in the <code class="docutils literal notranslate"><span class="pre">buffer</span></code>.  On failure, this
+callback should return -1.</div></li>
+<li><p data-bi="bi-120"><a class="reference internal" href="../APIreference/APItypes.html#mjfcloseresource"><span class="std std-ref">mjfCloseResource</span></a>：该回调函数接受一个类型为 <a class="reference internal" href="../APIreference/APItypes.html#mjresource"><span class="std std-ref">mjResource</span></a> 的参数，应用于释放在所提供资源的 data 字段中分配的所有内存。</p><div class="en-orig" data-for="bi-120" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjfcloseresource"><span class="std std-ref">mjfCloseResource</span></a>: This callback takes a single parameter of type <a class="reference internal" href="../APIreference/APItypes.html#mjresource"><span class="std std-ref">mjResource</span></a>, and
+should be used to free any memory allocated in the data field in the supplied resource.</div></li>
+<li><p data-bi="bi-121"><a class="reference internal" href="../APIreference/APItypes.html#mjfgetresourcedir"><span class="std std-ref">mjfGetResourceDir</span></a>：该回调函数是可选的，用于从资源名称中提取目录。例如，资源名称 <code class="docutils literal notranslate"><span class="pre">http://www.example.com/myasset.obj</span></code> 的目录为 <code class="docutils literal notranslate"><span class="pre">http://www.example.com/</span></code>。</p><div class="en-orig" data-for="bi-121" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjfgetresourcedir"><span class="std std-ref">mjfGetResourceDir</span></a>: This callback is optional and is used to extract the directory from a
+resource name.  For example, the resource name <code class="docutils literal notranslate"><span class="pre">http://www.example.com/myasset.obj</span></code> would have
+<code class="docutils literal notranslate"><span class="pre">http://www.example.com/</span></code> as its directory.</div></li>
+<li><p data-bi="bi-122"><a class="reference internal" href="../APIreference/APItypes.html#mjfresourcemodified"><span class="std std-ref">mjfResourceModified</span></a>：该回调函数是可选的，用于检查已打开的现有资源相对于其原始来源是否已被修改。</p><div class="en-orig" data-for="bi-122" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjfresourcemodified"><span class="std std-ref">mjfResourceModified</span></a>: This callback is optional and is used to check if an existing
+opened resource has been modified from its original source.</div></li>
+</ul>
+</section>
+<section id="exproviderusage">
+<span id="id20"></span><h3 data-bi="bi-123">用法<a class="headerlink" href="#exproviderusage" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-123" lang="en">Usage</div>
+<p data-bi="bi-124">资源提供者一经注册，就可以立即用于打开资源文件。如果资源文件名的前缀与某个已注册提供者的前缀匹配，则会使用该提供者来加载该资源。</p><div class="en-orig" data-for="bi-124" lang="en">When a resource provider is registered, it can be used immediately to open assets. If the asset filename has a prefix
+that matches with the prefix of a registered provider, then that provider will be used to load the asset.</div>
+<section id="exproviderexample">
+<span id="id21"></span><h4 data-bi="bi-125">示例<a class="headerlink" href="#exproviderexample" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-125" lang="en">Example</div>
+<p data-bi="bi-126">本节给出一个基本示例：一个从 <a class="reference external" href="https://en.wikipedia.org/wiki/Data_URI_scheme">data URI scheme</a> 读取数据的资源提供者。首先我们实现这些回调函数：</p><div class="en-orig" data-for="bi-126" lang="en">This section provides a basic example of a resource provider that reads from a <a class="reference external" href="https://en.wikipedia.org/wiki/Data_URI_scheme">data URI scheme</a>. First we implement
+the callbacks:</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">str_open_callback</span><span class="p">(</span><span class="n">mjResource</span><span class="o">*</span><span class="w"> </span><span class="n">resource</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// call some util function to validate</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">is_valid_data_uri</span><span class="p">(</span><span class="n">resource</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="c1">// return failure</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="c1">// some upper bound for the data</span>
+<span class="w">  </span><span class="n">resource</span><span class="o">-&gt;</span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mju_malloc</span><span class="p">(</span><span class="n">get_data_uri_size</span><span class="p">(</span><span class="n">resource</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">));</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">resource</span><span class="o">-&gt;</span><span class="n">data</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="c1">// return failure</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="c1">// fill data from string (some util function)</span>
+<span class="w">  </span><span class="n">get_data_uri</span><span class="p">(</span><span class="n">resource</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">data</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">str_read_callback</span><span class="p">(</span><span class="n">mjResource</span><span class="o">*</span><span class="w"> </span><span class="n">resource</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="o">**</span><span class="w"> </span><span class="n">buffer</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="o">*</span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resource</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">;</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">get_data_uri_size</span><span class="p">(</span><span class="n">resource</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">str_close_callback</span><span class="p">(</span><span class="n">mjResource</span><span class="o">*</span><span class="w"> </span><span class="n">resource</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">mju_free</span><span class="p">(</span><span class="n">resource</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p data-bi="bi-127">接下来，我们创建资源提供者并将其注册到 MuJoCo：</p><div class="en-orig" data-for="bi-127" lang="en">Next we create the resource provider and register it with MuJoCo:</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjpResourceProvider</span><span class="w"> </span><span class="n">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="p">.</span><span class="n">prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"data"</span><span class="p">,</span>
+<span class="w">  </span><span class="p">.</span><span class="n">open</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">str_open_callback</span><span class="p">,</span>
+<span class="w">  </span><span class="p">.</span><span class="n">read</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">str_read_callback</span><span class="p">,</span>
+<span class="w">  </span><span class="p">.</span><span class="n">close</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">str_close_callback</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="c1">// return positive number on success</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">mjp_registerProvider</span><span class="p">(</span><span class="o">&amp;</span><span class="n">provider</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// ...</span>
+<span class="w">  </span><span class="c1">// return failure</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p data-bi="bi-128">现在，我们就可以在 MJCF 文件中以字符串形式写入资源了：</p><div class="en-orig" data-for="bi-128" lang="en">Now we can write assets as strings in our MJCF files:</div>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;asset&gt;</span>
+<span class="w">  </span><span class="nt">&lt;texture</span><span class="w"> </span><span class="na">name=</span><span class="s">"grid"</span><span class="w"> </span><span class="na">file=</span><span class="s">"grid.png"</span><span class="w"> </span><span class="na">type=</span><span class="s">"2d"</span><span class="nt">/&gt;</span>
+<span class="w">  </span><span class="nt">&lt;mesh</span><span class="w"> </span><span class="na">content-type=</span><span class="s">"model/obj"</span><span class="w"> </span><span class="na">file=</span><span class="s">"data:model/obj;base64,I215IG9iamVjdA0KdiAxIDAgMA0KdiAwIDEgMA0KdiAwIDAgMQ=="</span><span class="nt">/&gt;</span>
+<span class="w">  </span>...
+<span class="nt">&lt;/asset&gt;</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+</article>
+</div>
+<footer>
+<div class="related-pages">
+<a class="next-page" href="../APIreference/index.html">
+<div class="page-info">
+<div class="context">
+<span>Next</span>
+</div>
+<div class="title">API 参考</div>
+</div>
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+</a>
+<a class="prev-page" href="samples.html">
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+<div class="page-info">
+<div class="context">
+<span>Previous</span>
+</div>
+<div class="title">代码示例</div>
+</div>
+</a>
+</div>
+<div class="bottom-of-page">
+<div class="left-details">
+<div class="copyright">
+                Copyright © DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+</div>
+<div class="right-details">
+</div>
+</div>
+</footer>
+</div>
+<aside class="toc-drawer">
+<div class="toc-sticky toc-scroll">
+<div class="toc-title-container">
+<span class="toc-title">
+            On this page
+          </span>
+</div>
+<div class="toc-tree-container">
+<div class="toc-tree">
+<ul>
+<li><a class="reference internal" href="#">扩展</a><ul>
+<li><a class="reference internal" href="#explugin">引擎插件</a><ul>
+<li><a class="reference internal" href="#excapabilities">插件能力</a></li>
+<li><a class="reference internal" href="#mjcf">在 MJCF 中声明</a></li>
+<li><a class="reference internal" href="#exconfiguration">在 MJCF 中配置</a></li>
+<li><a class="reference internal" href="#expluginstate">插件状态</a><ul>
+<li><a class="reference internal" href="#exactuatoract">执行器状态</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#exregistration">注册</a></li>
+<li><a class="reference internal" href="#exwriting">编写插件</a><ul>
+<li><a class="reference internal" href="#actuator">actuator</a></li>
+<li><a class="reference internal" href="#sensor">sensor</a></li>
+<li><a class="reference internal" href="#sdf">sdf</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#exdecoder">解码器</a><ul>
+<li><a class="reference internal" href="#exdecoderinterface">解码器接口</a></li>
+<li><a class="reference internal" href="#exdecoderregistration">注册</a></li>
+<li><a class="reference internal" href="#exdecoderexample">示例</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#exencoder">编码器</a><ul>
+<li><a class="reference internal" href="#exencoderinterface">编码器接口</a></li>
+<li><a class="reference internal" href="#exencoderregistration">注册</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#exprovider">资源提供者</a><ul>
+<li><a class="reference internal" href="#exproviderstructure">概述</a></li>
+<li><a class="reference internal" href="#exproviderusage">用法</a><ul>
+<li><a class="reference internal" href="#exproviderexample">示例</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div><script src="../_static/documentation_options.js?v=7d86a446"></script>
+<script src="../_static/doctools.js?v=fd6eb6e6"></script>
+<script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+<script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+<script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="../_static/copybutton.js?v=f281be69"></script>
+<script src="../_static/translations.js?v=540d3cec"></script>
+<script src="../_static/katex.min.js?v=5cc8ed51"></script>
+<script src="../_static/auto-render.min.js?v=af98beb9"></script>
+<script src="../_static/katex_autorenderer.js?v=ae454eff"></script>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<script src="../_static/linenumbers.js?v=ebda5d35"></script>
+<script src="../_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+<script src="../_static/bilingual.js?v=25c2633d"></script></body></html>

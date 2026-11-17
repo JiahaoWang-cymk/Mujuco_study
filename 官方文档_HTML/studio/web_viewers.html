@@ -1,0 +1,641 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link sizes="16x16" href="../_static/favicons/favicon-16x16.png" rel="icon" type="image/png">
+    <link sizes="32x32" href="../_static/favicons/favicon-32x32.png" rel="icon" type="image/png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../_static/favicons/favicon-180x180.png" type="image/png">
+    <link sizes="180x180" href="../_static/favicons/favicon-180x180.png" rel="icon" type="image/png">
+    <link sizes="192x192" href="../_static/favicons/favicon-192x192.png" rel="icon" type="image/png"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Native Viewers" href="native_viewers.html"><link rel="prev" title="MuJoCo Studio" href="index.html">
+        <link rel="prefetch" href="../_static/banner.svg" as="image">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Web Viewers - MuJoCo Documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/katex/katex.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/katex-math.css?v=05624691" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=8d83ad8c" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides_mjwarp.css?v=e08d3b36" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #0053d6;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #123693;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 130%;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #a8caff;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #458dff;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 130%;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #a8caff;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #458dff;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 130%;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">MuJoCo Documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/banner.svg" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">MuJoCo Documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../computation/index.html">Computation</a><input aria-label="Toggle navigation of Computation" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../computation/fluid.html">Fluid forces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computation/speculative.html">Speculative contacts</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../XMLreference.html">XML Reference</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../programming/index.html">Programming</a><input aria-label="Toggle navigation of Programming" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../programming/simulation.html">Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/visualization.html">Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/rendering.html">Rendering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/ui.html">User Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/modeledit.html">Model Editing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/samples.html">Code samples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/extension.html">Extensions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../APIreference/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APItypes.html">Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIfunctions.html">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIglobals.html">Globals</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Studio</a><input aria-label="Toggle navigation of Studio" checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Web Viewers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="native_viewers.html">Native Viewers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_plugins.html">Python Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python.html">Python</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjx.html">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../unity.html">Unity Plug-in</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/building.html">Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcf_file_format_plugin.html">File Format Plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/importing.html">Importing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/exporting.html">Exporting</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">Model Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/studio/web_viewers.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="web-viewers">
+<span id="studiobrowser"></span><span id="studiowebviewers"></span><h1>Web Viewers<a class="headerlink" href="#web-viewers" title="Link to this heading">#</a></h1>
+<p>Studio provides two ways to run in a web browser depending on where physics and user code execute:</p>
+<ul class="simple">
+<li><p><strong>MuJoCo Live</strong> (<a class="reference external" href="https://live.mujoco.org">live.mujoco.org</a>): Compiles C++ Studio directly to WebAssembly so the
+entire simulator and renderer run client-side on a static page with zero install.</p></li>
+<li><p><strong>Python</strong> <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code>: Runs your Python simulation and custom plugins headlessly on a workstation or remote server
+(no GPU or window system required on the host) and streams UI draw lists and simulation state to the browser.</p></li>
+</ul>
+<section id="mujoco-live">
+<span id="studiolive"></span><h2>MuJoCo Live<a class="headerlink" href="#mujoco-live" title="Link to this heading">#</a></h2>
+<p><strong>MuJoCo Live</strong> (<a class="reference external" href="https://live.mujoco.org">live.mujoco.org</a>) is the standalone browser build of the C++ Studio
+application, running physics simulation, Dear ImGui UI, and <a class="reference internal" href="../programming/rendering.html#filamentrendering"><span class="std std-ref">Filament</span></a> rendering inside the
+browser tab with no backend server:</p>
+<ul>
+<li><p><strong>Drag-and-drop models</strong>: Drop a standalone <code class="docutils literal notranslate"><span class="pre">.xml</span></code>, <code class="docutils literal notranslate"><span class="pre">.mjb</span></code>, or self-contained <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> / <code class="docutils literal notranslate"><span class="pre">.zip</span></code> archive
+directly onto the canvas.</p></li>
+<li><p><strong>Shareable model URLs (</strong> <code class="docutils literal notranslate"><span class="pre">?model=</span></code> <strong>)</strong>: Pass <code class="docutils literal notranslate"><span class="pre">?model=&lt;url&gt;</span></code> using <code class="docutils literal notranslate"><span class="pre">https://</span></code>, <code class="docutils literal notranslate"><span class="pre">http://</span></code>, or the
+<code class="docutils literal notranslate"><span class="pre">github:</span></code> shorthand:</p>
+<p class="code-size"><a class="reference external" href="https://live.mujoco.org/?model=github:google-deepmind/mujoco/main/model/humanoid/humanoid.xml">https://live.mujoco.org/?model=github:google-deepmind/mujoco/main/model/humanoid/humanoid.xml</a></p>
+<p>When loading an XML model by URL, MuJoCo Live discovers transitive meshes, textures, and <code class="docutils literal notranslate"><span class="pre">&lt;include&gt;</span></code> files via
+<code class="docutils literal notranslate"><span class="pre">mju_getXMLDependencies</span></code> and prefetches them in parallel before compiling. Every robot thumbnail on the <a class="reference external" href="https://github.com/google-deepmind/mujoco_menagerie">MuJoCo
+Menagerie</a> page links directly to <code class="docutils literal notranslate"><span class="pre">live.mujoco.org</span></code> using
+this <code class="docutils literal notranslate"><span class="pre">github:</span></code> syntax, and visiting <code class="docutils literal notranslate"><span class="pre">?model=</span></code> with an empty value opens a blank scene without loading the default
+welcome model.</p>
+</li>
+</ul>
+<p>For details on the Emscripten WebAssembly build and C++ bindings, see <a class="reference internal" href="cpp.html#studiolivecpp"><span class="std std-ref">WebAssembly Build</span></a> in
+<a class="reference internal" href="cpp.html#studiocpp"><span class="std std-ref">C++</span></a>.</p>
+</section>
+<section id="webviewer">
+<span id="studiowebviewer"></span><h2>WebViewer<a class="headerlink" href="#webviewer" title="Link to this heading">#</a></h2>
+<p>Unlike remote desktop tools such as Chrome Remote Desktop, X11 forwarding, or server-side video encoders that require a
+GPU on the host machine and stream compressed video frames, <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> (<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/web_viewer.py">web_viewer.py</a>) runs headless on the host
+CPU with no native graphics or windowing dependencies and offloads 3D rasterization to the client browser over a single
+HTTP/WebSocket port. A host GPU is only needed if user code itself renders offscreen camera observations.</p>
+<section id="launching">
+<h3>Launching<a class="headerlink" href="#launching" title="Link to this heading">#</a></h3>
+<p>Start <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> from the command line or from Python via <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/launch_web.py">launch_web</a>. Everything is served over a
+single <code class="docutils literal notranslate"><span class="pre">http_port</span></code>, which defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code> and selects the first free port <code class="docutils literal notranslate"><span class="pre">&gt;=</span> <span class="pre">8080</span></code>. Set <code class="docutils literal notranslate"><span class="pre">open_browser=True</span></code> on
+<code class="docutils literal notranslate"><span class="pre">ViewerConfig</span></code> to open a browser tab automatically, and forward the port via <code class="docutils literal notranslate"><span class="pre">ssh</span> <span class="pre">-L</span> <span class="pre">8080:localhost:8080</span></code> when
+running on a remote machine:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>mujoco.studio.viewer<span class="w"> </span>--model<span class="o">=</span>humanoid.xml<span class="w"> </span>--gfx<span class="o">=</span>web
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span> <span class="k">as</span> <span class="n">studio_app</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">launch_web</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">viewer_protocol</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">viewer_protocol</span><span class="o">.</span><span class="n">ViewerConfig</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">'MuJoCo Studio'</span><span class="p">)</span>
+
+<span class="n">launch_web</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">,</span>
+    <span class="n">model_path</span><span class="o">=</span><span class="s1">'humanoid.xml'</span><span class="p">,</span>
+    <span class="n">plugins</span><span class="o">=</span><span class="p">[</span><span class="n">studio_app</span><span class="o">.</span><span class="n">App</span><span class="p">(),</span> <span class="o">*</span><span class="n">studio_app</span><span class="o">.</span><span class="n">SIM_PLUGINS</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Like <a class="reference internal" href="native_viewers.html#studioexecutionmodes"><span class="std std-ref">launch_native</span></a>, non-blocking mode is supported via <code class="docutils literal notranslate"><span class="pre">launch_web.launch</span></code> when
+attaching <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> to an existing simulation loop; see <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/sample/studio/custom_sim_loop.py">custom_sim_loop.py</a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> is itself optional: omitting it gives you a clean 3D viewport where your own <a class="reference internal" href="python_plugins.html#studiopythonplugins"><span class="std std-ref">plugins</span></a> define the entire interface. For example, the interactive slideshow sample in
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/sample/studio/overview/slideshow.py">overview/slideshow.py</a> runs a
+custom viewer without <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code>, pairing the built-in playback and history plugins with a minimal caption
+card, timeline scrubbing, and background scene prefetching.</p>
+</section>
+<section id="streaming-architecture">
+<h3>Streaming Architecture<a class="headerlink" href="#streaming-architecture" title="Link to this heading">#</a></h3>
+<a class="only-light reference internal image-reference" href="../_images/webviewer_light.svg"><img alt="../_images/webviewer_light.svg" class="align-center only-light" src="../_images/webviewer_light.svg" style="width: 100%;" />
+</a>
+<a class="only-dark reference internal image-reference" href="../_images/webviewer_dark.svg"><img alt="../_images/webviewer_dark.svg" class="align-center only-dark" src="../_images/webviewer_dark.svg" style="width: 100%;" />
+</a>
+<p>Python <a class="reference internal" href="architecture.html#studiomessaging"><span class="std std-ref">Message</span></a> types (<code class="docutils literal notranslate"><span class="pre">Snapshot</span></code> and <code class="docutils literal notranslate"><span class="pre">Event</span></code>) only travel between the Python simulation and
+viewer endpoints—the host-to-browser wire protocol is fixed and independent of custom plugin message classes:</p>
+<ul class="simple">
+<li><p><strong>UI Stream (</strong> <code class="docutils literal notranslate"><span class="pre">/ui</span></code> <strong>)</strong>: The host executes all <code class="docutils literal notranslate"><span class="pre">BuildGuiEvent</span></code> handlers from <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> and custom Python
+<code class="docutils literal notranslate"><span class="pre">ViewerPlugin</span></code> windows in a headless Dear ImGui context and streams compact 2D vertex/index draw lists via Studio’s
+UI wire codec. Because most UI panels and widgets remain static from frame to frame, the codec applies per-window
+delta compression—comparing each window’s vertex, index, and draw-command buffers against the previous frame and
+transmitting only the elements that changed—keeping CPU overhead and bandwidth minimal at a few kilobytes per second
+while rendering crisp vector UI at native browser resolution. Mouse clicks, drags, scroll wheel events, and
+keystrokes captured in the browser flow back over <code class="docutils literal notranslate"><span class="pre">/ui</span></code> to the host.</p></li>
+<li><p><strong>Scene &amp; Model Streams (</strong> <code class="docutils literal notranslate"><span class="pre">/model</span></code> <strong>,</strong> <code class="docutils literal notranslate"><span class="pre">/state</span></code> <strong>,</strong> <code class="docutils literal notranslate"><span class="pre">/drop</span></code> <strong>)</strong>: When a model loads, the host serves the
+compiled <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> (<code class="docutils literal notranslate"><span class="pre">.mjb</span></code>) and bundled resources over <code class="docutils literal notranslate"><span class="pre">/model</span></code>, and streams per-frame integration state,
+camera transforms, <a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a> flags, <a class="reference internal" href="../APIreference/APItypes.html#mjvperturb"><span class="std std-ref">mjvPerturb</span></a> state, and <code class="docutils literal notranslate"><span class="pre">extra_geoms</span></code> over <code class="docutils literal notranslate"><span class="pre">/state</span></code> with
+latest-wins semantics so the browser’s WebAssembly client can run <a class="reference internal" href="../APIreference/APIfunctions.html#mj-forward"><span class="std std-ref">mj_forward</span></a> and render via Filament WebGL 2.0.
+Models that a simulation plugin announces ahead of time with <code class="docutils literal notranslate"><span class="pre">PreloadModelEvent</span></code> (for example the next scenes of a
+playlist) are also served by content hash, and browsers download them in the background so that switching to one of
+them later needs no download. Model files or folders dropped onto the browser canvas upload over <code class="docutils literal notranslate"><span class="pre">/drop</span></code> to the
+host and trigger <code class="docutils literal notranslate"><span class="pre">LoadModelEvent</span></code> on the simulation thread.</p></li>
+</ul>
+</section>
+<section id="multi-viewer-sessions">
+<h3>Multi-Viewer Sessions<a class="headerlink" href="#multi-viewer-sessions" title="Link to this heading">#</a></h3>
+<p>Multiple browsers can connect to the same <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> URL simultaneously, coordinated by a <strong>Role</strong> indicator UI:</p>
+<ul class="simple">
+<li><p><strong>Controller vs. Spectators</strong>: Only <strong>one</strong> browser at a time holds the <strong>Controller</strong> role (<code class="docutils literal notranslate"><span class="pre">CONTROLLING</span></code>), which
+owns the <code class="docutils literal notranslate"><span class="pre">/ui</span></code> stream, sees and interacts with the Dear ImGui panels, perturbs bodies, and can
+drag-and-drop models onto the page. Additional browsers join as <strong>Spectators</strong> (<code class="docutils literal notranslate"><span class="pre">SPECTATING</span></code>): they receive only the
+<code class="docutils literal notranslate"><span class="pre">/model</span></code> bundle and <code class="docutils literal notranslate"><span class="pre">/state</span></code> simulation stream with no <code class="docutils literal notranslate"><span class="pre">/ui</span></code> traffic, and can switch their local camera in the
+Role UI between <code class="docutils literal notranslate"><span class="pre">Free:</span> <span class="pre">tumble</span></code>, <code class="docutils literal notranslate"><span class="pre">Free:</span> <span class="pre">wasd</span></code>, and <code class="docutils literal notranslate"><span class="pre">Follow</span> <span class="pre">Controller</span></code>.</p></li>
+<li><p><strong>Control queue &amp; Steal Control</strong>: A spectator can click <strong>Request control</strong> in the Role UI to join the FIFO control
+queue, pulsing the controller’s Role indicator orange with the waiting count, or click <strong>Leave Queue</strong> to cancel.
+When the controller clicks <strong>Release control</strong> or closes their tab, the server grants control to the head of the
+queue. Queued spectators can also click <strong>Steal Control</strong> to jump the queue and take control immediately, demoting the
+current controller to a spectator.</p></li>
+<li><p><strong>Max spectators &amp; outgoing bandwidth</strong>: Because the server streams the 60 Hz <code class="docutils literal notranslate"><span class="pre">/state</span></code> payload to every connected
+browser, total outgoing simulation bandwidth scales with the viewer count and is reported in the Role UI as <code class="docutils literal notranslate"><span class="pre">Sim</span> <span class="pre">Data</span>
+<span class="pre">Rate</span></code>. The controller can adjust <strong>Max Spectators</strong> at runtime from <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">32</span></code> (default <code class="docutils literal notranslate"><span class="pre">8</span></code>) to cap outgoing
+simulation state traffic; excess spectators are disconnected newest-first with a <em>Session is full</em> notice and retry
+automatically until a slot frees up.</p></li>
+<li><p><strong>Idle disconnects &amp; reconnection</strong>: Hidden or backgrounded browser tabs pause their rendering loop and stop sending
+traffic. If a controller tab sends no input for <strong>90 seconds</strong> while someone is waiting in the control queue, control
+is automatically handed off; if a spectator tab sends no 30-second heartbeat for <strong>5 minutes</strong>, it is disconnected to
+free its slot and reconnects automatically when the tab is focused again. Each client also acknowledges <code class="docutils literal notranslate"><span class="pre">/state</span></code>
+frames so at most one state payload is in flight over slow links, and displays a <em>Viewer server is not reachable</em>
+notice if the Python process stops or stalls.</p></li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> serves plain HTTP and WebSockets without authentication or encryption and currently listens on all
+network interfaces—anyone who can reach the port can take or steal control, upload files, and view host logs,
+exception messages, and file paths. While usability and access-control improvements are in progress, <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> is
+a development tool and <strong>will not come with security guarantees</strong> against untrusted networks. Run it on <code class="docutils literal notranslate"><span class="pre">localhost</span></code>,
+on trusted networks, or through an authenticated tunnel such as <code class="docutils literal notranslate"><span class="pre">ssh</span> <span class="pre">-L</span> <span class="pre">8080:localhost:8080</span></code>.</p>
+</div>
+</section>
+</section>
+<section id="browser-sandboxing">
+<span id="studiobrowsersandboxing"></span><h2>Browser Sandboxing<a class="headerlink" href="#browser-sandboxing" title="Link to this heading">#</a></h2>
+<p>Unlike native desktop applications, web browsers execute pages inside a security sandbox that restricts multithreading,
+network requests, filesystem access, and memory, and keep WebAssembly modules resident for the life of the page rather
+than running a fresh OS process per session. The points below summarize how these browser behaviors affect
+<code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> and <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code>:</p>
+<ul class="simple">
+<li><p><strong>COOP/COEP headers and WebAssembly multithreading</strong> (<em>both</em> <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> <em>and</em> <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code>): In WebAssembly, C++
+threads (POSIX <code class="docutils literal notranslate"><span class="pre">pthreads</span></code>) are backed by browser Web Workers that share memory through <code class="docutils literal notranslate"><span class="pre">SharedArrayBuffer</span></code>. To
+mitigate side-channel timing attacks, browsers block <code class="docutils literal notranslate"><span class="pre">SharedArrayBuffer</span></code> unless the page is <em>cross-origin
+isolated</em>—meaning the HTTP server sends <code class="docutils literal notranslate"><span class="pre">Cross-Origin-Opener-Policy:</span> <span class="pre">same-origin</span></code> (COOP) and
+<code class="docutils literal notranslate"><span class="pre">Cross-Origin-Embedder-Policy:</span> <span class="pre">require-corp</span></code> (COEP).</p>
+<ul>
+<li><p>In <strong>WebViewer</strong>, the browser’s WebAssembly rendering client (<code class="docutils literal notranslate"><span class="pre">web_client</span></code>) is compiled with <code class="docutils literal notranslate"><span class="pre">pthreads</span></code>, so
+<code class="docutils literal notranslate"><span class="pre">WebViewer</span></code>’s built-in Python server automatically attaches <code class="docutils literal notranslate"><span class="pre">COOP</span></code> and <code class="docutils literal notranslate"><span class="pre">COEP</span></code> headers to every HTTP response
+and WebSocket upgrade handshake.</p></li>
+<li><p>In <strong>MuJoCo Live</strong>, if a static web host does not serve <code class="docutils literal notranslate"><span class="pre">COOP</span></code> and <code class="docutils literal notranslate"><span class="pre">COEP</span></code> headers—or on mobile browsers such as
+iOS WebKit where <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code> loads a dedicated single-threaded build—<code class="docutils literal notranslate"><span class="pre">SharedArrayBuffer</span></code> is unavailable, the
+simulation runs single-threaded on the browser’s main thread, and the <em>Threads</em> slider is disabled.</p></li>
+</ul>
+</li>
+<li><p><strong>Secure context requirement (</strong> <code class="docutils literal notranslate"><span class="pre">localhost</span></code> <strong>or HTTPS)</strong> (<code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> <em>and self-hosted</em> <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code>):
+Browsers only enable <code class="docutils literal notranslate"><span class="pre">SharedArrayBuffer</span></code> in <em>secure contexts</em>, meaning <code class="docutils literal notranslate"><span class="pre">http://localhost</span></code>, <code class="docutils literal notranslate"><span class="pre">127.0.0.1</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">https://</span></code>. Opening a remote <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> over plain <code class="docutils literal notranslate"><span class="pre">http://&lt;remote-ip&gt;:&lt;port&gt;</span></code> disables <code class="docutils literal notranslate"><span class="pre">SharedArrayBuffer</span></code>
+and prevents the WebAssembly client from initializing. When running <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> on a remote workstation or headless
+server, forward the port to your local machine via <code class="docutils literal notranslate"><span class="pre">ssh</span> <span class="pre">-L</span> <span class="pre">8080:localhost:8080</span></code> and open <code class="docutils literal notranslate"><span class="pre">http://localhost:8080</span></code>,
+or place the server behind an <code class="docutils literal notranslate"><span class="pre">https://</span></code> reverse proxy that forwards the <code class="docutils literal notranslate"><span class="pre">COOP</span></code> and <code class="docutils literal notranslate"><span class="pre">COEP</span></code> headers on both HTTP
+and WebSocket responses.</p></li>
+<li><p><strong>Cross-origin model URLs (CORS &amp; CORP)</strong> (<code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code>): When <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code> loads an external model via
+<code class="docutils literal notranslate"><span class="pre">?model=&lt;url&gt;</span></code>, the browser fetches the XML and any referenced meshes or textures directly from the remote server.
+The remote server must permit cross-origin requests via <code class="docutils literal notranslate"><span class="pre">Access-Control-Allow-Origin</span></code>—as <code class="docutils literal notranslate"><span class="pre">github:</span></code> URLs on
+<code class="docutils literal notranslate"><span class="pre">raw.githubusercontent.com</span></code> do—and if <code class="docutils literal notranslate"><span class="pre">COEP:</span> <span class="pre">require-corp</span></code> is enabled on the hosting page, cross-origin assets
+must also include a permissive <code class="docutils literal notranslate"><span class="pre">Cross-Origin-Resource-Policy</span></code> header.</p></li>
+<li><p><strong>Where physics runs &amp; backgrounded tabs</strong> (<code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> <em>vs.</em> <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code>): In <strong>WebViewer</strong>, Python code,
+physics stepping, and C++ thread pools run natively on the host machine; minimizing or switching away from the browser
+tab only pauses 3D rendering in that tab while the host simulation continues running. In <strong>MuJoCo Live</strong>, physics and
+rendering both step inside the browser’s <code class="docutils literal notranslate"><span class="pre">requestAnimationFrame</span></code> loop rather than on a separate background thread,
+so backgrounding the tab pauses the simulation.</p></li>
+<li><p><strong>Filesystem access &amp; memory limits</strong> (<code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> <em>vs.</em> <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code>): A browser tab cannot read file paths on
+your local disk directly. In <strong>WebViewer</strong>, host Python code has normal access to the host filesystem, and files or
+folders dropped onto the browser canvas are uploaded over <code class="docutils literal notranslate"><span class="pre">/drop</span></code> to a temporary directory on the host. In <strong>MuJoCo
+Live</strong>, dropped files and <code class="docutils literal notranslate"><span class="pre">.zip</span></code> / <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> archives are unpacked into an in-memory virtual filesystem that exists
+only for the lifetime of the tab. Similarly, 32-bit WebAssembly caps linear memory at 4 GiB on desktop browsers and
+512 MiB on iOS; in <strong>WebViewer</strong> this limit applies only to the browser’s rendering scene while the simulation uses
+host RAM, whereas in <strong>MuJoCo Live</strong> the entire simulation and history buffer reside inside the browser’s WebAssembly
+heap.</p></li>
+<li><p><strong>WebAssembly module lifetime &amp; persistent C++ state</strong> (<code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code> <em>and sequential Python sessions</em>): Unlike a
+standalone desktop executable whose entire address space is reclaimed by the OS when the process exits, a compiled
+WebAssembly module and its linear memory remain resident for as long as the page keeps the module loaded. When an
+embedding page stops and restarts the viewer across JavaScript <code class="docutils literal notranslate"><span class="pre">deinit</span></code> and <code class="docutils literal notranslate"><span class="pre">init</span></code> calls, all C++ global and
+<code class="docutils literal notranslate"><span class="pre">static</span></code> variables persist across runs:</p>
+<ul>
+<li><p><strong>Global UI contexts and singletons</strong>: Libraries such as Dear ImGui and ImPlot track their active state through
+global context pointers, and creating a new context does not free an existing one—if teardown skips
+<code class="docutils literal notranslate"><span class="pre">DestroyContext</span></code>, the next <code class="docutils literal notranslate"><span class="pre">CreateContext</span></code> allocates and leaks a new context while leaving the global pointer
+bound to the stale previous one (or leaks the old context’s buffers if the global pointer is reassigned). Studio
+destroys its UI contexts during window and app teardown so each <code class="docutils literal notranslate"><span class="pre">init</span></code> starts cleanly and returns freed blocks
+to the allocator inside the WebAssembly heap; custom C++ plugins and bindings must reset any global or <code class="docutils literal notranslate"><span class="pre">static</span></code>
+state the same way. Note that while C++ destructors make freed memory reusable within the module, a
+<code class="docutils literal notranslate"><span class="pre">WebAssembly.Memory</span></code> buffer can grow up to the browser ceiling but never shrinks back to the OS until the tab
+reloads or drops all references to the module.</p></li>
+<li><p><strong>Same behavior in Python</strong>: Compiled C++ extension modules remain loaded in the Python interpreter process rather
+than unloading when a viewer window or <code class="docutils literal notranslate"><span class="pre">with</span></code> block closes, so C++ global and <code class="docutils literal notranslate"><span class="pre">static</span></code> state persists—and
+leaks if not torn down—across sequential viewer windows, notebook cells, and tests in a single process in the
+exact same way.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="native_viewers.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Native Viewers</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">MuJoCo Studio</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Web Viewers</a><ul>
+<li><a class="reference internal" href="#mujoco-live">MuJoCo Live</a></li>
+<li><a class="reference internal" href="#webviewer">WebViewer</a><ul>
+<li><a class="reference internal" href="#launching">Launching</a></li>
+<li><a class="reference internal" href="#streaming-architecture">Streaming Architecture</a></li>
+<li><a class="reference internal" href="#multi-viewer-sessions">Multi-Viewer Sessions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#browser-sandboxing">Browser Sandboxing</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/katex.min.js?v=5cc8ed51"></script>
+    <script src="../_static/auto-render.min.js?v=af98beb9"></script>
+    <script src="../_static/katex_autorenderer.js?v=ae454eff"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/linenumbers.js?v=ebda5d35"></script>
+    <script src="../_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+    </body>
+</html>

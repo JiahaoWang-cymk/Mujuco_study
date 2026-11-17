@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html class="no-js" data-content_root="../" lang="zh-CN">
+<head><meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="light dark" name="color-scheme"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="../_static/favicons/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+<link href="../_static/favicons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="apple-touch-icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-192x192.png" rel="icon" sizes="192x192" type="image/png"/><link href="../genindex.html" rel="index" title="索引"/><link href="../search.html" rel="search" title="搜索"/><link href="samples.html" rel="next" title="代码示例"/><link href="ui.html" rel="prev" title="用户界面"/>
+<link as="image" href="../_static/banner.svg" rel="prefetch"/>
+<!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+<title>模型编辑 - MuJoCo 文档（中文）</title>
+<link href="../_static/pygments.css?v=b86133f3" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo.css?v=7bdb33bb" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css?v=05624691" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo-extensions.css?v=8dab3a3b" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides.css?v=8d83ad8c" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides_mjwarp.css?v=e08d3b36" rel="stylesheet" type="text/css"/>
+<link href="../_static/zh_overrides.css?v=ee52c62c" rel="stylesheet" type="text/css"/>
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #16213a;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #2a4fd6;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #2a4fd6;
+  --color-brand-content: #2a4fd6;
+  --color-background-secondary: #f4f6f9;
+  --color-sidebar-background: #f4f6f9;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+      }
+    }
+  }
+</style></head>
+<body>
+<script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+<symbol id="svg-toc" viewbox="0 0 24 24">
+<title>Contents</title>
+<svg fill="currentColor" stroke="currentColor" stroke-width="0" viewbox="0 0 1024 1024">
+<path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"></path>
+</svg>
+</symbol>
+<symbol id="svg-menu" viewbox="0 0 24 24">
+<title>Menu</title>
+<svg class="feather-menu" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<line x1="3" x2="21" y1="12" y2="12"></line>
+<line x1="3" x2="21" y1="6" y2="6"></line>
+<line x1="3" x2="21" y1="18" y2="18"></line>
+</svg>
+</symbol>
+<symbol id="svg-arrow-right" viewbox="0 0 24 24">
+<title>Expand</title>
+<svg class="feather-chevron-right" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</symbol>
+<symbol id="svg-sun" viewbox="0 0 24 24">
+<title>Light mode</title>
+<svg class="feather-sun" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" x2="12" y1="1" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="23"></line>
+<line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+<line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+<line x1="1" x2="3" y1="12" y2="12"></line>
+<line x1="21" x2="23" y1="12" y2="12"></line>
+<line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+<line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
+</svg>
+</symbol>
+<symbol id="svg-moon" viewbox="0 0 24 24">
+<title>Dark mode</title>
+<svg class="icon-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+</svg>
+</symbol>
+<symbol id="svg-sun-with-moon" viewbox="0 0 24 24">
+<title>Auto light/dark, in light mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z" style="opacity: 50%"></path>
+<line x1="14.5" x2="14.5" y1="3.25" y2="1.25"></line>
+<line x1="14.5" x2="14.5" y1="15.85" y2="17.85"></line>
+<line x1="10.044" x2="8.63" y1="5.094" y2="3.68"></line>
+<line x1="19" x2="20.414" y1="14.05" y2="15.464"></line>
+<line x1="8.2" x2="6.2" y1="9.55" y2="9.55"></line>
+<line x1="20.8" x2="22.8" y1="9.55" y2="9.55"></line>
+<line x1="10.044" x2="8.63" y1="14.006" y2="15.42"></line>
+<line x1="19" x2="20.414" y1="5.05" y2="3.636"></line>
+<circle cx="14.5" cy="9.55" r="3.6"></circle>
+</svg>
+</symbol>
+<symbol id="svg-moon-with-sun" viewbox="0 0 24 24">
+<title>Auto light/dark, in dark mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"></path>
+<line style="opacity: 50%" x1="18" x2="18" y1="3.705" y2="2.5"></line>
+<line style="opacity: 50%" x1="18" x2="18" y1="11.295" y2="12.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="4.816" y2="3.964"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="10.212" y2="11.063"></line>
+<line style="opacity: 50%" x1="14.205" x2="13.001" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="21.795" x2="23" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="10.184" y2="11.036"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="4.789" y2="3.937"></line>
+<circle cx="18" cy="7.5" r="2.169" style="opacity: 50%"></circle>
+</svg>
+</symbol>
+<symbol id="svg-pencil" viewbox="0 0 24 24">
+<svg class="icon-tabler-pencil-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
+<path d="M13.5 6.5l4 4"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+<symbol id="svg-eye" viewbox="0 0 24 24">
+<svg class="icon-tabler-eye-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
+<path d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+</svg>
+<input aria-label="Toggle site navigation sidebar" class="sidebar-toggle" id="__navigation" name="__navigation" type="checkbox"/>
+<input aria-label="Toggle table of contents sidebar" class="sidebar-toggle" id="__toc" name="__toc" type="checkbox"/>
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+<div class="page">
+<header class="mobile-header">
+<div class="header-left">
+<label class="nav-overlay-icon" for="__navigation">
+<span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+</label>
+</div>
+<div class="header-center">
+<a href="../index.html"><div class="brand">MuJoCo 文档（中文）</div></a>
+</div>
+<div class="header-right">
+<div class="theme-toggle-container theme-toggle-header">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-header-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+</header>
+<aside class="sidebar-drawer">
+<div class="sidebar-container">
+<div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+<div class="sidebar-logo-container">
+<img alt="Logo" class="sidebar-logo" src="../_static/banner.svg"/>
+</div>
+<span class="sidebar-brand-text">MuJoCo 文档（中文）</span>
+</a><form action="../search.html" class="sidebar-search-container" method="get" role="search">
+<input aria-label="搜索" class="sidebar-search" name="q" placeholder="搜索"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">入门教程</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">概览</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../computation/index.html">计算</a><input aria-label="Toggle navigation of 计算" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../computation/fluid.html">流体力</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computation/speculative.html">推测接触</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">建模</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../XMLreference.html">XML 参考</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">编程</a><input aria-label="Toggle navigation of 编程" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="simulation.html">仿真</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html">可视化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rendering.html">渲染</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui.html">用户界面</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">模型编辑</a></li>
+<li class="toctree-l2"><a class="reference internal" href="samples.html">代码示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension.html">扩展</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../APIreference/index.html">API 参考</a><input aria-label="Toggle navigation of API 参考" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APItypes.html">类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIfunctions.html">函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIglobals.html">全局变量</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../studio/index.html">Studio</a><input aria-label="Toggle navigation of Studio" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../studio/web_viewers.html">Web 查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/native_viewers.html">原生查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/architecture.html">架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/python_plugins.html">Python 插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python.html">Python</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjx.html">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../unity.html">Unity 插件</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/building.html">构建</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcf_file_format_plugin.html">文件格式插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/importing.html">导入</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/exporting.html">导出</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">模型库</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">更新日志</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<div class="main">
+<div class="content">
+<div class="article-container">
+<a class="back-to-top muted-link" href="#">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+</svg>
+<span>Back to top</span>
+</a>
+<div class="content-icon-container">
+<div class="view-this-page">
+<a class="muted-link" href="../_sources/programming/modeledit.rst.txt" title="View this page">
+<svg><use href="#svg-eye"></use></svg>
+<span class="visually-hidden">View this page</span>
+</a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-content-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+<article id="furo-main-content" role="main">
+<section id="id1">
+<h1 data-bi="bi-1">模型编辑<a class="headerlink" href="#id1" title="链接到此标题。">#</a></h1><div class="en-orig en-h" data-for="bi-1" lang="en">Model Editing</div>
+<div class="mt-notice admonition note">
+<p class="admonition-title">备注</p>
+<p>本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 <code class="docutils literal notranslate"><span class="pre">术语表.md</span></code> 。</p>
+</div>
+<p data-bi="bi-2">可以使用 <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> 结构体及相关 API 来创建和修改模型（model）。该数据结构与 MJCF 一一对应，实际上，MuJoCo 自带的 XML 解析器（包括 MJCF 和 URDF）在加载模型时也使用这套 API。</p><div class="en-orig" data-for="bi-2" lang="en">It is possible to create and modify models using the <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> struct and related API.
+This data structure is in one-to-one correspondence with MJCF and indeed, MuJoCo’s own XML parsers (both MJCF and URDF)
+use this API when loading a model.</div>
+<section id="meoverview">
+<span id="id2"></span><h2 data-bi="bi-3">概述<a class="headerlink" href="#meoverview" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-3" lang="en">Overview</div>
+<p data-bi="bi-4">该 API 对传统的“使用 XML 文件创建和编辑模型”的工作流进行了扩展，将 <em>解析</em> 和 <em>编译</em> 两个步骤拆分开来。正如 <a class="reference internal" href="../overview.html#instance"><span class="std std-ref">概览一章</span></a> 中所总结的，传统工作流如下：</p><div class="en-orig" data-for="bi-4" lang="en">The API augments the traditional workflow of creating and editing models using XML files, breaking up the <em>parse</em> and
+<em>compile</em> steps. As summarized in the <a class="reference internal" href="../overview.html#instance"><span class="std std-ref">Overview chapter</span></a>, the traditional workflow is:</div>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p data-bi="bi-5">创建 XML 模型描述文件（MJCF 或 URDF）及相关资产。<br/></p><div class="en-orig" data-for="bi-5" lang="en">Create an XML model description file (MJCF or URDF) and associated assets. <br/></div></li>
+<li><p data-bi="bi-6">调用 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-loadxml"><span class="std std-ref">mj_loadXML</span></a>，得到一个 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 实例。</p><div class="en-orig" data-for="bi-6" lang="en">Call <a class="reference internal" href="../APIreference/APIfunctions.html#mj-loadxml"><span class="std std-ref">mj_loadXML</span></a>, obtain an <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> instance.</div></li>
+</ol>
+</div></blockquote>
+<p data-bi="bi-7">使用 <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> 的工作流如下：</p><div class="en-orig" data-for="bi-7" lang="en">The workflow using <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> is:</div>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p data-bi="bi-8">使用 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-makespec"><span class="std std-ref">mj_makeSpec</span></a> 创建一个空的 <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a>，或使用 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-parsexml"><span class="std std-ref">mj_parseXML</span></a> 解析现有的 XML 文件。</p><div class="en-orig" data-for="bi-8" lang="en">Create an empty <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-makespec"><span class="std std-ref">mj_makeSpec</span></a> or parse an existing XML file using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-parsexml"><span class="std std-ref">mj_parseXML</span></a>.</div></li>
+<li><p data-bi="bi-9">通过添加、修改和删除元素，以编程方式编辑 <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> 数据结构。</p><div class="en-orig" data-for="bi-9" lang="en">Programmatically edit the <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> data structure by adding, modifying, and removing elements.</div></li>
+<li><p data-bi="bi-10">使用 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-compile"><span class="std std-ref">mj_compile</span></a> 将 <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> 编译为 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 实例。</p><div class="en-orig" data-for="bi-10" lang="en">Compile the <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> to an <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> instance using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-compile"><span class="std std-ref">mj_compile</span></a>.</div></li>
+</ol>
+<p data-bi="bi-11">编译之后，<a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> 仍然可以编辑，因此步骤 2 和步骤 3 可以互换。</p><div class="en-orig" data-for="bi-11" lang="en">After compilation, the <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> remains editable, so steps 2 and 3 are interchangeable.</div>
+</div></blockquote>
+</section>
+<section id="meloading">
+<span id="load"></span><span id="id3"></span><h2 data-bi="bi-12">模型解析与加载<a class="headerlink" href="#meloading" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-12" lang="en">Model Parsing &amp; Loading</div>
+<p data-bi="bi-13">如 <a class="reference internal" href="../overview.html#instance"><span class="std std-ref">模型实例</span></a> 中所总结的，模型描述文件（MJCF、MJZ、URDF、USD）通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-parse"><span class="std std-ref">mj_parse</span></a> （在 Python 中为 <code class="docutils literal notranslate"><span class="pre">mjSpec.from_file()</span></code> / <code class="docutils literal notranslate"><span class="pre">mjSpec.from_string()</span></code> ）被解析为
+<a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a>。模型格式根据内容类型或文件扩展名推断，并将解析为 <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> 的工作委托给相应的
+<a class="reference internal" href="extension.html#exdecoder"><span class="std std-ref">解码器</span></a> 插件（plugin）。</p><div class="en-orig" data-for="bi-13" lang="en">As summarized in <a class="reference internal" href="../overview.html#instance"><span class="std std-ref">Model instances</span></a>, model description files (MJCF, MJZ, URDF, USD) are parsed into an
+<a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-parse"><span class="std std-ref">mj_parse</span></a> (or <code class="docutils literal notranslate"><span class="pre">mjSpec.from_file()</span></code> / <code class="docutils literal notranslate"><span class="pre">mjSpec.from_string()</span></code> in Python). The model format is
+inferred from the content type or file extension, and parsing into an <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> is delegated to the appropriate
+<a class="reference internal" href="extension.html#exdecoder"><span class="std std-ref">decoder</span></a> plugin.</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="kt">char</span><span class="w"> </span><span class="n">error</span><span class="p">[</span><span class="mi">1000</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">""</span><span class="p">;</span>
+<span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">spec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_parse</span><span class="p">(</span><span class="n">vfs</span><span class="p">,</span><span class="w"> </span><span class="s">"robot.xml"</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">error</span><span class="p">));</span>
+</pre></div>
+</div>
+<p data-bi="bi-14">为方便起见，<a class="reference internal" href="../APIreference/APIfunctions.html#mj-loadxml"><span class="std std-ref">mj_loadXML</span></a> （或 Python 中的 <code class="docutils literal notranslate"><span class="pre">MjModel.from_xml_path()</span></code> ）将解析和编译合并为一步，直接从 XML 文件或 <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> 归档文件返回编译好的 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>。</p><div class="en-orig" data-for="bi-14" lang="en">For convenience, <a class="reference internal" href="../APIreference/APIfunctions.html#mj-loadxml"><span class="std std-ref">mj_loadXML</span></a> (or Python <code class="docutils literal notranslate"><span class="pre">MjModel.from_xml_path()</span></code>) combines parsing and compilation into a
+single step, returning a compiled <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> directly from an XML file or <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> archive.</div>
+<p data-bi="bi-15">另外，也可以使用 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-loadmodel"><span class="std std-ref">mj_loadModel</span></a> （或 Python 中的 <code class="docutils literal notranslate"><span class="pre">MjModel.from_binary_path()</span></code> ）直接从二进制 MJB 文件加载预编译的 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>。</p><div class="en-orig" data-for="bi-15" lang="en">Alternatively, a pre-compiled <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> can be loaded directly from a binary MJB file using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-loadmodel"><span class="std std-ref">mj_loadModel</span></a>
+(or Python <code class="docutils literal notranslate"><span class="pre">MjModel.from_binary_path()</span></code>).</div>
+</section>
+<section id="mecompilation">
+<span id="compile"></span><span id="id4"></span><h2 data-bi="bi-16">模型编译<a class="headerlink" href="#mecompilation" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-16" lang="en">Model Compilation</div>
+<p data-bi="bi-17">一旦创建了高层的 <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> （通过解析文件、加载归档文件或以编程方式构造），就可以使用 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-compile"><span class="std std-ref">mj_compile</span></a> 将其编译为 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>。</p><div class="en-orig" data-for="bi-17" lang="en">Once a high-level <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> is created—by parsing a file, loading an archive, or constructing it
+programmatically—it is compiled into an <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-compile"><span class="std std-ref">mj_compile</span></a>.</div>
+<p data-bi="bi-18">编译与加载相互独立，无论 <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> 是如何构造的，编译的工作方式都完全相同。解析器和编译器都会执行大量错误检查，并在遇到第一个错误时中止。解析器使用自定义模式（schema）来验证文件结构、元素和属性，而编译器则应用语义检查，并执行一步测试仿真以捕获运行时错误。</p><div class="en-orig" data-for="bi-18" lang="en">Compilation is independent of loading, working in the exact same way regardless of how <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> was constructed.
+Both the parser and the compiler perform extensive error checking and abort when the first error is encountered. The
+parser uses a custom schema to validate file structure, elements, and attributes, while the compiler applies semantic
+checks and executes a test simulation step to catch runtime errors.</div>
+<p data-bi="bi-19">解析和编译都极其迅速，通常不到一秒，这使得交互式模型设计、实时编辑和快速重新加载变得流畅自然。</p><div class="en-orig" data-for="bi-19" lang="en">Parsing and compilation are extremely fast—typically less than a second—making interactive model design, live editing,
+and rapid reloading seamless.</div>
+</section>
+<section id="mesaving">
+<span id="save"></span><span id="id5"></span><h2 data-bi="bi-20">模型编码与保存<a class="headerlink" href="#mesaving" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-20" lang="en">Model Encoding &amp; Saving</div>
+<p data-bi="bi-21">模型规格（spec）和编译后的模型可以使用 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a> 序列化到文件，或使用 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-savexmlstring"><span class="std std-ref">mj_saveXMLString</span></a> 或 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-savexml"><span class="std std-ref">mj_saveXML</span></a> 直接保存为 XML 字符串。</p><div class="en-orig" data-for="bi-21" lang="en">Model specs and compiled models can be serialized to files using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a>, or directly saved to XML strings
+using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-savexmlstring"><span class="std std-ref">mj_saveXMLString</span></a> or <a class="reference internal" href="../APIreference/APIfunctions.html#mj-savexml"><span class="std std-ref">mj_saveXML</span></a>.</div>
+<p data-bi="bi-22"><a class="reference internal" href="../APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a> 函数为模型序列化提供了统一的入口：</p><div class="en-orig" data-for="bi-22" lang="en">The <a class="reference internal" href="../APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a> function provides a unified entry point for serializing models:</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="kt">char</span><span class="w"> </span><span class="n">error</span><span class="p">[</span><span class="mi">1024</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">""</span><span class="p">;</span>
+<span class="n">mjtSize</span><span class="w"> </span><span class="n">bytes_written</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_encode</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="s">"robot.mjz"</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">vfs</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">error</span><span class="p">));</span>
+</pre></div>
+</div>
+<p data-bi="bi-23">输出格式根据文件扩展名（不区分大小写）或显式给出的 <code class="docutils literal notranslate"><span class="pre">content_type</span></code> 自动选择：</p><div class="en-orig" data-for="bi-23" lang="en">The output format is selected automatically based on the file extension (case-insensitive) or explicit <code class="docutils literal notranslate"><span class="pre">content_type</span></code>:</div>
+<ul class="simple">
+<li><p data-bi="bi-24"><strong>MJCF XML</strong> （ <code class="docutils literal notranslate"><span class="pre">.xml</span></code> ）：使用 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-savexml"><span class="std std-ref">mj_saveXML</span></a> 将 spec 展平为单个 MJCF XML 文件。如果显式传入了 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 参数，<a class="reference internal" href="../APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a> 会在保存之前将 <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> 中被修改的值复制回 spec。在计算章节中，我们给出了一个 MJCF 文件的 <a class="reference external" href="_static/example.xml">示例</a> 以及对应的 <a class="reference external" href="_static/example_saved.xml">保存后的示例</a>。</p><div class="en-orig" data-for="bi-24" lang="en"><strong>MJCF XML</strong> (<code class="docutils literal notranslate"><span class="pre">.xml</span></code>): Flattens the spec into a single MJCF XML file using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-savexml"><span class="std std-ref">mj_saveXML</span></a>. If an explicit
+<a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> argument is passed, <a class="reference internal" href="../APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a> will copy modified values back from <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> into the spec
+prior to saving. In the Computation chapter we show an <a class="reference external" href="_static/example.xml">example</a> MJCF file and the
+corresponding <a class="reference external" href="_static/example_saved.xml">saved example</a>.</div></li>
+<li><p data-bi="bi-25"><strong>MJZ 归档文件</strong> （ <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> 或 <code class="docutils literal notranslate"><span class="pre">.zip</span></code> ）：通过内置的 <code class="docutils literal notranslate"><span class="pre">mjz_encoder</span></code> ，将 spec 及所有相关的外部资产（网格、纹理、被包含的 XML）打包为自包含的 Zip 归档文件。</p><div class="en-orig" data-for="bi-25" lang="en"><strong>MJZ Archive</strong> (<code class="docutils literal notranslate"><span class="pre">.mjz</span></code> or <code class="docutils literal notranslate"><span class="pre">.zip</span></code>): Bundles the spec and all associated external assets (meshes, textures,
+included XMLs) into a self-contained Zip archive via the built-in <code class="docutils literal notranslate"><span class="pre">mjz_encoder</span></code>.</div></li>
+<li><p data-bi="bi-26"><strong>MJB 二进制</strong> （ <code class="docutils literal notranslate"><span class="pre">.mjb</span></code> ）：通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-savemodel"><span class="std std-ref">mj_saveModel</span></a> 以 MuJoCo 二进制格式序列化编译后的 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>。MJB 文件是独立的，不引用外部文件，加载速度比 XML 更快，但与版本绑定，且无法反编译回 XML。需要已编译的 <code class="docutils literal notranslate"><span class="pre">model</span></code> ；<strong>不会</strong> 序列化 <code class="docutils literal notranslate"><span class="pre">spec</span></code> 中的任何内容。</p><div class="en-orig" data-for="bi-26" lang="en"><strong>MJB Binary</strong> (<code class="docutils literal notranslate"><span class="pre">.mjb</span></code>): Serializes the compiled <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> in MuJoCo binary format via <a class="reference internal" href="../APIreference/APIfunctions.html#mj-savemodel"><span class="std std-ref">mj_saveModel</span></a>.
+MJB files are standalone, do not refer to external files, and load faster than XML, but are version-specific and
+cannot be decompiled back to XML. Requires a compiled <code class="docutils literal notranslate"><span class="pre">model</span></code>; does <strong>not</strong> serialize anything from <code class="docutils literal notranslate"><span class="pre">spec</span></code>.</div></li>
+<li><p data-bi="bi-27"><strong>TXT</strong> （ <code class="docutils literal notranslate"><span class="pre">.txt</span></code> ）：通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-printmodel"><span class="std std-ref">mj_printModel</span></a> 写出人类可读的文本转储。适用于差异比较和调试。需要已编译的 <code class="docutils literal notranslate"><span class="pre">model</span></code> ；<strong>不会</strong> 序列化 <code class="docutils literal notranslate"><span class="pre">spec</span></code> 中的任何内容。</p><div class="en-orig" data-for="bi-27" lang="en"><strong>TXT</strong> (<code class="docutils literal notranslate"><span class="pre">.txt</span></code>): Writes a human-readable text dump via <a class="reference internal" href="../APIreference/APIfunctions.html#mj-printmodel"><span class="std std-ref">mj_printModel</span></a>. Useful for diffing and debugging.
+Requires a compiled <code class="docutils literal notranslate"><span class="pre">model</span></code>; does <strong>not</strong> serialize anything from <code class="docutils literal notranslate"><span class="pre">spec</span></code>.</div></li>
+</ul>
+<p data-bi="bi-28">spec 以 MJCF 形式保存有两种方式，由其编译器属性
+<a class="reference internal" href="../XMLreference.html#compiler-savecompiled"><span class="std std-ref">savecompiled</span></a> 选择：</p><div class="en-orig" data-for="bi-28" lang="en">A spec is saved as MJCF in one of two ways, selected by its compiler attribute
+<a class="reference internal" href="../XMLreference.html#compiler-savecompiled"><span class="std std-ref">savecompiled</span></a>:</div>
+<ul class="simple">
+<li><p data-bi="bi-29">"true"（默认值）：保存上一次编译得到的模型值，采用规范表示法。例如，与其自由关节 <a class="reference internal" href="../XMLreference.html#body-freejoint-align"><span class="std std-ref">对齐</span></a> 的刚体（body）以对齐后的位姿保存，而拟合到网格的 geom 则以拟合得到的尺寸保存。spec 必须已经编译过。</p><div class="en-orig" data-for="bi-29" lang="en">“true”, the default: the values which the last compilation made of the model, in the canonical notation. For
+example a body which is <a class="reference internal" href="../XMLreference.html#body-freejoint-align"><span class="std std-ref">aligned</span></a> with its free joint is saved with its aligned pose, and
+a geom which was fitted to a mesh with the size of the fit. The spec must have been compiled.</div></li>
+<li><p data-bi="bi-30">"false"：按 spec 中书写的方式保存模型。位姿是元素在其 <a class="reference internal" href="../XMLreference.html#frame"><span class="std std-ref">坐标系</span></a> 中的位姿，以默认值书写的属性会被保留，每个数值都被精确保存。朝向、角度和 <code class="docutils literal notranslate"><span class="pre">fromto</span></code> 以书写时所用的表示法保存，除非
+<a class="reference internal" href="../XMLreference.html#compiler-savecanonical"><span class="std std-ref">savecanonical</span></a> 为 "true"。spec 无需已经编译。</p><div class="en-orig" data-for="bi-30" lang="en">“false”: the model as it is written in the spec. Poses are those of the elements in their <a class="reference internal" href="../XMLreference.html#frame"><span class="std std-ref">frames</span></a>,
+attributes which were written with their default values are kept, and every number is saved exactly. Orientations,
+angles and <code class="docutils literal notranslate"><span class="pre">fromto</span></code> are saved in the notation in which they were written, unless
+<a class="reference internal" href="../XMLreference.html#compiler-savecanonical"><span class="std std-ref">savecanonical</span></a> is “true”. The spec need not have been compiled.</div></li>
+</ul>
+<p data-bi="bi-31">在这两种情况下，保存的文件都会编译为同一个模型，但 MJCF 无法表达 spec 所保存内容的情况除外。例如，被挂接模型的元素使用其自身的编译器设置进行编译，而保存的文件只有一个 <a class="reference internal" href="../XMLreference.html#compiler"><span class="std std-ref">compiler</span></a> 元素。按书写方式保存时，被挂接模型的角度单位和欧拉序列会被转换，而如果某个设置不同且会改变编译所推断的内容，例如
+<a class="reference internal" href="../XMLreference.html#compiler-inertiafromgeom"><span class="std std-ref">inertiafromgeom</span></a>，则会报错并给出说明；按编译值保存时，这样的模型编译结果可能不同。解析器没有保存在 spec 中的内容不会被保存：文件顶部那条注释之外的其他注释、<a class="reference internal" href="../XMLreference.html#include"><span class="std std-ref">include</span></a> 元素，以及会被展开为其他元素的元素，例如
+<a class="reference internal" href="../XMLreference.html#replicate"><span class="std std-ref">replicate</span></a>、<a class="reference internal" href="../XMLreference.html#body-flexcomp"><span class="std std-ref">flexcomp</span></a>、<a class="reference internal" href="../XMLreference.html#body-attach"><span class="std std-ref">attach</span></a> 和执行器（actuator）快捷方式。</p><div class="en-orig" data-for="bi-31" lang="en">In both cases the saved file compiles to the same model, except where MJCF cannot say what the spec holds. For example,
+the elements of an attached model are compiled with its own compiler settings, while the saved file has one
+<a class="reference internal" href="../XMLreference.html#compiler"><span class="std std-ref">compiler</span></a> element. Saved as written, the angle unit and the Euler sequence of an attached model are
+converted, and a difference in a setting which changes what compilation infers, such as
+<a class="reference internal" href="../XMLreference.html#compiler-inertiafromgeom"><span class="std std-ref">inertiafromgeom</span></a>, is an error which says so; saved as compiled values, such a model may
+compile differently. What the parser does not keep in a spec is not saved: comments other than the one at the top of
+the file, the <a class="reference internal" href="../XMLreference.html#include"><span class="std std-ref">include</span></a> elements, and the elements which it expands into others, such as
+<a class="reference internal" href="../XMLreference.html#replicate"><span class="std std-ref">replicate</span></a>, <a class="reference internal" href="../XMLreference.html#body-flexcomp"><span class="std std-ref">flexcomp</span></a>, <a class="reference internal" href="../XMLreference.html#body-attach"><span class="std std-ref">attach</span></a> and the actuator shortcuts.</div>
+<p data-bi="bi-32">按书写方式保存的 spec 在两种情况下需要先编译。编译所计算出的惯性（inertial）由 <a class="reference internal" href="../XMLreference.html#compiler-saveinertial"><span class="std std-ref">saveinertial</span></a> 保存，它们是上一次编译的结果，因此必须在任何结构性编辑（添加、删除或挂接元素）之后重新编译，这与按编译值保存时相同。另外，等待编译的 <a class="reference internal" href="../XMLreference.html#keyframe"><span class="std std-ref">关键帧</span></a> （keyframe）——例如在 <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-attach"><span class="std std-ref">mjs_attach</span></a> 或 <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-delete"><span class="std std-ref">mjs_delete</span></a> 改变了含有关键帧的 spec 的运动学树（kinematic tree）之后——会在编译组装好它们的向量之后才被保存。</p><div class="en-orig" data-for="bi-32" lang="en">A spec which is saved as written needs a compilation in two cases. The inertials which compilation calculates,
+which <a class="reference internal" href="../XMLreference.html#compiler-saveinertial"><span class="std std-ref">saveinertial</span></a> saves, are those of the last compilation, which must follow any
+structural edit (elements added, deleted or attached), as for compiled values. And <a class="reference internal" href="../XMLreference.html#keyframe"><span class="std std-ref">keyframes</span></a> which
+await compilation, as they do once <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-attach"><span class="std std-ref">mjs_attach</span></a> or <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-delete"><span class="std std-ref">mjs_delete</span></a> changed the kinematic tree of a spec which
+has keyframes, are saved once compilation has assembled their vectors.</div>
+<p data-bi="bi-33">需要注意的是，保存的 XML 会考虑所有已定义的默认值。当模型中有大量重复值时，这一点很有用，例如从不支持默认值的 URDF 加载的模型。在这种情况下，可以添加默认类（default class），设置相关元素的类，然后保存；得到的 XML 将使用这些默认值，可读性更好。</p><div class="en-orig" data-for="bi-33" lang="en">Importantly, saved XML will take into account any defined defaults. This is useful when a model has many repeated
+values, for example if loaded from URDF, which does not support defaults. In such a case one can add default classes,
+set the class of the relevant elements, and save; the resulting XML will use the defaults and be more human-readable.</div>
+</section>
+<section id="mjz">
+<span id="mjzarchives"></span><h2 data-bi="bi-34">MJZ 归档文件<a class="headerlink" href="#mjz" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-34" lang="en">MJZ Archives</div>
+<p data-bi="bi-35">复杂的 MuJoCo 模型通常由多个文件组成：一个主 MJCF XML 文件、被包含的 XML 子树，以及外部资产文件（网格、纹理、高度场）。<strong>MJZ</strong> 格式（扩展名 <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> 或 <code class="docutils literal notranslate"><span class="pre">.zip</span></code> ）提供了一种便捷的方式，可将整个模型及其引用的所有资产打包为单个 <strong>Zip 归档文件</strong>。</p><div class="en-orig" data-for="bi-35" lang="en">Complex MuJoCo models often consist of multiple files: a main MJCF XML file, included XML sub-trees, and external asset
+files (meshes, textures, height fields). The <strong>MJZ</strong> format (extension <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> or <code class="docutils literal notranslate"><span class="pre">.zip</span></code>) provides a convenient way
+to bundle an entire model and all of its referenced assets into a single <strong>Zip archive</strong>.</div>
+<section id="xml">
+<h3 data-bi="bi-36">根 XML 文件的查找<a class="headerlink" href="#xml" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-36" lang="en">Root XML Discovery</div>
+<p data-bi="bi-37">解码 <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> 归档文件时，MuJoCo 按以下顺序查找根模型 XML 文件：</p><div class="en-orig" data-for="bi-37" lang="en">When decoding an <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> archive, MuJoCo searches for the root model XML file in the following order:</div>
+<ol class="arabic simple">
+<li><p data-bi="bi-38">归档文件根目录下的 <code class="docutils literal notranslate"><span class="pre">model.xml</span></code> 。这是 <strong>MJZ</strong> <a class="reference internal" href="extension.html#exencoder"><span class="std std-ref">编码器</span></a> 生成的默认格式，也是可移植性最好的选项。</p><div class="en-orig" data-for="bi-38" lang="en"><code class="docutils literal notranslate"><span class="pre">model.xml</span></code> at the root of the archive. This is the default format produced by the <strong>MJZ</strong>
+<a class="reference internal" href="extension.html#exencoder"><span class="std std-ref">encoder</span></a> and is the most portable option.</div></li>
+<li><p data-bi="bi-39">归档文件根目录下的 <code class="docutils literal notranslate"><span class="pre">&lt;archive_stem&gt;.xml</span></code> （例如 <code class="docutils literal notranslate"><span class="pre">my_model.mjz</span></code> 内的 <code class="docutils literal notranslate"><span class="pre">my_model.xml</span></code> ）。</p><div class="en-orig" data-for="bi-39" lang="en"><code class="docutils literal notranslate"><span class="pre">&lt;archive_stem&gt;.xml</span></code> at the root of the archive (e.g. <code class="docutils literal notranslate"><span class="pre">my_model.xml</span></code> inside <code class="docutils literal notranslate"><span class="pre">my_model.mjz</span></code>).</div></li>
+<li><p data-bi="bi-40">与归档文件同名的顶层目录内的 <code class="docutils literal notranslate"><span class="pre">&lt;archive_stem&gt;/&lt;archive_stem&gt;.xml</span></code> （例如
+<code class="docutils literal notranslate"><span class="pre">my_model/my_model.xml</span></code> ）。</p><div class="en-orig" data-for="bi-40" lang="en"><code class="docutils literal notranslate"><span class="pre">&lt;archive_stem&gt;/&lt;archive_stem&gt;.xml</span></code> inside a top-level directory matching the archive name (e.g.
+<code class="docutils literal notranslate"><span class="pre">my_model/my_model.xml</span></code>).</div></li>
+<li><p data-bi="bi-41">与归档文件同名的顶层目录内的 <code class="docutils literal notranslate"><span class="pre">&lt;archive_stem&gt;/model.xml</span></code> （例如 <code class="docutils literal notranslate"><span class="pre">my_model/model.xml</span></code> ）。</p><div class="en-orig" data-for="bi-41" lang="en"><code class="docutils literal notranslate"><span class="pre">&lt;archive_stem&gt;/model.xml</span></code> inside a top-level directory matching the archive name (e.g. <code class="docutils literal notranslate"><span class="pre">my_model/model.xml</span></code>).</div></li>
+</ol>
+<p data-bi="bi-42">选项 2 到 4 是为了向后兼容旧版归档文件和常见的 zip 打包布局而存在的，但如果归档文件被重命名，则容易失败。</p><div class="en-orig" data-for="bi-42" lang="en">Options 2-4 exist for backwards compatibility with legacy archives and common zip packaging layouts, but are
+susceptible to failure if the archive file is renamed.</div>
+</section>
+</section>
+<section id="mecustomformats">
+<span id="id6"></span><h2 data-bi="bi-43">自定义格式<a class="headerlink" href="#mecustomformats" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-43" lang="en">Custom formats</div>
+<p data-bi="bi-44">可以使用 <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-registerdecoder"><span class="std std-ref">mjp_registerDecoder</span></a> 和 <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-registerencoder"><span class="std std-ref">mjp_registerEncoder</span></a> 添加对新文件格式的支持。当对非原生的扩展名或内容类型调用 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-parse"><span class="std std-ref">mj_parse</span></a> 和 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a> 时，会通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-finddecoder"><span class="std std-ref">mjp_findDecoder</span></a> 和 <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-findencoder"><span class="std std-ref">mjp_findEncoder</span></a> 找到相应的插件。关于编写自定义格式插件的更多细节，参见 <a class="reference internal" href="extension.html#exdecoder"><span class="std std-ref">解码器</span></a> 和 <a class="reference internal" href="extension.html#exencoder"><span class="std std-ref">编码器</span></a>。</p><div class="en-orig" data-for="bi-44" lang="en">Adding support for new file formats can be done with <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-registerdecoder"><span class="std std-ref">mjp_registerDecoder</span></a> and <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-registerencoder"><span class="std std-ref">mjp_registerEncoder</span></a>.
+When <a class="reference internal" href="../APIreference/APIfunctions.html#mj-parse"><span class="std std-ref">mj_parse</span></a> and <a class="reference internal" href="../APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a> are called for a non-native extension or content type, the appropriate plugins
+are found via <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-finddecoder"><span class="std std-ref">mjp_findDecoder</span></a> and <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-findencoder"><span class="std std-ref">mjp_findEncoder</span></a>. For further details on writing custom format plugins,
+see <a class="reference internal" href="extension.html#exdecoder"><span class="std std-ref">Decoders</span></a> and <a class="reference internal" href="extension.html#exencoder"><span class="std std-ref">Encoders</span></a>.</div>
+</section>
+<section id="meusage">
+<span id="id7"></span><h2 data-bi="bi-45">用法<a class="headerlink" href="#meusage" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-45" lang="en">Usage</div>
+<p data-bi="bi-46">这里我们介绍用于程序化模型编辑的 C API，但它同样在 <a class="reference internal" href="../python.html#pymodeledit"><span class="std std-ref">Python
+绑定</span></a> 中提供。高级用户可以参考 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/test/user/user_api_test.cc">user_api_test.cc</a> 以及
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/xml/xml_native_reader.cc">xml_native_reader.cc</a> 中的 MJCF 解析器，以获得更多用法示例。在创建新的 <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> 或将现有 XML 文件解析为 <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> 之后，程序化编辑就对应于设置属性。例如，要更改时间步长（timestep），可以这样做：</p><div class="en-orig" data-for="bi-46" lang="en">Here we describe the C API for procedural model editing, but it is also exposed in the <a class="reference internal" href="../python.html#pymodeledit"><span class="std std-ref">Python
+bindings</span></a>. Advanced users can refer to <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/test/user/user_api_test.cc">user_api_test.cc</a> and the MJCF parser in
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/xml/xml_native_reader.cc">xml_native_reader.cc</a> for
+more usage examples. After creating a new <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> or parsing an existing XML file to an <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a>,
+procedural editing corresponds to setting attributes. For example, in order to change the timestep, one can do:</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">spec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span>
+<span class="n">spec</span><span class="o">-&gt;</span><span class="n">opt</span><span class="p">.</span><span class="n">timestep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.01</span><span class="p">;</span>
+<span class="p">...</span>
+<span class="n">mjModel</span><span class="o">*</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_compile</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+</pre></div>
+</div>
+<p data-bi="bi-47">长度可变的属性是 C++ 的向量和字符串，它们 <a class="reference internal" href="../APIreference/APItypes.html#arrayhandles"><span class="std std-ref">以不透明类型的形式暴露给 C</span></a>。在 C 中，使用所提供的 <a class="reference internal" href="../APIreference/APIfunctions.html#attributegetters"><span class="std std-ref">getter</span></a> 和 <a class="reference internal" href="../APIreference/APIfunctions.html#attributesetters"><span class="std std-ref">setter</span></a>：</p><div class="en-orig" data-for="bi-47" lang="en">Attributes which have variable length are C++ vectors and strings, <a class="reference internal" href="../APIreference/APItypes.html#arrayhandles"><span class="std std-ref">exposed to C as opaque types</span></a>.
+In C one uses the provided <a class="reference internal" href="../APIreference/APIfunctions.html#attributegetters"><span class="std std-ref">getters</span></a> and <a class="reference internal" href="../APIreference/APIfunctions.html#attributesetters"><span class="std std-ref">setters</span></a>:</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjs_setString</span><span class="p">(</span><span class="n">spec</span><span class="o">-&gt;</span><span class="n">modelname</span><span class="p">,</span><span class="w"> </span><span class="s">"my_model"</span><span class="p">);</span>
+</pre></div>
+</div>
+<p data-bi="bi-48">在 C++ 中，可以直接使用向量和字符串：</p><div class="en-orig" data-for="bi-48" lang="en">In C++, one can use vectors and strings directly:</div>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">modelname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"my_model"</span><span class="p">;</span>
+<span class="o">*</span><span class="n">spec</span><span class="o">-&gt;</span><span class="n">modelname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">modelname</span><span class="p">;</span>
+</pre></div>
+</div>
+<section id="memjselements">
+<span id="id8"></span><h3 data-bi="bi-49">模型元素<a class="headerlink" href="#memjselements" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-49" lang="en">Model elements</div>
+<p data-bi="bi-50">与 MJCF 对应的模型元素以带有 <code class="docutils literal notranslate"><span class="pre">mjs</span></code> 前缀的 C 结构体形式暴露给用户。其定义列在结构体参考的 <a class="reference internal" href="../APIreference/APItypes.html#tyspecstructure"><span class="std std-ref">模型编辑</span></a> 一节下。例如，MJCF 的
+<a class="reference internal" href="../XMLreference.html#body-geom"><span class="std std-ref">geom</span></a> 对应于 <a class="reference internal" href="../APIreference/APItypes.html#mjsgeom"><span class="std std-ref">mjsGeom</span></a>。</p><div class="en-orig" data-for="bi-50" lang="en">Model elements corresponding to MJCF are exposed to the user as C structs with the <code class="docutils literal notranslate"><span class="pre">mjs</span></code> prefix. The definitions are
+listed under the <a class="reference internal" href="../APIreference/APItypes.html#tyspecstructure"><span class="std std-ref">Model Editing</span></a> section of the struct reference. For example, an MJCF
+<a class="reference internal" href="../XMLreference.html#body-geom"><span class="std std-ref">geom</span></a> corresponds to an <a class="reference internal" href="../APIreference/APItypes.html#mjsgeom"><span class="std std-ref">mjsGeom</span></a>.</div>
+<p data-bi="bi-51">所有元素的全局默认值由 <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-defaultgeom"><span class="std std-ref">mjs_defaultGeom</span></a> 等 <a class="reference internal" href="../APIreference/APIfunctions.html#elementinitialization"><span class="std std-ref">初始化函数</span></a> 设置。这些函数定义在 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/user/user_init.c">user_init.c</a> 中，是所有默认值的权威来源。</p><div class="en-orig" data-for="bi-51" lang="en">Global defaults for all elements are set by <a class="reference internal" href="../APIreference/APIfunctions.html#elementinitialization"><span class="std std-ref">initializers</span></a> like <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-defaultgeom"><span class="std std-ref">mjs_defaultGeom</span></a>.
+These functions are defined in <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/user/user_init.c">user_init.c</a> and are the source of truth for all
+default values.</div>
+<p data-bi="bi-52">元素不能直接创建；它们由相应的构造函数返回给用户，例如
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjs-addgeom"><span class="std std-ref">mjs_addGeom</span></a>。例如，要向世界刚体（world body）添加一个盒状 geom，可以这样做：</p><div class="en-orig" data-for="bi-52" lang="en">Elements cannot be created directly; they are returned to the user by the corresponding constructor function, e.g.
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjs-addgeom"><span class="std std-ref">mjs_addGeom</span></a>. For example, to add a box geom to the world body, one would do</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">spec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span><span class="w">                                  </span><span class="c1">// make an empty spec</span>
+<span class="n">mjsBody</span><span class="o">*</span><span class="w"> </span><span class="n">world</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_findBody</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span><span class="w"> </span><span class="s">"world"</span><span class="p">);</span><span class="w">                  </span><span class="c1">// find the world body</span>
+<span class="n">mjsGeom</span><span class="o">*</span><span class="w"> </span><span class="n">my_geom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_addGeom</span><span class="p">(</span><span class="n">world</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span><span class="w">                   </span><span class="c1">// add a geom to the world</span>
+<span class="n">my_geom</span><span class="o">-&gt;</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjGEOM_BOX</span><span class="p">;</span><span class="w">                                    </span><span class="c1">// set geom type</span>
+<span class="n">my_geom</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">my_geom</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">my_geom</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.5</span><span class="p">;</span><span class="w">  </span><span class="c1">// set box size</span>
+<span class="n">mjModel</span><span class="o">*</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_compile</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span><span class="w">                       </span><span class="c1">// compile to mjModel</span>
+<span class="p">...</span>
+<span class="n">mj_deleteModel</span><span class="p">(</span><span class="n">model</span><span class="p">);</span><span class="w">                                         </span><span class="c1">// free model</span>
+<span class="n">mj_deleteSpec</span><span class="p">(</span><span class="n">spec</span><span class="p">);</span><span class="w">                                           </span><span class="c1">// free spec</span>
+</pre></div>
+</div>
+<p data-bi="bi-53">传给 <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-addgeom"><span class="std std-ref">mjs_addGeom</span></a> 的第二个参数 <code class="docutils literal notranslate"><span class="pre">NULL</span></code> 是可选的默认类指针。以程序方式使用默认值时，默认类需要显式传入元素构造函数。所有元素的全局默认值（未传入默认类时使用）可以在
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/user/user_init.c">user_init.c</a> 中查看。</p><div class="en-orig" data-for="bi-53" lang="en">The <code class="docutils literal notranslate"><span class="pre">NULL</span></code> second argument to <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-addgeom"><span class="std std-ref">mjs_addGeom</span></a> is the optional default class pointer. When using defaults
+procedurally, default classes are passed in explicitly to element constructors. The global defaults of all elements
+(used when no default class is passed in) can be inspected in
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/user/user_init.c">user_init.c</a>.</div>
+<p data-bi="bi-54">元素通过名称引用，名称通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-setname"><span class="std std-ref">mjs_setName</span></a> 设置。资产也不例外：通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-addmesh"><span class="std std-ref">mjs_addMesh</span></a>、<a class="reference internal" href="../APIreference/APIfunctions.html#mjs-addtexture"><span class="std std-ref">mjs_addTexture</span></a> 或 <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-addhfield"><span class="std std-ref">mjs_addHField</span></a> 添加的网格、纹理或高度场必须指定名称，即使它是从文件加载的。在省略名称时以资产的文件名为其命名，只是 XML 解析器提供的一种便利功能。</p><div class="en-orig" data-for="bi-54" lang="en">Elements are referenced by name, and names are set with <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-setname"><span class="std std-ref">mjs_setName</span></a>. Assets are no exception: a mesh, texture or
+height field added with <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-addmesh"><span class="std std-ref">mjs_addMesh</span></a>, <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-addtexture"><span class="std std-ref">mjs_addTexture</span></a> or <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-addhfield"><span class="std std-ref">mjs_addHField</span></a> must be given a name, even
+when it is loaded from a file. Naming an asset after its file when the name is omitted is a convenience of the XML
+parser only.</div>
+</section>
+<section id="mememory">
+<span id="id9"></span><h3 data-bi="bi-55">内存管理<a class="headerlink" href="#mememory" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-55" lang="en">Memory management</div>
+<p data-bi="bi-56">如上面的示例所示，模型元素从不由用户直接分配，而是由构造函数返回。库拥有所有元素的所有权，并在使用 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-deletespec"><span class="std std-ref">mj_deleteSpec</span></a> 删除父级 <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> 时释放它们。用户只需负责释放 <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> 结构体。</p><div class="en-orig" data-for="bi-56" lang="en">As seen in the examples above, model elements are never allocated by the user directly, but rather returned by a
+constructor. The library takes ownership of all elements and frees them when the parent <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> is deleted using
+<a class="reference internal" href="../APIreference/APIfunctions.html#mj-deletespec"><span class="std std-ref">mj_deleteSpec</span></a>. The user is only responsible for freeing <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> structs.</div>
+</section>
+<section id="meattachment">
+<span id="id10"></span><h3 data-bi="bi-57">挂接<a class="headerlink" href="#meattachment" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-57" lang="en">Attachment</div>
+<p data-bi="bi-58">该框架引入了一项强大的新功能：挂接和删除模型子树。这一功能已被用于实现 MJCF 中的 <a class="reference internal" href="../XMLreference.html#body-attach"><span class="std std-ref">attach</span></a> 和 <a class="reference internal" href="../XMLreference.html#replicate"><span class="std std-ref">replicate</span></a> 元元素（meta-element）。挂接允许用户将一个模型中的子树移动或复制到另一个模型中，同时复制或移动相关的被引用资产，以及来自运动学树之外的引用元素（例如执行器和传感器）。类似地，删除子树会从模型中移除所有相关联的元素。默认行为（“浅拷贝”）是在挂接时将子级移入父级，因此之后对子级的更改也会改变父级。或者，用户可以在挂接时使用 <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-setdeepcopy"><span class="std std-ref">mjs_setDeepCopy</span></a> 选择生成一份全新的副本。解析 XML 时，该标志会被临时设置为 true。可以 <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-attach"><span class="std std-ref">将刚体或 mjSpec 挂接到坐标系</span></a>：</p><div class="en-orig" data-for="bi-58" lang="en">This framework introduces a powerful new feature: attaching and deleting model subtrees. This feature is already used to
+power the <a class="reference internal" href="../XMLreference.html#body-attach"><span class="std std-ref">attach</span></a> and <a class="reference internal" href="../XMLreference.html#replicate"><span class="std std-ref">replicate</span></a> meta-elements in MJCF. Attachment allows the user to
+move or copy a subtree from one model into another, while also copying or moving related referenced assets and
+referencing elements from outside the kinematic tree (e.g., actuators and sensors). Similarly, deleting a subtree will
+remove all associated elements from the model. The default behavior (“shallow copy”) is to move the child into the
+parent while attaching, so subsequent changes to the child will also change the parent. Alternatively, the user can
+choose to make an entirely new copy during attach using <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-setdeepcopy"><span class="std std-ref">mjs_setDeepCopy</span></a>. This flag is temporarily set to true
+while parsing XMLs. It is possible to <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-attach"><span class="std std-ref">attach a body or an mjSpec to a frame</span></a>:</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">parent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span>
+<span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">child</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span>
+<span class="n">parent</span><span class="o">-&gt;</span><span class="n">compiler</span><span class="p">.</span><span class="n">degree</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="n">child</span><span class="o">-&gt;</span><span class="n">compiler</span><span class="p">.</span><span class="n">degree</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="n">mjsElement</span><span class="o">*</span><span class="w"> </span><span class="n">frame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_addFrame</span><span class="p">(</span><span class="n">mjs_findBody</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span><span class="w"> </span><span class="s">"world"</span><span class="p">),</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">element</span><span class="p">;</span>
+<span class="n">mjsElement</span><span class="o">*</span><span class="w"> </span><span class="n">body</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_addBody</span><span class="p">(</span><span class="n">mjs_findBody</span><span class="p">(</span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="s">"world"</span><span class="p">),</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">element</span><span class="p">;</span>
+<span class="n">mjsBody</span><span class="o">*</span><span class="w"> </span><span class="n">attached_body_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_asBody</span><span class="p">(</span><span class="n">mjs_attach</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span><span class="w"> </span><span class="n">body</span><span class="p">,</span><span class="w"> </span><span class="s">"attached-"</span><span class="p">,</span><span class="w"> </span><span class="s">"-1"</span><span class="p">));</span>
+</pre></div>
+</div>
+<p data-bi="bi-59">或者 <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-attach"><span class="std std-ref">将刚体或 mjSpec 挂接到 site</span></a>：</p><div class="en-orig" data-for="bi-59" lang="en">or <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-attach"><span class="std std-ref">attach a body or an mjSpec to a site</span></a>:</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">parent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span>
+<span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">child</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span>
+<span class="n">mjsElement</span><span class="o">*</span><span class="w"> </span><span class="n">site</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_addSite</span><span class="p">(</span><span class="n">mjs_findBody</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span><span class="w"> </span><span class="s">"world"</span><span class="p">),</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">element</span><span class="p">;</span>
+<span class="n">mjsElement</span><span class="o">*</span><span class="w"> </span><span class="n">body</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_addBody</span><span class="p">(</span><span class="n">mjs_findBody</span><span class="p">(</span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="s">"world"</span><span class="p">),</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">element</span><span class="p">;</span>
+<span class="n">mjsBody</span><span class="o">*</span><span class="w"> </span><span class="n">attached_body_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_asBody</span><span class="p">(</span><span class="n">mjs_attach</span><span class="p">(</span><span class="n">site</span><span class="p">,</span><span class="w"> </span><span class="n">body</span><span class="p">,</span><span class="w"> </span><span class="s">"attached-"</span><span class="p">,</span><span class="w"> </span><span class="s">"-2"</span><span class="p">));</span>
+</pre></div>
+</div>
+<p data-bi="bi-60">或者 <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-attach"><span class="std std-ref">将坐标系或 mjSpec 挂接到刚体</span></a>：</p><div class="en-orig" data-for="bi-60" lang="en">or <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-attach"><span class="std std-ref">attach a frame or an mjSpec to a body</span></a>:</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">parent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span>
+<span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">child</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span>
+<span class="n">mjsElement</span><span class="o">*</span><span class="w"> </span><span class="n">body</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_addBody</span><span class="p">(</span><span class="n">mjs_findBody</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span><span class="w"> </span><span class="s">"world"</span><span class="p">),</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">element</span><span class="p">;</span>
+<span class="n">mjsElement</span><span class="o">*</span><span class="w"> </span><span class="n">frame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_addFrame</span><span class="p">(</span><span class="n">mjs_findBody</span><span class="p">(</span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="s">"world"</span><span class="p">),</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">element</span><span class="p">;</span>
+<span class="n">mjsFrame</span><span class="o">*</span><span class="w"> </span><span class="n">attached_frame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_asFrame</span><span class="p">(</span><span class="n">mjs_attach</span><span class="p">(</span><span class="n">body</span><span class="p">,</span><span class="w"> </span><span class="n">frame</span><span class="p">,</span><span class="w"> </span><span class="s">"attached-"</span><span class="p">,</span><span class="w"> </span><span class="s">"-1"</span><span class="p">));</span>
+</pre></div>
+</div>
+<p data-bi="bi-61">请注意，在上面的示例中，父模型和子模型的 <code class="docutils literal notranslate"><span class="pre">compiler.degree</span></code> 取值不同，它对应 <a class="reference internal" href="../XMLreference.html#compiler-angle"><span class="std std-ref">compiler/angle</span></a> 属性，用于指定角度的解释单位。编译器标志在挂接时会被保留，因此子模型将使用子级的标志编译，而父模型将使用父级的标志编译。</p><div class="en-orig" data-for="bi-61" lang="en">Note that in the above examples, the parent and child models have different values for <code class="docutils literal notranslate"><span class="pre">compiler.degree</span></code>,
+corresponding to the <a class="reference internal" href="../XMLreference.html#compiler-angle"><span class="std std-ref">compiler/angle</span></a> attribute, specifying the units in which angles are
+interpreted. Compiler flags are carried over during attachment, so the child model will be compiled using the child
+flags, while the parent will be compiled using the parent flags.</div>
+<p data-bi="bi-62">还请注意，一旦子级以引用方式挂接到父级，该子级就不能再单独编译，也不能再整体挂接一次。其中尚未挂接的刚体和坐标系可以被挂接，前提是它们不包含任何已挂接的内容。父级的元素（包括以引用方式挂接到它上面的元素）只能以副本的形式挂接到该父级，参见 <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-setdeepcopy"><span class="std std-ref">mjs_setDeepCopy</span></a>。</p><div class="en-orig" data-for="bi-62" lang="en">Note also that once a child is attached by reference to a parent, the child cannot be compiled on its own or attached
+again as a whole. Its bodies and frames which are not attached yet can be attached, if they contain nothing which is
+attached already. An element of the parent, including one attached to it by reference, can be attached to the parent
+only as a copy, see <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-setdeepcopy"><span class="std std-ref">mjs_setDeepCopy</span></a>.</div>
+<div class="note admonition">
+<p class="admonition-title" data-bi="bi-63">已知问题</p><div class="en-orig" data-for="bi-63" lang="en">Known issues</div>
+<p data-bi="bi-64">目前存在以下已知限制：</p><div class="en-orig" data-for="bi-64" lang="en">The following known limitations exist:</div>
+<ul class="simple">
+<li><p data-bi="bi-65">如果父级和子级不是同一个 mjSpec，则子模型的所有资产都会被复制进来，无论它们是否被引用。</p><div class="en-orig" data-for="bi-65" lang="en">All assets from the child model will be copied in, whether they are referenced or not, if the parent and the child
+are not the same mjSpec.</div></li>
+<li><p data-bi="bi-66">以引用方式多次挂接的子级，会在第一次挂接时将其资产移到父级。后续挂接的元素只有在前缀和后缀相同时才能找到这些资产。</p><div class="en-orig" data-for="bi-66" lang="en">A child attached by reference more than once moves its assets to the parent with the first attachment. The elements
+of a later attachment find them only if it has the same prefix and suffix.</div></li>
+<li><p data-bi="bi-67">不会检查循环引用，循环引用会导致无限循环。</p><div class="en-orig" data-for="bi-67" lang="en">Circular references are not checked for and will lead to infinite loops.</div></li>
+<li><p data-bi="bi-68">挂接带有 <a class="reference internal" href="../XMLreference.html#keyframe"><span class="std std-ref">关键帧</span></a> 的模型时，其关键帧会立即添加到父级，但它们的向量以及父级自身关键帧的向量，只会在下一次编译时才为合并后的模型组装好。在此之前它们为空。</p><div class="en-orig" data-for="bi-68" lang="en">When attaching a model with <a class="reference internal" href="../XMLreference.html#keyframe"><span class="std std-ref">keyframes</span></a>, its keyframes are added to the parent right away, but
+their vectors, and those of the keyframes of the parent, are assembled for the combined model only by the next
+compilation. Until then they are empty.</div></li>
+</ul>
+</div>
+</section>
+<section id="meattributemerging">
+<span id="id11"></span><h3 data-bi="bi-69">属性合并<a class="headerlink" href="#meattributemerging" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-69" lang="en">Attribute Merging</div>
+<p data-bi="bi-70">使用 <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-attach"><span class="std std-ref">mjs_attach</span></a> 将子 spec（或子 spec 中的某个元素）挂接到父 spec 时，子级的全局属性可能与父级的冲突。当父级和子级都为同一字段指定了作者设定值且这些值不同时，就会发生冲突。请注意，对于基于 XML 的模型，显式写出某个值（即使它与默认值相同）也算作作者设定，并可能触发冲突。<a class="reference internal" href="../XMLreference.html#compiler-conflict"><span class="std std-ref">compiler/conflict</span></a> 属性控制如何解决此类冲突。只有一方指定了作者设定值的字段永远不会冲突。</p><div class="en-orig" data-for="bi-70" lang="en">When attaching a child spec (or an element from a child spec) to a parent spec using <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-attach"><span class="std std-ref">mjs_attach</span></a>, global
+attributes from the child may conflict with those in the parent. A conflict occurs when both the parent and child
+specify authored values for the same field and those values differ. Note that for XML-based models, explicitly writing a
+value (even if it matches the default value) counts as authoring and can trigger conflicts. The
+<a class="reference internal" href="../XMLreference.html#compiler-conflict"><span class="std std-ref">compiler/conflict</span></a> attribute controls how such conflicts are resolved. Fields where only one
+side specifies an authored value never conflict.</div>
+<dl class="simple">
+<dt data-bi="bi-71"><span class="at-val">warning</span> （默认）<div class="en-orig" data-for="bi-71" lang="en"><span class="at-val">warning</span> (default)</div></dt><dd><p data-bi="bi-72">父级的值优先。每当检测到冲突，就会发出警告，但不会修改父级的值。这保持了原有的挂接行为。</p><div class="en-orig" data-for="bi-72" lang="en">Parent values take precedence. Whenever a conflict is detected, a warning is emitted but the parent value is not
+modified. This preserves the pre-existing attachment behavior.</div>
+</dd>
+<dt><span class="at-val">merge</span></dt><dd><p data-bi="bi-73">属性值按照下表所述的逐字段策略合并。当只有子级指定了作者设定值时，该值会被父级采用。</p><div class="en-orig" data-for="bi-73" lang="en">Attribute values are merged using a per-field strategy as described in the table below. When only the child specifies
+an authored value, it is adopted by the parent.</div>
+</dd>
+<dt><span class="at-val">error</span></dt><dd><p data-bi="bi-74">任何冲突都会导致编译错误。不会修改任何值。</p><div class="en-orig" data-for="bi-74" lang="en">Any conflict results in a compile error. No values are modified.</div>
+</dd>
+</dl>
+<p data-bi="bi-75">下表描述了 <span class="at-val">merge</span> 模式下使用的逐字段合并策略。</p><div class="en-orig" data-for="bi-75" lang="en">The table below describes the per-field merge strategy used in <span class="at-val">merge</span> mode.</div>
+<div class="table-wrapper colwidths-given docutils container" id="meattributemergingtable">
+<table class="docutils align-default" id="meattributemergingtable">
+<caption><span class="caption-text">属性合并行为（<span class="at-val">merge</span> 模式）</span><a class="headerlink" href="#meattributemergingtable" title="链接到此表格。">#</a></caption>
+<colgroup>
+<col style="width: 15.0%"/>
+<col style="width: 60.0%"/>
+<col style="width: 25.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-76">行为</p><div class="en-orig" data-for="bi-76" lang="en">Behavior</div></th>
+<th class="head"><p data-bi="bi-77">字段</p><div class="en-orig" data-for="bi-77" lang="en">Fields</div></th>
+<th class="head"><p data-bi="bi-78">理由</p><div class="en-orig" data-for="bi-78" lang="en">Justification</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p data-bi="bi-79"><strong>最小值</strong></p><div class="en-orig" data-for="bi-79" lang="en"><strong>Minimum</strong></div></td>
+<td><p><strong>option</strong>: <a class="reference internal" href="../XMLreference.html#option-timestep"><span class="std std-ref">timestep</span></a>, <a class="reference internal" href="../XMLreference.html#option-tolerance"><span class="std std-ref">tolerance</span></a>, <a class="reference internal" href="../XMLreference.html#option-ls-tolerance"><span class="std std-ref">ls_tolerance</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-noslip-tolerance"><span class="std std-ref">noslip_tolerance</span></a>, <a class="reference internal" href="../XMLreference.html#option-ccd-tolerance"><span class="std std-ref">ccd_tolerance</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-sleep-tolerance"><span class="std std-ref">sleep_tolerance</span></a>,
+<br/> <strong>visual</strong>: <a class="reference internal" href="../XMLreference.html#visual-map-znear"><span class="std std-ref">znear</span></a>, <a class="reference internal" href="../XMLreference.html#visual-global-realtime"><span class="std std-ref">realtime</span></a></p></td>
+<td><p data-bi="bi-80">保持精度和稳定性。</p><div class="en-orig" data-for="bi-80" lang="en">Preserves precision and stability.</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-81"><strong>最大值</strong></p><div class="en-orig" data-for="bi-81" lang="en"><strong>Maximum</strong></div></td>
+<td><p><strong>option</strong>: <a class="reference internal" href="../XMLreference.html#option-iterations"><span class="std std-ref">iterations</span></a>, <a class="reference internal" href="../XMLreference.html#option-ls-iterations"><span class="std std-ref">ls_iterations</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-noslip-iterations"><span class="std std-ref">noslip_iterations</span></a>, <a class="reference internal" href="../XMLreference.html#option-ccd-iterations"><span class="std std-ref">ccd_iterations</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-sdf-iterations"><span class="std std-ref">sdf_iterations</span></a>, <a class="reference internal" href="../XMLreference.html#option-sdf-initpoints"><span class="std std-ref">sdf_initpoints</span></a>,
+<br/> <strong>size</strong>: <a class="reference internal" href="../XMLreference.html#size-memory"><span class="std std-ref">memory</span></a>, <a class="reference internal" href="../XMLreference.html#size-nkey"><span class="std std-ref">nkey</span></a>, <a class="reference internal" href="../XMLreference.html#size-nuserdata"><span class="std std-ref">nuserdata</span></a>,
+<a class="reference internal" href="../XMLreference.html#size-nuser-body"><span class="std std-ref">nuser_body</span></a>, <a class="reference internal" href="../XMLreference.html#size-nuser-jnt"><span class="std std-ref">nuser_jnt</span></a>, <a class="reference internal" href="../XMLreference.html#size-nuser-geom"><span class="std std-ref">nuser_geom</span></a>, <a class="reference internal" href="../XMLreference.html#size-nuser-site"><span class="std std-ref">nuser_site</span></a>,
+<a class="reference internal" href="../XMLreference.html#size-nuser-cam"><span class="std std-ref">nuser_cam</span></a>, <a class="reference internal" href="../XMLreference.html#size-nuser-tendon"><span class="std std-ref">nuser_tendon</span></a>, <a class="reference internal" href="../XMLreference.html#size-nuser-actuator"><span class="std std-ref">nuser_actuator</span></a>, <a class="reference internal" href="../XMLreference.html#size-nuser-sensor"><span class="std std-ref">nuser_sensor</span></a>
+<br/> <strong>visual</strong>: <a class="reference internal" href="../XMLreference.html#visual-map-zfar"><span class="std std-ref">zfar</span></a></p></td>
+<td><p data-bi="bi-82">确保有足够的资源和限制。</p><div class="en-orig" data-for="bi-82" lang="en">Ensures sufficient resources and limits.</div></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-83"><strong>或（并集）</strong></p><div class="en-orig" data-for="bi-83" lang="en"><strong>OR (union)</strong></div></td>
+<td><p><strong>option</strong>: <a class="reference internal" href="../XMLreference.html#option-flag"><span class="std std-ref">disableflags</span></a>, <a class="reference internal" href="../XMLreference.html#option-flag"><span class="std std-ref">enableflags</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-actuatorgroupdisable"><span class="std std-ref">disableactuator</span></a></p></td>
+<td><p data-bi="bi-84">合并两个模型的标志。</p><div class="en-orig" data-for="bi-84" lang="en">Flags from both models are combined.</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-85"><strong>报错</strong></p><div class="en-orig" data-for="bi-85" lang="en"><strong>Error</strong></div></td>
+<td><p><strong>option</strong>: <a class="reference internal" href="../XMLreference.html#option-gravity"><span class="std std-ref">gravity</span></a>, <a class="reference internal" href="../XMLreference.html#option-wind"><span class="std std-ref">wind</span></a>, <a class="reference internal" href="../XMLreference.html#option-magnetic"><span class="std std-ref">magnetic</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-density"><span class="std std-ref">density</span></a>, <a class="reference internal" href="../XMLreference.html#option-viscosity"><span class="std std-ref">viscosity</span></a>, <a class="reference internal" href="../XMLreference.html#option-integrator"><span class="std std-ref">integrator</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-cone"><span class="std std-ref">cone</span></a>, <a class="reference internal" href="../XMLreference.html#option-jacobian"><span class="std std-ref">jacobian</span></a>, <a class="reference internal" href="../XMLreference.html#option-solver"><span class="std std-ref">solver</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-impratio"><span class="std std-ref">impratio</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-o-margin"><span class="std std-ref">o_margin</span></a>, <a class="reference internal" href="../XMLreference.html#option-o-solref"><span class="std std-ref">o_solref</span></a>, <a class="reference internal" href="../XMLreference.html#option-o-solimp"><span class="std std-ref">o_solimp</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-o-friction"><span class="std std-ref">o_friction</span></a></p></td>
+<td><p data-bi="bi-86">当非默认值发生冲突时引发错误。</p><div class="en-orig" data-for="bi-86" lang="en">Raised if non-default values conflict.</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="medefault">
+<span id="id12"></span><h3 data-bi="bi-87">默认类<a class="headerlink" href="#medefault" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-87" lang="en">Default classes</div>
+<p data-bi="bi-88">新 API 完全支持默认类，不过使用它们需要理解默认值是如何实现的。如 <a class="reference internal" href="../modeling.html#cdefault"><span class="std std-ref">默认设置</span></a> 一节所述，默认类首先被加载为一棵虚拟元素树，然后用于初始化引用它们的元素。在编辑带有默认值的模型时，这种初始化是显式的：</p><div class="en-orig" data-for="bi-88" lang="en">Default classes are fully supported in the new API, however using them requires an understanding of how defaults
+are implemented. As explained in the <a class="reference internal" href="../modeling.html#cdefault"><span class="std std-ref">Default settings</span></a> section, default classes are first loaded as a
+tree of dummy elements, which are then used to initialize elements which reference them. When editing models with
+defaults, this initialization is explicit:</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">spec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span>
+<span class="n">mjsDefault</span><span class="o">*</span><span class="w"> </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_getSpecDefault</span><span class="p">(</span><span class="n">spec</span><span class="p">);</span>
+<span class="n">main</span><span class="o">-&gt;</span><span class="n">geom</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjGEOM_BOX</span><span class="p">;</span>
+<span class="n">mjsGeom</span><span class="o">*</span><span class="w"> </span><span class="n">geom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_addGeom</span><span class="p">(</span><span class="n">mjs_findBody</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span><span class="w"> </span><span class="s">"world"</span><span class="p">),</span><span class="w"> </span><span class="n">main</span><span class="p">);</span>
+</pre></div>
+</div>
+<p data-bi="bi-89">需要注意的是，在默认类已被用于初始化元素之后再更改它，不会改变已初始化元素的属性。</p><div class="en-orig" data-for="bi-89" lang="en">Importantly, changing a default class after it has been used to initialize elements will not change the properties of
+already initialized elements.</div>
+<div class="note admonition">
+<p class="admonition-title" data-bi="bi-90">未来可能的变更</p><div class="en-orig" data-for="bi-90" lang="en">Possible future change</div>
+<p data-bi="bi-91">上面描述的行为，即默认值只在初始化时应用，是旧的、仅基于 XML 的加载流水线的遗留物。未来的 API 变更可能允许在初始化之后更改并应用默认值。如果您认为该功能对您很重要，请在 GitHub 上告诉我们。</p><div class="en-orig" data-for="bi-91" lang="en">The behavior described above, where defaults are only applied at initialization, is a remnant of the old, XML-only
+loading pipeline. A future API change could allow defaults to be changed and applied after initialization. If you
+think this feature is important to you, please let us know on GitHub.</div>
+</div>
+</section>
+<section id="merecompilation">
+<span id="id13"></span><h3 data-bi="bi-92">就地重新编译<a class="headerlink" href="#merecompilation" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-92" lang="en">In-place recompilation</div>
+<p data-bi="bi-93">可以随时使用 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-compile"><span class="std std-ref">mj_compile</span></a> 进行编译，以获得新的 mjModel 实例。相比之下，<a class="reference internal" href="../APIreference/APIfunctions.html#mj-recompile"><span class="std std-ref">mj_recompile</span></a> 会就地更新现有的 mjModel 和 mjData 对，同时保留仿真状态。这使得模型编辑可以在 <strong>仿真期间</strong> 进行，例如添加或移除刚体。</p><div class="en-orig" data-for="bi-93" lang="en">Compilation with <a class="reference internal" href="../APIreference/APIfunctions.html#mj-compile"><span class="std std-ref">mj_compile</span></a> can be called at any point to obtain a new mjModel instance. In contrast,
+<a class="reference internal" href="../APIreference/APIfunctions.html#mj-recompile"><span class="std std-ref">mj_recompile</span></a> updates an existing mjModel and mjData pair in-place, while preserving the simulation state. This
+allows model editing to occur <strong>during simulation</strong>, for example adding or removing bodies.</div>
+</section>
+</section>
+</section>
+</article>
+</div>
+<footer>
+<div class="related-pages">
+<a class="next-page" href="samples.html">
+<div class="page-info">
+<div class="context">
+<span>Next</span>
+</div>
+<div class="title">代码示例</div>
+</div>
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+</a>
+<a class="prev-page" href="ui.html">
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+<div class="page-info">
+<div class="context">
+<span>Previous</span>
+</div>
+<div class="title">用户界面</div>
+</div>
+</a>
+</div>
+<div class="bottom-of-page">
+<div class="left-details">
+<div class="copyright">
+                Copyright © DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+</div>
+<div class="right-details">
+</div>
+</div>
+</footer>
+</div>
+<aside class="toc-drawer">
+<div class="toc-sticky toc-scroll">
+<div class="toc-title-container">
+<span class="toc-title">
+            On this page
+          </span>
+</div>
+<div class="toc-tree-container">
+<div class="toc-tree">
+<ul>
+<li><a class="reference internal" href="#">模型编辑</a><ul>
+<li><a class="reference internal" href="#meoverview">概述</a></li>
+<li><a class="reference internal" href="#meloading">模型解析与加载</a></li>
+<li><a class="reference internal" href="#mecompilation">模型编译</a></li>
+<li><a class="reference internal" href="#mesaving">模型编码与保存</a></li>
+<li><a class="reference internal" href="#mjz">MJZ 归档文件</a><ul>
+<li><a class="reference internal" href="#xml">根 XML 文件的查找</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mecustomformats">自定义格式</a></li>
+<li><a class="reference internal" href="#meusage">用法</a><ul>
+<li><a class="reference internal" href="#memjselements">模型元素</a></li>
+<li><a class="reference internal" href="#mememory">内存管理</a></li>
+<li><a class="reference internal" href="#meattachment">挂接</a></li>
+<li><a class="reference internal" href="#meattributemerging">属性合并</a></li>
+<li><a class="reference internal" href="#medefault">默认类</a></li>
+<li><a class="reference internal" href="#merecompilation">就地重新编译</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div><script src="../_static/documentation_options.js?v=7d86a446"></script>
+<script src="../_static/doctools.js?v=fd6eb6e6"></script>
+<script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+<script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+<script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="../_static/copybutton.js?v=f281be69"></script>
+<script src="../_static/translations.js?v=540d3cec"></script>
+<script src="../_static/katex.min.js?v=5cc8ed51"></script>
+<script src="../_static/auto-render.min.js?v=af98beb9"></script>
+<script src="../_static/katex_autorenderer.js?v=ae454eff"></script>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<script src="../_static/linenumbers.js?v=ebda5d35"></script>
+<script src="../_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+<script src="../_static/bilingual.js?v=25c2633d"></script></body></html>

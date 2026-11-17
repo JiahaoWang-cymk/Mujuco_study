@@ -1,0 +1,24 @@
+﻿.. _APIreference:
+
+=============
+API 参考
+=============
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+本章是 MuJoCo API 的参考手册。它会自动与 MuJoCo 的头文件保持同步，同时也包含头文件中没有的额外信息。API 由以下 3 个类别组成：
+
+.. table::
+   :class: aligntop
+
+   +--------------------+--------------------+--------------------+
+   |                    |                    |                    |
+   | .. toctree::       | .. toctree::       | .. toctree::       |
+   |    :maxdepth: 3    |    :maxdepth: 2    |    :maxdepth: 2    |
+   |                    |                    |                    |
+   |    APItypes        |    APIfunctions    |    APIglobals      |
+   |                    |                    |                    |
+   +--------------------+--------------------+--------------------+

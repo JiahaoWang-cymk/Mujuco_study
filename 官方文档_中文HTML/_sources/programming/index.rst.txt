@@ -1,0 +1,332 @@
+﻿===========
+编程
+===========
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+.. _inIntro:
+
+简介
+~~~~~~~~~~~~
+
+本章是 MuJoCo 编程指南。独立的一章包含 :doc:`../APIreference/index` 文档。MuJoCo 是兼容 Windows、Linux 和 macOS 的动态库，需要支持 AVX
+指令的处理器。该库通过与编译器无关的共享内存 C API 公开模拟器的全部功能，也可以在 C++ 程序中使用。
+
+MuJoCo 代码库按照不同的主要功能领域组织为若干子目录：
+
+引擎（Engine）
+   模拟器（或物理引擎）用 C 语言编写，负责所有运行时计算。
+解析器（Parser）
+   XML 解析器用 C++ 编写，可以解析 MJCF 模型和 URDF 模型，并将其转换为内部的 mjCModel
+   C++ 对象，该对象通过 mjSpec 向用户公开。
+编译器（Compiler）
+   编译器用 C++ 编写，它接收由解析器构建的 mjCModel C++ 对象，并将其转换为运行时使用的 mjModel C 结构体。
+线程（Thread）
+   线程框架用 C++ 编写并以 C 接口公开，提供用于异步处理任务的线程池接口。要在 MuJoCo 中启用，请调用 ``mju_threadpool``。
+抽象可视化器（Abstract visualizer）
+   抽象可视化器用 C 编写，与任何图形库无关。它提供用于相机和扰动控制、对象选择以及可视化（visualization）选项的抽象鼠标钩子，
+   并生成一个抽象几何实体列表，用于表示仿真状态及其装饰。两个渲染器都会共用它。
+渲染（Rendering）
+   MuJoCo 提供了两个渲染（rendering）库。 :ref:`经典渲染<ClassicRendering>` 库用 C 编写，使用 OpenGL 1.5，
+   提供了一种简单高效的方式来可视化 MuJoCo 模型。 :ref:`filament 渲染<FilamentRendering>` 库用 C++ 编写，使用外部开发的 Filament
+   渲染引擎，提供更现代、功能更丰富的实时渲染能力。
+UI 框架（UI framework）
+   UI 框架用 C 编写，设计用于配合 :ref:`经典 OpenGL 渲染器<OpenGLrendering>` 工作。
+   UI 元素通过 OpenGL 渲染。它有自己的事件机制，以及用于键盘和鼠标输入的抽象钩子。
+   代码示例将其与 GLFW 一起使用，但它也可以与其他窗口库配合使用。
+
+.. _inStart:
+
+快速入门
+~~~~~~~~~~~~~~~
+
+无需安装任何东西即可在浏览器中试用 MuJoCo，请访问 `mujoco.org <https://mujoco.org>`__，或在 `live.mujoco.org <https://live.mujoco.org>`__
+打开并拖放你自己的模型，该网站运行的是 :ref:`MuJoCo Studio <Studio>` 应用的 WebAssembly 版本。
+
+MuJoCo 是一个开源项目。适用于运行 Windows、Linux 和 macOS 的 x86_64 和 arm64 机器的预编译动态库均已提供。
+这些库可以从 `GitHub Releases 页面 <https://github.com/google-deepmind/mujoco/releases>`_ 下载。不打算开发或修改 MuJoCo
+核心代码的用户，建议使用我们的预编译库，因为它们捆绑了我们定期测试所用的相同版本的依赖项，并受益于为性能而调优的构建标志。
+我们的预编译库几乎完全自包含，除标准 C 运行时之外，不需要存在任何其他库。我们还隐藏了构成 MuJoCo 公共 API 的符号之外的所有符号，
+从而确保它能与进程中可能加载的任何其他库（包括 MuJoCo 所依赖的库的其他版本）共存。
+
+预编译发行版在 macOS 上是单个 ``.dmg``，在 Windows 上是 ``.zip``，在 Linux 上是 ``.tar.gz``；没有安装程序。在 macOS 和 Windows 上，
+:ref:`MuJoCo Studio <StudioApp>` 和 :ref:`simulate <saSimulate>` 都被打包为独立的桌面应用程序
+(macOS ``.dmg`` 中的 ``MuJoCoStudio.app`` 和 ``MuJoCo.app``；
+Windows ``.zip`` 中的 ``bin\mujoco_studio.exe`` 和 ``bin\simulate.exe``)，可以双击启动，并将模型文件拖放到其上。
+
+在 Windows 和 Linux 上，将压缩包解压到你选择的目录。在 ``bin`` 子目录的终端中，也可以运行 :ref:`MuJoCo Studio <StudioApp>`
+或 :ref:`simulate <saSimulate>` 等预编译的代码示例：
+
+.. code-block:: Text
+
+     Windows:   mujoco_studio ..\model\humanoid\humanoid.xml
+     Linux:     ./mujoco_studio ../model/humanoid/humanoid.xml
+
+Windows 和 Linux 压缩包的目录结构如下所示。用户可以根据需要重新组织，也可以将动态库安装到其他目录并相应地设置路径。
+唯一自动创建的文件是可执行文件目录中的 MUJOCO_LOG.TXT；它包含错误和警告消息，可以随时删除。
+
+.. code-block:: Text
+
+     bin     - dynamic libraries, executables, MUJOCO_LOG.TXT
+     doc     - README.txt and REFERENCE.txt
+     include - header files needed to develop with MuJoCo
+     model   - model collection
+     sample  - code samples and CMakeLists.txt needed to build them
+
+确认模拟器可以运行之后，你可能还想重新编译代码示例，以确保拥有可用的开发环境。我们提供了跨平台的 `CMake
+<https://github.com/google-deepmind/mujoco/blob/main/sample/CMakeLists.txt>`__ 配置，可用于独立于 MuJoCo 库本身构建示例应用程序。
+
+在 macOS 上，可以将 ``MuJoCoStudio.app`` 和 ``MuJoCo.app`` 从 ``.dmg`` 拖入 ``/Applications`` 进行安装，
+与任何其他 `应用程序包 <https://developer.apple.com/go/?id=bundle-structure>`__ 一样
+(其 ``Contents/MacOS/`` 中的可执行文件也可以从终端运行)。除应用程序包之外，DMG 还包含 ``mujoco.framework``
+子目录，其中有 MuJoCo 动态库及其所有公共头文件。如果你使用 Xcode，可以将其作为框架依赖项导入到你的项目中
+(这对 Swift 项目同样适用，无需任何修改)。如果手动构建，可以分别使用 ``-F`` 和
+``-framework mujoco`` 来指定头文件搜索路径和库搜索路径。
+
+.. _inBuild:
+
+从源码构建
+~~~~~~~~~~~~~~~~~~~~
+
+从源码构建 MuJoCo 需要安装 CMake 和可用的 C++17 编译器。步骤如下：
+
+#. 克隆 ``mujoco`` 仓库：\ ``git clone https://github.com/google-deepmind/mujoco.git``
+#. 创建一个新的构建目录并 ``cd`` 进入该目录。
+#. 运行 :shell:`cmake $PATH_TO_CLONED_REPO` 来配置构建。
+#. 运行 ``cmake --build .`` 进行构建。
+
+MuJoCo 的构建系统使用 CMake 的
+`FetchContent <https://cmake.org/cmake/help/latest/module/FetchContent.html>`_ 模块，通过互联网自动从上游仓库获取依赖项。
+
+主 CMake 配置会构建 MuJoCo 库本身以及所有示例应用程序，但不会构建 Python
+绑定。Python 绑定有自己的构建说明，可在文档的 :doc:`../python` 一节中找到。
+
+此外，CMake 配置还实现了一个安装阶段，会将输出文件复制并整理到目标目录。
+
+#. 选择目录：\ :shell:`cmake $PATH_TO_CLONED_REPO -DCMAKE_INSTALL_PREFIX=<my_install_dir>`
+#. 构建完成后，使用 ``cmake --install .`` 进行安装
+#. 如有需要，可继续构建 Python 绑定，参见
+   :ref:`PyBuild`。
+
+**注意：**
+
+- 若要优化运行时性能，请使用 ``-DCMAKE_BUILD_TYPE=Release`` 构建。
+- 在 Windows 上使用 MSVC 构建时，请使用 Visual Studio 2019 或更高版本，并确保已安装 Windows SDK 10.0.22000 或更高版本
+  (详见 :issue:`862`)。
+- 我们发现，在 Windows 上使用 Clang 而非 MSVC 构建时性能最佳。
+
+.. tip::
+   作为参考，可以在 GitHub 上 MuJoCo 的
+   `持续集成配置 <https://github.com/google-deepmind/mujoco/blob/main/.github/workflows/build.yml>`_ 中找到一个可用的构建配置。
+
+.. _inBuildBazel:
+
+使用 Bazel 构建
+~~~~~~~~~~~~~~~~~~~
+
+MuJoCo 也可以使用 `Bazel <https://bazel.build/>`__ 8.0 或更高版本构建。其所测试的 Bazel 版本固定在 ``.bazelversion`` 中，
+`Bazelisk <https://github.com/bazelbuild/bazelisk>`__ 会自动使用该版本。要在克隆仓库的根目录构建并测试 MuJoCo：
+
+.. code-block:: shell
+
+   bazel build //...
+   bazel test //...
+
+要在你自己的 Bazel 模块中使用 MuJoCo，请将其添加到你的 ``MODULE.bazel`` 中。MuJoCo 尚未收录在
+`Bazel Central Registry <https://registry.bazel.build/>`__ 中，因此请使用 override，例如：
+
+.. code-block:: python
+
+   bazel_dep(name = "mujoco")
+   git_override(
+       module_name = "mujoco",
+       remote = "https://github.com/google-deepmind/mujoco.git",
+       commit = "<commit>",
+   )
+
+主要目标有：
+
+- ``@mujoco``：MuJoCo 库。其头文件以 ``#include <mujoco/mujoco.h>`` 的方式包含。
+- ``@mujoco//:mujoco_shared``：作为共享库的 MuJoCo (``libmujoco.so``，在 macOS 上为 ``libmujoco.dylib``)，
+  与用 CMake 构建的共享库一样，它只导出 MuJoCo API。将其添加到依赖 ``@mujoco`` 的 ``cc_binary`` 或
+  ``cc_shared_library`` 的 ``dynamic_deps`` 中，即可动态链接 MuJoCo，例如与 Python 绑定共享同一份 MuJoCo 副本。
+- ``@mujoco//plugin/<name>:register``，其中 ``<name>`` 为 ``actuator``、\ ``elasticity``、\ ``sdf`` 或 ``sensor``：
+  随库提供的插件（plugin），在链接时会自动注册自身。
+- ``@mujoco//python/mujoco``：Python 绑定，参见 :ref:`PyBuildBazel`。
+
+要像随库提供的插件那样，将你自己的 :ref:`插件<exPlugin>` 构建为共享库，请使用 ``mujoco_plugin`` 宏。
+该库链接到 ``@mujoco//:mujoco_shared`` 且不导出任何符号；在运行时用
+:ref:`mj_loadPluginLibrary` 加载它，该函数会运行其 :ref:`注册<exRegistration>` 代码：
+
+.. code-block:: python
+
+   load("@mujoco//plugin:mujoco_plugin.bzl", "mujoco_plugin")
+
+   cc_library(
+       name = "my_plugin_lib",
+       srcs = ["my_plugin.cc"],
+       deps = ["@mujoco"],
+       alwayslink = True,
+   )
+
+   # Builds libmy_plugin.so (libmy_plugin.dylib on macOS).
+   mujoco_plugin(
+       name = "my_plugin",
+       deps = [":my_plugin_lib"],
+   )
+
+若要使用单精度浮点数 (``mjUSESINGLE``)，请使用 ``--@mujoco//:single_precision`` 构建。
+
+Bazel 构建在 Linux 和 macOS 上经过测试，涵盖 MuJoCo 库、\ ``simulate``、插件、示例以及核心 Python 绑定。
+
+.. tip::
+   ``sample`` 目录是一个独立的 Bazel 模块，它以这种方式依赖 MuJoCo。
+
+.. _inBuildDocs:
+
+构建文档
+~~~~~~~~~~~~~~~~~
+
+如果你想在本地构建文档，例如为了测试改进文档的 pull request，请执行：
+
+1. 克隆 ``mujoco`` 仓库：\ ``git clone https://github.com/google-deepmind/mujoco.git``
+2. 进入 ``doc/`` 目录：\ ``cd mujoco/doc``
+3. 安装依赖项：\ ``pip install -r requirements.txt``
+   |br| 请注意，MuJoCo Warp API 文档是自动生成的，需要额外的依赖项。
+   详情请参见 `.readthedocs.yml <https://github.com/google-deepmind/mujoco/blob/main/.readthedocs.yml>`__。
+4. 构建 HTML：\ ``make html``
+5. 在你选择的浏览器中打开 ``_build/html/index.html``。
+
+.. _inHeader:
+
+头文件
+~~~~~~~~~~~~
+
+发行版包含若干在所有平台上完全相同的头文件。为使本文档自包含，也可以通过下面的链接获取这些头文件。
+
+`mujoco.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mujoco.h>`__
+   这是主头文件，所有使用 MuJoCo 的程序都必须包含它。它定义了所有 API 函数和全局变量，并包含除 mjxmacro.h 和 mjspecmacro.h
+   之外的所有其他头文件。
+`mjmodel.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjmodel.h>`__
+   定义 C 结构体 :ref:`mjModel`，它是被仿真模型的运行时表示。
+`mjdata.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjdata.h>`__
+   定义 C 结构体 :ref:`mjData`，它是所有计算读取输入并写入输出的工作区。
+`mjvisualize.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjvisualize.h>`__
+   定义抽象可视化器所需的基本类型和结构体。
+`mjrender.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjrender.h>`__
+   定义 OpenGL 渲染器所需的基本类型和结构体。
+`mjrfilament.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjrfilament.h>`__
+   定义 filament 渲染器所需的基本类型和结构体。
+`mjui.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjui.h>`__
+   定义 UI 框架所需的基本类型和结构体。
+`mjtype.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjtype.h>`__
+   定义基本类型和枚举，包括可以是 ``double`` 或 ``float`` 的 ``mjtNum`` 浮点类型
+   (参见 :ref:`mjtNum`)。
+`mjspec.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjspec.h>`__
+   定义用于 :doc:`程序化模型编辑 <modeledit>` 的枚举和结构体。
+`mjplugin.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjplugin.h>`__
+   定义 :ref:`引擎插件<exPlugin>` 所需的数据结构。
+`mjmacro.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjmacro.h>`__
+   定义在用户代码中有用的 C 宏。
+`mjxmacro.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjxmacro.h>`__
+   该文件是可选的，不被 mujoco.h 包含。它定义了 :ref:`X 宏 <tyXMacro>`，可用于自动将 mjModel 和 mjData
+   映射到脚本语言，以及执行其他需要访问 mjModel 和 mjData 所有字段的操作。
+`mjspecmacro.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjspecmacro.h>`__
+   该文件是可选的，不被 mujoco.h 包含。它定义了 :ref:`X 宏 <tyXMacro>`，可用于自动将 mjSpec 及其元素结构体
+   映射到脚本语言，以及在程序化模型编辑期间执行其他需要访问 mjSpec 所有字段的操作。
+`mjexport.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjexport.h>`__
+   用于从 MuJoCo 库导出公共符号的宏。客户端代码不应直接使用此头文件。
+`mjsan.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjsan.h>`__
+   使用 sanitizer 插桩构建时所需的定义。
+`mjassert.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjassert.h>`__
+   编译期尺寸断言，用于验证 MuJoCo ABI 在 C 和 C++ 编译器之间的稳定性。
+
+.. _inVersion:
+
+版本与兼容性
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+MuJoCo 自 2010 年起被广泛使用，已相当成熟（尽管我们的版本编号方案相当保守）。尽管如此，它仍在积极开发中，
+我们有许多令人兴奋的新功能构想，也会根据用户反馈进行修改。这导致建模语言和
+API 都不可避免地发生变化。虽然我们鼓励用户升级到最新版本，但我们也认识到这并不总是可行，
+尤其是当其他开发者发布依赖于 MuJoCo 的软件时。因此，我们引入了一些简单的机制来帮助避免版本冲突，如下所述。
+
+如果现有代码是用某个版本的 MuJoCo 开发的，现在却要与另一个版本一起编译和链接，情况就更为微妙。
+如果该代码所用 API 函数的定义已经改变，编译器或链接器会产生错误。但即使函数定义没有改变，
+断言软件版本相同仍然是个好主意。为此，主头文件 (mujoco.h) 定义了符号
+:ref:`mjVERSION_HEADER <glNumericVersion>`，库则提供了函数
+:ref:`mj_version`。因此，可以这样比较头文件和库的版本：
+
+.. code-block:: C
+
+   // recommended version check
+   if (mjVERSION_HEADER != mj_version())
+     complain();
+
+请注意，只有主头文件定义了该符号。我们假定每个软件版本发布的头文件集合会保持在一起，不会在不同版本之间混用。
+为避免浮点数比较带来的复杂性，上述符号和函数使用整数而非浮点数。编码公式和版本语义请参见
+`VERSIONING.md <https://github.com/google-deepmind/mujoco/blob/main/VERSIONING.md>`__。
+
+.. _inNaming:
+
+命名约定
+~~~~~~~~~~~~~~~~~
+
+API 中定义的所有符号都以前缀“mj”开头。前缀中“mj”之后的字符决定该符号所属的族。首先列出与类型定义对应的前缀。
+
+``mj``
+   核心仿真数据结构（C 结构体），例如 :ref:`mjModel`。如果前缀之后的所有字符都是大写，例如 :ref:`mjMIN`，
+   则这是一个宏或符号（#define）。
+``mjt``
+   基本类型，例如 :ref:`mjtNum` 和 :ref:`mjtGeom`。此族中的大多数类型是枚举。
+``mjf``
+   回调函数类型，例如 :ref:`mjfGeneric`。
+``mjs``
+   与 :doc:`程序化模型编辑 <modeledit>` 相关的数据结构，例如 :ref:`mjsJoint`。
+``mjv``
+   与抽象可视化相关的数据结构，例如 :ref:`mjvCamera`。
+``mjrf``
+   与 filament 渲染相关的数据结构，例如 :ref:`mjrfContext`。
+``mjr``
+   与 OpenGL 渲染相关的数据结构，例如 :ref:`mjrContext`。
+``mjui``
+   与 UI 框架相关的数据结构，例如 :ref:`mjuiSection`。
+
+接下来列出与函数定义对应的前缀。请注意，函数前缀总是以下划线结尾。
+
+``mj_``
+   核心仿真函数，例如 :ref:`mj_step`。几乎所有此类函数的前两个参数都是指向 mjModel 和 mjData 的指针，其后可能还有其他参数。
+   它们通常将输出写入 mjData。
+``mju_``
+   实用函数，例如 :ref:`mju_mulMatVec`。这些函数是自包含的，
+   即它们的参数中没有 mjModel 和 mjData 指针。
+``mjv_``
+   与抽象可视化相关的函数，例如 :ref:`mjv_updateScene`。
+``mjrf_``
+   与 filament 渲染相关的函数，例如 :ref:`mjrf_render`。
+``mjr_``
+   与 OpenGL 渲染相关的函数，例如 :ref:`mjr_render`。
+``mjui_``
+   与 UI 框架相关的函数，例如 :ref:`mjui_update`。
+``mjcb_``
+   全局回调函数指针，例如 :ref:`mjcb_control`。用户可以通过将这些全局指针设置为用户定义的函数来安装自定义回调。
+``mjd_``
+   用于计算导数的函数，例如 :ref:`mjd_transitionFD`。
+``mjs_``
+   用于 :doc:`程序化模型编辑 <modeledit>` 的函数，例如 :ref:`mjs_addJoint`。
+``mjb_``
+   用于 :ref:`批量仿真<siBatch>` 的函数，声明于 ``mujoco/mjbatch.h`` 中，例如 :ref:`mjb_step`。
+
+.. toctree::
+    :hidden:
+
+    simulation
+    visualization
+    rendering
+    ui
+    modeledit
+    samples
+    extension

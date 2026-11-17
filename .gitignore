@@ -1,0 +1,9 @@
+# 大文件 / 离线资料包（体积超过 GitHub 推荐上限，不入库）
+*.zip
+
+# 系统与编辑器
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/

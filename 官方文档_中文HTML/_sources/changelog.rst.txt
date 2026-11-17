@@ -1,0 +1,3634 @@
+﻿=========
+更新日志
+=========
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+版本 4.0.1 (November 11, 2026)
+---------------------------------
+
+编译器
+^^^^^^^^
+1. :commit:`21a076966` 添加了 :ref:`mjs_getInStringVec`，用于按索引从 :ref:`mjStringVec<mjStringVec>` 中读取条目。
+
+Python 绑定
+^^^^^^^^^^^^^^^
+2. :commit:`a937a4f91` 在 Windows 上启用了 MuJoCo Studio Web Viewer（``mujoco-studio --gfx=web`` 和
+   ``mujoco.studio.launch_web``），方法是将预编译的浏览器客户端打包进与平台无关的 ``mujoco-studio-wasm`` wheel 中，并由 ``mujoco-studio`` 自动安装。
+
+缺陷修复
+^^^^^^^^^
+
+3. :commit:`9ae9bad01` 修复了 4.0.0 中引入的稀疏 Cholesky 分解的一个缺陷：它会把具有不同后代的行合并到同一个超节点中，当约束雅可比矩阵为稀疏时，会给 Newton 求解器提供错误的 Hessian 因子，导致收敛缓慢、加速度错误以及发散（:issue:`3767`）。
+4. :commit:`144ede984` :ref:`mj_loadAllPluginLibraries` 现在会跳过加载失败的动态库并给出警告，而不是调用 :ref:`mju_error`，因此插件目录中某一个无法加载的库不会再导致 :ref:`simulate<saSimulate>` 在启动时中止。在 4.0.0 的 macOS 和 Linux 压缩包中，USD 解码器插件就会出现这种情况，该插件只能从 Python 进程中加载。
+5. :commit:`409f981ab` 修复了单次 :ref:`多接触<coMultiCCD>` 中圆柱体边缘碰撞的问题（:issue:`3748`、\ :issue:`3752`）。
+
+版本 4.0.0 (November 6, 2026)
+--------------------------------
+
+.. image:: images/changelog/speculative_advancement_light.svg
+   :align: right
+   :width: 50%
+   :class: only-light
+   :target: https://mujoco.readthedocs.io/en/latest/computation/speculative.html#spadvancement
+
+.. image:: images/changelog/speculative_advancement_dark.svg
+   :align: right
+   :width: 50%
+   :class: only-dark
+   :target: https://mujoco.readthedocs.io/en/latest/computation/speculative.html#spadvancement
+
+重要新特性
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+1. :commit:`89daf8d19` 添加了 :ref:`speculative<option-flag-speculative>` 启用标志，用于 :doc:`推测接触
+   <computation/speculative>`，以防止高速运动的凸 geom 在单个时间步长内穿隧通过薄障碍物。右图为两个旋转的盒子之间的一步保守推进。示例请参阅
+   `model/speculative/ <https://github.com/google-deepmind/mujoco/tree/main/model/speculative/>`__。
+
+   .. container:: custom-clear
+
+      .. raw:: html
+
+         <div style="clear: both;"></div>
+
+2. 添加了弹塑性，其带状态的塑性变形存储在 ``mjData.plastic``\ （``mjSTATE_PLASTIC``）中：
+
+   - :commit:`e140c026f` 用于关节弹簧（:ref:`springyield<body-joint-springyield>`）和肌腱弹簧（:ref:`spatial<tendon-spatial-springyield>`、\ :ref:`fixed<tendon-fixed-springyield>`）的理想弹塑性（左图）。
+   - :commit:`0c0f63b3f`、\ :commit:`c39fe6f02`、\ :commit:`e3bd72742`、\ :commit:`7cb32488b` 用于二维和三维 :ref:`柔性体<deformable-flex>` 的连续体弹塑性（:ref:`yield<flex-elasticity-yield>`），其中二维壳具有各自独立的拉伸和弯曲屈服应变，并包含体积-偏量（von Mises :math:`J_2`）拉伸和二维壳弯曲的回映射（右图）。
+   - 示例请参阅 `model/plastic/ <https://github.com/google-deepmind/mujoco/tree/main/model/plastic/>`__。
+
+   .. image:: https://www.gstatic.com/mujoco/model/plastic/wire.webp
+      :align: left
+      :width: 45%
+      :target: https://github.com/google-deepmind/mujoco/blob/main/model/plastic/wire.xml
+
+   .. image:: https://www.gstatic.com/mujoco/model/plastic/clay.webp
+      :align: right
+      :width: 45%
+      :target: https://github.com/google-deepmind/mujoco/blob/main/model/plastic/clay.xml
+
+.. container:: custom-clear
+
+   .. raw:: html
+
+      <div style="clear: both;"></div>
+
+3. :commit:`abaf8d518` 将 Python 发行版拆分为 ``mujoco-core``\ （最小化的绑定和 C 库，仅依赖 ``numpy``）、\ ``mujoco-studio``\ （Studio 和 Filament 渲染器绑定）以及 ``mujoco``\ （默认包，同时安装前两者）。使用 ``pip`` 从拆分之前的 ``mujoco`` 安装升级时，请先卸载（``pip uninstall -y mujoco && pip install mujoco``），或者在升级后运行
+   ``pip install --force-reinstall --no-deps mujoco mujoco-core mujoco-studio``，以免 ``pip`` 删除已移至 ``mujoco-core`` 的文件。若要将现有的 ``mujoco`` 安装切换为仅核心包，请运行
+   ``pip uninstall -y mujoco mujoco-studio && pip install --force-reinstall --no-deps mujoco-core``。
+
+引擎
+^^^^^^
+.. admonition:: 不兼容变更
+   :class: attention
+
+   4. :commit:`a65050166` 更改了 :ref:`sidesite<spatial-geom-sidesite>` 的语义：肌腱现在绕过 geom 的方式，与从第一个端点经过侧向 site 到第二个端点的路径相同（下图中的灰色细线）。形式上，肌腱是在去除该 geom 之后的缠绕平面内，与这条折线同伦的最短路径。
+
+      .. image:: images/XMLreference/sidesite_homotopy_light.svg
+         :align: center
+         :width: 90%
+         :class: only-light
+
+      .. image:: images/XMLreference/sidesite_homotopy_dark.svg
+         :align: center
+         :width: 90%
+         :class: only-dark
+
+      此前使用的是半平面测试，当两端点之间的线段在避开 geom 的同时远离侧向 site 时，可能使肌腱跳到 geom 上，造成肌腱长度的不连续。对于超过 180 度的缠绕，它还可能选错一侧。上排：旧规则；下排：新规则。
+
+      .. image:: images/changelog/sidesite_old_vs_new_light.svg
+         :align: center
+         :width: 90%
+         :class: only-light
+
+      .. image:: images/changelog/sidesite_old_vs_new_dark.svg
+         :align: center
+         :width: 90%
+         :class: only-dark
+
+      新规则只有一个不连续点：当某个端点越过与侧向 site 相反的射线时，经过侧向 site 的路径绕 geom 的缠绕方式会发生改变，肌腱随即弹开。这可能会改变现有模型的行为。
+
+      **迁移：** 放置侧向 site 时，应使端点在整个运动范围内不会越过这条射线，通常放在缠绕弧的中间附近。例如，
+      `双连杆手臂 <https://github.com/google-deepmind/mujoco/blob/main/model/tendon_arm/arm26.xml>`__ 的侧向 site 已从关节的正下方移到手臂下方 45 度处，这样可以精确复现之前的肌腱长度。
+
+5. :commit:`9a7f240f0` ``RK4`` :ref:`积分器<option-integrator>` 现在对球关节和自由关节的姿态达到四阶精度。此前，各 Runge-Kutta 阶段的角速度在合并时没有使用 Runge-Kutta-Munthe-Kaas 修正，因此姿态只能以二阶收敛。这会改变使用 ``RK4`` 的含球关节或自由关节的模型的仿真结果。
+6. :commit:`9916cc5f7` 在 :ref:`mjContact` 中添加了 ``surfacevel[3]``，用于存储接触坐标系 ``(tangent1, tangent2, spin)`` 中的相对 :ref:`表面速度<body-geom-surfacevel>`\ （``geom[1]`` 减去 ``geom[0]``）。当设置了 ``mjModel.flg_surfacevel`` 时，碰撞检测会根据 ``geom_surfacevel`` 填充该字段，外部接触生成器也可以直接写入该字段（如果没有 geom 指定 ``surfacevel``，则需设置 ``flg_surfacevel = 1``）。接触点可视化现在为每个活动的摩擦接触绘制单个相对切向速度箭头。
+7. :commit:`629feb74b` 在 :ref:`mjData` 中添加了 ``xiquat``、\ ``geom_xquat`` 和 ``site_xquat``，用于存储刚体惯性、geom 和 site 的笛卡尔四元数姿态，与 ``ximat``、\ ``geom_xmat`` 和 ``site_xmat`` 并列。
+8. :commit:`64af6504f` 添加了 ``mjModel.tendon_type``，其取值来自新的 :ref:`mjtTendon` 枚举，用于区分固定肌腱和空间肌腱。此前，类型是由路径的第一个元素是否为关节隐含决定的。
+
+可变形体
+^^^^^^^^^^^
+.. admonition:: 不兼容变更
+   :class: attention
+
+   9. :commit:`1d6cc8ff5` 移除了 ``cable`` 插件（``plugin/elasticity``）和 ``composite`` 元素，它们已被带有 :ref:`elasticity<flex-elasticity>` 的一维 :ref:`flexcomp<body-flexcomp>` 所取代。
+
+      **迁移：**
+
+      - ``count`` 和 ``curve`` / ``size`` / ``vertex``：使用 :ref:`flexcomp<body-flexcomp>` 的 ``dim="1"``，配合 ``type="grid"``、\ ``count`` 和 ``spacing``\ （闭合回路则使用 ``type="circle"``），或使用 ``type="direct"`` 配合 ``point``。添加 ``<edge equality="true"/>`` 以保持边不可伸长。
+      - geom 的 ``size``\ （胶囊体半径）：设置 flexcomp 的 ``radius``。对于 geom 的 ``type="box"``，设置 ``<elasticity section="box" sectionsize="..."/>``。
+      - 插件的 ``bend`` 和 ``twist``：设置 ``<elasticity young="..." shear="..."/>``。
+      - 根部附着的 ``initial``：\ ``initial="none"`` 对应 ``<pin id="0 1"/>``\ （将第一条边的材料坐标系夹紧到父刚体上，并省略 ``<name>_twist_0``）；\ ``initial="ball"`` 对应 ``<pin id="0"/>``\ （在第一个顶点处使用球形锚点，保持 ``<name>_twist_0`` 自由）；\ ``initial="free"`` 对应不使用 ``<pin/>``。
+      - 插件的 ``flat="true"``：在 ``qpos0`` 中把杆定义为直的（例如 ``type="grid"``），并通过 ``qpos`` 或 :ref:`关键帧<keyframe>` 设置弯曲的初始位姿（直接在 ``point`` 中定义的曲线在 ``qpos0`` 中处于静止状态，对应于 ``flat="false"``）。
+      - 插件的 ``vmax`` 应力着色：不再支持。
+      - 积分器：隐式积分请使用 ``integrator="discrete"``\ （或 ``Euler`` / ``RK4``；一维杆弹性不支持 ``implicit`` 和 ``implicitfast``）。
+      - 刚体名称 ``B_first`` / ``B_<i>`` / ``B_last``：未固定的顶点会创建名为 ``<name>_<i>`` 的刚体（被固定的顶点直接附着在父刚体上），此外还会创建每条边的扭转刚体和关节（参见下一条）。
+
+   10. :commit:`95cf15e58` 具有至少两个元素的开链弹性一维 :ref:`flexcomp<body-flexcomp>` 现在会在世界刚体之下，为每条边创建扭转刚体及铰链关节 ``<name>_twist_0``、...、\ ``<name>_twist``\ （对于两个点都被固定而夹紧的边，则省略其关节：\ ``<pin id="0 1"/>`` 对应省略 ``<name>_twist_0``，具有至少三个元素的杆的最后两个点对应省略 ``<name>_twist``），并将它们的时间平行参考坐标系和参考扭转存储在 ``mjData.plastic`` 中。这会改变此类模型的 ``nq``、\ ``nv``、\ ``nbody``、\ ``nplastic`` 以及 ``qpos`` 的布局，使在该 flexcomp 之后声明的刚体和关节的索引发生偏移，并改变仿真结果：杆现在可以在表面上滚动，并在夹爪中扭转。方形截面（:at:`section` **box**）需要这些关节，因此带有方形截面的原始 :ref:`柔性体<deformable-flex>` 现在也需要它们，并且其碰撞 :at:`radius` 被设置为截面的较小半边长（显式指定与之不同的 :at:`radius` 现在会导致编译错误）。
+
+       **迁移：** 更新关键帧以及所有按编号索引 ``qpos``、\ ``qvel`` 或刚体的代码，最好按名称寻址顶点刚体（``<name>_<i>``）和扭转关节。使用 ``mjSTATE_PLASTIC`` 保存和恢复杆的状态。原始的方形截面柔性体需要按上述命名的铰链关节（参见 :ref:`elasticity<flex-elasticity>`）。
+
+   11. :commit:`7ba52b533` 修正了非插值 :ref:`柔性体<deformable-flex>`\ （**full** 和 **radial** :ref:`自由度<body-flexcomp-dof>`）以及插值柔性体的弹性常数，它们现在与文档所述的 :ref:`young<flex-elasticity-young>`、\ :ref:`poisson<flex-elasticity-poisson>` 和 :ref:`thickness<flex-elasticity-thickness>` 相符：
+
+       - 三维 Saint Venant-Kirchhoff 拉伸使用了两倍的第一 Lamé 参数 :math:`\lambda`。
+       - 二维拉伸使用了四分之一的剪切模量 :math:`\mu` 和二分之一的三维 :math:`\lambda`，而不是 :math:`\mu` 和平面应力下的 :math:`\lambda^* = E \nu / (1 - \nu^2)`。
+       - 二维弯曲使用了 :math:`\tfrac{3}{4}(1-\nu) D`，而不是板的弯曲刚度 :math:`D = E t^3 / (12 (1 - \nu^2))`。
+
+       使用这些柔性体的模型会变得更硬，但泊松比为零的三维模型保持不变。
+
+       **迁移：** 若要保持之前的行为，请使用如下参数：
+
+       - 三维：\ :math:`\nu' = 2\nu / (1 + 2\nu)` 且 :math:`E' = E (1 + \nu') / (1 + \nu)`。
+       - 仅二维弯曲（``elastic2d="bend"``）：\ :math:`E' = \tfrac{3}{4}(1 - \nu) E`。
+       - 二维拉伸（``elastic2d="stretch"`` 或 ``"both"``）：\ :math:`\nu' = 2\nu`，对于 :math:`\nu < 1/4`\ （使得 :math:`\nu' < 1/2`）是精确的。然后：
+
+         - ``"stretch"``：\ :math:`E' = E (1 + 2\nu) / (4 (1 + \nu))`。
+         - ``"both"``：\ :math:`t' = t \sqrt{3 (1 - 2\nu)}` 且 :math:`E' = E t (1 + 2\nu) / (4 (1 + \nu) t')`。
+
+       ``model/flex`` 中的柔性体模型已按此方式重新映射，因此它们的行为保持不变。
+
+   12. :commit:`c0e6b15fd` 一维杆弯曲 :ref:`elasticity<flex-elasticity>`\ （``dim="1"`` 且 ``young`` 为正）在 ``implicit`` 和 ``implicitfast`` 下不再受支持，与二维和三维柔性体弹性保持一致。
+
+       **迁移：** 隐式积分请使用 ``integrator="discrete"``，显式积分请使用 ``integrator="Euler"`` 并配合较小的时间步长。
+
+   13. :commit:`c0e6b15fd` 柔性体的 :ref:`边刚度<flex-edge-stiffness>` 和 :ref:`阻尼<flex-edge-damping>` 在 ``integrator="discrete"`` 下不再受支持（此前它们是被显式积分，而不是纳入有效度量中）。
+
+       **迁移：** 使用 :ref:`elasticity<flex-elasticity>`\ （或 :ref:`边等式约束<flexcomp-edge-equality>`），或者使用 ``Euler``/``RK4``/``implicitfast``。
+
+   14. :commit:`b2577a630` 当没有活动顶点或节点被 :ref:`固定<flexcomp-pin>` 到其父刚体或祖先刚体上，而该刚体带有关节时，未固定的 :ref:`flexcomp<body-flexcomp>` 模型（使用 **full**、\ **trilinear** 或 **quadratic** :ref:`自由度<body-flexcomp-dof>`）现在会编译失败。
+
+       **迁移：** 移除未固定柔性体的父刚体/祖先刚体上的关节，或者使用 :ref:`pin<flexcomp-pin>` 将至少一个顶点/节点固定到父刚体上。
+
+   15. :commit:`145cdc2be` 移除了 ``flexvert`` 等式约束（:ref:`flexcomp<body-flexcomp>` 中的 ``<equality><flexvert>`` 和 ``<edge equality="vert"/>``），以及相关的 :ref:`mjModel` 字段（``nJfv``、\ ``flex_vertedgeadr``、\ ``flex_vertedgenum``、\ ``flex_vertedge``、\ ``flex_vertmetric``、\ ``flexvert_J_rownnz``、\ ``flexvert_J_rowadr``、\ ``flexvert_J_colind``）和 :ref:`mjData` 字段（``flexvert_length``、\ ``flexvert_J``）。\ ``mjEQ_FLEXVERT`` 作为不受支持的占位符保留在 :ref:`mjtEq` 中，使用它会导致报错。
+
+       **迁移：** 对于二维布料模型，请使用带 ``integrator="discrete"`` 的连续体 :ref:`elasticity<flex-elasticity>`，或使用 :ref:`边等式约束<flexcomp-edge-equality>`。
+
+   16. :commit:`6f28d4adf` 柔性体现在支持逐元素的视觉材质：\ ``mjModel.flex_matid`` 现在是 ``(nflexelem x 1)`` 而不是 ``(nflex x 1)``，\ :ref:`flex<deformable-flex>` 和 :ref:`flexcomp<body-flexcomp>` 上的 ``material`` 属性（``mjsFlex.material``）现在是 ``mjStringVec`` 而不是 ``mjString``\ （既可以接受广播到所有元素的单个材质名称，也可以接受每个元素各一个材质名称）。
+
+       **迁移：** 请按元素 ``m->flex_elemadr[f] + e`` 而不是按柔性体 ``f`` 来索引 ``mjModel.flex_matid``。在 C 中，请使用 ``mjs_setStringVec``\ （或 ``mjs_appendString``）而不是 ``mjs_setString`` 来设置 ``mjsFlex.material``；在 Python 中，请赋值材质名称列表（例如 ``flex.material = ['mat']``）。
+
+   17. :commit:`7ba5d6732` ``mjModel.flex_bending`` 中一维柔性体的记录从 4 个值增加到 10 个值，用于存储弯曲的参考构型以及成对的相邻弯曲顶点。此前，每条记录为 ``[v_prev, v, v_next, k]``。
+
+       **迁移：** 请以步长 10 读取一维记录。第四个值为负的记录是单个铰链 ``[v0, v1, v2, -1, k1, k2 - k1, |kb0|, jnt, kt, b]``：主弯曲刚度 ``k1 <= k2``、边 ``(v1, v2)`` 的扭转铰链关节 ``jnt``\ （若没有则为 -1；第一条边的关节（如果存在）是第一条记录的关节编号减一）、扭转刚度 ``kt``，以及方形截面的带符号较小半边长 ``b``\ （圆形截面为 0）。否则它是一个铰链对 ``[v0, v1, v2, v3, w0, w1, om0[4]]``。
+
+18. :commit:`8892bf44b`、\ :commit:`0d8a109de`、\ :commit:`f9a589361` 在 :ref:`flex<deformable-flex>` 模型上，稀疏 ``Newton``\ （:ref:`求解器<option-solver>`）快了 1.4-3 倍，这得益于减少填充的自由度排序、增量式的活动集 Hessian 更新、直接的 :ref:`椭圆锥<option-cone>` 折叠，以及用于二维 ``discrete`` :ref:`积分器<option-integrator>` 光滑求解的预排序稀疏 Cholesky。\ ``model/flex`` 中的大多数柔性体模型现在使用 ``solver="Newton"``，并且实验性的 :ref:`ipc<option-flag-ipc>` 标志除 ``solver="CG"`` 外，现在也支持 ``solver="Newton"``。
+19. :commit:`57d9b960f` 采用 ``discrete`` :ref:`积分器<option-integrator>` 的 ``solver="Newton"`` 现在支持附着在铰接刚体上的 :ref:`flex<deformable-flex>` 顶点和节点（标准的和插值的均可）。此前，这类模型需要使用 ``solver="CG"``。\ ``model/flex/gripper_trilinear.xml`` 夹爪现在使用 ``solver="Newton"``。MuJoCo Warp 对此类模型仍然要求 ``solver="CG"``。
+20. :commit:`7ba5d6732` 一维杆弯曲 :ref:`elasticity<flex-elasticity>` 现在支持弯曲的参考构型和扭转刚度：在 ``qpos0`` 中弯曲超过 :math:`10^{-4}` rad 的顶点会保持其参考曲率和二面扭转角，因此环、圆弧和螺旋弹簧等杆在其编译后的形状下处于静止状态。此前，此类模型会编译失败。新的 :ref:`shear<flex-elasticity-shear>` 属性可以选择性地覆盖用于扭转的剪切模量。开链杆带有每条边的扭转关节（参见上面的不兼容变更），并具有每条边的极惯性、不依赖坐标系的相对 Rayleigh 扭转阻尼、时间平行参考坐标系，以及摩擦接触杠杆臂耦合。方形截面另外使用各向异性的主刚度，并配合均衡的阻尼比（弱轴上为 :math:`\sqrt{k_1 k_2}`），以及在 DER 材料坐标系中用于渲染和碰撞检测的有向盒。请参阅 :ref:`文档<flex-elasticity>`。
+21. :commit:`9ca6b7171` 体插值柔性体（**trilinear** 或 **quadratic** :ref:`自由度<body-flexcomp-dof>`，且 ``elastic2d="none"``）现在使用有限单元法（Finite Cell Method，FCM）的子单元积分，在网格体积上积分单元刚度并集总节点质量，而不是把每个非空的网格单元都当作完整的立方体。这会改变网格未填满其包围盒的体插值柔性体的刚度和节点质量分布，以及多单元 **trilinear** 柔性体的节点质量分布。
+22. :commit:`f9f3ee653` 与 flex 元素的接触现在使用元素上距接触最近的点的重心坐标，将接触分配到元素的各顶点上。此前，顶点权重与到接触点的距离成反比，这并不能对接触点进行插值：接触雅可比矩阵测量的是另一个材料点的速度，并且接触力会对元素施加虚假的力矩。这会改变带有柔性体接触的模型的仿真结果。
+23. :commit:`115907e6d` 插值柔性体（**trilinear** 或 **quadratic** :ref:`自由度<body-flexcomp-dof>`）现在支持 :ref:`被动<flex-contact-passive>` 接触。
+24. :commit:`51572eab0` 柔性体的 :ref:`边阻尼<flex-edge-damping>` 现在在 ``implicit`` 和 ``implicitfast`` 下被显式积分（此前它还会对刚体平动产生阻尼）。
+25. :commit:`9fb4eca48` 修复了二次柔性体的接触雅可比矩阵，此前它会丢弃基函数权重为负的节点。
+26. :commit:`b16e09838` 球体和胶囊体与三维 flex 元素的接触现在通过解析方式计算，而不是使用通用的凸体流水线。
+27. :commit:`3bbf510d4` 改进了 :ref:`nativeccd<option-flag-nativeccd>` 凸体碰撞检测和 :ref:`multiccd<option-flag-multiccd>` 接触生成的数值稳定性。这可能会略微改变具有凸体或网格碰撞的模型的接触。
+
+编译器
+^^^^^^^^
+.. admonition:: 不兼容变更
+   :class: attention
+
+   28. :commit:`00057bcef` 通过不同路径 :ref:`include<include>` 同一文件的模型此前可以加载，现在会被拒绝，并报错 ``already included``。
+
+       **迁移：** 移除引用同一文件的多余 ``<include>`` 元素。
+
+   29. 编译器现在会拒绝以下此前可以加载的无效模型：
+
+       - :commit:`b6192732b` :ref:`nrow<asset-hfield-nrow>` 或 :ref:`ncol<asset-hfield-ncol>` 小于 2 的 :ref:`高度场<asset-hfield>`。
+       - :commit:`a4c699040` 引用 ``ball``/``free`` 关节或重复关节的，或带有负 :ref:`armature<tendon-fixed-armature>` 的 :ref:`固定肌腱<tendon-fixed>`。
+       - :commit:`a4c699040` :ref:`divisor<spatial-pulley-divisor>` 非正的 :ref:`空间肌腱<tendon-spatial>` :ref:`滑轮<spatial-pulley>`。
+       - :commit:`a4c699040` 引用了无效相机或 :ref:`分辨率<body-camera-resolution>` 非正的相机的 :ref:`camprojection<sensor-camprojection>` 或附着在相机上的 :ref:`rangefinder<sensor-rangefinder>` 传感器。
+       - :commit:`881e53e2e` 面顶点索引越界的 :ref:`蒙皮<deformable-skin>`。
+       - :commit:`881e53e2e` 边数少于 3 或 ``radius`` 超出 ``[0, 1]`` 范围的 :ref:`mjs_makeMesh` ``mjMESH_BUILTIN_CONE`` 调用。
+
+       **迁移：** 确保高度场的 ``nrow >= 2`` 且 ``ncol >= 2``，固定肌腱缠绕互不相同的 ``slide`` 或 ``hinge`` 关节且 armature 非负，滑轮除数为正，被 ``camprojection`` 或 ``rangefinder`` 传感器引用的相机分辨率为正，蒙皮面索引位于 ``[0, nvert)`` 内，并且圆锥网格至少有 3 条边且半径位于 ``[0, 1]`` 内。
+
+30. :commit:`432376a59` 当 :ref:`boundinertia<compiler-boundinertia>` 为正时，非正定的 :ref:`fullinertia<body-inertial-fullinertia>` 以及由 geom 推断出的非正定惯性现在会受其限定。此前它们会导致编译错误。
+31. :commit:`a4c699040` :ref:`mj_encode` 现在通过 ``model/vnd.mujoco.mjb`` 内容类型，支持为 :ref:`mjSpec` 输出二进制 MJB。
+
+渲染
+^^^^^^^^^
+32. :commit:`1edd2c67d` 为 :ref:`geom<body-geom>` 添加了 :ref:`castshadow<body-geom-castshadow>` 属性（``mjsGeom.castshadow``、\ ``mjModel.geom_castshadow``、\ ``mjvGeom.castshadow``；默认为 ``true``），可在经典 OpenGL 和 Filament 渲染器中按 geom 禁用投射阴影，并添加了 :ref:`mjrf_setRenderableCastShadow`\ （Python 中为 ``mjrf.Renderable.set_cast_shadow``），用于动态切换 Filament 可渲染对象的阴影投射。
+33. :commit:`c831b97d6` 为 Filament 渲染添加了地平线雾霾和天空盒可见性支持：无限平面以相机正下方为中心，并根据 :ref:`visual/map/haze<visual-map-haze>` 和 :ref:`visual/rgba/haze<visual-rgba-haze>` 与天空盒地平线平滑融合，可通过 :ref:`mjrfRenderRequest` 上的 ``haze`` 和 ``skybox`` 按视图切换（:ref:`mjRND_HAZE<mjtRndFlag>` 和 :ref:`mjRND_SKYBOX<mjtRndFlag>`）。
+34. :commit:`939bc882e` 当没有任何光源指定 :ref:`intensity<body-light-intensity>` 时，Filament 渲染中赋予每个光源的备用强度现在会按其漫反射颜色的亮度进行缩放，该亮度是从光源颜色中分解出来的。光源看起来保持不变，但现在由最亮的平行光投射阴影，而不是由可能在不同次运行之间变化的任意一个光源投射。
+35. :commit:`0fc0b44d6` 添加了 :ref:`filament.material.base_color_type<reFlags>` 标志，用于配置基础颜色材质参数的解释方式。
+36. :commit:`e19117325` 添加了 :ref:`mjrf_flush`\ （Python 中为 ``mjrf.Context.flush``），用于将待处理的操作刷新到渲染后端，并调用所有已完成的回调。
+37. :commit:`93033f5ba` 添加了 :ref:`mjRND_POST_PROCESSING<mjtRndFlag>` 渲染标志。
+38. :commit:`e66b53380` 允许将 :ref:`headlight.active <visual-headlight-active>` 设置为 "false"、"true" 或 "auto"，同时继续支持整数值（0=false，1=true，2=auto）。将默认值由 "true" 改为 "auto"。
+
+Python 绑定
+^^^^^^^^^^^^^^^
+39. :commit:`68390c316` 移除了对 Python 3.10 的支持，因为它已被
+    `上游弃用 <https://devguide.python.org/versions>`__。
+40. :commit:`a1b9fce44` 将 MuJoCo Sphinx 手册（``doc/**/*.rst``）和智能体技能（``doc/skills/**/*.md``）打包到 ``mujoco`` 包内的 ``mujoco/doc/`` 下。
+
+示例
+^^^^^^^
+.. admonition:: 不兼容变更
+   :class: attention
+
+   41. :commit:`006586d30` 移除了 ``sample/record.cc``；现在 :ref:`sample/render.cc<saRender>` 通过 ``--duration`` 和 ``--fps``，在 Filament 和经典 OpenGL 两种后端上都支持多帧原始 RGB24 视频录制。
+
+       **迁移：** 将 ``record model.xml T F out.rgb 0`` 替换为
+       ``render model.xml out.rgb --duration=T --fps=F``\ （或者将 ``-`` 作为输出路径，把自上而下的 RGB24 帧直接通过管道传给 ``ffmpeg``；不再需要 ``vflip``）。
+
+模型
+^^^^^^
+42. :commit:`9647e0290` 添加了六个
+    `弹塑性 <https://github.com/google-deepmind/mujoco/tree/main/model/plastic/>`__ 示例模型，每个模型都把弹性参照物与对应的塑性模型并排放置：关节和肌腱弹簧、二维壳以及三维连续体。
+43. :commit:`89daf8d19` 添加了
+    `推测接触 <https://github.com/google-deepmind/mujoco/tree/main/model/speculative/>`__ 示例模型：薄板组成的牛顿摆、相互咬合的链条，以及被铰接拨片击打的球。
+
+文档
+^^^^^^^^^^^^^
+44. :commit:`74ad32d20` 新增了 :ref:`MuJoCo Studio <Studio>` 的文档，涵盖 :ref:`Web <StudioWebViewers>`
+    和 :ref:`原生 <StudioNativeViewers>` 查看器、\ :ref:`架构 <StudioArchitecture>`，以及
+    :ref:`Python <StudioPythonPlugins>` 和 :ref:`C++ <StudioCpp>` 开发。
+45. :commit:`0f1092ebb` 在建模章节中新增了 :ref:`模型调优 <CTuning>` 指南，涵盖保真度与速度之间的权衡、\ :ref:`调优默认值 <CTuningDefaults>`、按优先级排序的
+    :ref:`全局 <CTuningGlobal>` 和 :ref:`模型级 <CTuningModel>` 参数、\ :ref:`可变形体 <CTuningDeformable>`，以及
+    :ref:`系统辨识 <CTuningSysid>`，同时新增了 :ref:`mujoco.sysid <PySysid>` 的模块文档。
+
+缺陷修复
+^^^^^^^^^
+46. :commit:`fdf141238` 静态刚体（body）和 mocap 刚体上的 :ref:`accelerometer<sensor-accelerometer>` 和 :ref:`framelinacc<sensor-framelinacc>`
+    传感器（sensor），以及 :ref:`mj_objectAcceleration`，现在会报告重力固有加速度，就像处于静止状态的动态刚体一样。此前它们返回零，这是 3.3.7 中引入的一个回归问题。
+47. :commit:`c4137ef7c`, :commit:`aeb871ba1` 因关节或肌腱执行器力限制（:ref:`joint<body-joint-actuatorfrcrange>` 和
+    :ref:`tendon<tendon-spatial-actuatorfrcrange>` 的 :at:`actuatorfrcrange`）而饱和的执行器（actuator），不再贡献隐式执行器导数，从而改变了 ``implicit``、
+    ``implicitfast`` 和 ``discrete`` 下的积分行为。由于饱和的执行器不再贡献隐式阻尼，具有轻质连杆且没有电枢惯量的模型可能需要设置关节 armature，或使用更小的时间步长。
+48. :commit:`aaf2abaa7`, :commit:`1b46a496e` 修复了以下位置的 :ref:`休眠 <siSleep>` 过滤缺陷：历史传感器
+    （:at:`nsample`、\ :at:`delay`、\ :at:`interval`）、\ :ref:`mj_energyPos`、柔性体（flex）被动力、肌腱（tendon）限位和
+    摩擦损耗约束、双树肌腱的 :ref:`电枢惯量<tendon-fixed-armature>` 和偏置、\ :ref:`mj_subtreeVel`，以及
+    调用方提供的 :ref:`mj_rne` 缓冲区。
+49. :commit:`13fb7844e` :ref:`mj_setConst` 现在会唤醒所有处于 :ref:`休眠 <siSleep>` 状态的树，因为它会在 ``qpos0`` 和 ``qpos_spring`` 处重新计算这些树的运动学。此前它们缓存的位姿可能停留在 ``qpos_spring``。
+    此外，它也不再覆盖 :ref:`mjData` 中的 ``cam_xpos``、\ ``cam_xmat``、\ ``light_xpos`` 和 ``light_xdir``，这些覆盖曾使带有跟踪或目标指向功能的静态相机和灯光停留在固定模式的位姿上。
+50. :commit:`432376a59` 使用未定义的 ``mjsPair.solref`` 创建的接触对（contact pair），现在当两个 geom 的 ``solref`` 均为正时，会使用 ``solmix`` 对二者的 ``solref`` 进行混合，与并非由接触对定义的接触一致。此前它们总是取逐元素的最小值。
+51. :commit:`18d65f4e0`, :commit:`ea6aa8214` Filament 深度和分割渲染不再应用后处理（色调映射、抖动），后处理曾破坏深度值和分割 ID 颜色；透视深度渲染现在使用有限的 :ref:`zfar<visual-map-zfar>` 平面进行投影，而不是 Filament 的无限远平面，从而与正交深度和经典渲染器保持一致；并且 ``mjr_`` 兼容 API 现在会在 :ref:`mjr_readPixels` 中遵循
+    :ref:`mjrContext` 上的 ``readDepthMap``\ （:ref:`mjtDepthMap`），并像 :ref:`mjRND_IDCOLOR<mjtRndFlag>` 一样按 ``segid + 1`` 为 geom 着色，因此 ``segid`` 为 0 的 geom 不再被渲染为背景。
+52. :commit:`9b19fd07c`, :commit:`ef34acbee` Windows 上的文件路径现在按 UTF-8 解释，而不是当前活动的 ANSI 代码页，从而修复了路径包含非 ASCII UTF-8 字符时的以下问题：文件的加载与保存、插件库的发现与加载（:ref:`mj_loadPluginLibrary`、
+    :ref:`mj_loadAllPluginLibraries`），以及 :ref:`simulate<saSimulate>` 可执行文件目录的查找（:issue:`3139`）。由 :github:user:`mar-yan24` 贡献。
+53. :commit:`a5ff8f6c7` 修复了 :ref:`dcmotor<actuator-dcmotor>` 的参数处理：当 ``input="none"`` 时允许 :ref:`motorconst<actuator-dcmotor-motorconst>` 为零；拒绝负常数（例如 ``motorconst="-a b"`` 现在会被拒绝，而不是悄悄地使用 ``K = b``）；当给出不一致的
+    :ref:`thermal<actuator-dcmotor-thermal>` 三元组时替换电容；当编写了 :ref:`saturation<actuator-dcmotor-saturation>` 时清除继承的
+    :ref:`forcerange<actuator-general-forcerange>`；让为零的 ``saturation`` 或 ``inductance`` 清除类默认值；并在编译时验证 :ref:`actdim<actuator-general-actdim>`。
+54. :commit:`8694cc9ce` 改进了球体和圆柱体 :ref:`空间肌腱<tendon-spatial>` :ref:`geom<spatial-geom>` 绕线在绕线起始处的数值稳定性。感谢 :github:user:`M-Colley` 在 :doc:`MJWarp <mjwarp/index>` 的 issue `1772 <https://github.com/google-deepmind/mujoco_warp/issues/1772>`__ 中报告并分析该问题。
+55. :commit:`b6192732b` 对于非单位射线向量，\ :ref:`mj_ray` 现在会将 SDF 命中距离按 ``1 / ||vec||`` 缩放，并且
+    ``mju_rayTriangle`` 会拒绝位于射线起点之后的三角形交点。
+56. :commit:`00c19f04b` :ref:`mj_resetData`、\ :ref:`mj_copyData` 和 :ref:`mj_recompile` 现在会保留目标 :ref:`mjData` 的线程池，而不是将其丢弃并造成泄漏。
+57. :commit:`a206daa42` ``mju_mat2Rot`` 现在会对输入的四元数（quaternion）进行归一化，并能逃离不使 :math:`\operatorname{tr}(R^\top M)` 最大化的 180 度驻点（鞍点和极小值点）。
+58. :commit:`afa16414c` 修复了 2D :ref:`flex<deformable-flex>` 弯曲（:ref:`elastic2d<flex-elasticity-elastic2d>` 为 **bend** 或 **both**）的弯曲参考项的余切权重和长度尺度，使得面外弯曲力在弯曲的静止构型处消失，并随模型尺寸一致地缩放。
+59. :commit:`a4c699040` 修复了编辑或复制 :ref:`mjSpec` 时的若干缺陷：
+
+    - :ref:`mjs_delete`\ （Python 中为 ``MjSpec.delete``）现在会从类查找映射中移除已删除的默认类（default class），而不是留下悬空指针。
+    - :ref:`mj_copyBack`\ （Python 中为 ``MjSpec.copy_back``）会保留材质的 ``metallic``、\ ``roughness`` 和
+      ``texuniform`` 属性。
+    - :ref:`mjs_findChild` 不再将非世界刚体与其自身匹配。
+    - :ref:`mjs_setToMuscle` 接受为 ``NULL`` 的 ``timeconst`` 和 ``range`` 指针。
+
+60. :commit:`00057bcef` 修复了 MJCF XML 加载与保存中的若干缺陷：
+
+    - :ref:`include<include>` 不再在嵌套路径或相对路径上重复添加模型目录前缀。
+    - 加载 MJCF 时，现在会将外层 :ref:`frame<frame>` 的变换应用于 :ref:`flexcomp<body-flexcomp>`，并允许执行器快捷方式上显式指定的 :at:`range` 或 :ref:`inheritrange<actuator-position-inheritrange>` 属性覆盖相冲突的默认值。
+    - :ref:`default/tendon<default-tendon>` 现在接受 :ref:`armature<tendon-fixed-armature>`、
+      :ref:`actuatorfrclimited<tendon-spatial-actuatorfrclimited>` 和
+      :ref:`actuatorfrcrange<tendon-spatial-actuatorfrcrange>`；这些属性此前在保存 XML 时会被写出，但重新加载时却无法通过 schema 验证。
+    - 保存 MJCF（:ref:`mj_saveLastXML`、\ :ref:`mj_saveXML`、\ :ref:`mj_saveXMLString`）时，现在会保留
+      :ref:`texture<asset-texture>` 的 :ref:`nchannel<asset-texture-nchannel>`，并将写出的
+      :ref:`gridlayout<asset-texture-gridlayout>` 限制在 ``gridsize`` 范围内（而加载时，当编写的 ``gridsize`` 与继承的默认值不同时，会重置 ``gridlayout``）；会将材质的 :ref:`layer<material-layer>` 纹理、相机的
+      :ref:`sensorsize<body-camera-sensorsize>` 以及灯光的 :ref:`texture<body-light-texture>` 与默认类进行比较；并会写出由插件支持的网格上的所有属性，以及插件传感器上的 :at:`reftype`/:at:`refname`。
+61. :commit:`881e53e2e` 使用镜像 :ref:`scale<asset-mesh-scale>` 的旧版 ``.msh`` 网格不再重复翻转面的绕向（这曾导致面反向）；没有顶点法线的 ``.msh`` 文件在重新编译时，也不再填充空的面法线或拒绝自定义法线。
+
+版本 3.17.0 (October 22, 2026)
+---------------------------------
+
+重要新特性
+^^^^^^^^^^^^^^^^^^^^^^^^
+1. :commit:`c00ed8153` 在 ``mujoco/mjbatch.h`` 中新增了 :ref:`批处理 API<siBatch>`\ （Python 中为
+   :ref:`mujoco.batch<PyBatch>`）：同一模型的多个仿真在其自有的线程池上步进，每个仿真都以积分状态的形式保存，并在每次调用时加载到一个 ``mjData`` 中，因此内存随线程数而不是仿真数缩放，且结果在任意线程数下都与普通循环按位完全一致。它支持每个仿真独立的模型和选项字段或调用方自己的模型、步进之后的状态观测、记录的轨迹、持久仿真（休眠所必需），以及任意的逐仿真函数。其设计参考了 :github:user:`kevinzakka` 的
+   `mjbatch <https://github.com/kevinzakka/mjbatch>`__。
+
+引擎
+^^^^^^
+2. 柔性体（flex）改进：
+
+   - :commit:`94483e166` 为 1D flex 新增了弯曲 :ref:`弹性<flex-elasticity>`，使用无扭转的各向同性离散弹性杆模型。截面由新的 :ref:`section<flex-elasticity-section>`
+     属性选择：可以是 flex 半径的圆形，或是半尺寸为 :ref:`sectionsize<flex-elasticity-sectionsize>` 的矩形，后者使用其弱轴的刚度（stiffness）。它由为正的 :ref:`young<flex-elasticity-young>` 模量启用，
+     要求参考构型（reference configuration）为直线（弯曲的初始位姿可以通过 ``qpos`` 或关键帧设置），与边等式约束兼容，并由 :ref:`discrete<option-integrator>`
+     积分器（integrator）隐式积分。此前 1D flex 会忽略 ``young``：现在设置了它的现有模型会发生弯曲，并且在截面退化（使用默认圆形截面而半径为零）、某个顶点连接零长度的边，或杆不是直线时编译失败。
+   - :commit:`36d0df9a5`, :commit:`897e3fcb1` 插值 flex（**trilinear** 或 **quadratic** 的
+     :ref:`dofs<body-flexcomp-dof>`）现在支持 :ref:`自碰撞<flex-contact-selfcollide>`，并会排除位于同一单元格或相邻单元格内的元素。
+   - :commit:`39dd10f2d` flex 模型默认的 arena :ref:`内存<size-memory>` 现在小得多，其大小由 flex 网格拓扑而不是 ``nv^2`` 确定。如果 Newton 求解器耗尽了 arena 内存，它会回退到 CG 并给出警告。
+3. :ref:`mj_setConst` 现在只计算由 :ref:`mjModel` 其他字段派生出的量，而 spec 级别的约定则仅由编译器解析：
+
+   - :commit:`55c1b585a`, :commit:`d6d41f324` 由 :ref:`dampratio<actuator-position-dampratio>` 得出的位置执行器阻尼、由 ``(-1, -1)`` 得出的肌腱弹簧长度，以及模型统计量，现在仅在编译时解析，而不再由 :ref:`mj_setConst` 解析。编辑已编译的模型时请直接设置模型字段（:ref:`mj_copyBack` 现在会将肌腱弹簧长度复制回 spec）。
+   - :commit:`c8362756d` 约束求解器（constraint solver）现在按当前惯性矩阵（模型的或 island 的）的迹来缩放其终止判据，而不是使用 ``mjModel.stat.meaninertia``。使用 PGS、禁用 noslip 或禁用 island 求解的模型，可能会在略有不同的迭代次数处停止。\ :ref:`meaninertia<statistic-meaninertia>` 属性已被弃用，现在会产生编译警告；移除它即可完成迁移。
+   - :commit:`abddec5b9` 对于未指定 :ref:`relpose<equality-weld-relpose>` 的基于刚体的 :ref:`weld<equality-weld>` 约束，当模型在编译后被修改时，\ ``qpos0`` 中的相对位姿现在会由 :ref:`mj_setConst` 重新计算（与基于刚体的 ``connect`` 约束中第二个刚体的 :ref:`anchor<equality-connect-anchor>` 相匹配）。编译器会用非零的 ``eq_data[11]`` 标记这类 weld，并且
+     :ref:`mjNEQDATA<glNumericSizes>` 从 11 增加到了 12。
+
+     .. admonition:: 破坏性 ABI 变更
+        :class: attention
+
+        :ref:`mjNEQDATA<glNumericSizes>` 从 11 增加到了 12，并且 :ref:`mj_setConst` 会覆盖在编译时没有 ``relpose`` 的基于刚体的 weld 的 ``eq_data[3:10]``。若要直接设置这类 weld 的相对位姿，请在调用 :ref:`mj_setConst` 之前将 ``eq_data[11]`` 清零。
+   - :commit:`865316f19` 在 ``mjxmacro.h`` 中新增了 ``MJSETCONST_ARRAYS`` 和 ``MJSETCONST_SCALARS``，列出 :ref:`mj_setConst` 各阶段所读写的
+     :ref:`mjModel` 数组和标量。
+4. :commit:`e15ecd842` 为接触 :ref:`margins<body-geom-margin>` 为正的 geom 新增了单次 :ref:`多接触<coMultiCCD>`。
+5. :commit:`7394a8672` :ref:`mju_boxQP` 现在使用 :ref:`mju_cholUpdate` 增量更新其 Cholesky 因子，使冷启动求解快 1.4-1.6 倍，热启动（warm start）求解快 1.9-2.9 倍。
+6. :commit:`aa0f88e77` 标记为 :ref:`sleep="init"<body-sleep>` 但无法进入休眠的树，现在会引发警告而不是错误，并以唤醒状态启动。详情请参见 :ref:`休眠<siSleepSleeping>`。
+
+编译器
+^^^^^^
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   7. :commit:`aad2e2982` :ref:`mjs_fuseStatic` 和 :ref:`mjs_discardVisual` 现在返回被融合的刚体数或被丢弃的元素数，出错时返回 -1。此前它们成功时返回 0，因此调用方无法判断 spec 是否发生了变化。在 Python 中，\ ``MjSpec.fuse_static`` 和 ``MjSpec.discard_visual`` 返回同样的数值，而不是
+      ``None``。
+
+      **迁移：** 请使用 ``< 0`` 而不是 ``!= 0`` 来检测错误。
+
+   8. :commit:`084828896` :ref:`mjs_addTexture` 现在接受一个默认类参数，与 :ref:`mjs_addMesh` 和
+      :ref:`mjs_addMaterial` 一致。
+
+      **迁移：** ``mjs_addTexture(spec)`` → ``mjs_addTexture(spec, NULL)``。\ ``MjSpec.add_texture`` 保持不变。
+
+9. :commit:`3576818f5`, :commit:`b0f206d04` 纹理现在可以 :ref:`按引用<CAssetReference>` 保留，而不是被解码到 :ref:`mjModel` 中。当 :ref:`compiler/passthrough<compiler-passthrough>` 设置为 "textures"，或 :ref:`texture/embed<asset-texture-embed>` 设置为 "false" 时，单文件纹理在编译时不会被读取；模型保存的是其路径而不是其像素，因此附加了大量带纹理子模型的场景，只需占用一小部分内存和时间即可加载。此外，已编译的 :ref:`mjSpec` 在多次编译之间不再保留其纹理的已解码像素。
+
+   - :commit:`3576818f5` 模型所保存的内容：\ ``tex_adr`` 为 -1，\ ``tex_width`` 和 ``tex_height`` 为 0，\ ``ntexdata`` 不包含该纹理，解析后的路径位于 ``tex_pathadr``，所编写的任何
+     :ref:`content_type<asset-texture-content_type>` 位于新增的 ``tex_contenttypeadr``。翻转的、复合的、六文件的、程序化的、缓冲区的和内存中的纹理仍保持嵌入，任何带有 :at:`embed` "true" 的纹理也是如此。
+   - :commit:`1be762d0c` 获取像素：\ :ref:`mj_loadTexture` 可解码任一种纹理，而 :ref:`mj_embedAssets` 会返回一份模型副本，其中每个按引用的纹理都已加载（再接着调用
+     :ref:`mj_saveModel` 即可得到自包含的 MJB）。二者在 Python 中分别为 ``mujoco.mj_loadTexture`` 和
+     ``mujoco.mj_embedAssets``。
+   - :commit:`fd92ba1db` 渲染：内置渲染器和 Filament 渲染器会按需加载按引用的纹理，并且 Filament 会对共享同一文件的所有纹理只上传该文件一次。无法解析的文件会产生警告，并得到一个无纹理的材质。
+10. :commit:`084828896` 纹理现在可以拥有 :ref:`默认类<default-texture>`：\ ``mjsDefault`` 新增了 ``texture`` 成员，并且 :ref:`texture<asset-texture>` 接受 :ref:`class<asset-texture-class>`。
+11. :commit:`4e9a2de2d` 新增了 :ref:`mjs_dedupAssets`\ （``MjSpec.dedup_assets``），用于合并 :ref:`mjSpec` 中会编译为同一资产的纹理和网格（例如多次附加的子模型的那些纹理和网格）：每组中的第一个会被保留，对其余各项的所有引用都会被改写为指向它。与 :ref:`mjs_fuseStatic` 一样，它返回被合并的资产数量。
+12. :commit:`027cb3dd8` :ref:`mjModel` 中的资产路径（位于 ``mesh_pathadr``、\ ``hfield_pathadr``、
+    ``skin_pathadr`` 和 ``tex_pathadr`` 的 ``paths``）现在存储编译器读取该资产时所用的解析后的路径或 URI（将模型文件所在目录以及 ``meshdir`` 或 ``texturedir`` 与 :at:`file` 组合，除非 :at:`file` 是绝对路径或 URI），因此即使在 :ref:`附加<body-attach>` 了具有不同资产目录的模型之后，\ :ref:`mju_openResource` 也可以直接打开它们。此前给这些路径加上自己目录前缀的代码，现在应将它们原样传给
+    :ref:`mju_openResource`。
+13. :commit:`9f035384d` 网格多边形法线（``mjModel.mesh_polynormal``）现在使用 Newell 方法根据整个多边形轮廓计算，而不是根据前三个顶点计算（:issue:`3691`）。
+
+Python 绑定
+^^^^^^^^^^^^^^^
+14. :commit:`08330629b` 在批处理 API 之上新增了 :ref:`mujoco.batch<PyBatch>` 模块：\ ``Batch(model, nsim)``，带有来自 ``bind()`` 的实时 ``(nsim, ...)`` 数组以及诸如 ``joint(name)`` 的命名视图，来自 ``expand()`` 的逐仿真模型字段，释放 GIL 的 ``step``、\ ``forward``、\ ``reset``、\ ``set_const`` 和 ``rollout``，以及 ``jac`` 和
+    ``ray`` 查询。
+15. :commit:`1313ef78e` 新增了使用 `Bazel <https://bazel.build/>`__ 构建 Python 绑定的支持（最初涵盖核心绑定，不含渲染或查看器）。
+16. :commit:`39b7193e8` 修复了 :ref:`命名访问<PyNamed>`\ （``data.actuator('a')``、
+    ``model.joint('j')``、\ ``data.bind(...)``）以及 JavaScript 绑定中相应生成的访问器里的若干缺陷：
+
+    - 多控制或多输出的执行器（例如 :ref:`orientation<actuator-orientation>`）现在遵循
+      ``actuator_ctrladr`` 和 ``actuator_outadr``，其前导维度为 ``ctrlnum`` 或 ``outnum``，而不是在执行器索引处读取单行。
+    - ``data.actuator('a').moment`` 现在是执行器力臂的只读稠密副本，形状为 ``(nv,)`` 或
+      ``(outnum, nv)``，而不是把稀疏的 ``actuator_moment`` 数组当作稠密数组来读取。
+    - 第一个关节之后的各关节上，多列的逐自由度（per-dof）字段（``cdof``、\ ``cdof_dot``、\ ``dof_dampingpoly``）的视图现在会索引到正确的行。
+17. :commit:`7cdc8857e` ``MjData`` 中未分配的 arena 数组（例如未使用 ``discrete`` 积分器时的 ``efm_*``，或未形成 island 时的 island 数组）现在会被填充为零（索引字段则填充为 -1），而不是返回未初始化的内存。
+
+缺陷修复
+^^^^^^^^^
+18. 修复了插值 :ref:`flexcomp<body-flexcomp>` 弹性中的若干缺陷：
+
+    - :commit:`4bbc96957` 第一个单元格为空的体（实心）插值 flex（例如来自某个网格的 trilinear
+      :ref:`flexcomp<body-flexcomp>`，而该网格没有填满其包围盒的角落）现在会保留其弹性；此前弹性取决于第一个单元格的刚度。
+    - :commit:`b0b20166d` 编辑 flex 以移除应变 :ref:`等式约束<flexcomp-edge-equality>`\ （例如来自
+      ``body.make_flex``）并重新编译时，现在会重新计算刚度，而不是保留应变约束的特征模态。
+    - :commit:`08bf94b18` :ref:`elastic2d<flex-elasticity-elastic2d>` 设置为
+      ``"stretch"`` 或 ``"both"`` 的壳模式插值 flex，现在会应用膜拉伸力和隐式刚度，并且没有应变约束的 ``"bend"`` 壳不再分配 ``flex_stiffness``。
+19. 修复了 Filament 渲染器中的若干缺陷：
+
+    - :commit:`5c7c1e3ae` 纹理现在会分配 mipmap 层级（包括 sRGB 纹理），修复了缩小时的走样。
+    - :commit:`e81c8aed4` 在多个面之间共享顶点的蒙皮不再因索引数量不匹配而失败（:issue:`3719`）。
+    - :commit:`001aa3203` 材质颜色现在仅在对象具有默认颜色时才会应用，而不是覆盖自定义的对象颜色。
+    - :commit:`6cfc76e32` 通道数不受支持的纹理现在会被跳过并给出警告，与经典渲染器一致，而不是调用 :ref:`mju_error`。
+20. 修复了错误路径上的若干缺陷：这些路径在持有 C++ 对象或锁时调用了 :ref:`mju_error`\ （不返回的错误处理程序，如 Python 绑定和模型编译器中的那种，会跳过 C++ 析构函数）：
+
+    - :commit:`4cc38db84`, :commit:`8c1e45559`, :commit:`526583e5b` 触摸网格、缆绳和 SDF 插件（plugin）的无效配置，每次编译失败都会泄漏超过 10 MB（它们现在会以警告的方式使插件初始化失败）；
+      :ref:`mju_getXMLDependencies` 和未知的材质层 :ref:`角色<material-layer-role>` 在遇到无效 XML 时也会泄漏内存，并且 XML 写出器中不受支持的等式约束类型现在会作为写入错误报告，而不是调用
+      :ref:`mju_error`。
+    - :commit:`4cc38db84` 在编译器的工作线程上编译网格或纹理时发生的错误会使进程崩溃，并且 :ref:`mj_loadAllPluginLibraries` 中库加载失败会使其互斥锁保持锁定状态。
+    - :commit:`ae15ab978` 如果某个插件初始化失败，\ :ref:`mj_recompile` 会释放给定的 :ref:`mjData` 并调用 :ref:`mju_error`；在其他一些失败情形下，它也不会删除模型和数据，这与其文档说明相违背。
+
+模型
+^^^^^^
+21. :commit:`94483e166`
+    `弹性机构 <https://github.com/google-deepmind/mujoco/tree/main/model/flex/mechanisms/>`__ 示例模型现在使用 1D flex 杆：二次 flex 的悬臂梁对比增加了一根杆，而弹性曲柄滑块和受肌腱加载的挖掘臂（dipper arm）则由杆构建而成。
+
+版本 3.16.0 (October 14, 2026)
+---------------------------------
+
+重要新特性
+^^^^^^^^^^^^^^^^^^^^^^^^
+1. :commit:`cf89a6375`, :commit:`4316935b3`, :commit:`6d98d9fab`, :commit:`5f17e92eb`, :commit:`89d59b11f`,
+   :commit:`147dc67d0` :ref:`frame<frame>` 现在可以在编译时缩放其内容（无需修改 :ref:`mjSpec`），这通过新增的 :ref:`scale<frame-scale>`、\ :ref:`scaling<frame-scaling>` 和
+   :ref:`massscale<frame-massscale>` 属性实现。默认的 ``similar`` 策略会缩放所有物理量，使动力学（dynamics）在按比例缩放的重力下保持不变；而 ``geometry`` 仅缩放空间尺寸和惯性（并支持各向异性缩放）。质量随体积缩放，除非被 ``massscale`` 覆盖。对被缩放元素的外部引用——包括执行器、肌腱、约束、传感器、关键帧，以及可变形体／网格资产——都会被一致地缩放，并且 :ref:`mj_copyBack` 会将数值映射回未缩放的 spec 坐标。详情请参见
+   :ref:`frame/scale<frame-scale>`。
+2. :commit:`592c54ad3`, :commit:`92b8f4b27`, :commit:`d4595d020` 新增了编译器属性
+   :ref:`savecompiled<compiler-savecompiled>` 和 :ref:`savecanonical<compiler-savecanonical>`\ （默认均为
+   ``"true"``），用于在将模型保存为 XML 时保留原始的编写形式。设置 ``savecompiled="false"`` 会直接保存未编译的
+   :ref:`mjSpec`\ （保留默认类、坐标系和所编写的数值），因此保存的 XML 重新加载后会得到完全相同的 spec。设置 ``savecanonical="false"`` 则会进一步保留原始的输入约定，例如朝向表示方式、角度／弧度单位以及执行器快捷方式；参见
+   :ref:`模型编码与保存 <meSaving>`。\ :ref:`mj_copyBack`\ （Python 中为 ``MjSpec.copy_back``）现在只更新 spec 中被修改的字段，而保持所有其他已编写的值不变。
+3. :commit:`9d953b40c` 新增了使用 `Bazel <https://bazel.build/>`__ 构建 MuJoCo 的支持（最初涵盖核心库、\ ``simulate``、插件和示例）。
+
+通用
+^^^^^^^
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   4. :commit:`ea5e711c1` :ref:`mjfDecode`、\ :ref:`mjpDecoder` 插件的 ``decode`` 回调，以及
+      :ref:`mju_decodeResource` 现在接受 ``char* error, int error_sz`` 参数。失败的解码器会将失败原因写入 ``error``，随后由 :ref:`mj_parse` 以及网格编译错误报告，而不是仅以带有通用错误信息的警告形式出现。
+
+      **迁移：** 请为自定义解码器添加这两个参数，并将失败信息写入 ``error``\ （如果其不为
+      ``NULL``），而不是调用 :ref:`mju_warning`。向 :ref:`mju_decodeResource` 传入一个错误缓冲区，或传入 ``NULL, 0``。
+
+   5. :commit:`2757493d9` 缩短了 :ref:`mjpResourceProvider` 函数的名称。\ ``mjp_getResourceProvider`` 已重命名为 :ref:`mjp_findProvider`，与其他前缀和扩展名查找保持一致。
+
+      **迁移：** 请按如下方式重命名：
+      |br| ``mjp_defaultResourceProvider`` → :ref:`mjp_defaultProvider`
+      |br| ``mjp_registerResourceProvider`` → :ref:`mjp_registerProvider`
+      |br| ``mjp_resourceProviderCount`` → :ref:`mjp_providerCount`
+      |br| ``mjp_getResourceProvider`` → :ref:`mjp_findProvider`
+      |br| ``mjp_getResourceProviderAtSlot`` → :ref:`mjp_getProviderAtSlot`
+      |br| ``mjp_registerArchiveResourceProvider`` → :ref:`mjp_registerArchiveProvider`
+      |br| ``mjp_findArchiveResourceProvider`` → :ref:`mjp_findArchiveProvider`
+      |br| ``mjp_archiveResourceProviderCount`` → :ref:`mjp_archiveProviderCount`
+
+引擎
+^^^^^^
+6. :commit:`0998957cf` :ref:`contact<sensor-contact>` 传感器（sensor）现在支持 ``linvel`` 和 ``angvel``
+   :ref:`data<sensor-contact-data>` 字段，用于报告相对接触速度，并且它的计算阶段
+   （ :ref:`mjtStage` ）现在根据所请求的 :ref:`data<sensor-contact-data>` 和
+   :ref:`reduce<sensor-contact-reduce>` 属性推断得出。
+7. :commit:`d823f9212` :ref:`mj_setConst` 现在会计算 geom 和刚体（body）的包围体、刚体的碰撞掩码和
+   margin，以及椭球 :ref:`流体模型<flEllipsoid>` 中 geom 的附加质量。此后，修改 geom 的尺寸、
+   位姿、margin 和 gap，修改刚体的惯性坐标系，以及修改高度场的尺寸都是安全的；
+   此前可能会漏检接触（contact）。 :ref:`mj_setConst` 还会计算处于休眠状态的刚体的常量（此前被跳过），并重新解析树的自动
+   :ref:`休眠策略<body-sleep>` 。
+8. :commit:`52824daf6` 修正了插值柔性体（flex）的实体刚度和膜刚度中的剪切贡献，以及二次柔性体所使用的
+   三点高斯积分。材料参数现在给出标准的各向同性线弹性刚度；使用这些柔性体的现有模型的行为可能会改变。
+9. :commit:`3bc4b769a` 改进了球体和圆柱体 :ref:`空间肌腱<tendon-spatial>`
+   :ref:`geom<spatial-geom>` 缠绕在缠绕起始处附近以及内侧缠绕时的数值稳定性。感谢 :github:user:`M-Colley` 在
+   :doc:`MJWarp <mjwarp/index>` 的 issue
+   `1713 <https://github.com/google-deepmind/mujoco_warp/issues/1713>`__ 和
+   `1714 <https://github.com/google-deepmind/mujoco_warp/issues/1714>`__ 中报告并分析这些问题。
+10. :commit:`871e3725b` 现在只有刚性柔性体和插值柔性体的柔性体接触才会被缩减到每个 geom 至多 ``mjMAXCONPAIR`` 个；其他柔性体保留其全部接触。
+    此前，静置在平面或许多静态 geom 上的布料最多只能由 50 个接触托住，从而会穿透下落。
+11. :commit:`efffd3a5f` 修复了胶囊体-胶囊体碰撞检测（collision detection）中，轴线平行和近似平行时的浮点抵消问题。感谢 :github:user:`ayonga` 在 :doc:`MJWarp <mjwarp/index>` issue
+    `1758 <https://github.com/google-deepmind/mujoco_warp/issues/1758>`__ 中报告该问题。
+
+编译器
+^^^^^^^^
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   12. :commit:`592c54ad3` 如果模型中某个值被修改，而 spec 无法表达该修改（例如 :ref:`inertiafromgeom<compiler-inertiafromgeom>` 为 "true" 时刚体的质量），
+       :ref:`mj_copyBack` 和 :ref:`mj_saveLastXML` 现在会失败，并给出指明该元素的错误。此时不会复制或保存任何内容；此前这类
+       修改会被悄悄遗漏在保存的文件之外。如果传给 :ref:`mj_saveLastXML` 的模型不是由最近一次加载的 XML 编译而来，它也会失败，并且保存失败时不再清空文件。
+
+       **迁移：** 撤销模型中的修改，或者改变使其无法表达的因素，具体见
+       :ref:`mj_copyBack` 中的列举。
+
+   13. :commit:`2267bf299` 通过 API 添加到 :ref:`mjSpec` 的资源，在编译 spec 时不再以其 ``file`` 命名。现在，没有名称的网格、高度场或纹理会导致编译错误，
+       这与没有文件的情形一致。MJCF 不受影响：XML 解析器仍然以文件名命名资源。
+
+       **迁移：** 添加资源时为其命名，例如 Python 中的 ``spec.add_mesh(name='link', file='link.stl')`` ，或 C 中的
+       :ref:`mjs_setName` 。
+
+   14. :commit:`1961e8a2d` MJCF 中的 :ref:`关键帧<keyframe>` 不再被 :ref:`replicate<replicate>` 复制：关键帧描述的是包含所有副本的完整模型，与不含 replicate 的模型一样。
+       此前每个副本都会得到每个关键帧的一份拷贝，且只设置该副本的关节，而为完整模型编写的关键帧会加载失败
+       （ :issue:`3071` ，由 :github:user:`eholum-nasa` 报告）。
+
+       **迁移：** 按完整模型编写关键帧的各个向量。为单个副本编写的关键帧仍可加载，它会被视为一个关键帧，其向量以默认构型补全。
+
+   15. :commit:`1db889162` 当 :ref:`inertiafromgeom<compiler-inertiafromgeom>` 为 "true" 时，
+       如果 :ref:`discardvisual<compiler-discardvisual>` 所丢弃的 geom 具有质量，现在会导致编译错误。
+       此前，第一次编译会保留被丢弃 geom 的惯性，而再次编译同一个 spec，或将其保存后再加载该文件时，则会丢掉这部分惯性。
+
+       **迁移：** 使用默认值 ``inertiafromgeom="auto"`` ，此时惯性会以显式的
+       :ref:`inertial<body-inertial>` 形式保留；或者让视觉 geom 的质量为零。
+
+16. :commit:`0696cdc85` :ref:`flexcomp<body-flexcomp>` 现在可以使用 :ref:`mesh<body-flexcomp-mesh>` 属性直接引用一个 :ref:`网格资源<asset-mesh>` ，
+    以代替 :at:`file` 。体网格（例如来自 GMSH）直接提供节点和四面体；表面网格可以创建一维或二维柔性体，也可以使用
+    :at:`origin` 拉伸为体积四面体。为 Python 的 ``body.make_flex`` 添加了 ``mesh`` 参数；在 :ref:`mjs_makeFlex` 中，
+    ``file`` 参数也可以是网格资源的名称。
+17. :commit:`ea019c212`, :commit:`0696cdc85` 为 :ref:`mesh/builtin<asset-mesh-builtin>` 和 :ref:`mjs_makeMesh` 添加了程序化网格类型 ``grid`` 、 ``box`` 、 ``cylinder`` 、 ``ellipsoid`` 、
+    ``square`` 和 ``disc`` ，生成的形状与对应的 :ref:`flexcomp<body-flexcomp>` 类型相同，flexcomp 和 geom 可以直接使用它们。
+    无体积的类型会把 ``legacy`` 网格惯性改为 ``shell`` 。添加了 Python 便捷方法 ``mjsMesh.make_*`` 。
+18. :commit:`dc8210572`, :commit:`08490e897`, :commit:`831994e2a` 添加了 :ref:`mjs_fuseStatic` ，它作为对 spec 的一种操作，把 :ref:`mjSpec` 中的静态
+    刚体与其父刚体融合：每个被融合的刚体都变成其父刚体中的一个坐标系（frame）。 :ref:`fusestatic<compiler-fusestatic>` 编译器选项现在先应用该操作再编译；此前它在编译内部进行融合，
+    导致 spec 与模型不一致。如果融合某些静态刚体会改变模型上的受力（插件、休眠策略、另一个 gravcomp、流体），或者有柔性体或蒙皮引用了它们，
+    现在这些刚体会被保留，并且相机和灯光不再被放错位置。按名称引用 geom、site、相机或
+    灯光的元素，不再被绑定到另一个对象上；而按名称引用某个刚体，也不再导致其他静态刚体
+    未被融合。新增的 :ref:`fuse<body-fuse>` 刚体属性设为 "false" 时会保留静态刚体。
+19. :commit:`1db889162` 添加了 :ref:`mjs_discardVisual` ，它作为对 spec 的一种操作，丢弃 :ref:`mjSpec` 的视觉元素。
+    :ref:`discardvisual<compiler-discardvisual>` 编译器选项现在先应用该操作再编译；此前它在编译内部丢弃，并在 spec 中留下对被丢弃对象的引用，
+    使一些模型编译失败。除非刚体惯性由视觉网格推断得出，否则不再加载视觉网格，
+    并且使用椭球 :ref:`流体模型<body-geom-fluidshape>` 的 geom 会被保留。
+20. :commit:`d48b586ae` 添加了 :ref:`mjs_adoptInertial` ，它使编译时由刚体的 geom 推断出的惯性体成为 :ref:`mjSpec` 的一部分，
+    因而它不再跟随之后对这些 geom 的修改。
+21. :commit:`5558bd783` :ref:`settotalmass<compiler-settotalmass>` 编译器属性已被弃用，并将在未来版本中移除。它仍会缩放质量，
+    编译设置了它的模型现在会给出警告。
+
+    **迁移：** 在模型中缩放质量和密度，或者对编译后的模型调用 :ref:`mj_setTotalmass` ，
+    然后再调用 :ref:`mj_setConst` 。
+
+编译器错误修复
+^^^^^^^^^^^^^^^^^^
+22. :commit:`9fd6ee025` 当 geom、site 或相机的 :ref:`默认类<default>` 以 ``euler`` 、 ``axisangle`` 、 ``xyaxes`` 或 ``zaxis`` 给出朝向时，它们自身的 ``quat`` 不再被忽略。
+23. :commit:`9fd6ee025`, :commit:`92b8f4b27`, :commit:`239647a1d` 保存 MJCF 时不再改变或丢失以下内容：
+    含有 :ref:`坐标系<frame>` 的刚体其元素的顺序（这会使保存后的模型得到不同的 id）；
+    位于另一个 ``childclass`` 内部的 ``class="main"`` ；纹理的 :ref:`nchannel<asset-texture-nchannel>` ；能量传感器
+    的名称（它们无法被加载）； ``inertiafromgeom="false"`` ，以及具有另一个 ``inertiafromgeom`` 的被附加模型中刚体的惯性；网格 geom 的
+    :ref:`surfacevel<body-geom-surfacevel>` 的坐标系；网格、柔性体、蒙皮和高度场数据的精度；以及具有三线性或二次自由度的
+    :ref:`flexcomp<body-flexcomp>` 的空单元。
+24. :commit:`592c54ad3` :ref:`mj_saveXML` 和 :ref:`mj_saveXMLString` 现在像 :ref:`mj_saveLastXML` 一样保存 :ref:`mjSpec` 的编译后取值，
+    包括在编译末尾才计算出的那些值，例如由 :ref:`dampratio<actuator-position-dampratio>` 给出的阻尼，并且不再丢失
+    :ref:`settotalmass<compiler-settotalmass>` 的缩放。
+25. :commit:`1961e8a2d` 当 :ref:`mjSpec` 的运动学树发生变化（ :ref:`mjs_delete` 、 :ref:`mjs_attach` ）以及复制 spec 时，其 :ref:`关键帧<keyframe>` 现在保持其位置和取值；
+    此前下一次编译会重新创建它们，并且在若干情形下取值会丢失或错位。比模型短的向量会以编译后模型的默认构型补全。
+26. :commit:`3a35e7712` :ref:`mjs_attach` 和 :ref:`attach<body-attach>` 元素现在会对蒙皮的名称和材质、以及肌腱和网格的材质应用前缀和后缀。
+    此前，附加其中某一项带有材质的模型会编译失败。
+27. :commit:`cbd16feac` 修复了按引用附加（ :ref:`mjs_attach` 的默认方式）的问题： :ref:`mj_recompile` 曾使被附加的元素得到父级其他元素的状态，
+    而附加同一模型的另一个刚体或坐标系时，会失败或遗漏引用它的元素。现在附加父级已有的内容会报错。
+28. 修复了编辑或复制 :ref:`mjSpec` 时的若干错误：
+
+    - :commit:`239647a1d` 对于自编译以来经过结构性编辑（添加、删除或附加元素）的 spec，在重新编译之前保存其编译后取值现在会报错；此前它会崩溃或保存错误的
+      取值。
+    - :commit:`2267bf299`, :commit:`dc8210572` 编译不再重新排列接触 :ref:`对<contact-pair>` 和
+      :ref:`排除项<contact-exclude>` ，不再写入如纹理数据等由用户编写的字段，也不再保留自上次编译以来已被移除的引用。
+    - :commit:`2267bf299`, :commit:`dc8210572` :ref:`mjs_findElement` 现在可以找到编译之后添加或重命名的元素，并且对于接触对、排除项以及在
+      :ref:`discardvisual<compiler-discardvisual>` 之后，会返回指定名称的元素。
+    - :commit:`3a9b10a3c`, :commit:`3a35e7712` :ref:`mjs_delete` 现在会在删除最后一个引用某个 :ref:`插件实例<plugin-instance>` 的元素时一并删除该插件实例，
+      并且删除刚体时，在 :ref:`discardvisual<compiler-discardvisual>` 或之后的编辑之后，会移除引用它的元素。这两种情形此前都会使下一次编译失败或
+      崩溃。
+    - :commit:`592c54ad3` :ref:`mj_copyBack` 和 :ref:`mj_saveLastXML` 不再丢失对自由关节参考位姿的修改，也不再在 :ref:`numeric<custom-numeric>` 的数据少于其 ``size`` 时越界写入。
+
+执行器驱动
+^^^^^^^^^^^
+29. :commit:`ab7f005c9` 执行器（actuator） :ref:`快捷方式<CActShortcuts>` 现在只会从使用相同快捷方式或 :ref:`general<actuator-general>` 编写的 :ref:`默认类<default>` 继承其参数（ ``kp`` 、 ``kv`` 、 ``area`` 、
+    ...），并沿类层次结构向上查找，否则使用文档所述的默认值；而 ``ctrlrange`` 和 ``gear`` 等机械属性则与以前一样，从任何默认类继承。此前，处于带有 :ref:`position<actuator-position>` 默认值的类中的
+    :ref:`motor<actuator-motor>` 会变成位置伺服（ :issue:`3561` ）。现在每个快捷方式都会设置其文档所述的完整表，包括其动力学和激活（activation）布局，并且没有
+    ``kp`` 的 :ref:`pid<actuator-pid>` 具有文档所述的增益 1，而不是 0。添加了 ``mjsActuator.type`` （ :ref:`mjtActuator` ），即编写执行器时所用的元素。
+
+    **迁移：** 将增益直接写在执行器上，或写在使用相同快捷方式或 :ref:`general<actuator-general>` 的默认类中。
+30. :commit:`fcb83a173` 具有 "fixed" 或 "affine" :ref:`gaintype<actuator-general-gaintype>` 的执行器可以通过 :ref:`input<actuator-general-input>` 声明其控制量是什么：
+    位置设定值（"pos"）、速度设定值（"vel"）或压力（"pressure"）；没有声明时则视为指令。该声明不影响仿真。
+    :ref:`position<actuator-position>` 、 :ref:`velocity<actuator-velocity>` 、 :ref:`intvelocity<actuator-intvelocity>`
+    和 :ref:`cylinder<actuator-cylinder>` 快捷方式会声明其输入，这些输入记录在
+    ``mjModel.actuator_ctrlspec`` 中，并在保存模型时保留； :ref:`mj_actuatorInputName` 返回该声明。
+    当 gaintype 改变时，从默认类继承的输入签名现在会被丢弃。
+31. :commit:`92b8f4b27` 为 :ref:`general<actuator-general>` 执行器添加了 :ref:`inheritrange<actuator-general-inheritrange>` 属性，此前只有
+    :ref:`position<actuator-position>` 、 :ref:`intvelocity<actuator-intvelocity>` 和 :ref:`pid<actuator-pid>` 快捷方式具有该属性。
+
+Filament 渲染
+^^^^^^^^^^^^^^^^^^
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   32. :commit:`4419c1be6`, :commit:`6678efd66`, :commit:`39b17ef2f`, :commit:`6c2137fe0` 重命名了 ``mjrf`` 函数和类型，使所属对象出现在最前面（ ``mjrf_<verb><Owner><Thing>`` ），
+       并使名称与 MJCF 属性及 MuJoCo 现有词汇一致（参见 :ref:`mjr_uploadMesh` 、 ``mjModel.light_active`` ）。
+
+       **迁移：** 按如下方式重命名：
+       |br| ``mjrf_addRenderableToScene`` → :ref:`mjrf_addSceneRenderable`
+       |br| ``mjrf_removeRenderableFromScene`` → :ref:`mjrf_removeSceneRenderable`
+       |br| ``mjrf_addLightToScene`` → :ref:`mjrf_addSceneLight`
+       |br| ``mjrf_removeLightFromScene`` → :ref:`mjrf_removeSceneLight`
+       |br| ``mjrf_setMeshData`` → :ref:`mjrf_uploadMesh`
+       |br| ``mjrf_setTextureData`` → :ref:`mjrf_uploadTexture`
+       |br| ``mjrf_setRenderableTransform`` → :ref:`mjrf_setRenderablePose`
+       |br| ``mjrf_setLightTransform`` → :ref:`mjrf_setLightPose`
+       |br| ``mjrf_setLightEnabled`` → :ref:`mjrf_setLightActive`
+       |br| ``mjrf_setLightCutoffAngle`` → :ref:`mjrf_setLightCutoff`
+       |br| ``mjrf_setLightShadowsEnabled`` → :ref:`mjrf_setLightCastShadow`
+       |br| ``mjrfReadPixelsRequest`` → :ref:`mjrfReadRequest`
+       |br| :ref:`mjrfLightParams`: ``spot_cone_angle`` → ``cutoff``, ``spot_softness`` → ``softness``, ``cast_shadows`` →
+       |br| ``cast_shadow``
+       |br| :ref:`mjrfRenderableParams`: ``cast_shadows`` → ``cast_shadow``, ``receive_shadows`` → ``receive_shadow``
+       |br| :ref:`mjrfRenderRequest`: ``enable_post_processing``, ``enable_reflections``, ``enable_shadows`` 和
+       |br| ``enable_headlight`` 均去掉 ``enable_`` 前缀
+       |br| :ref:`mjrfContextConfig`: ``force_software_rendering`` → ``software_rendering``
+       |br| :ref:`mjrfMaterial`: ``decor_ux`` → ``decor``
+       |br| 支持类 ``ModelObjects`` → ``ModelResources``
+
+       Python 名称也相应改变，例如 ``mjrf.ReadPixelsRequest`` → ``mjrf.ReadRequest`` 、
+       ``Light.set_cutoff_angle`` → ``Light.set_cutoff`` 、 ``Light.set_shadows_enabled`` → ``Light.set_cast_shadow`` 、
+       ``Mesh.set_data``/``Texture.set_data`` → ``upload`` 、 ``set_transform`` → ``set_pose`` 、 ``Light.set_enabled`` →
+       ``set_active`` 、 ``Material.decor_ux`` → ``decor`` 、 ``mjrf.ModelObjects`` → ``mjrf.ModelResources`` 。
+
+   33. :commit:`e87cafb26` 为保持一致性重命名了 :ref:`自定义标志<reFlags>` ，并将枚举标志改为接受字符串，
+       而不是整数。
+
+       **迁移：** 按如下方式重命名：
+       |br| ``filament.clearColor`` → ``filament.clear_color``
+       |br| ``filament.fog.cutOffDistance`` → ``filament.fog.cut_off_distance``
+       |br| ``filament.fog.maximumOpacity`` → ``filament.fog.maximum_opacity``
+       |br| ``filament.fog.heightFalloff`` → ``filament.fog.height_falloff``
+       |br| ``filament.fog.inScatteringStart`` → ``filament.fog.in_scattering_start``
+       |br| ``filament.fog.inScatteringSize`` → ``filament.fog.in_scattering_size``
+
+       ``filament.ao.quality`` 、 ``filament.ao.low_pass_filter`` 、 ``filament.ao.upsampling`` 和
+       ``filament.bloom.quality`` 取 "low"、"medium"、"high" 或 "ultra"，而不是 0-3； ``filament.shadows.type``
+       取 "pcf"、"vsm" 或 "pcss"，而不是 0-2。
+
+   34. :commit:`e7b0bc104` 移除了 ``mjrf_setLightBlurWidth`` 和 ``mjrfLightParams::vsm_blur_width`` ，以及它们的 Python
+       对应项 ``mjrf.Light.setBlurWidth`` 和 ``mjrf.LightParams.vsm_blur_width`` 。这会移除基于
+       VSM 的软阴影。
+
+       **迁移：** 改用 PCSS 阴影，方法是将自定义标志 ``filament.shadows.type`` 设为 ``pcss`` 。PCSS
+       阴影提供相近的质量，并且性能更好。
+
+   35. :commit:`e71e9f6db` 移除了 ``filament.msaa.enabled`` 自定义标志；多重采样抗锯齿现在由
+       :ref:`visual/quality/offsamples<visual-quality-offsamples>` 控制（ ``<= 1`` 会禁用 MSAA），并且可以在运行时通过
+       :ref:`mjrf_setSceneMsaa` 更改。
+
+   36. :commit:`6c2137fe0` 从公共 API 中移除了 ``mjrf_DEBUG_drawImguiEditor`` ；ImGui 场景编辑器是
+       MuJoCo Studio 的内部调试辅助工具。
+
+Python 绑定
+^^^^^^^^^^^^^^^
+37. :commit:`43eff4c76` ``MjModel`` 的 ``opt`` 、 ``vis`` 和 ``stat`` 属性，以及 ``MjVisual`` 的子结构体属性，现在可以被赋值
+    （例如 ``model.opt = new_opt`` ）；此前这会引发 ``AttributeError`` 。
+    赋值会把各字段原地复制到底层 C 结构体中，因此指向目标的现有引用和 NumPy 数组视图
+    仍然有效。
+
+模型
+^^^^^^
+38. :commit:`dc0c237df` 添加了三个
+    `弹性机构 <https://github.com/google-deepmind/mujoco/tree/main/model/flex/mechanisms/>`__ 示例模型，
+    使用多单元三线性柔性体：悬臂梁材料对比、弹性曲柄滑块机构，以及肌腱（tendon）加载的
+    挖斗臂。灵感来自
+    `Miles Macklin's Reduced Elastic Links experiments <https://reports.mmacklin.com/newton-reduced/reduced_elastic_links_implementation.html>`__ 。
+
+文档
+^^^^^^^^^^^^^
+39. :commit:`641652525` 添加了 :ref:`Filament 渲染 <FilamentRendering>` 的文档。
+40. :commit:`1b7d9e83b` :ref:`XML 参考<CDimension>` 现在给出了每个实数值属性的物理量纲，这些量纲在 MJCF schema 中声明。
+
+版本 3.15.0 (October 5, 2026)
+--------------------------------
+
+常规
+^^^^^^^
+1. :commit:`1aa68e1ca` 在 Windows 上写入的 :ref:`.mjz <MJZArchives>` 归档现在始终使用 ``/`` 作为分隔符。
+2. :commit:`1aa68e1ca` 当 :ref:`.mjz <MJZArchives>` 归档被重写，或者目录路径为绝对路径、使用 ``..`` 或使用 URI 方案时，
+   :ref:`meshdir<compiler-meshdir>` 或 :ref:`texturedir<compiler-texturedir>` 中的资源现在能够
+   正确解析。
+
+引擎
+^^^^^^
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   3. :commit:`b3dd9e617` 执行器 :ref:`dampratio<actuator-position-dampratio>` 现在将 ``mjModel.qpos0`` 处的折算惯性
+      :math:`m` 计算为操作空间惯性 :math:`(J M^{-1} J^T)^{-1}` （对于 :ref:`orientation<actuator-orientation>` 等多输出执行器，
+      在各力输出之间取平均），而不是对各自由度（degree of freedom）求和
+      :math:`\text{dof\_M0}_j / J_j^2` 。这考虑了肌腱和执行器的电枢惯量，
+      以及非对角的惯性耦合，并避免了多自由度传动的雅可比（Jacobian）元素较小时出现极端的阻尼值。实际上，在多连杆运动学链上使用 ``dampratio`` 的执行器，其
+      阻尼可能比以前更低，而驱动跨越多个关节的肌腱或 site 的执行器，其阻尼会精确得多，
+      而不是过阻尼。
+
+   4. :commit:`5023a4a50` 移除了已弃用的 ``internal`` 柔性体碰撞选项以及相关的 ``evpair``
+      结构。
+
+5. :commit:`1b973add4` 为非插值三维柔性体添加了实验性的简化稳定 Neo-Hookean 弹性，
+   仅通过 ``mjsFlex.elastic3d = 1`` 启用。它为求解器（solver）和 Rayleigh 阻尼将材料 Hessian 投影为半正定，并保留
+   Saint Venant-Kirchhoff（StVK）默认值（ ``0`` ）。
+   SNH 需要离散积分器（integrator）。该设置在 MJCF 中不可用。
+6. :commit:`2742de438` 缓存的柔性体弯曲因子现在保留了朝向不同的顶点刚体之间的交叉坐标耦合。
+7. :commit:`eed008905` 柔性体的弯曲和拉伸现在包含铰接顶点附着的运动力和反作用力。离散积分器配合 CG 求解器支持这些附着；固定的以及独立的 XYZ 滑动
+   附着保留其优化的装配方式。附着在 mocap 刚体上的弹性柔性体会产生编译器错误。
+8. :commit:`6224e95f6` 为涉及胶囊体 geom 的碰撞添加了单次 :ref:`多接触<coMultiCCD>` 。
+9. :commit:`ebfb4662d` 为 :ref:`insidesite<sensor-insidesite>` 传感器添加了 :ref:`enclosed<sensor-insidesite-enclosed>` 属性，
+   用于测量物体超出 site 的程度（使用有向 Hausdorff 距离），并报告带符号的间隙/突出量。
+10. :commit:`f80ef4244` 修复了二进制 MJB 序列化中 64 位模型大小被截断的问题： :ref:`mj_saveModel` 和
+    :ref:`mj_loadModelBuffer` 现在对 ``buffer_sz`` 接受 :ref:`mjtSize` ，从而支持大于 2 GiB 的模型。
+
+版本 3.14.0 (September 22, 2026)
+-----------------------------------
+
+常规
+^^^^^^^
+
+1. :commit:`458189298` 添加了 ``ipc`` :ref:`标志<option-flag-ipc>` ，这是 ``discrete``
+   积分器的一种实验性接触模式，用于实现无穿透的柔性体接触。每一步都在线性化接触约束（constraint）的条件下最小化一个增量势能，
+   使用的是无障碍函数的增广拉格朗日法，其子问题就是离散求解。每一次
+   已提交的位置更新都会通过连续碰撞检测验证无相交，因此柔性体接触不会
+   穿隧。支持二维柔性体：带有边等式约束的柔性体将其弹性保留在约束
+   求解器中，而 ``elastic2d`` 弹性则通过有效度量隐式积分。该模式所解决的接触是无摩擦的。该模式会跨步保留接触乘子，而任何状态规范都不涵盖这些乘子，因此
+   ``mj_getState``/``mj_setState`` 无法捕获其完整状态，也不支持精确重放。
+2. :commit:`2fec92237` 引入了 :ref:`归档资源提供者<mjp_registerArchiveProvider>`
+   （ ``mjp_registerArchiveResourceProvider`` ）。归档提供者使用
+   :ref:`mjpResourceProvider` 接口来挂载和读取归档容器（例如
+   ``.mjz``/``.zip`` ），使容器处理与格式解码器解耦，并支持
+   按需提取资源，而无需预先分配 :ref:`VFS<Virtualfilesystem>` 。
+3. :commit:`e312ce82d` 保存 MJCF 时现在会保留 :ref:`坐标系<frame>` ： ``<frame>`` 元素连同其 ``pos`` 和 ``quat`` 一起写出，其内容采用相对于坐标系的坐标，因此保存后的模型重新加载时具有相同的
+   坐标系。此前，保存时坐标系变换会被累积到子元素中，只保留坐标系的名称。现在，对 :ref:`mjSpec` 中坐标系的 ``pos`` 或 ``quat`` 的修改在 spec 重新编译时也会生效。
+
+
+引擎
+^^^^^^
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   4. :commit:`dc8bb1364` :ref:`mj_readCtrl` 现在与 :ref:`mj_readSensor` 的签名和语义保持一致，以支持
+      多输入执行器（例如 :ref:`pid<actuator-pid>` 、 :ref:`dcmotor<actuator-dcmotor>` 、
+      :ref:`orientation<actuator-orientation>` ）：它接受大小为 ``actuator_ctrlnum[id]`` 的输出缓冲区 ``result`` ，
+      并返回 ``const mjtNum*`` （在零阶保持或时间戳精确匹配时，指向 ``mjData.ctrl`` 或 ``mjData.history`` 的指针；
+      在插值结果写入 ``result`` 时则为 ``NULL`` ）。执行器历史缓冲区现在每个采样存储
+      ``actuator_ctrlnum[id]`` 个值，并且 :ref:`mj_initCtrlHistory` 期望 ``nsample *
+      actuator_ctrlnum[id]`` 个值（ :issue:`3597` ）。
+
+5. :commit:`9e0c6b577` :ref:`mjWARN_INERTIA <mjtWarning>` 警告现在也会由 :at:`implicitfast` 和带阻尼的 :at:`Euler` 积分器的修正惯性
+   分解（此前是静默的）以及 :at:`implicit` 积分器的修正惯性分解（此前是致命错误）触发。
+6. :commit:`35c0631de` 当舍入误差使稀疏 Newton 求解器丢失其 Hessian 的某个主元时（在单精度下遇到病态惯性时可能发生），它不再以“rank-deficient sparse Hessian”错误中止。
+   现在，与稠密分解一样，该主元会被钳位，其所在行被解耦。
+
+错误修复
+^^^^^^^^^
+7. :commit:`2a3f1f5a4` 程序化模型编辑的开销不再随元素数量呈二次增长。 ``mjSpec`` 此前在每次类似 :ref:`mjs_addGeom` 的调用时都会重新计算编译签名，
+   而 :ref:`mjs_setName` 会重新扫描该元素类型的所有名称。现在两者都改为增量式处理。构建一个包含 8000 个 geom 的 spec 大约快 10 倍。
+
+   .. admonition:: 破坏性 API 变更
+      :class: attention
+
+      只要 spec 自上次编译以来发生过结构性编辑， ``mjsElement.signature`` 现在就为 ``0`` ，而不再在每次编辑时急切地重新计算。在成功执行
+      :ref:`mj_compile` 之后，它仍然等于 ``mjModel.signature`` ， :ref:`mj_copyBack` 和 Python 的 ``bind`` 方法依赖于这一点。若代码曾将未编译 spec 的
+      签名与 ``0`` 以外的值进行比较，则必须先编译。此外，当 :ref:`mjs_setName` 因名称重复而失败时，元素之前的名称现在会被保留，而不再被重复的名称覆盖。
+8. :commit:`ac329bd17` 修复了 :ref:`mj_rnePostConstraint` 中由 :ref:`weld<equality-weld>` 约束（constraint）施加的力矩。旋转约束力此前被直接当作世界坐标系下的力矩使用，
+   缺少 ``0.5 * torquescale`` 的缩放以及向世界坐标系的旋转。对于由带力矩的 weld 固定的刚体，其上的 :ref:`力<sensor-force>` 和
+   :ref:`力矩<sensor-torque>` 传感器（sensor）读数是错误的（ :issue:`2533` ）。
+9. :commit:`263c638c0` :ref:`mj_rnePostConstraint` 现在会计入空间肌腱（tendon）的各项力（弹簧、阻尼器、执行器、限位、摩擦损耗、等式约束和电枢惯量），因此
+   :ref:`力<sensor-force>` 和 :ref:`力矩<sensor-torque>` 传感器能够记录肌腱施加在刚体上的力（ :issue:`832` ）。
+10. :commit:`eb662fcaf` 肌腱的 :ref:`actuatorfrclimited<tendon-spatial-actuatorfrclimited>` 现在按文档所述默认为 "auto"。此前默认值为 "false"，
+    除非显式设置 :at:`actuatorfrclimited` ，否则 :at:`actuatorfrcrange` 会被静默忽略。
+11. :commit:`54be9cce6` 当启用 :ref:`休眠<Sleeping>` 时， :ref:`mjd_transitionFD` 和 :ref:`mjd_inverseFD` 现在会报错。此前，它们的重复求值会改变休眠状态，
+    导致内部错误或错误的导数。
+12. :commit:`e38573c64` 修复了 :ref:`mjs_delete` 中的内存泄漏：被删除的元素和子树此前会一直保留在 ``mjSpec`` 中，直到调用 :ref:`mj_deleteSpec` （ :issue:`2882` ）。
+13. :commit:`65ea54c3c` 修复了解析由 :ref:`flexcomp<body-flexcomp>` 加载的 :ref:`GMSH 文件<gmsh-file-docs>` 头部时的越界读取问题。被截断的头部现在会作为错误报告。
+
+Version 3.13.0 (September 8, 2026)
+----------------------------------
+
+概述
+^^^^
+1. :commit:`eb18d77ca` :ref:`.mjz <MJZArchives>` 编码器现在将根文件以 ``model.xml`` 为名写入归档，因为这样更不容易因文件重命名而损坏。
+2. :commit:`4affbb64a` site 的几何形状现在也可以与网格（mesh）关联（ :ref:`type="mesh"<body-site-type>` 搭配
+   :ref:`mesh="name"<body-site-mesh>` ），支持可视化（visualization）、 :ref:`insidesite<sensor-insidesite>`
+   传感器以及新增的 :ref:`mj_insideSite` 函数。
+3. :commit:`b59b07fae` 新增对 Python 3.15 的支持（GIL 和 Free-Threading）。
+
+引擎
+^^^^
+4. :commit:`5660353ec` 新增积分器（integrator） ``discrete`` ：约束求解与隐式速度更新合并为一个操作，在有效度量 :math:`\widehat{M} = M + hD + h^2K` 下执行，
+   该度量同时包含隐式阻尼（damping） :math:`hD` 和隐式位置刚度（stiffness） :math:`h^2 K` 。在该积分器下， ``mjData.qacc`` 是离散步映射 :math:`(v^+ - v)/h` ，
+   关节、肌腱和执行器的刚度与阻尼都进入求解器的度量，使被动弹簧和执行器位置增益在远超显式稳定性极限的时间步长（timestep）下仍保持稳定。约束行同样按隐式处理：
+   :at:`solref` 弹簧--阻尼器在步末求值，因此约束在任意 ``timeconst`` 下都是稳定的；在该积分器下， :ref:`refsafe<option-flag-refsafe>` 标志会用最刚的零恢复系数行，
+   去替换比时间步长所能分辨的更刚的接触和限位行，而不是对 ``timeconst`` 进行钳位。执行器增益的处理解决了 :issue:`3443` 中的刚性伺服时间步长限制问题
+   （分析由 :github:user:`qiayuanl` 贡献）。其语义和当前的局限性请参见 :ref:`积分器文档<geIntegrators>` 。
+
+   .. admonition:: 破坏性 API 变更
+      :class: attention
+
+      移除了 3.11.0 中引入的、在 ``implicit``/``implicitfast`` 搭配 ``CG`` 求解器（solver）时对柔性体（flex）有效度量的隐式特殊处理。该行为现在需要
+      ``integrator="discrete"`` （搭配原始求解器： ``CG`` 或 ``Newton`` ），它还会在求解内部以隐式方式处理关节阻尼和刚度。依赖旧行为的模型应将
+      :ref:`integrator<option-integrator>` 设为 ``discrete`` ；在 ``implicit``/``implicitfast`` 下具有 flex 弹性或被动 flex 接触的模型，现在会抛出带有此迁移说明的运行时错误。
+
+5. :commit:`0b4e17747` 恢复了稀疏惯性分解中对非正主元的钳位，以及相关的 ``mjWARN_INERTIA`` 警告。该保护在 3.3.0 将 ``qLD`` 转换为 CSR 格式时被无意中丢弃；
+   此后，具有奇异质量矩阵的模型会静默地产生非有限的加速度，通常表现为发散警告和自动重置。
+6. :commit:`c9d997610` 为与圆柱体 geom 的碰撞新增了单次 :ref:`多接触<coMultiCCD>` 。
+7. :commit:`10eeb8289` 当浮点运算量模型预测更快时，使用 :ref:`椭圆锥<option-cone>` 的 Newton 求解器现在会通过一次重新分解来重建带锥增广的 Hessian 因子，
+   而不是逐接触的秩 1 更新。存在大量同时滑动接触的场景平均加速 1.4-2 倍，最慢的步骤加速 3-4 倍。
+   由 :github:user:`kevinzakka` 贡献。
+
+编译器
+^^^^^^
+8. :commit:`2a3957558` MJCF 中的自定义文本字段（ :ref:`custom/text<custom-text>` ）现在除 ``data`` 属性外，还接受 ``<![CDATA[ ... ]]>`` 块中的值。
+   通过 :ref:`mj_saveXML` 保存模型时，包含换行符或 XML 字符的自定义文本会以 CDATA 导出。
+9. :commit:`47ebfe48a` 为 :ref:`sensor/tactile<sensor-tactile>` 新增了 :ref:`cutoff<sensor-tactile-cutoff>` 属性。
+
+示例
+^^^^
+10. :commit:`834983fbb` 新增 :ref:`render.cc<saRender>` ：一个无头离屏渲染（rendering）示例，可将图像保存为 PNG 图像。同时支持 Filament 和经典 OpenGL 后端，
+    并提供用于相机、分辨率、关键帧、仿真步数、geom/site 分组、可视化和渲染标志、标签以及坐标系的命令行选项。
+
+错误修复
+^^^^^^^^^
+11. :commit:`67562d95f` 重写了平面-网格碰撞器，以修复错误并提升性能。修复了 :issue:`3524` 。
+
+.. youtube:: MNQsV_etq24
+   :aspect: 16:7
+   :align: right
+   :width: 35%
+
+模型
+^^^^
+12. :commit:`f6c1004b7` 新增 `纸牌屋 <https://github.com/google-deepmind/mujoco/tree/main/model/cards/>`__ 示例模型，以及三个
+    `自立拱 <https://github.com/google-deepmind/mujoco/tree/main/model/arch/>`__ 模型：罗马式、哥特式和双曲线式。灵感来自
+    `Song et al <https://www.cs.ubc.ca/research/fbf-friction/>`__ 。
+
+渲染
+^^^^^^^^^
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   13. :commit:`cb57b526f` 对于具有基于物理的渲染参数、但 *没有* 提供金属度纹理的材质，回退值现在为白色。此前回退值为黑色，这会导致标量金属度值在 PBR 着色器中相乘时被丢弃。
+
+Version 3.12.0 (August 20, 2026)
+--------------------------------
+
+概述
+^^^^
+
+1. :commit:`3f8db4c1` MJCF 语法现在定义在单一事实来源的模式文件
+   `src/xml/mjcf.schema <https://github.com/google-deepmind/mujoco/tree/main/src/xml/mjcf.schema>`__ 中。解析器的语法表、存在性约束、关键字映射、
+   带类型的属性绑定和保存策略均由它生成并受测试把关，模式中的枚举关键字和声明的默认值也同样会对照 C 头文件和默认构造函数进行测试。
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   2. :commit:`6fe04aa8` 移除了自定义二进制纹理格式（ ``image/vnd.mujoco.texture`` ），以及在加载扩展名无法识别的文件时自动回退到自定义纹理的行为。
+      现在只能从 PNG（ ``image/png`` ）和 KTX（ ``image/ktx`` ）文件加载纹理。
+
+执行器
+^^^^^^^^^
+3. :commit:`279df98c` 新增 :ref:`pid<actuator-pid>` 执行器（actuator）：一种具有真实位置和速度设定值输入的 PID 控制器，带有可选的积分作用
+   （ :ref:`ki<actuator-pid-ki>` ，对位置误差积分，并带有 :ref:`imax<actuator-pid-imax>` 抗饱和）、设定值限速（ :ref:`slewmax<actuator-pid-slewmax>` ）以及可选的前馈输入。
+   它以正确的激活状态（activation）涵盖了 ``mujoco.pid`` 插件（plugin）的功能：在所有积分器下都正确，并且对关键帧和传感器可见。当速度设定值为零时，
+   它与 :ref:`position<actuator-position>` 等价。输入签名是 ``[pos, vel, ff]`` 的任意子集，由 :ref:`input<actuator-pid-input>` 选定；缺省的设定值输入固定为零，
+   因此控制向量中不含无效条目。
+4. :commit:`2f1843f4` 重新设计了 :ref:`dcmotor<actuator-dcmotor>` 的板载控制器： :ref:`input<actuator-dcmotor-input>` 属性可选择 ``[pos, vel, ff, voltage]`` 的任意子集，
+   其中 ``pos`` 和 ``vel`` 是控制器的设定值， ``ff`` 是力矩前馈， ``voltage`` 是原始的端电压（默认值，即普通的电压指令电机）。与 :ref:`pid<actuator-pid>` 一样，
+   控制器增益位于力矩空间，并且驱动电压会像电流控制型驱动器那样补偿反电动势：在达到限值之前，指令力矩会被精确地输出。关键字 ``input="none"`` 选择空签名：
+   该执行器没有控制输入，完全是被动的，因此摩擦、齿槽转矩和反电动势制动可以用作被动关节力。
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   5. :commit:`2f1843f4` :ref:`dcmotor/input<actuator-dcmotor-input>` 的模式标志语义（"voltage"、"position"、"velocity"，用于选择单个控制量的解释方式）被输入签名取代，
+      并且控制器增益从电压空间改为力矩空间。旧速度模式的积分项（积分速度跟踪）被取消且没有替代；积分器始终累积位置误差。
+
+      **迁移：** 电压指令电机（默认）不受影响。将 ``input="position"`` 替换为 ``input="pos"`` ，将 ``input="velocity"`` 替换为 ``input="vel"`` ，并将控制器增益乘以
+      :math:`K/R` （每伏特的力矩）。电机的反电动势阻尼此前会叠加在控制器阻尼之外被感受到，现在已被补偿：若要在速度设定值为零时保持原有行为，请在转换后的
+      :at-val:`kd` 上加上 :math:`K^2/R` 。
+
+引擎
+^^^^
+
+6. :commit:`83e621d7` 优化了大网格凸体碰撞检测（collision detection），在某些情况下速度最高提升 2 倍。
+7. :commit:`55d13aec` 将隐式有效度量 M + K 的柔性体块的逐步稀疏 Cholesky 分解，替换为其预先分解好的逐顶点 3x3 对角块。这些块为 CG 约束求解器提供预条件，
+   并驱动对 ``qacc_smooth`` 的迭代求解，该求解现在依据 :ref:`tolerance<option-tolerance>` 收敛，而不是依据固定阈值。具有 :ref:`elastic2d<flex-elasticity-elastic2d>`
+   拉伸刚度的 flex，其步进速度大约提升一倍；仅含弯曲的 flex 保留精确的常数因子，保持不变。
+8. :commit:`86e98601` 重写了更简洁的盒-盒 SAT 碰撞器。
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   9. :commit:`2a3554c8` 具有 :ref:`被动<flexcomp-contact-passive>` 碰撞的 flex 的接触，现在按隐式方式积分：其刚度由有效度量承载，而不是作为显式弹簧施加，
+      并且可以比时间步长原本允许的刚得多。使用被动碰撞的模型应重新检查：该功能现在要求使用 :at:`implicit` 或 :at:`implicitfast` ，搭配 CG 求解器、棱锥型摩擦锥，
+      并禁用休眠；被动处理覆盖 flex-flex、自身以及静态几何体接触，而与运动刚体的接触仍由约束求解器处理；并且刚度现在是随质量缩放的固有频率，而不再是固定的 1e4。
+
+   10. :commit:`55d13aec` 移除了 ``mjData.efm_L_rownnz`` 、 ``mjData.efm_L_rowadr`` 和 ``mjData.efm_L_colind`` 。它们描述的是有效度量 Cholesky 因子的稀疏性，
+       而该因子已不再存在； ``mjData.efm_L`` 现在保存稠密的 3x3 块，每个被覆盖的顶点对应 9 个数。 ``mjData.efm_active`` 不再取值 2：不再有任何东西依据预条件子的精确性来选择求解路径，
+       因此它现在只是一个普通的 0/1 标志。
+   11. :commit:`1362a8bd` 将 :ref:`bvactive<visual-global-bvactive>` 的默认值从 "true" 改为 "false"。这避免了在每个仿真步都不必要地清除包围体层次结构可视化标志，
+       而这对于具有大网格的模型可能成为瓶颈。
+   12. :commit:`ed13bf56` mocap 刚体及其没有自由度的后代现在是其自身焊接组的根：mocap 刚体的 ``mjModel.body_weldid`` 等于其自身的 id，而不是 0。影响如下：
+       将 mocap 刚体拖入处于休眠的物体时，现在会唤醒它们；mocap 刚体的子刚体适用标准的
+       :ref:`父子碰撞过滤<SurprisingCollisions>` ；在光线投射中，mocap 刚体不再被视为静态几何体，匹配接触的传感器会将其接触聚合到 mocap 刚体而不是世界刚体之下；
+       并且两个刚体都不能运动的 geom 对不再产生接触。
+
+模型
+^^^^
+
+13. :commit:`2a3554c8` 新增 `drape <https://github.com/google-deepmind/mujoco/blob/main/model/flex/drape.xml>`__
+    示例模型：三块布料披在一个球体上，演示 :ref:`被动<flex-contact-passive>` 碰撞。它取代了已被移除的 ``sphere_passive`` 模型。
+
+14. :commit:`55d13aec` 新增 `bag <https://github.com/google-deepmind/mujoco/blob/main/model/flex/bag.xml>`__ 示例模型：一个布袋，通过固定袋口一圈顶点使其保持张开，
+    接住从上方落下的标准人形机器人。与仅含弯曲的 poncho 模型不同，该模型展示了 flex 的二维 :ref:`拉伸<flex-elasticity-elastic2d>` 弹性。
+
+渲染
+^^^^^^^^^
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   .. image:: https://www.gstatic.com/mujoco/doc/images/changelog/primitives_textured.gif
+      :align: right
+      :width: 40%
+
+   15. :commit:`cc7fb98c` 在经典渲染器和 Filament 中，为内置几何体（平面、盒体、球体、椭球体、胶囊体、圆柱体）新增了显式纹理坐标。应用于基本形状的 2D 纹理看起来会有所不同，
+       因为纹理现在使用规范的 UV 参数化进行映射，而不是投影到 :math:`x,y` 平面上。
+
+       对于有限平面，纹理现在锚定在左下角而不是中心。这会造成最常见的视觉破坏，因为常见的程序化棋盘格纹理会发生相位偏移。无限平面仍锚定在原点，视觉上没有变化。
+
+       .. image:: images/changelog/plane_uv_tiling.png
+          :align: center
+          :width: 70%
+   16. :commit:`f9a00bd5` 新增 :ref:`light/softness<body-light-softness>` ：基于物理的光照模型下聚光灯的边缘柔和度，以强度降为零的锥体比例给出。默认值 0.2 是一个半柔和锥体，
+       它在锥体内部各处都提供完整的 :ref:`强度<body-light-intensity>` ，因此照度遵循 :math:`E = I/d^2` ，与 :ref:`cutoff<body-light-cutoff>` 角度无关。此前，filament 渲染器将整个锥体都当作半影处理，
+       使聚光灯的亮度远低于其额定强度，且截止角越窄越明显。
+
+       **迁移：** 将 :at:`softness` 设为 1 可以重现现有模型此前的外观。
+
+MJX
+^^^
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   17. :commit:`5e3464f4` :func:`mjx.render` 和 :func:`mjx.render_with_segmentation` 现在会将更新后的 :class:`mjx.Data` 作为其返回元组的最后一个元素返回
+       （即 ``(rgb, depth, d)`` 和 ``(rgb, depth, seg, d)`` ）。这确保 JAX/XLA 严格执行相继的 ``refit_bvh`` 和 ``render`` 调用之间的因果调度。
+
+       **迁移：** 将解包调用从 ``pixels, depth = mjx.render(mx, d, rc)`` 更新为 ``pixels, depth, d = mjx.render(mx, d, rc)`` 。
+
+错误修复
+^^^^^^^^^
+
+18. :commit:`95539261` 修复了一个错误：带有固定的插值 flex 节点的模型（例如 :ref:`flexcomp<body-flexcomp>` 搭配 :at:`dof` "trilinear" 并固定了顶点）在保存后无法重新加载：
+    节点在其刚体坐标系内的坐标没有被保存，导致插值网格退化。现在它们会保存在新的 flex :ref:`nodecoord<deformable-flex-nodecoord>` 属性中。
+19. :commit:`8655446f` 修复了盒-盒碰撞器中的一个错误：在近乎退化的面裁剪情况下，具有正 margin 的、几乎接触的薄盒之间可能产生穿透（penetration）深度异常大的接触，
+    导致静止堆叠的盒体发生爆炸。
+20. :commit:`fb07a9ca` 修复了盒-盒碰撞器中的一个错误：穿透深度大于盒体最小半尺寸时可能不产生任何接触，使盒体穿隧（tunnel）穿过薄盒。修复了 :issue:`1800` 。
+21. :commit:`54979947` 修复了 flex 拉伸刚度算子：它此前是拉伸力的 Gauss-Newton Hessian，而不是其雅可比（Jacobian）：缺少几何项（与应力成正比）。
+    只添加该项的拉伸部分，因为它恰好在边处于受拉状态时才是半正定的，而其使用者要求算子是对称正定（SPD）的；拉伸力本身保持不变。这会影响隐式积分器和隐式有效度量，
+    因此使用 ``elastic2d="stretch"`` 的 flex 的积分结果会略有不同。仅含弯曲的 flex 不受影响。
+
+OpenUSD
+^^^^^^^
+
+22. :commit:`39e44588` 将 Newton USD 模式支持升级到 0.4.0 版本：
+
+    - ``NewtonJointAPI`` （ ``newton:armature`` 、 ``newton:damping`` 、 ``newton:friction`` ）弃用了与之等价的 ``MjcJointAPI`` 属性
+      ``mjc:armature`` 、 ``mjc:damping`` 和 ``mjc:frictionloss`` 。
+    - ``NewtonMassAPI`` （ ``newton:massModel`` 、 ``newton:inertia`` ）弃用了与之等价的 ``MjcCollisionAPI`` 属性 ``mjc:shellinertia``
+      以及 ``MjcMeshCollisionAPI`` 的 ``mjc:inertia`` 属性。这完成了对 ``MjcMeshCollisionAPI`` 所有属性的弃用，计划在未来版本中将其移除。
+    - 新增对用于声明 site 的 ``NewtonSiteAPI`` 的支持， ``MjcSiteAPI`` 会自动应用该模式，但仍作为 ``mjc:group`` 属性的扩展保留。
+    - 新增对 ``NewtonMaterialAPI`` （ ``newton:contactAdhesion`` 、 ``newton:torsionalFriction`` 、 ``newton:rollingFriction`` ）的支持。这会弃用 ``MjcMaterialAPI`` ，
+      后者将在未来版本中移除。
+    - 新增对 ``NewtonMimicAPI`` （ ``newton:mimicJoint`` 、 ``newton:mimicCoef0`` 、 ``newton:mimicCoef1`` ）的支持，作为 ``MjcEqualityJointAPI`` 的基础，
+      这会弃用 ``mjc:coef0`` 和 ``mjc:coef1`` 属性以及 ``mjc:target`` 关系。
+    - 新增对 ``NewtonArticulationRootAPI`` （ ``newton:jointsAddMobility`` ）的支持。
+
+.. admonition:: 破坏性 ABI 变更
+   :class: caution
+
+   23. :commit:`279df98c` :ref:`mjsActuator` 新增了 ``velrange`` 和 ``ffrange`` 字段，其大小和布局随之改变。 :ref:`mjtGain` 和 :ref:`mjtDyn` 枚举新增了 ``pid`` 成员，
+       使 ``mjGAIN_USER`` 和 ``mjDYN_USER`` 的值发生了偏移。
+   24. :commit:`596b6f43` :ref:`mjResource` 新增了 ``args`` 字段（其大小和布局随之改变），用于保存可选的额外编码和解码参数，格式为 URI 查询参数（以 ``&`` 分隔）。
+
+Version 3.11.0 (July 27, 2026)
+------------------------------
+
+引擎
+^^^^
+
+.. youtube:: PdSdrqhSiZA
+   :aspect: 16:7
+   :align: right
+   :width: 35%
+
+1. :commit:`4787c809` 新增 :ref:`geom/surfacevel<body-geom-surfacevel>` ：接触所见的 geom 表面速度，以速度场的形式给出，包含一个常量分量和一个绕 geom 坐标系原点的旋转分量。
+   这使得传送带、跑步机和转台可以用静态 geom 且无需任何自由度（degrees of freedom）来建模：摩擦力会驱动接触的刚体沿表面运动方向移动，速度场被投影到每个接触的切平面上。
+   表面速度之间以及与刚体运动之间都能正确地合成。
+   请注意， ``mjData.efc_vel`` 的接触行以及读取它们的约束状态传感器，报告的是相对于运动表面（而不是相对于 geom）的速度，因为这是约束所作用的量；
+   对于没有 :at:`surfacevel` 的 geom，两者是相同的。接触点可视化会在具有运动表面的接触处沿表面速度绘制一个箭头。
+
+.. youtube:: GioWwB36XHI
+   :aspect: 16:7
+   :align: right
+   :width: 35%
+
+2. :commit:`a264d0bc` 新增 :ref:`geom/adhesion<body-geom-adhesion>` 和 :ref:`pair/adhesion<contact-pair-adhesion>` ：与接触相关联的粘附力，可用于建模粘性材料。
+   接触在断开之前最多可以施加给定大小的拉力，并且摩擦预算变为 :math:`\mu(f_N + \text{adhesion})` 。与 :ref:`gap<body-geom-gap>` 结合使用时，粘附接触会施加“远距离粘附”，
+   可用于建模磁铁。静止穿透量不受粘附影响。 :ref:`mj_contactForce` 报告的是净界面力，其法向分量现在可以为负。
+3. :commit:`f0fa3d82` 在 ``implicitfast`` :ref:`积分器<geIntegrators>` 中，用 :ref:`陀螺导数<geFreeBody>` 取代了自由刚体的中点积分：每个独立自由刚体的偏置力导数，
+   通过对其解耦块的局部非对称求解来施加，使 ``implicitfast`` 对这类刚体与 ``implicit`` 完全一致。与要求真空且无约束的中点积分不同，这一做法适用于所有环境
+   （接触、流体、约束），并且与离散时间逆动力学兼容。自旋的自由刚体不再增加能量，但翻滚运动现在会受到轻微阻尼；需要在真空中对翻滚刚体进行长时程能量守恒的模型应使用 ``RK4`` 。
+   :ref:`invdiscrete<option-flag-invdiscrete>` 标志对正动力学不再有任何影响。
+4. :commit:`5618666a` 新增 :ref:`body/simple<body-simple>` 属性（"false"/"auto"），用于禁用 *简单刚体* 质量矩阵优化。这对域随机化很有用，因为模型参数可能在编译后发生变化。
+5. :commit:`14c0b0c9` :ref:`mj_setConst` 现在会重新计算 ``mjModel.{body,geom,site}_sameframe`` 标志，以反映编译后刚体/geom/site 坐标系的变化。
+6. :commit:`2444defc` 新增对任意大网格的 :ref:`multiccd <coMultiCCD>` 支持。
+7. :commit:`a04b0c5b` 向 ``mjModel`` 新增了 ``flg_gravcomp`` 和 ``flg_surfacevel`` 布尔标志。这些标志取代了最初由 ``ngravcomp`` 把守的快速路径检查。由于引擎将这些整数用作标志
+   （零与非零），新的标志是名副其实的布尔属性，可在运行时从 Python 绑定中写入。字段 ``ngravcomp`` 已被弃用，并将在未来版本中移除。
+8. :commit:`a1f38c8e` 将 DFS 洪泛填充岛发现中的二次方暂存空间，替换为线性内存的并查集（Union-Find，即不相交集）。由 :github:user:`teerthsharma` 贡献。
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   9. :commit:`ff629889` 将 :ref:`sleep_tolerance<option-sleep_tolerance>` 的默认值从 1e-4 改为 1e-3（国际单位制下为 1mm/sec）。
+   10. :commit:`315bcfbf` 移除了旧的稀疏祖先遍历惯性矩阵 ``mjData.qM`` 。关节空间惯性矩阵现在仅以压缩稀疏行（CSR）格式 ``mjData.M`` 存储。
+   11. :commit:`7e9ac58f` 将 :ref:`mjd_inverseFD` 切换为使用 CSR 格式的 ``mjData.M`` 表示，而不是旧的 ``mjData.qM`` ，来计算质量矩阵（mass matrix）导数。
+       这会将 ``DmDq`` 参数的形状从 ``(nv x nM)`` 改为 ``(nv x nC)`` 。
+   12. :commit:`1ea2d884` :ref:`mju_round` 现在对平局向远离零的方向取整，而不是向 :math:`+\infty` 取整。这只影响负的半整数，例如 ``mju_round(-2.5)`` 现在返回 -3 而不是 -2。
+   13. :commit:`fa36015b` 从 :ref:`mjv_moveCamera` 中移除了不需要的 `mjvScene` 参数。
+   14. :commit:`ba9a6503` 将 :ref:`mjrfMeshData` 拆分为 `mjrfMeshData` 和 `mjrfMeshConfig`，以便在无需重新创建网格对象的情况下重新上传网格数据。引入了
+       ``mjrf_defaultMeshConfig`` 和 ``mjrf_setMeshData`` 函数。
+   15. :commit:`ba9a6503` 从 :ref:`mjrVertexAttribute` 中移除了 `bytes` 字段。
+
+.. admonition:: 破坏性 ABI 变更
+   :class: caution
+
+   16. :commit:`072e963f` :ref:`mjModel` 新增了 ``actuator_ctrlspec`` 字段（每个执行器的输入签名）， :ref:`mjsActuator` 新增了 ``ctrlspec`` ，二者的大小和布局随之改变。
+       :ref:`mjtGain` 和 :ref:`mjtBias` 枚举新增了 ``so3`` 成员，使 ``mjGAIN_USER`` 和 ``mjBIAS_USER`` 的值发生了偏移。
+   17. :commit:`d43c3ed4` 向 :ref:`mjvGeom` 新增了 ``texid`` 、 ``texuniform`` 和 ``texrepeat`` 字段。
+   18. :commit:`a264d0bc` :ref:`mjContact` 结构体新增了 ``adhesion`` 成员，其大小和布局随之改变。
+
+.. admonition:: 错误修复
+   :class: admonition
+
+   19. :commit:`dddb2767` 修复了 ``body_margin`` 排除 ``gap`` 的错误，该错误导致中间阶段碰撞过滤器在多 geom 刚体上错误地剪除了处于 gap 内的接触。
+
+执行器
+^^^^^^^^^
+20. :commit:`d507e921` 重构了执行器（actuator）基础设施，为支持 MIMO（多输入多输出）执行器做准备。每个执行器现在都有 ``ctrlnum``\ （控制数量）和 ``outnum``\ （力输出数量）。总数 ``nu = sum(ctrlnum)`` 和 ``nout = sum(outnum)`` 分别决定 ``mjData.ctrl`` 和 ``mjData.actuator_force`` 的维度，\ ``nactuator`` 是执行器的数量。对于现有执行器，\ ``ctrnum = outnum = 1``，因此 ``nactuator == nu == nout``，现有代码不受影响。
+21. :commit:`56a93979` 作用于 3D 旋转传动（transmission；球关节，或带有 :ref:`refsite<actuator-general-refsite>` 且齿轮比为纯旋转的 site 传动）的 :ref:`position<actuator-position>` 和 :ref:`intvelocity<actuator-intvelocity>` 伺服的设定点，现在在圆周上解释：力使用最接近当前角度的设定点代表值，因此超过半圈的目标会被连续跟踪，而不会因整圈而滑移。只要误差不超过 π，行为与之前完全一致。与此相关，\ ``intvelocity`` 执行器现在公开了 :ref:`actlimited<actuator-intvelocity-actlimited>`，该属性此前被硬编码为 "true"：与 :ref:`general<actuator-general>` 执行器一样，它默认为 "auto"，因此通过指定 ``actrange`` 即可启用激活（状态）钳位。在旋转传动上，未钳位的积分设定点表现良好，因为它们会回绕。
+
+.. youtube:: 17XpwnqyCXs
+   :aspect: 16:7
+   :align: right
+   :width: 35%
+
+22. :commit:`072e963f` 新增 :ref:`orientation<actuator-orientation>` 执行器：这是一种作用于新的 SO(3) 传动（球关节，或带有 :ref:`refsite<actuator-general-refsite>` 的 site）上的测地线伺服，它对完整的相对朝向联合施加作用，并在每个指令朝向处都有精确的平衡点。这是第一个具有多个力输出（3 个）的执行器，并且在使用 ``input="quat"`` 时，也是第一个输入和输出维度不同（4 个控制，3 个输出）的执行器。输入签名记录在新增的 ``mjModel.actuator_ctrlspec`` 中，并通过 :ref:`input<actuator-general-input>` 属性公开。
+23. :commit:`072e963f` 新增 :ref:`mj_actuatorInputName`，返回执行器输入的名称（例如，四元数指令的 orientation 执行器的第一个控制对应 "qw"）。\ :ref:`simulate<saSimulate>` 和 MuJoCo Studio 中的控制滑块现在按每个控制生成，并以执行器名称加输入名称后缀作为标签。
+24. :commit:`072e963f` 即使 :ref:`ctrllimited<actuator-general-ctrllimited>` 为 "false"，查看器的控制滑块现在也会使用已定义的 :ref:`ctrlrange<actuator-general-ctrlrange>`：该范围设定滑块的跨度，而钳位仍由 :at:`ctrllimited` 控制。
+25. :commit:`072e963f` 新增 :ref:`mj_resetCtrl`，将控制设为中性值：零，但四元数输入会重置为单位四元数。由 :ref:`mj_resetData` 和查看器的 "Clear All" 调用。
+
+求解器
+^^^^^^^
+26. :commit:`ea230a95` 柔性体（flex）弹性（拉伸、弯曲、插值刚度）现在通过 *有效度量*\ （effective metric）在 CG 约束求解器内部隐式积分：质量矩阵被刚度 Hessian 矩阵扩充，因此接触力和弹性力是针对同一个一致的度量来求解的。这取代了此前事后进行的 CG 修正，该修正会在约束求解之后修改 ``qacc``。启用条件是 ``solver="CG"``、使用隐式积分器且存在柔性体刚度；Newton 和 PGS 不受影响。仅含弯曲的模型每步的分解开销为零（该分解因子已在 :ref:`mj_setConst<mj_setConst>` 中预先计算）。对于满足启用条件的模型，逆动力学（:ref:`mj_inverse<mj_inverse>`）现在与正动力学在离散意义上保持一致。
+27. :commit:`c499f7f2` 为 PGS 求解器新增了带自适应梯度重启的 Nesterov 动量外推（O'Donoghue-Candès），显著改善了收敛性。总体而言，PGS 现在所需的迭代次数约减少为原来的一半。
+28. :commit:`1e66efd1` 新增 Newton 减量（Newton decrement，即二次模型对下一次迭代所预测的代价改善量），作为 :ref:`Newton 求解器<soAlgorithms>` 的第三个提前终止准则，与代价改善量和梯度范数并列。这在不损失精度的情况下减少了迭代次数。由 :github:user:`adenzler-nvidia` 在 :doc:`MJWarp <mjwarp/index>` 的 pull request `1520 <https://github.com/google-deepmind/mujoco_warp/pull/1520>`__ 中提出。
+29. :commit:`c69ef030` 当对偶间隙（duality gap）证书证明热启动（warm start）得到的解已经满足容差时，CG 和 Newton 求解器现在会以零次迭代终止。该证书只需要现有的质量矩阵分解，因此静止场景可以完全跳过 Hessian 矩阵的构造、分解和线搜索。Newton 的零迭代退出还额外要求满足梯度准则，以保持 Newton 法特有的力级精度。详情请参见“计算”一章中的 :ref:`热启动<soAlgorithms>`。
+
+
+编译器
+^^^^^^^^
+30. :commit:`4e1795b9` :ref:`mj_encode` 现在支持对 MJB 和 TXT 文件进行编码。
+31. :commit:`c6c3ec31` 通过省略 :ref:`model<body-attach-model>` 属性，\ :ref:`attach<body-attach>` 元素现在支持自我附加（将当前模型的元素附加到其自身）。它还通过新增的 :ref:`frame<body-attach-frame>` 属性支持附加坐标系，该属性与 :ref:`body<body-attach-body>` 互斥。
+32. :commit:`040872fd` 修复了在 :ref:`simulate<saSimulate>` 中加载 :ref:`.mjz <MJZArchives>` 归档文件的问题：归档文件在模型编译之前就被卸载了，导致资源加载失败。\ :ref:`mjz <MJZArchives>` 解码器中的失败现在会发出带有底层错误的警告，而不是通用的 "could not decode content" 消息。
+33. :commit:`ebd4abae` 如果找不到 ``<stem>.xml`` 和 ``<stem>/<stem>.xml``，\ :ref:`mjz <MJZArchives>` 解码器现在会回退到搜索 ``model.xml`` 和 ``<stem>/model.xml``。
+34. :commit:`dc7581ac` 新增通过 :ref:`mju_writeResource` 以及 :ref:`mjpResourceProvider` 中的 ``write`` 回调进行资源写入的支持。
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   35. :commit:`d83ef0b6` :ref:`mj_encode` 和 :ref:`mjfEncode` 回调的返回类型从 ``int`` 改为 ``mjtSize``\ （64 位）。
+
+.. admonition:: 错误修复
+   :class: admonition
+
+   36. :commit:`f5f9d9ef` 修复了网格编译器中的一个错误：法线被当作向量而非余向量进行缩放。
+
+Python 绑定
+^^^^^^^^^^^^^^^
+37. :commit:`a07ae6f8` 绑定现在支持 Python 3.14 的自由线程（free threading，\ `PEP 703 <https://peps.python.org/pep-0703/>`__）。
+
+文档
+^^^^^^^^^^^^^
+38. :commit:`1f1bfa9e` 扩充了 :ref:`spec.encode <meSaving>` 工作流的文档，并新增了关于 :ref:`MJZ 归档 <MJZArchives>` 格式（``.mjz`` / ``.zip``）的详细文档。
+
+
+版本 3.10.0 (June 22, 2026)
+------------------------------
+
+通用
+^^^^^^^
+1. :commit:`b935d415` 新增 :ref:`mju_threadpool`，这是一个在 ``mjData`` 实例上创建线程池的新函数。线程池初始化后，仿真流水线的某些部分（例如碰撞检测（collision detection）以及跨岛的约束求解）会被并行化。当 ``mjData`` 被释放时，线程池会自动销毁。
+2. :commit:`58f6d524` 新增统一的 :ref:`日志 API<siError>`：
+
+   - 所有错误、警告和信息性消息现在都通过单一的 :ref:`mjfLogHandler` 回调路由，该回调接收结构化的 :ref:`mjLogMessage`。
+   - 用户可以通过 :ref:`mju_setLogHandler` 安装自定义处理器，也可以通过 :ref:`mju_setLogConfig` 配置默认处理器的行为（控制台/文件输出、主题过滤）。
+   - 可以通过 :ref:`mju_info` 和 :ref:`mju_message` 发出消息。
+   - 新类型：\ :ref:`mjtLogLevel`、\ :ref:`mjtLogTopic`、\ :ref:`mjLogMessage`、\ :ref:`mjLogConfig`。
+   - 旧的回调 :ref:`mju_user_error` 和 :ref:`mju_user_warning` 已被弃用，但仍可使用。
+
+3. :commit:`6f8bb5ef` 新增 :ref:`mjs_numWarnings` 和 :ref:`mjs_getWarning`，用于获取模型编译和附加过程中累积的所有警告。弃用 :ref:`mjs_isWarning`，建议改用 ``mjs_numWarnings(s) > 0``。
+4. :commit:`410c7316` 新增 :ref:`compiler/conflict<compiler-conflict>` 属性，用于控制在 :ref:`附加<mjs_attach>` 期间如何解决相互冲突的全局属性。可能的取值为 "warning"（默认：父模型的值优先，冲突时发出警告）、"merge"（按字段采用最小/最大/报错策略）和 "error"（任何冲突都会引发错误）。详情请参见 :ref:`属性合并 <meAttributeMerging>`。
+
+   .. admonition:: 未来的破坏性 API 变更
+      :class: warning
+
+      当前的默认冲突解决策略 "warn"（忽略子模型）是向后兼容的。但是，默认策略将在未来的版本中改为 "merge"。
+
+5. :commit:`cd6db9eb` 改善了 float32 下原始（primal）求解器的收敛性。这些改进最初由 :github:user:`n3b` 在 :issue:`2313` 中提出，并由 :github:user:`adenzler-nvidia` 在 :doc:`MJWarp <mjwarp/index>` 的 pull request `1374 <https://github.com/google-deepmind/mujoco_warp/pull/1374>`__ 中提出。
+6. :commit:`828052e6` :ref:`CG 求解器<soAlgorithms>` 现在使用 Hager-Zhang 共轭方向更新公式，而不是 Polak-Ribiere-Plus 公式。这改善了收敛性，并在 float32 下带来显著的加速。
+7. :commit:`4c381635` 新增 :ref:`mjs_makeFlex`，这是一个新的 C API 函数，等价于 :ref:`flexcomp<body-flexcomp>` 元素，用于以编程方式创建 flex 对象，并自动生成刚体、关节和等式约束。在 Python 中以 ``body.make_flex()`` 的形式公开。
+8. :commit:`7a7dc7cc` 新增从 OBJ 线段加载 1D flex 组件的支持。
+9. :commit:`ea2d785e` 通过调用 Qhull 的 `Q9 <http://www.qhull.org/html/qh-optq.htm#Q9>`__ 选项，显著提升了由 :ref:`maxhullvert<asset-mesh-maxhullvert>` 属性生成的粗略凸包的质量。
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   10. :commit:`b935d415` 头文件 ``mjthread.h`` 已与旧的引擎线程 API 一同移除。
+       |br| **迁移：** 请使用 :ref:`mju_threadpool` 来设置引擎的工作线程数。
+   11. :commit:`96bf8aea` 将岛的稀疏矩阵构造从 :ref:`mj_island`\ （单线程）移到了 :ref:`mj_fwdConstraint`\ （多线程）中。岛专用矩阵 ``iM, iLD, iefc_J`` 已从 arena 中移除，现在分配在栈上。
+   12. :commit:`4548e81e` 随着 :ref:`diagexact<option-flag-diagexact>` 标志的引入，\ ``mjData`` 字段 ``efc_diagApprox`` 被重命名为 ``efc_diagA``，因为它现在既可以是 :math:`A`\ （“Delassus”）矩阵的精确对角线，也可以是近似对角线。
+   13. :commit:`062b0f1e` 已移除被弃用的函数 ``mju_{error,warning}_{i,s}``。
+   14. :commit:`7b9b8806` 将 :ref:`mj_fullM` 的签名从 ``mj_fullM(m, dst, M)`` 改为 ``mj_fullM(m, d, dst)``，这是计划弃用 ``mjData.qM``、改用 CSR 格式的 ``mjData.M`` 的一部分。
+
+       **迁移：** 对于惯性矩阵（inertia matrix）转换，请将 ``mj_fullM(m, dst, d->qM)`` 替换为 ``mj_fullM(m, d, dst)`` 或 ``mju_sym2dense(dst, d->M, m->nv, m->M_rownnz, m->M_rowadr, m->M_colind)``。
+
+错误修复
+^^^^^^^^^
+15. :commit:`a8eaccd2` 修复了系统辨识工具箱中的一个漏洞：加载轨迹或时间序列时调用了 ``allow_pickle=True`` 的 ``np.load``，这会允许从恶意的 ``.npz`` 文件执行任意代码。信号元数据现在被序列化为 JSON，并以 ``allow_pickle=False`` 加载。
+16. :commit:`b9fb817a` 修复了 :ref:`mjz <MJZArchives>` :ref:`解码器 <mjpDecoder>` 中的一个错误：未规范化的路径会读取失败。
+17. :commit:`986d73c0` 修复了网格编译器会生成非单位长度的凸包多边形法线的错误。
+
+版本 3.9.0 (May 27, 2026)
+----------------------------
+
+通用
+^^^^^^^
+1. :commit:`71d1014e` 新增 ``mjData.efc_Y``，即白化后的约束雅可比矩阵 :math:`Y = J M^{-1/2}`；当使用对偶求解器（PGS 或 NoSlip）或启用 :ref:`diagexact<option-flag-diagexact>` 时，它会在 arena 中分配。
+2. :commit:`71d1014e` 新增 :ref:`diagexact<option-flag-diagexact>` 启用标志，它会在当前构型下计算约束空间惯性矩阵的精确对角线，以取代默认的编译期近似。这改善了具有各向异性惯性或复杂运动学耦合的模型的求解器质量。详情请参见 :ref:`精确对角线 <soExactDiag>`。
+3. :commit:`7bfdbad8` 上一版本中引入的 :ref:`PGS 求解器<soAlgorithms>` 的伪随机约束访问顺序，现在使用固定的种子。之前的实现使用 ``mjData.time`` 作为种子，这引入了微妙但不希望出现的时间依赖性。
+4. :commit:`f712eed4` 现在允许 flex 进入休眠，完全被动（无约束）的 flex 除外。
+5. :commit:`bdf00966` 通过新增的 :ref:`mjtCTimer` 枚举和 :ref:`mjs_getTimer` C API 添加了编译器计时诊断。在 :ref:`mj_compile` 之后，可通过 ``mjs_getTimer(spec)`` 获得按类别划分的计时（总计、资源、网格加载、凸包、法线、惯性、BVH、八叉树、纹理）。在不带输出文件运行时，\ :ref:`compile<saCompile>` 示例会打印详细的计时分解。
+6. :commit:`393c1e42` 新增 :ref:`mjtBool` 用于表示布尔变量，在 :ref:`mjModel`、\ :ref:`mjData` 的所有布尔字段以及公共 C API 函数签名中取代了 :ref:`mjtByte`。
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   7. :commit:`a4e49f2d` 接触的 ``margin`` 和 ``gap`` 参数的语义经过重新设计，以求概念清晰，并与 `Newton <https://github.com/newton-physics/newton>`__ 保持一致。详情请参见新增的 :ref:`margin 与 gap<coMarginGap>` 文档章节。
+
+      此前，\ ``margin`` 控制 *检测阈值*\ （当 ``dist < margin`` 时存在接触），而 ``gap`` 从中减去后得到 *力阈值*\ （当 ``dist < margin - gap`` 时产生力）。这并不直观：用户预期 ``margin`` 表示几何膨胀，而 ``gap`` 表示空间间隙。
+
+      在新的语义下，\ ``margin`` 是 geom 表面的几何膨胀，\ ``gap`` 是膨胀后表面之外的额外检测缓冲：
+
+      - **检测**：当 ``dist < margin + gap`` 时创建接触。
+      - **力的生成**：当 ``dist < margin`` 时施加约束力。
+      - **非激活接触**：满足 ``margin < dist ≤ margin + gap`` 的接触会包含在 ``mjData.contact`` 中，但不产生力（``efc_address = -1``）。这对 :ref:`adhesion<actuator-adhesion>` 执行器和自定义回调很有用。
+
+      在默认值 ``margin = 0``、\ ``gap = 0`` 下，行为不变。
+
+      .. image:: images/modeling/margin_gap_light.svg
+         :width: 80%
+         :align: center
+         :class: only-light
+
+      .. image:: images/modeling/margin_gap_dark.svg
+         :width: 80%
+         :align: center
+         :class: only-dark
+
+      |
+
+      **迁移：** 使用默认值 ``gap="0"`` 的模型（绝大多数）无需更改。对于 ``gap > 0`` 的模型，请应用以下变换以保持完全相同的行为：
+
+      .. code-block::
+
+         margin_new = margin_old - gap_old
+         gap_new    = gap_old
+
+      例如，具有旧属性 ``margin="0.1" gap="0.1"`` 的 geom 应改为 ``margin="0" gap="0.1"``。
+
+      现在允许 ``margin`` 取负值（对应于旧语义下 ``gap > margin`` 的情形）。应保持约束 ``margin + gap >= 0``，以确保碰撞检测有效。
+
+   8. :commit:`7174d33f` :ref:`mjfCollision` 函数现在填充的是 :ref:`mjPreContact` 结构体，而不是 :ref:`mjContact` 结构体。\ :ref:`mjPreContact` 仅包含精测阶段（narrow-phase）碰撞检测所需的必要字段。
+
+   9. :commit:`2810edd2` 头文件 ``mjtnum.h`` 被重命名为
+      `mjtype.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjtype.h>`，并且现在包含所有枚举类型定义。
+
+   10. :commit:`f6cd0234` :ref:`tactile<sensor-tactile>` 传感器现在报告原始深度，而不是估计的压力。
+
+   11. :commit:`072125c4` MJX：移除了 ``mjx.make_data`` 和 ``mjx.put_data`` 中已弃用的 ``nconmax`` 参数，改用 ``naconmax``。
+
+   12. :commit:`15d27b36` 可能的破坏性变更：新增 `mjassert.h
+       <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjassert.h>`__，这是一个新的头文件，包含用于验证 MuJoCo 公共类型大小的编译期断言，以保证 ABI 稳定性。这是迈向在公共 API 中用强类型枚举取代 ``int`` 的第一步。如果这些断言在您的编译器或平台上失败，请在 GitHub 上报告该问题。
+
+
+版本 3.8.1 (May 11, 2026)
+----------------------------
+
+通用
+^^^^^^^
+1. :commit:`647af382` 为 :ref:`PGS 求解器<soAlgorithms>` 新增了岛支持。
+2. :commit:`4ed69b5c` :ref:`PGS 求解器<soAlgorithms>` 现在以伪随机顺序遍历约束，性能提升约 20%。
+3. :commit:`b9c1877e` 为三线性和二次 flex 的 :ref:`自由度<body-flexcomp-dof>` 新增了 :ref:`elastic2d<flex-elasticity-elastic2d>` 支持。
+4. :commit:`910b3336` 中点积分现在仅限于 ``implicitfast`` :ref:`积分器<geIntegrators>`，并且在流体力处于激活状态（:ref:`density<option-density>` 或 :ref:`viscosity<option-viscosity>` 非零）时被禁用。中点积分将外力视为零阶保持常数，这会在存在接触以及在流体介质中时导致能量增加。
+5. :commit:`ec50260e` 新增 :ref:`mjs_getOriginSpec`，返回最初定义某个元素的 spec（在附加之前）。这与 :ref:`mjs_getSpec` 形成对比，后者返回当前拥有该元素的 spec。如果该元素不是附加操作的结果，则这两个函数是相同的。
+6. :commit:`767c607f` 新增 :ref:`mju_sym2dense`，将下三角、隐式对称的 CSR 矩阵转换为稠密对称矩阵。惯性矩阵 ``mjData.M`` 就是这类矩阵的一个例子。
+
+.. admonition:: 未来的破坏性 API 变更
+   :class: warning
+
+   7. :commit:`767c607f` 引入 :ref:`mju_sym2dense` 是朝着移除旧格式的 ``mjData.qM``、改用 CSR 格式的 ``mjData.M`` 迈出的一步。这一移除将涉及未来对 :ref:`mj_fullM`\ （目前接受类似 ``qM`` 的矩阵作为参数）的破坏性变更。为避免将来出现问题，请将 ``mj_fullM(m, dst, d->qM)`` 替换为
+      |br| ``mju_sym2dense(dst, d->M, m->nv, m->M_rownnz, m->M_rowadr, m->M_colind)``。
+
+
+错误修复
+^^^^^^^^^
+
+8. :commit:`3e960ba3` 修复了 :doc:`mjcPhysics <OpenUSD/mjcPhysics>` 中 multiccd 的默认值。
+
+Python
+^^^^^^
+
+9. :commit:`d92fe081` 新增 ``MjSpec.encode`` 方法，封装 :ref:`mj_encode`。
+10. :commit:`723b8b1e` 新增 ``mujoco.MjVfs`` Python 绑定，用于直接从 Python 与虚拟文件系统交互。使用细节请参见 :ref:`虚拟文件系统 <PyVFS>`。
+
+    .. warning::
+       此前通过将资源名称映射到字节的字典来传递资源的方式已被 **弃用**，并将在即将发布的版本中移除。您不能同时指定 ``assets`` 字典和 ``vfs`` 参数。应当使用 ``MjVfs`` 作为直接替代。
+
+
+版本 3.8.0 (April 24, 2026)
+------------------------------
+
+通用
+^^^^^^^
+1. :commit:`a04cf1b2` 新增对 Python 3.14 的支持。
+2. :commit:`2f2d00da` 为三线性和二次 flex 新增 :ref:`多单元格支持<body-flexcomp-cellcount>`。请注意，隐式积分器对 flex 自由度使用稠密求解器，对于多单元格 flex 可能较慢。
+3. :commit:`3d45a331` 重构了 ``strain`` flex :ref:`等式约束<flexcomp-edge-equality>`，使其按单元格而非按 flex 对象实例化，从而减少了每个约束行的自由度数量。可以通过新增的属性 :ref:`cell <equality-flexstrain-cell>` 将该等式约束与特定单元格关联。
+4. :commit:`33259718` 新增 :ref:`mj_maxContact<mj_maxContact>` 函数，用于获取两个 geom 碰撞时可能返回的最大接触数。
+5. :commit:`4cfebcc3` 新增 ``mj_containsBufferVFS`` 和 ``mj_containsFileVFS``，用于检查 VFS 中是否存在缓冲区和文件。
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   6. :commit:`6cb6e5a9` :ref:`multiccd<coMultiCCD>` 选项（凸碰撞检测流水线返回多个接触）现在默认启用。与旧流水线相比，新的实现几乎没有性能开销，并且提高了稳定性。
+
+      **迁移：** 禁用 :ref:`multiccd<option-flag-multiccd>` 即可恢复之前的行为。
+
+文档
+^^^^^^^^^^^^^
+
+7. :commit:`2f5e5d3d` 新增 :ref:`mjpDecoder` 插件（plugin）的 :ref:`文档<exDecoder>`。
+
+错误修复
+^^^^^^^^^
+
+8. :commit:`da01bd37` 附加的子 spec 中的资源路径现在相对于子 spec 的模型文件目录解析，而不是相对于父 spec。这避免了父 spec 的来源影响子 spec 中资源路径的解析。
+
+版本 3.7.0 (April 14, 2026)
+------------------------------
+
+通用
+^^^^^^^
+
+1. :commit:`70a7647a` 新增用于直流电机建模的 :ref:`dcmotor<actuator-dcmotor>` 执行器。支持可选的电气动力学（电感）、齿槽转矩、热阻变化和 LuGre 摩擦。详情请参见
+   `技术说明 <_static/dcmotor.pdf>`__。
+2. :commit:`510d75f4` 具有关节或肌腱（tendon）传动的执行器现在可以向其传动目标贡献 :ref:`阻尼<actuator-general-damping>` 和 :ref:`电枢惯量<actuator-general-armature>`。它们分别在被动力和惯性计算期间施加，并按 gear\ :sup:`2` 缩放（“折算”阻尼/惯量）。
+
+.. youtube:: aKa3ZlEF9_Y
+   :align: right
+   :width: 35%
+
+3. :commit:`efae9157` :ref:`关节<body-joint-stiffness>` 和 :ref:`肌腱<tendon-spatial-stiffness>` 的刚度，以及 :ref:`关节<body-joint-damping>` 和 :ref:`肌腱<tendon-spatial-damping>` 的阻尼，现在支持非线性多项式 :ref:`力曲线<gePolynomial>`。新增的 ``mjModel`` 数组（``jnt_stiffnesspoly``、\ ``tendon_stiffnesspoly``、\ ``dof_dampingpoly``、\ ``tendon_dampingpoly``）保存高阶系数。现有的标量数组（``jnt_stiffness``、\ ``dof_damping`` 等）继续保存线性系数，且保持不变。多项式阶数由新增的常量 :ref:`mjNPOLY<glNumericSizes>` 定义。未来的 C API 破坏性变更可能会将线性系数和高阶系数统一到单个数组中。
+4. :commit:`0c337799` 在 ``implicit`` 和 ``implicitfast`` :ref:`积分器<geIntegrators>` 中，为独立的自由刚体新增了中点积分。这对没有子刚体的自由刚体的旋转动力学应用隐式中点法则，在没有外力矩的情况下可将动能守恒到机器精度。\ :ref:`invdiscrete<option-flag-invdiscrete>` 标志现在也会禁用中点积分，从而提供了一种退出机制。
+5. :commit:`412cee20` 为 :ref:`connect<equality-connect>` 和 :ref:`weld<equality-weld>` 等式约束，在约束求解器偏置中新增了向心/科里奥利加速度项 :math:`\dot{J}v`。这显著提升了四连杆机构等受约束机构的稳定性。详情请参见 :ref:`对偶问题<soDual>`。
+
+6. :commit:`f5d3ce34` 引入 :ref:`mjpEncoder`，它是 :ref:`mjpDecoder` 的对应物，用于将 :ref:`mjSpec` 和 :ref:`mjModel` 编码为 :ref:`mjResource`。
+
+7. :commit:`f5d3ce34` 新增 :ref:`mj_encode`、\ :ref:`mjp_registerEncoder`、\ :ref:`mjp_defaultEncoder` 和 :ref:`mjp_findEncoder`。
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   8. :commit:`efae9157` :ref:`mjsJoint` 和 :ref:`mjsTendon` 中 ``mjs`` 层的字段 ``stiffness`` 和 ``damping`` 已从 ``mjtNum`` 标量扩展为 ``mjtNum[mjNPOLY+1]`` 数组。第一个元素是线性系数（即此前的标量），其后的元素是高阶 :ref:`多项式<gePolynomial>` 系数。
+
+      **迁移：** 将 ``joint.stiffness = val`` 之类的赋值替换为 ``joint.stiffness[0] = val``。
+   9. :commit:`15ca42ff` 使用 CMake 构建 MuJoCo 时，现在会将 ``.obj`` 和 ``.stl`` 解码器作为源码包含在内。这修复了上一版本中要求下游代码显式加载这些插件的行为。
+
+   10. :commit:`4b1667e4` 移除了 :ref:`mjsFlex` 中的 ``vertcollide`` 字段。由于 :doc:`MuJoCo Warp <mjwarp/index>` 支持原生 flex 碰撞，它已不再需要。
+
+   11. :commit:`f2461f9c` :ref:`mjPLUGIN_LIB_INIT` 宏现在需要一个名称参数，以避免初始化函数名称冲突。使用 MSVC 构建时，我们现在使用 C 运行时初始化段来初始化插件，而不是 ``DllMain``。详情请参见 :ref:`插件注册<exRegistration>`。
+
+   12. :commit:`0e04436d` 移除了 :ref:`mjtWarning` 枚举值 ``mjWARN_VGEOMFULL``。可视 geom 的耗尽现在由 :ref:`mjvScene` 在内部处理。
+   13. :commit:`7ae07d81` URDF 解析不再将 :ref:`strippath<compiler-strippath>` 硬编码为 "true"。该设置现在会被遵循，默认值为 "false"。设置该属性现在由用户负责。
+
+       **迁移：** 在 MJCF 中将 :ref:`strippath<compiler-strippath>` 设为 "true"，或通过以下方式以编程方式设置
+
+       .. code-block:: python
+
+         spec = mujoco.MjSpec.from_file("path/to/model.urdf")
+         spec.compiler.strippath = True
+
+
+错误修复
+^^^^^^^^^
+
+14. :commit:`ecc22667` 编译器现在在加载用户指定的网格数据时能正确处理负缩放。
+
+版本 3.6.0 (March 10, 2026)
+------------------------------
+
+常规
+^^^^
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   1. :commit:`9efe41c0` 肌腱（tendon）雅可比矩阵 ``ten_J`` 现在始终为稀疏格式。字段 ``ten_J_rownnz``、\ ``ten_J_rowadr``
+      和 ``ten_J_colind`` 已从 :ref:`mjData` 移至 :ref:`mjModel`，不再由 ``mj_tendon`` 在运行时计算，而是在编译时计算。
+
+2. :commit:`6890e133` 新增 :ref:`mjs_getCompiler` C API 函数，并为所有 Python spec 元素类型新增只读属性 ``compiler``。
+   这使得可以从任意元素查询编译器设置（例如 ``meshdir``），并且在 attach 之后仍能保留正确的源 spec 的编译器设置。
+3. :commit:`713b5524` 为三线性（trilinear）和二次（quadratic）\ :ref:`自由度 <body-flexcomp-dof>` 新增了 ``strain``
+   :ref:`等式约束 <flexcomp-edge-equality>` 类型。
+4. :commit:`bf74d01d` 柔性体现在支持与 SDF geom 的碰撞。
+5. :commit:`5903d482` 通过降低非零元素个数 ``nJten`` 的上界，改进了 ``ten_J`` 和 ``ten_J_colind`` 的内存需求。
+6. :commit:`37e993f6` 通过降低非零元素个数 ``nJmom`` 的上界，改进了 ``actuator_moment`` 和 ``moment_colind`` 的内存需求。
+
+MJX
+^^^
+
+7. :commit:`62a32386` 为 MJX-Warp 新增批量渲染支持。详见
+   :ref:`MJX-Warp 批量渲染 <MjxWarpBatchRendering>` 一节。
+
+错误修复
+^^^^^^^^
+
+8. :commit:`6ec808e2` 修复了一个错误：\ :ref:`mjs_attach` 会静默丢弃包含未设置 ``sidesite`` 属性的缠绕几何体的空间肌腱
+   （:issue:`3119`，由 :github:user:`tomstewart89` 报告）。
+
+版本 3.5.0 (February 12, 2026)
+------------------------------
+
+重要新特性
+^^^^^^^^^^
+
+1. :commit:`b64b527e` :doc:`MuJoCo Warp <mjwarp/index>` 现已正式发布。
+2. :commit:`146a5c08` 新增 **系统辨识（System Identification）** 工具箱（Python），详见
+   `README <https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/sysid/README.md>`__ 。
+   |br| 演示该工具箱的 Colab notebook 见此处： |sysid_colab|
+   |br| 贡献者： :github:user:`kevinzakka`、\ :github:user:`aftersomemath`、\ :github:user:`jonathanembleyriches`、
+   :github:user:`qiayuanl`、\ :github:user:`spjardim` 和 :github:user:`gizemozd`。
+
+.. |sysid_colab| image:: https://colab.research.google.com/assets/colab-badge.png
+                 :target: https://colab.research.google.com/github/google-deepmind/mujoco/blob/main/python/mujoco/sysid/sysid.ipynb
+
+
+3. :commit:`6419534b` 执行器（actuator）和传感器（sensor）现在通过历史缓冲区支持任意延迟，并且传感器的值可以按大于仿真时间步长（timestep）的间隔计算。
+   使用延迟或间隔会在 :ref:`物理状态 <siPhysicsState>` 中引入新的 ``mjData.history`` 变量。详见
+   :ref:`延迟 <CDelay>`。
+
+.. image:: images/changelog/poncho.png
+   :width: 45%
+   :align: right
+   :target: https://github.com/google-deepmind/mujoco/blob/main/model/flex/poncho.xml
+
+4. :commit:`7da271c6` 新增 ``flexvert`` 等式约束，使得可以用更粗的网格（mesh）进行布料仿真。这为 flexcomp 边的
+   :ref:`equality <flexcomp-edge-equality>` 新增了属性值 ``vert``，并新增了等式约束类型 ``flexvert``。该约束采用
+   `Chen, Kry and Vouga, 2019 <https://arxiv.org/abs/1911.05204>`__ 中描述的方法。
+5. :commit:`0041fdcb` 在 ``implicit`` 和 ``implicitfast`` :ref:`积分器 <geIntegration>` 中新增了对可变形物体（flex）的隐式积分支持。
+   该方法提取柔性体的自由度并将其作为稠密块求解，从而在不减小时间步长的情况下提高刚性柔性体的稳定性。它与
+   ``trilinear`` 和 ``quadratic`` 类型的 :ref:`dof <body-flexcomp-dof>` 兼容。
+
+.. image:: images/XMLreference/rfcamera.png
+   :width: 45%
+   :align: right
+   :target: https://github.com/google-deepmind/mujoco/blob/main/test/engine/testdata/sensor/rfcamera.xml
+
+6. :commit:`9d646e65` 测距仪（rangefinder）传感器现在可以通过
+   :ref:`rangefinder/camera <sensor-rangefinder-camera>` 属性附加到相机上。此时，传感器遵循
+   :ref:`camera/resolution <body-camera-resolution>` 属性，并发射多条射线，每个像素一条。
+7. :commit:`ed15493a` :ref:`测距仪 <sensor-rangefinder>` 现在除射线距离外，还可以报告多种其他信息，包括表面法线和交点。
+
+.. container:: custom-clear
+
+   .. raw:: html
+
+      <div style="clear: both;"></div>
+
+常规
+^^^^
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   8. :commit:`218226fc` 射线投射函数现在可选地计算射线交点处的表面法线。由于新增了 ``mjtNum normal[3]`` 参数，这是一项破坏性变更。
+      受影响的函数包括 :ref:`mj_ray`、\ :ref:`mj_multiRay`、\ :ref:`mju_rayGeom`、\ :ref:`mj_rayFlex`、\ :ref:`mj_rayHfield` 和
+      :ref:`mj_rayMesh`。
+
+      **迁移：** 在 C/C++ 中，向 ``normal`` 参数传入 ``NULL``。在 Python 中，除 :ref:`mj_multiRay` 外的所有函数，该参数默认为 ``None``，
+      因此无需任何操作。
+
+   9. :commit:`218226fc` ``mju_rayFlex`` 已重命名为 :ref:`mj_rayFlex`，以与其他接受 ``mjModel*`` 和 ``mjData*`` 参数的函数保持一致。
+
+   10. :commit:`b8a4ac5d` ``mjModel.cam_orthographic`` 字段已重命名为 ``cam_projection``，其语义改为新的枚举类型
+       :ref:`mjtProjection`。这将允许将来支持更多投影类型，例如鱼眼相机。与此相关，相机的 ``camera/orthographic`` MJCF 属性已重命名为
+       :ref:`camera/projection <body-camera-projection>`，现在接受 ``orthographic`` 和 ``perspective`` 两个值。
+
+       **迁移：** 将 ``orthographic = "false/true"`` 分别替换为 ``projection="perspective/orthographic"``。
+
+   11. :commit:`cb9a9c15` 从 ``mjpResourceProvider`` 结构体中移除了 ``getdir``。所有资源提供者现在使用相同的共享实现。
+   12. :commit:`6af0d4c8` 在合并两个 geom 的 ``margin`` 或 ``gap`` :ref:`参数 <CContact>` 以获得接触（contact）的参数时，
+       现在对各自的值进行 **求和**，而不是取最大值。这使得 geom 的 margin 成为 geom 真正意义上的“膨胀”。
+
+13. :commit:`c7f57663` 相机视锥体可视化现在通过将 :ref:`resolution <body-camera-resolution>` 设置为大于 1 的值来触发。
+    与此相关，视锥体可视化也适用于 :ref:`正交 <body-camera-projection>` 相机。详见 :ref:`rangefinder <sensor-rangefinder>`。
+14. :commit:`608115ab` 相机现在具有 :ref:`output <body-camera-output>` 属性，解析到 ``mjModel.cam_output`` 位域中。
+    渲染器并不使用它，它仅作为存放相机所支持输出类型的便利位置。
+15. :commit:`37762e3f` 新增 :ref:`mj_mountVFS` 和 :ref:`mj_unmountVFS` 函数，用于挂载自定义 VFS 提供者。
+    挂载允许提供者在任意路径上动态地打开/读取/关闭资源。
+16. :commit:`1d2d0b1c` 移除了让具有相同属性的连续 :ref:`碰撞传感器 <collision-sensors>` 共享计算的优化。
+    对于利用了该优化的模型，这会造成（可能较小的）性能退化。若要恢复性能，请使用 :ref:`fromto <sensor-fromto>` 并手动计算其他值。
+    若 ``from = fromto[0:3]`` 且 ``to = fromto[3:6]``，则 ``distance = norm(to-from)``，
+    ``normal = normalize(to-from)``。
+17. :commit:`a5dc57c0` :doc:`OpenUSD <OpenUSD/index>`：
+
+    - 解析功能已从实验性功能移出，成为 mjpDecoder 插件（plugin）。（文档待补充）
+    - OpenUSD 现在可以通过
+      `third_party_deps/openusd <https://github.com/google-deepmind/mujoco/tree/main/cmake/third_party_deps/openusd>`__
+      CMake 工具项目来构建。
+    - MuJoCo 的 CMake 项目不再使用 ``USD_DIR``，如果您有预先构建的 USD 库，请改用 ``pxr_DIR``。
+    - 用户不再需要设置 ``PXR_PLUGINPATH_NAME`` 环境变量，MuJoCo 应会自动加载 USD 插件。
+18. :commit:`1ff74ba8` 非破坏性 ABI 变更：
+
+    - :ref:`mj_stateSize` 及相关函数的 ``sig``\ （签名）参数类型已从 ``unsigned int`` 改为 ``int``。在此变更之前，
+      传给这些函数的无效负数参数会被静默地隐式转换；现在，负数将触发错误。
+    - 新增 :ref:`depth <mjtRndFlag>` 渲染标志。
+    - :ref:`mjModel` 中的分配大小现在使用 64 位而非 32 位整数，以容纳更大的场景。
+
+
+MJX
+^^^
+19. :commit:`1483aefe` 向 ``mjx.Data`` 添加了 ``actuator_length``、\ ``cdof`` 和 ``cdof_dof`` 字段。
+20. :commit:`d07f39b4` 为 ``put_model`` 添加 ``graph_mode`` 参数，以支持多种 Warp 图捕获模式。
+
+文档
+^^^^
+21. :commit:`b77977a9` 对 :ref:`编程/仿真 <Simulation>` 一章进行了全面改进。值得注意的是，关于 :ref:`状态 <siStateControl>`
+    的主要讨论已移至该章，并且关于 :ref:`mjModel 变更 <siChange>` 的一节已得到扩充。
+22. :commit:`c5925e7b` 通过带有元素和属性链接的可折叠下拉菜单，提升了 :ref:`MJCF schema <CSchema>` 的可用性。
+23. :commit:`c54f1fe3` MuJoCo 的版本编号现在基于语义化版本（Semantic Versioning），参见
+    `VERSIONING.md <https://github.com/google-deepmind/mujoco/blob/main/VERSIONING.md>`__。
+
+
+错误修复
+^^^^^^^^
+24. :commit:`b4668294` 修复了 :ref:`隐式积分器 <geIntegrators>` 导数中的一个错误：当力被
+    :ref:`forcerange <actuator-general-forcerange>` 截断时，执行器速度导数的计算不正确。
+25. :commit:`7f74487a` 修复了 :ref:`隐式积分器 <geIntegrators>` 导数中的一个错误：执行器速度导数没有考虑
+    :ref:`actearly <actuator-general-actearly>` 标志。
+26. :commit:`64a2345c` 由 :ref:`usethread <compiler-usethread>` 编译器标志（默认开启）启用的多线程网格处理，实际上被该标志禁用了。
+    修复此错误后，网格密集型模型的编译速度可提高（最多）可用核心数的倍数。
+27. :commit:`223ba99e` :ref:`mj_rayFlex` 和 :ref:`mju_raySkin` 的 ``vertid`` 参数被标记为可为空，但实际上不可为空；现在已可为空。
+28. :commit:`c1b3b306` 修复了嵌套在带关节的父刚体（body）中、自身没有关节的刚体会忽略 :ref:`gravcomp <body-gravcomp>` 的问题
+    （:issue:`3066`，由 :github:user:`Alex108306` 报告）。
+
+版本 3.4.0 (December 5, 2025)
+-----------------------------
+
+常规
+^^^^
+
+.. youtube:: vct493lGQ8Q
+   :aspect: 2:1
+   :align: right
+   :width: 35%
+
+1. :commit:`8734cab3` 引入了一项重要的新特性： :ref:`休眠岛 <Sleeping>`。这是供早期测试的初步版本，详见文档。
+2. :commit:`3a7aa84e` 为 :ref:`flexcomp/dof <body-flexcomp-dof>` 添加了 "quadratic" 选项。这种快速的
+   :ref:`可变形 <CDeformable>` 柔性体与 "trilinear" 选项类似，但包含弯曲形变。
+3. :commit:`b6f25ca6` 在解析期间如果出现名称冲突，同样会报错。
+4. :commit:`b6f25ca6` 将 Windows 栈大小增加到 16MB，以支持具有深层嵌套刚体层级的模型。
+5. :commit:`19e2d0ae` 新增流水线组件函数 :ref:`mj_fwdKinematics`，它合并了所有类运动学的子组件。与此相关，在
+   :ref:`仿真流水线 <Pipeline>` 一章的开头添加了一个说明性表格。
+6. :commit:`2f65e237` 新增 :ref:`mj_extractState` 函数，允许从先前由 :ref:`mj_getState` 返回的状态中提取子集，
+   而无需先将其写回 ``mjData``。
+7. :commit:`888d3a7b` 新增 :ref:`mj_copyState` 函数，用于将状态分量从一个 ``mjData`` 复制到另一个。
+8. :commit:`ac2cd5df` 现在可以在 Python 中通过 ``MjsTendon.path`` 查询肌腱路径，返回的对象是可迭代的，
+   对其建立索引将得到路径中给定索引处的 ``MjsWrap``。
+9. :commit:`ac2cd5df` ``MjsWrap`` 现在公开：
+
+   - ``type -> mujoco.mjtWrap``
+   - ``target -> MjsSite|MjsJoint|MjsGeom|None``
+   - ``sidesite -> MjsSite|None``
+   - ``coef -> real``
+   - ``divisor -> real``
+
+10. :commit:`86a77ff8` 非破坏性 ABI 变更：
+
+    - :ref:`mjtSize` 现在定义为 ``int64_t`` 而非 ``uint64_t``，以避免将来出现类型提升相关的错误。
+    - :ref:`mj_sizeModel` 现在返回 :ref:`mjtSize` 而非 ``int``。
+
+MJX
+^^^
+
+11. :commit:`c34ac712` ``warp-lang`` 可选依赖已更新到 1.10.0。现在可以在 MJX 中对 MuJoCo Warp 使用 ``pmap``。
+
+.. admonition:: 破坏性 ABI 变更
+   :class: attention
+
+   12. :commit:`d0f32a7f` ``mjx.Model.tex_data`` 现在是 numpy ndarray 而非 jax.Array，以避免对这个可能很大的数组进行 vmap。
+       这可能会破坏 Madrona MJX 的某些用例，但我们不再支持该代码路径。我们将把用户迁移到基于 Warp 的批量渲染器。
+
+
+错误修复
+^^^^^^^^
+
+13. :commit:`88383684` 修复了盒体-盒体距离计算中的一个错误。由 :github:user:`nvtw` 报告。
+
+版本 3.3.7 (October 13, 2025)
+-----------------------------
+
+常规
+^^^^
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   1. :commit:`77e025ea` mjSpec C API 字段 :ref:`meshdir <compiler-meshdir>` 和
+      :ref:`texturedir <compiler-texturedir>` 已分别移至
+      `compiler.meshdir <https://github.com/google-deepmind/mujoco/blob/0baac589993220095cf09e153f194f35ca0f0738/include/mujoco/mjspec.h#L154>`__
+      和
+      `compiler.texturedir <https://github.com/google-deepmind/mujoco/blob/0baac589993220095cf09e153f194f35ca0f0738/include/mujoco/mjspec.h#L155>`__。
+      为保持向后兼容，旧字段在 Python API 中仍然可用，但将在未来的版本中移除。
+
+      **迁移：** 将 ``meshdir`` 和 ``texturedir`` 替换为 ``compiler.meshdir`` 和 ``compiler.texturedir``。
+   2. :commit:`192da874` 从 ``mjx.put_data`` 和 ``mjx.put_model`` 中移除 ``_full_compat``。
+   3. :commit:`b56cf98e` ``mjx.make_data`` 中的 ``nconmax`` 和 ``njmax`` 字段现在默认为 ``None`` 而非 -1。
+      ``nconmax`` 将在未来的版本中被弃用，改用 ``naconmax``。
+   4. :commit:`401bf431` 如果输入提供了有效的关键帧（key），\ ``Simulate::InjectNoise`` 方法需要将指数衰减的目标设置为 ``key_ctrl`` 中的值，否则设置为 -1。
+
+
+5. :commit:`fe8384b6` 对于定义了限位且当前值（角度或长度）超出限位的关节装饰和空间肌腱，
+   使用 :ref:`约束阻抗 <soParameters>` :math:`d` 将其现有颜色与
+   :ref:`visual/rgba/constraint <visual-rgba-constraint>` 混合，从而重新着色。对于空间肌腱，
+   仅当未设置 :ref:`material <tendon-spatial-material>` 且 :ref:`rgba <tendon-spatial-rgba>` 为默认值时，该可视化辅助才会生效。
+6. :commit:`6320b959` 新增 :ref:`mju_getXMLDependencies`，用于根据 MJCF 文件计算唯一的资产依赖列表。
+7. :commit:`e4704cd2` 新增代码示例 ``dependencies``，它提供了一个命令行工具，用于打印 :ref:`mju_getXMLDependencies` 的结果。
+8. :commit:`bd68f0c6` 编译 MuJoCo 所需的最低 C++ 标准现在是 C++20。这在 Google 内部自 2023 年起就已如此，但 CMake 的更新被遗忘了。
+
+.. admonition:: 破坏性 ABI 变更
+   :class: attention
+
+   9. :commit:`431f9657` 属性 ``mjOption.apirate`` 未被使用，已被移除。
+   10. :commit:`b56cf98e` MJX ``mjx.make_data`` 中的 ``nconmax`` 和 ``njmax`` 字段现在默认为 ``None`` 而非
+       -1。
+
+MJX
+^^^
+11. :commit:`6ae9cc80` 修复 :issue:`2508`，在 ``get_data_into`` 期间 ``qLD`` 的形状与 mjModel 不匹配。
+12. :commit:`b56cf98e` 引入 MuJoCo Warp 对 ``io.py`` 的更新，并使用 ``naconmax`` 而非 ``nconmax`` 来设置所有环境中的最大接触数。
+
+错误修复
+^^^^^^^^
+13. :commit:`98682ae2` 修复 :issue:`2881`，\ :at:`fitaabb` 会给网格添加偏移并应用不正确的坐标系变换。同时统一了将 geom 拟合到网格 AABB 的含义：
+    现在它表示找到最小的 geom，使其 AABB 包含网格的 AABB。
+
+版本 3.3.6 (September 15, 2025)
+-------------------------------
+
+常规
+^^^^
+1. :commit:`ec94bb49` 约束岛的发现与构建原先是一项实验性功能，现在已有 :ref:`文档说明 <soIsland>` 并被提升为默认启用；
+   可通过 :ref:`option/flag/island <option-flag-island>` 禁用。我们预期岛划分相对于整体式约束求解器是严格的改进，
+   如果您遇到任何问题，请告知我们。
+2. :commit:`7443e685` :ref:`接触传感器 <sensor-contact>` 的 :at-val:`subtree1/subtree2` 指定现在适用于任意刚体，
+   而不仅仅是世界刚体的直接子节点。
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   3. :commit:`6ec5f8b9` ``mjData.qacc_warmstart`` 的更新已从求解器调用的末尾（:ref:`mj_fwdConstraint`）移至
+      :ref:`mj_step` 的末尾，现在与所有其他状态变量一起更新。此变更使 :ref:`mj_forward` 完全幂等。
+
+      在此变更之前，重复调用 :ref:`mj_forward` 会使约束求解器收敛，
+      因为每次后续调用都从先前更新的 ``qacc_warmstart`` 值开始。
+      实际上，查看器在 PAUSE 模式下会反复调用 :ref:`mj_forward`，正是出现了这种情况。
+
+      **迁移：** 如果您的代码依赖于该行为，可以在每次 :ref:`mj_forward` 之后手动更新来恢复：\ ``qacc_warmstart ← qacc``。
+      在 :ref:`simulate <saSimulate>` 中可以通过点击 "Pause update" 开关来启用该行为（默认关闭）。
+
+      此外，此变更对 :ref:`RK4 <geIntegrators>` 积分器的输出有数值上的影响。
+      在此变更之前，由于 ``qacc_warmstart`` 在四个 Runge-Kutta 子步骤的每一步之后都会更新，
+      RK4 的求解器收敛更快，但代价是积分缺乏原则性。此变更使 RK4 的积分变得有原则且定义明确。
+      由于对 RK4 的这一变更实质上是错误修复，因此不提供迁移到先前行为的方式。
+
+   4. :commit:`b092563c` 用于禁用被动力（passive force）的 ``mjDSBL_PASSIVE`` 标志已被移除，取而代之的是
+      :ref:`mjDSBL_SPRING<mjtDisableBit>` 和 :ref:`mjDSBL_DAMPER<mjtDisableBit>`，以及相应的
+      :ref:`mjcf <option-flag-spring>` :ref:`属性 <option-flag-damper>`。每个标志分别只禁用关节和肌腱的弹簧或阻尼器。
+      当两个标志都设置时，\ **所有** 被动力都被禁用，包括重力补偿、流体力、由 :ref:`mjcb_passive` 回调计算的力，
+      以及在传入 :ref:`mjPLUGIN_PASSIVE<mjtPluginCapabilityBit>` 能力标志时由 :ref:`插件 <exPlugin>` 计算的力。
+
+      **迁移：** 同时设置两个标志即可恢复先前标志的行为。
+
+
+.. admonition:: 破坏性 ABI 变更
+   :class: attention
+
+   5. :commit:`ed6fa7fe` 移除了 :ref:`mjtMouse` 的 ``mjMOUSE_SELECT`` 标志，因为它已不再使用。
+
+   6. :commit:`ec94bb49` 将岛划分提升为默认启用，涉及移除启用标志 ``mjENBL_ISLAND``，并将其转换为禁用标志
+      :ref:`mjDSBL_ISLAND <mjtDisableBit>`。
+
+7. :commit:`b66175eb` 新增对具有弯曲参考构型的壳的支持。参见此
+   `示例 <https://github.com/google-deepmind/mujoco/blob/main/model/flex/basket.xml>`__。
+8. :commit:`8acd83f3` 为涉及柔性体的 :ref:`被动 <flex-contact-passive>` 接触新增了实验性选项。
+
+9. :commit:`1fb1810b` 新增对使用 :ref:`mesh/material <asset-mesh-material>` 属性为网格资产指定默认材质的支持。
+
+MJX
+^^^
+10. :commit:`1763fa53` 将 ``ten_length`` 提升为公开的 MJX API。为 ``mjx.tendon`` 添加 Warp 支持。
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   11. :commit:`1763fa53` ``ten_length`` 已从 ``mjx.Data._impl.ten_length`` 移至公开字段
+       ``mjx.Data.ten_length``。
+
+错误修复
+^^^^^^^^
+12. :commit:`ec94bb49` 修复了一个潜在错误：启用岛划分时，MjData 对象无法被 Python 绑定正确序列化。
+
+
+版本 3.3.5 (August 8, 2025)
+---------------------------
+
+常规
+^^^^
+1. :commit:`e6c57159` 新增 :ref:`insidesite <sensor-insidesite>` 传感器，用于检查物体是否位于 site 的体积内。
+   它可用于触发周围环境逻辑中的事件。
+2. :commit:`d0e4771c` 新增 :ref:`contact <sensor-contact>` 传感器，用于根据用户定义的条件报告接触信息。
+   :el:`contact` 传感器的目的是在固定大小的数组中报告与接触相关的信息。这可用作基于学习的智能体的输入，也可用于环境逻辑。
+3. :commit:`51babec9` 新增 :ref:`tactile <sensor-tactile>` 传感器，用于测量两个物体在给定点处的穿透（penetration）深度以及切向坐标系中的滑动速度。
+   该传感器仅在与 SDF 碰撞时才报告触觉数据。
+4. :commit:`0b11e3e3` 移除了 SdfLib 插件以及对 `SdfLib <https://github.com/UPC-ViRVIG/SdfLib>`__ 的依赖。
+   mjModel 现在原生支持 SDF。
+5. :commit:`5e666635` 从 :ref:`mjvOption` 中移除了 ``oct_depth``\ （未使用）。
+6. :commit:`89f47890` 新增创建内置网格的功能，参见 :ref:`mesh/builtin <asset-mesh-builtin>`。
+7. :commit:`ad0dc0de` MuJoCo C 中的惯性计算现在由新的 :ref:`流水线 <piStages>` 函数 :ref:`mj_makeM` 执行，
+   它结合了 :ref:`mj_crb` 中的复合刚体算法（Composite Rigid Body）以及与
+   :ref:`肌腱电枢惯量 <tendon-spatial-armature>` 相关的附加项。使用 :ref:`mj_crb` 计算惯性的代码现在应改用
+   :ref:`mj_makeM`。
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   8. :commit:`5e666635` 移除了 ``mjVIS_FLEXBVH`` 枚举值，其功能现在由
+      :ref:`mjVIS_MESHBVH<mjtVisFlag>` 提供。
+
+错误修复
+^^^^^^^^
+9. :commit:`6e7aaacb` 修复了一个错误：attach 一个 mjSpec 之后，子 spec 中的对象列表会缺少元素。其原因是只将属于所请求刚体树的对象添加到列表中，
+   而这会导致跳过被 attach 的对象，因为它们属于父级的树。
+10. :commit:`3434f5d9` 修复了一个错误：如果碰撞网格只能通过 :ref:`接触对 <contact-pair>` 发生碰撞，则不会计算该网格的凸包。
+
+Python
+^^^^^^
+11. :commit:`2e60d058` 在 Linux 上，构建的发行包（wheel）现在以 ``manylinux_2_28`` 平台标签为目标。
+    此前 MuJoCo 的 wheel 以基于 CentOS 7 的 ``manylinux2014`` 为目标，而 CentOS 7 已于 2024 年 6 月终止支持。
+
+MJX
+^^^
+12. :commit:`47bc16a3` 添加 Warp 作为 MJX 的后端实现。可通过
+    ``mjx.put_model(m, impl='warp')`` 和 ``mjx.make_data(m, impl='warp')`` 指定该实现。Warp 实现需要
+    CUDA 设备并安装 ``warp-lang``\ （``pip install mujoco-mjx[warp]``）。此功能处于
+    "beta" 阶段，可能存在一些错误。
+
+版本 3.3.4 (July 8, 2025)
+-------------------------
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   1. :commit:`18d5d5d0` 函数 ``mjs_detachBody`` 和 ``mjs_detachDefault`` 已被
+      :ref:`mjs_delete` 取代。
+   2. :commit:`0488d9f4` Python 函数 ``element.delete`` 已被 ``spec.delete(element)`` 取代。
+   3. :commit:`564c51dd` 在 mjSpec C API 中，使用 :ref:`mjs_setString` 直接设置元素名称的方式已被新函数 :ref:`mjs_setName` 取代，
+      后者允许在设置时而非编译时检查命名冲突，从而更早地发现错误。与此相关，所有 mjs 元素中的 ``name`` 属性已被移除。
+      已知问题：解析期间不会引发该错误。
+   4. :commit:`47bc16a3` 对于 MJX，\ ``mjx.Option`` 数据类现在像 ``mjx.Model`` 和 ``mjx.Data`` 一样具有私有和公有字段。
+      由于该数据结构底层实现的差异，部分字段不再公开可用。
+
+常规
+^^^^
+5. :commit:`14dc7c2a` 新增支持使用
+   :ref:`visual/global/cameraid <visual-global-cameraid>` 设置查看器中的初始相机。
+6. :commit:`09f7154e` 新增支持在 Python :ref:`被动查看器 <PyViewerPassive>` 的 ``Sync`` 方法中仅同步状态，这有助于提高性能。
+   默认行为不变，仍会复制整个 model 和 data。
+
+错误修复
+^^^^^^^^
+7. :commit:`4ce62932` 存在 :ref:`肌腱电枢惯量 <tendon-spatial-armature>` 时，逆动力学（inverse dynamics）计算不正确，现已修复。
+8. :commit:`45d4cacc` 修复了 ``mjx.put_data`` 中的错误：对于 C 实现，\ ``actuator_moment`` 没有被正确复制。
+
+文档
+^^^^
+9. :commit:`7548d370` 在 3.3.3 变更日志中补充了缺失的条目文档，并澄清了破坏性变更的性质。见下面第 3 和第 4 项。
+
+版本 3.3.3 (June 10, 2025)
+--------------------------
+
+通用
+^^^^^^^
+1. :commit:`ecb769fc` 重构了岛（island）的实现，使岛数据在内存中连续。这加快了求解器（solver）中的岛处理，并为添加 Newton 和 PGS 求解器扫清了道路（目前仅支持 CG）。
+2. :commit:`7edbdd0a` 移除了 :at:`shell` 插件（plugin）。该功能现在由 :ref:`flexcomp<body-flexcomp>` 支持，并根据 :ref:`elastic2d<flexcomp-elasticity-elastic2d>` 属性决定是否启用（默认关闭）。
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   3. :commit:`74cc904e` 将灯光的 :ref:`directional<body-light-directional>` （布尔）字段替换为 :ref:`type<body-light-type>` 字段（类型为 :ref:`mjtLightType<mjtLightType>` ），以支持更多的灯光类型。
+
+      **迁移：** 将 light/directional="false/true" 分别替换为 light/type="spot/directional"。
+
+   4. :commit:`3e9bc79b` 新增 :ref:`mjtColorSpace` 枚举及相关的 :ref:`colorspace<asset-texture-colorspace>` 属性，用于指定纹理的颜色空间（线性或 `sRGB <https://en.wikipedia.org/wiki/SRGB>`__ ）。由于现在会从 PNG 文件中正确读取该属性，使用 sRGB 的纹理文件的渲染（rendering）效果将与之前不同。
+
+      **迁移：** 对所有希望保持此变更之前外观的纹理，将 :ref:`colorspace<asset-texture-colorspace>` 设置为 "linear"。
+
+5. :commit:`89e39dc0` 新增子组件 :ref:`mj_makeM` ，它将 :ref:`mj_crb` 调用与额外的逻辑相结合，以支持 3.3.1 中引入的 :ref:`肌腱电枢惯量<tendon-spatial-armature>` 。除传统的 ``mjData.qM`` 之外， :ref:`mj_makeM` 还会计算 ``mjData.M`` ，即同一矩阵的 CSR 表示。
+6. :commit:`84ad22a5` 新增函数 :ref:`mj_copyBack` ，用于将 mjModel 中的实数数组复制回兼容的 mjSpec。
+7. :commit:`b8768aa1` 移除了 :ref:`fusestatic<compiler-fusestatic>` 仅限于不含任何引用的模型的限制。现在 fusestatic 标志会融合所有未被引用的刚体（body），并忽略被引用的刚体。
+
+Simulate
+^^^^^^^^
+8. :commit:`ced63018` 移除了结构体 ``mjv_sceneState`` 。该结构体用于在 Python 查看器处于被动模式时对 ``mjModel`` 和 ``mjData`` 进行部分同步。此功能现在由 :ref:`mjv_copyModel` 和 :ref:`mjv_copyData` 提供，它们不会复制可视化（visualization）所不需要的数组。
+
+.. image:: images/changelog/procedural_terrain_generation.png
+   :width: 33%
+   :align: right
+
+Python 绑定
+^^^^^^^^^^^^^^^
+
+9. :commit:`3a4b6e6c` 在模型编辑（Model Editing）教程中添加了程序化地形生成的示例：|mjspec_colab|
+
+MJX
+^^^
+10. :commit:`caaf7b3a` 新增肌腱（tendon）电枢惯量。
+
+版本 3.3.2 (April 28, 2025)
+------------------------------
+
+MJX
+^^^
+1. :commit:`51c489fc` 新增逆动力学。
+2. :commit:`f317bd17` 新增肌腱执行器力传感器。
+3. :commit:`421c487d` 修复 :issue:`2606` ，使 ``make_data`` 从 ``body_pos`` 和 ``body_quat`` 复制 ``mocap_pos`` 和 ``mocap_quat`` 。
+
+版本 3.3.1 (Apr 9, 2025)
+----------------------------
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   1. :commit:`f25fc63f` 用于切换 ``internal flex contacts`` 的标志的默认值由 "true" 改为 "false"。事实证明该功能对用户而言并不直观。
+   2. :commit:`a02a27d4` 移除了所有 attach 函数（ ``mjs_attachBody`` 、 ``mjs_attachFrame`` 、 ``mjs_attachToSite`` 、 ``mjs_attachFrameToSite`` ），并以单个函数 :ref:`mjs_attach` 取而代之。
+
+通用
+^^^^^^^
+3. :commit:`d05251af` 新增 :ref:`肌腱电枢惯量<tendon-spatial-armature>` ：与肌腱长度变化相关的惯性（inertia）。
+4. :commit:`f96f3e1c` 新增 :ref:`compiler/saveinertial<compiler-saveinertial>` 标志，在保存为 XML 时为所有刚体写出显式的 inertial 子句。
+5. :commit:`e8c67ca5` 为 ``composite`` 新增 ``quat`` 朝向属性。此外，允许 composite 作为 frame 的直接子元素。
+6. :commit:`96dda6ea` 新增 :ref:`肌腱执行器力限制<tendon-spatial-actuatorfrclimited>` 和 :ref:`肌腱执行器力传感器<sensor-tendonactuatorfrc>` 。
+
+MJX
+^^^
+7. :commit:`8fc616bf` 新增肌腱执行器力限制。
+
+错误修复
+^^^^^^^^^
+8. :commit:`de48f417` :ref:`mj_jacDot` 缺少一项用于说明计算雅可比（Jacobian）所针对的点的运动的项，现已修复。
+9. :commit:`1bf24e9f` 修复了一个错误：将 mjSpec 附加到 frame 或 site 时，子 worldbody 中元素的父坐标系会被错误设置。
+10. :commit:`40393f46` 修复了一个错误：在不支持 ARB_clip_control 的平台（例如 MacOS）上，阴影渲染会闪烁。该修复与 :github:user:`aftersomemath` 合作完成。
+
+Python 绑定
+^^^^^^^^^^^^^^^
+
+.. youtube:: LbANnKMDOHg
+   :aspect: 16:7
+   :align: right
+   :width: 240px
+
+11. :commit:`16e49f27` 在模型编辑（Model Editing）教程中添加了程序化模型创建的示例：|mjspec_colab|
+12. :commit:`ebd30493` 在 ``bind`` 方法中新增对无名 :ref:`mjSpec` 对象的支持，参见文档中相应的 :ref:`章节<PyMJCF>` 。
+
+.. |mjspec_colab| image:: https://colab.research.google.com/assets/colab-badge.png
+                  :target: https://colab.research.google.com/github/google-deepmind/mujoco/blob/main/python/mjspec.ipynb
+
+版本 3.3.0 (Feb 26, 2025)
+----------------------------
+
+功能转正
+^^^^^^^^^^^^^^^^^
+.. youtube:: qJFbx-FR7Bc
+   :aspect: 16:7
+   :align: right
+   :width: 240px
+
+1. :commit:`7cdf1806` 引入了一种新的 **快速可变形体** ，通过将 :ref:`flexcomp/dof<body-flexcomp-dof>` 设置为 "trilinear" 来启用。这种 :ref:`可变形<CDeformable>` 柔性体（flex）对象与常规 flex 具有相同的碰撞几何，但自由度（degrees of freedom）要少得多。它不再为每个顶点设置 3 个自由度，而是只允许包围盒的角点自由运动，内部顶点的位置则通过对 8 个角点做三线性插值来计算，因此整个 flex 对象共有 24 个自由度（如果部分角点被固定，则更少）。这限制了 flex 可实现的变形类型，但可大幅加快仿真速度。例如，请参见右侧的视频，它在对可变形夹爪指垫建模时对比了 `完整 <https://github.com/google-deepmind/mujoco/blob/main/model/flex/gripper.xml>`__ flex 与 `三线性 <https://github.com/google-deepmind/mujoco/blob/main/model/flex/gripper_trilinear.xml>`__ flex。
+
+
+.. image:: images/computation/ccd_light.gif
+      :width: 20%
+      :align: right
+      :class: only-light
+
+.. image:: images/computation/ccd_dark.gif
+   :width: 20%
+   :align: right
+   :class: only-dark
+
+2. :commit:`ed16f2da` 3.2.3 中引入、并由 :ref:`nativeccd<option-flag-nativeccd>` 标志启用的原生凸碰撞检测（collision detection）流水线现已成为默认设置。详见 :ref:`凸碰撞检测<coCCD>` 一节。
+
+   **迁移：** 如果新的流水线破坏了你的工作流程，请将 :ref:`nativeccd<option-flag-nativeccd>` 设置为 "disable"。
+
+通用
+^^^^^^^
+3. :commit:`37d7591c` 通过暴露 ``viewport`` 属性、 ``set_figures`` 方法和 ``clear_figures`` 方法，新增对 MuJoCo 查看器中自定义绘图的支持。
+4. :commit:`7cdf1806` 为 :ref:`flex<deformable-flex>` 分离了碰撞网格和变形网格（mesh）。这使得软体计算的开销固定，同时保持了高分辨率碰撞的保真度。
+5. :commit:`240a7afd` 新增 :ref:`势能<sensor-e_potential>` 和 :ref:`动能<sensor-e_kinetic>` 传感器（sensor）。
+6. :commit:`ac2a324f` 改进了原生渲染器中的阴影渲染。
+7. :commit:`b0e9d086` 将 ``introspect`` 移至 ``python/introspect`` 。
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   8. :commit:`ed16f2da` 如上所述，原生凸碰撞检测流水线现已成为默认设置，这可能会破坏某些工作流程。遇到这种情况时，请将 :ref:`nativeccd<option-flag-nativeccd>` 设置为 "disable" 以恢复旧的行为。
+   9. :commit:`c2138c3f` 新增 :ref:`mjs_setDeepCopy` API 函数。当深拷贝标志为 0 时，附加模型不会将其复制到父模型，因此在附加之后仍可使用对子模型的原始引用来修改父模型。默认行为是执行这种浅拷贝。将深拷贝标志设置为 1 可恢复附加时对子模型进行深拷贝的旧行为。
+   10. :commit:`89253d95` 对网格惯性推断的更改：
+
+       此前，要指定质量分布在表面上，可对任何 geom 类型使用 :ref:`geom/shellinertia<body-geom-shellinertia>` 。现在，如果 geom 是网格，则忽略该属性；网格的惯性推断改为在 asset 中通过 :ref:`asset/mesh/inertia<asset-mesh-inertia>` 属性指定。
+
+       此前，如果体积惯性计算失败（例如由于网格非常扁平），编译器会静默地回退到表面惯性计算。现在，编译器会抛出带有说明信息的错误。
+   11. :commit:`0fcd20f0` 移除了 composite 类型 ``grid`` 。用户应改用 :ref:`flexcomp<body-flexcomp>` 。
+   12. :commit:`c52d1b39` 移除了 ``particle`` composite 类型。建议改用更通用的 :ref:`replicate<replicate>` ，例如参见 `这个模型 <https://github.com/google-deepmind/mujoco/blob/main/model/replicate/particle.xml>`__ 。
+
+MJX
+^^^
+13. :commit:`f4096bca` 新增对带有内部球体和圆柱体缠绕的空间肌腱的支持。
+14. :commit:`e0664b1b` 修复了 box-box 碰撞的一个错误 :issue:`2356` 。
+
+Python 绑定
+^^^^^^^^^^^^^^^
+
+15. :commit:`7a2ad8fd` 为 ``mujoco.rollout`` 新增了一个教学性质的 colab 笔记本， ``mujoco.rollout`` 是一个用于多线程仿真 rollout 的 Python 模块。可在此处获取 |rollout_colab|。
+    |br| 由 :github:user:`aftersomemath` 贡献。
+
+.. |rollout_colab| image:: https://colab.research.google.com/assets/colab-badge.png
+                   :target: https://colab.research.google.com/github/google-deepmind/mujoco/blob/main/python/rollout.ipynb
+
+版本 3.2.7 (Jan 14, 2025)
+----------------------------
+
+Python 绑定
+^^^^^^^^^^^^^^^
+1. :commit:`a7eb6efd` :ref:`rollout<PyRollout>` 现在具备原生多线程功能。如果传入长度为 ``nthread`` 的 ``MjData`` 实例序列， ``rollout`` 会自动创建线程池并并行化计算。线程池可在多次调用之间复用，但此时不能从多个线程同时调用该函数。若要同时运行多个多线程 rollout，请使用封装了线程池的新类 ``Rollout`` 。由 :github:user:`aftersomemath` 贡献。
+2. :commit:`40ef08c8` 修复了使用 ``mjpython`` 时的全局命名空间污染（ :issue:`2265` ）。
+
+通用
+^^^^^^^
+
+.. admonition:: 破坏性 API 变更（次要）
+   :class: attention
+
+   3. :commit:`69c9ac07` 移除了字段 ``mjData.qLDiagSqrtInv`` 。该字段仅对对偶求解器是必需的。现在它按需计算，而不是无条件计算。与此相关，为 :ref:`mj_solveM2` 添加了相应的参数。
+
+4. :commit:`d4ca66a4` 减小了 PGS 求解器 :ref:`A 矩阵<soDual>` 的内存占用。这是 MuJoCo 中最后一个剩余的稠密内存分配，因此可以显著降低 :ref:`动态内存分配启发式<CSize>` 的取值。
+
+错误修复
+^^^^^^^^^
+5. :commit:`0e7d2ef6` 修复了 box-sphere 碰撞器中的一个错误：在深穿透时深度不正确（ :issue:`2206` ）。
+6. :commit:`ec322641` 修复了 :ref:`mj_mulM2` 中的一个错误并添加了测试。
+
+版本 3.2.6 (Dec 2, 2024)
+---------------------------
+
+通用
+^^^^^^^
+1. :commit:`300450f8` 从 ``composite`` 中移除了 rope 和 loop。建议用户分别改用 :at:`cable` 插件或 :ref:`flexcomp<body-flexcomp>` 。
+
+MJX
+^^^
+2. :commit:`0f381a9e` 新增肌肉执行器（actuator）。
+
+Python 绑定
+^^^^^^^^^^^^^^^
+3. :commit:`74dcd51d` 提供适用于 Python 3.13 的预构建 wheel。
+4. :commit:`3a12db9a` 新增 ``bind`` 方法，并从 :ref:`mjSpec` 对象中移除了 id 属性。在反复附加和分离的场景中，使用 id 容易出错。建议 Python 用户使用名称来唯一标识模型元素。
+5. :commit:`943eb6bc` :ref:`rollout<PyRollout>` 现在可以接受长度为 ``nroll`` 的 MjModel 序列。同时移除了 ``nroll`` 参数，因为其值总是可以推断出来。
+
+错误修复
+^^^^^^^^^
+6. :commit:`f9569cda` 修复了 :issue:`2212` ，即 ``mjx.get_data`` 中的类型错误。
+7. :commit:`5c23ae11` 修复了 3.2.0 中引入的一个错误，该错误出现在对 :ref:`texrepeat<asset-material-texrepeat>` 属性的处理中，该属性被错误地从 ``float`` 转换为 ``int`` （修复了 :issue:`2223` ）。
+
+版本 3.2.5 (Nov 4, 2024)
+---------------------------
+
+功能转正
+^^^^^^^^^^^^^^^^^
+1. :commit:`b6037d17` 由 :ref:`mjSpec` 提供的 :doc:`模型编辑<programming/modeledit>` 框架在 3.2.0 中作为开发中的功能引入，现已稳定并推荐用于一般用途。
+2. :commit:`298ce31e` 3.2.3 中引入、并由 :ref:`nativeccd<option-flag-nativeccd>` 标志启用的原生凸碰撞检测流水线尚未成为默认设置，但已推荐用于一般用途。遇到与碰撞相关的问题时请尝试使用它，并报告你遇到的任何问题。
+
+通用
+^^^^^^^
+
+3. :commit:`b598d79b` 移除了全局编译器标志 ``exactmeshinertia`` ，并以针对特定网格的 :ref:`inertia<asset-mesh-inertia>` 属性取而代之。
+4. :commit:`7dc8aef8` 移除了作用不大的 ``convexhull`` 编译器选项（用于禁止计算网格凸包）。
+5. :commit:`d8494fef` 移除了已弃用的 ``mju_rotVecMat`` 、 ``mju_rotVecMatT`` 和 ``mjv_makeConnector`` 函数。
+6. :commit:`2b0629d7` 排序现在使用更快的原生排序函数（修复 :issue:`1638` ）。
+7. :commit:`61cb552f` 将 3.2.1 中引入的 PBR 纹理层从多个独立的子元素重构为单个 :ref:`layer<material-layer>` 子元素。
+8. :commit:`831d9881` 移除了 composite 类型 box、cylinder 和 sphere。用户应改用 :ref:`flexcomp<body-flexcomp>` 中提供的等效类型。
+
+MJX
+^^^
+9. :commit:`680fb3e5` 将 ``apply_ft`` 、 ``jac`` 和 ``xfrc_accumulate`` 作为公共函数添加。
+10. :commit:`b00a7c67` 新增 ``TOUCH`` 传感器。
+11. :commit:`f24de91c` 新增对 ``eq_active`` 的支持。修复 :issue:`2173` 。
+12. :commit:`3c21abc0` 新增射线与椭球体的相交检测。
+
+错误修复
+^^^^^^^^^
+13. :commit:`864b805a` 修复了与使用 site 语义的 connect 和 weld 约束（constraint）相关的若干错误（修复 :issue:`2179` ，由 :github:user:`yinfanyi` 报告）。3.2.3 中为 connect 和 weld 引入的 site 指定方式有条件地改变了 `mjData.eq_obj1id` 和 `mjData.eq_obj2id` 的语义，但这些改变没有在若干处被正确传播，导致约束惯性的计算不正确、受影响的力/力矩传感器的读数不正确，以及此类约束在运行时的启用/禁用不正确。
+14. :commit:`7620aef5` 修复了曲柄滑块 :ref:`传动<geTransmission>` （transmission）中的一个错误。该错误是在 3.0.0 中引入的。
+15. :commit:`831d9881` 修复了 flex 纹理坐标中的一个错误，该错误导致无法在 mjModel 中正确分配纹理。
+
+
+文档
+^^^^^^^^^^^^^
+16. :commit:`1d58576d` :doc:`API 参考 <../APIreference/APIfunctions>` 中的函数头现在链接到其在 GitHub 中的源码定义。
+
+版本 3.2.4 (Oct 15, 2024)
+----------------------------
+
+通用
+^^^^^^^
+
+.. youtube:: e8lUuykQPGs
+   :aspect: 16:7
+   :align: right
+   :width: 240px
+
+1. :commit:`2dd51873` Newton 求解器不再需要 ``nv*nv`` 的内存分配，从而支持规模大得多的模型。例如，参见
+   `100_humanoids.xml  <https://github.com/google-deepmind/mujoco/blob/main/model/humanoid/100_humanoids.xml>`__ 。仍有两处二次方内存分配尚未完全稀疏化： ``mjData.actuator_moment`` 以及 PGS 求解器所使用的矩阵。
+2. :commit:`4998e7b3` 移除了 :at:`solid` 和 :at:`membrane` 插件，并将相关计算移入引擎。以前需要这些插件的 flex 对象的示例，请参见 `3D 示例模型 <https://github.com/google-deepmind/mujoco/blob/main/model/flex/floppy.xml>`__ 和 `2D 示例模型 <https://github.com/google-deepmind/mujoco/blob/main/model/flex/trampoline.xml>`__ 。
+3. :commit:`6832df30` 将函数 ``mjs_setActivePlugins`` 替换为 :ref:`mjs_activatePlugin` 。
+
+MJX
+^^^
+4. :commit:`1a9d3070` 在运动学中新增 ``mocap_pos`` 和 ``mocap_quat`` 。
+5. :commit:`160ed9bf` 新增对带有滑轮以及外部球体和圆柱体缠绕的 :ref:`空间肌腱 <tendon-spatial>` 的支持。
+6. :commit:`fa22e6d0` 新增球体-圆柱体和球体-椭球体碰撞函数（ :issue:`2126` ）。
+7. :commit:`22e4f7fc` 修复了摩擦损耗（frictionloss）约束的一个错误。
+8. :commit:`ac91a763` 新增 ``TENDONPOS`` 和 ``TENDONVEL`` 传感器。
+9. :commit:`19459263` 修复了 ``_decode_pyramid`` 中切向接触力计算的一个错误。
+10. :commit:`096853e1` 新增 ``JOINTINPARENT`` 执行器传动类型。
+
+Python 绑定
+^^^^^^^^^^^^^^^
+11. :commit:`6881ce24` 由于 Python 3.8 已被 `上游弃用 <https://devguide.python.org/versions>`__ ，移除了对它的支持。
+
+错误修复
+^^^^^^^^^
+12. :commit:`ab3954d8` 修复了 MJX 中未设置 ``actuator_force`` 的错误（ :issue:`2068` ）。
+13. :commit:`5838f847` 修复了调用 ``mjx.put_data`` 后 MJX data 的肌腱字段不正确的错误。
+14. :commit:`8d84b5f6` 如果高度场与 :ref:`碰撞传感器<collision-sensors>` 一起使用，编译器现在会返回错误，因为目前尚不支持这种用法。
+
+
+版本 3.2.3 (Sep 16, 2024)
+----------------------------
+
+通用
+^^^^^^^
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   1. :commit:`088079ef` 运行时选项 ``mpr_tolerance`` 和 ``mpr_iterations`` 被重命名为 :ref:`ccd_tolerance<option-ccd_tolerance>` 和 :ref:`ccd_iterations<option-ccd_iterations>` ，XML 与 :ref:`mjOption` 结构体中均已更改。这是因为新的凸碰撞检测流水线（见下文）不使用 MPR 算法。这些选项的语义保持不变。
+   2. :commit:`d3dfa6f9` 函数 ``mjs_findMesh`` 和 ``mjs_findKeyframe`` 被 ``mjs_findElement`` 取代，后者可用于查找任何对象类型。
+   3. :commit:`4862b9e7` 移除了在 ``composite`` 中对 2D/3D 弹性插件的实验性使用。用户应改用 :ref:`flexcomp<body-flexcomp>` ，它能提供正确的碰撞行为。
+
+4. :commit:`0bffd744` 新增 :ref:`nativeccd<option-flag-nativeccd>` 标志。启用该标志后，一般凸碰撞检测将由新的原生代码路径处理，而不是 `libccd <https://github.com/danfis/libccd>`__ 。该功能尚处于早期测试阶段，但欢迎遇到过碰撞检测相关问题的用户试用并报告任何问题。
+
+.. youtube:: kcM_oauk3ZA
+   :aspect: 16:7
+   :align: right
+   :width: 240px
+
+5. :commit:`60a1921b` 新增了一种使用两个 site 来定义 :ref:`connect<equality-connect>` 和 :ref:`weld<equality-weld>` 等式约束的新方式。当“约束在基准构型下已满足”这一假设不成立时，这种新语义很有用。此时，这两个 site 会在仿真开始时“吸附在一起”。此外，在运行时修改 site 的位置（ ``mjModel.site_pos`` ）和朝向（ ``mjModel.site_quat`` ）将正确地修改约束定义。右侧的视频展示了使用这种新语义的
+   `示例模型 <https://github.com/google-deepmind/mujoco/blob/main/test/engine/testdata/equality_site.xml>`__ 。
+6. :commit:`8954a088` 引入了 **自由关节对齐** ，这是一项适用于带有自由关节且没有子刚体的刚体（简单的自由漂浮刚体）的优化：自动将刚体坐标系与惯性坐标系对齐。该功能可以通过 :ref:`freejoint/align<body-freejoint-align>` 属性单独切换，或通过编译器的 :ref:`alignfree<compiler-alignfree>` 属性全局切换。对齐会使相关的 6x6 惯性子矩阵对角化，从而使自由刚体的仿真既更快又更稳定。
+
+   虽然这项优化是严格的改进，但它改变了关节自由度的语义。因此，在旧版本中保存的 ``qpos`` 和 ``qvel`` 值（例如保存在 :ref:`关键帧<keyframe>` 中的值）将失效。由于这种潜在的不兼容性，该全局编译器属性目前默认为 "false"，但可能会在未来的版本中改为 "true"。建议所有新模型都使用对齐的自由关节。
+
+7. :commit:`851bb6ee` 新增 :ref:`mjSpec` 选项，用于直接从缓冲区创建纹理。
+8. :commit:`466368ef` 现在所有 geom 类型都支持 :ref:`壳（表面）惯性 <body-geom-shellinertia>` 。
+9. :commit:`afd7c73f` 在 :ref:`附加<meAttachment>` 子模型时， :ref:`关键帧<keyframe>` 现在会被正确合并到父模型中，但仅限于第一次附加。
+10. :commit:`8b03daa0` 新增 :ref:`mjtSameFrame` 枚举，其中包含刚体及其子刚体可能的坐标系对齐方式。这些对齐方式用于 :ref:`mj_kinematics` 中的计算捷径。
+11. :commit:`2d3d5415` 新增 :ref:`mj_jacDot` ，用于计算运动学雅可比的时间导数。修复 :issue:`411` 。
+
+MJX
+^^^
+12. :commit:`a74c184f` 在 ``mjx.Data`` 中新增 ``efc_pos`` （ :issue:`1388` ）。
+13. :commit:`6a12787a` 新增与位置相关的传感器： ``MAGNETOMETER`` 、 ``CAMPROJECTION`` 、 ``RANGEFINDER`` 、 ``JOINTPOS`` 、 ``ACTUATORPOS`` 、 ``BALLQUAT`` 、 ``FRAMEPOS`` 、 ``FRAMEXAXIS`` 、 ``FRAMEYAXIS`` 、 ``FRAMEZAXIS`` 、 ``FRAMEQUAT`` 、 ``SUBTREECOM`` 、 ``CLOCK`` 。
+14. :commit:`9805df61` 新增与速度相关的传感器： ``VELOCIMETER`` 、 ``GYRO`` 、 ``JOINTVEL`` 、 ``ACTUATORVEL`` 、 ``BALLANGVEL`` 、 ``FRAMELINVEL`` 、 ``FRAMEANGVEL`` 、 ``SUBTREELINVEL`` 、 ``SUBTREEANGMOM`` 。
+15. :commit:`9d732117` 新增与加速度/力相关的传感器： ``ACCELEROMETER`` 、 ``FORCE`` 、 ``TORQUE`` 、 ``ACTUATORFRC`` 、 ``JOINTACTFRC`` 、 ``FRAMELINACC`` 、 ``FRAMEANGACC`` 。
+16. :commit:`390bce23` 更改了默认策略，避免将未使用的（仅 MuJoCo 使用的）数组放到设备上。
+17. :commit:`390bce23` 为 ``mjx.make_data`` 新增 ``device`` 参数，使其与 ``mjx.put_model`` 和 ``mjx.put_data`` 保持一致。
+18. :commit:`a68141ee` 新增对 :ref:`implicitfast 积分<geIntegration>` 的支持，适用于除 :doc:`流体阻力 <computation/fluid>` 之外的所有情况。
+19. :commit:`494e166f` 修复了稀疏质量矩阵的 ``qLDiagInv`` 大小错误的问题。
+20. :commit:`49711fa1` 新增对关节和肌腱 :ref:`摩擦损耗 <coFriction>` 的支持。
+21. :commit:`cd8ff440` 新增对使用两个 site 的 :ref:`connect<equality-connect>` 等式约束的支持。
+22. :commit:`e3d3a24b` 新增对带有 site 缠绕的 :ref:`空间肌腱 <tendon-spatial>` 的支持。
+
+错误修复
+^^^^^^^^^
+23. :commit:`39896f80` 修复了 3.1.7 中引入的网格包围体层次结构（Bounding Volume Hierarchy）性能回退问题（ :issue:`1875` ，由 :github:user:`michael-ahn` 贡献）。
+24. :commit:`0bcaa856` 修复了一个错误：对于同时具有肌肉和无状态执行器并使用隐式积分器之一的模型，会计算出错误的导数。
+25. :commit:`3e701b21` 修复了肌腱绕球体缠绕时的一个错误。在此修复之前，绕带有外置 :ref:`sidesite<spatial-geom-sidesite>` 的球体缠绕的肌腱可能会跳入球体内部，而不是绕球体缠绕。
+26. :commit:`567793c2` 修复了一个错误：在模型 :ref:`附加<meAttachment>` 期间， :at:`meshdir` 和 :at:`texturedir` 会被覆盖，导致无法附加其 asset 位于不同目录中的模型。
+
+Python 绑定
+^^^^^^^^^^^^^^^
+27. :commit:`cfc7dc98` 新增对 :ref:`mjSpec` 中引擎插件的支持（ :issue:`1903` ）。
+28. :commit:`9a27fc14` 在加载模型时，改进了 assets 字典相关问题的错误报告。
+
+
+版本 3.2.2 (Aug 8, 2024)
+---------------------------
+
+通用
+^^^^^^^
+1. :commit:`9db9df73` 将纹理和材质的数量上限恢复为 1000。3.2.0 无意中将此上限降低到 100，导致一些现有模型无法使用（ :issue:`1877` ）。
+
+版本 3.2.1 (Aug 5, 2024)
+---------------------------
+
+通用
+^^^^^^^
+1. :commit:`e92af73c` 将 ``mjModel.tex_rgb`` 重命名为 ``mjModel.tex_data`` 。
+2. :commit:`24a55506` 新增 :ref:`autoreset<option-flag-autoreset>` 标志，用于在检测到 NaN 或无穷大时禁用自动重置。
+3. :commit:`33e59606` 为 MJCF 的 :ref:`material<asset-material>` 元素添加了子元素，以允许为渲染指定多个纹理（例如 ``occlusion, roughness, metallic`` ）。请注意，MuJoCo 渲染器不支持这些新功能，它们是为配合外部渲染器使用而提供的。
+4. :commit:`82c27165` 使用 C++ 构建时，排序（ ``mjQUICKSORT`` ）现在会调用 ``std::sort`` （ :issue:`1638` ）。
+
+MJX
+^^^
+5. :commit:`dbe18f57` 向 ``mjx.Model`` 和 ``mjx.Data`` 添加了更多字段，以进一步与相应的 MuJoCo 结构体保持兼容。
+6. :commit:`2d24c588` 新增对 :ref:`固定肌腱 <tendon-fixed>` 的支持。
+7. :commit:`2d24c588` 新增对肌腱长度限位的支持（ :ref:`mjtConstraint` 中的 ``mjCNSTR_LIMIT_TENDON`` ）。
+8. :commit:`2d24c588` 新增对肌腱等式约束的支持（ :ref:`mjtEq` 中的 ``mjEQ_TENDON`` ）。
+9. :commit:`2d24c588` 新增对肌腱执行器传动的支持（ :ref:`mjtTrn` 中的 ``mjTRN_TENDON`` ）。
+
+Python 绑定
+^^^^^^^^^^^^^^^
+10. :commit:`70ac76bb` 为 ``mujoco.spec.from_file`` 、 ``mujoco.spec.from_string`` 和 ``mujoco.spec.compile`` 新增对 asset 字典参数的支持。
+
+
+错误修复
+^^^^^^^^^
+11. :commit:`a4bd2bec` 修复了隐式积分器没有考虑已禁用执行器的错误（ :issue:`1838` ）。
+
+版本 3.2.0 (Jul 15, 2024)
+----------------------------
+
+新特性
+^^^^^^
+
+1. :commit:`e13ddfa2` 引入了一项重要的新特性：\ **程序化模型（model）创建与编辑**，使用新的顶层数据结构 :ref:`mjSpec`。
+   详见 :doc:`模型编辑 <programming/modeledit>` 一章。
+   请注意，截至本版本，该特性仍在测试中，未来可能发生破坏性变更。
+   修复了 :issue:`364`。
+
+常规
+^^^^
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   2. :commit:`e66b9a36` 移除了已弃用的 ``mj_makeEmptyFileVFS`` 和 ``mj_findFileVFS`` 函数。常量
+      ``mjMAXVFS`` 和 ``mjMAXVFSNAME`` 因不再需要也一并移除。
+
+      **迁移：** 使用 :ref:`mj_addBufferVFS` 将缓冲区直接复制到 VFS 文件中。
+
+   3. :commit:`57e6760e` 调用 :ref:`mj_defaultVFS` 可能会在 VFS 内部分配内存，必须调用相应的
+      :ref:`mj_deleteVFS` 来释放任何内部分配的内存。
+
+   4. :commit:`60670485` 弃用 ``mju_rotVecMat`` 和 ``mju_rotVecMatT``，改用 :ref:`mju_mulMatVec3` 和
+      :ref:`mju_mulMatTVec3`。这些函数的名称和参数顺序与 API 的其余部分更加一致。
+      旧函数已从 Python 绑定中移除，并将在下一个版本中从 C API 中移除。
+   5. :commit:`393895bb` 从执行器（actuator）插件（plugin）中移除了 ``actuator_actdim`` 回调。现在它们具有 ``actdim``
+      属性，对于向 ``act`` 数组写入状态的执行器必须使用该属性。这修复了在含有有状态执行器插件的模型中使用关键帧（keyframe）时发生的崩溃。
+      当提供了错误的 actdim 值时，PID 插件会报错。
+
+6. :commit:`27b9ddda` 向 MJCF 添加了 :ref:`attach <body-attach>` 元元素，允许将来自另一个模型的子树
+   :ref:`附加 <meAttachment>` 到当前模型的某个刚体（body）上。
+7. :commit:`57e6760e` :ref:`VFS <Virtualfilesystem>` 的实现已用 C++ 重写，在速度和内存占用方面都显著更高效。
+
+.. youtube:: ZXBTEIDWHhs
+   :aspect: 16:7
+   :align: right
+   :width: 240px
+
+8. :commit:`07fc95ca` 新增对正交相机的支持。固定相机和自由相机都可使用，分别通过 ``camera/orthographic`` 和
+   :ref:`global/orthographic <visual-global-orthographic>` 属性启用。
+9. :commit:`ace0c8f0` 新增 :ref:`maxhullvert <asset-mesh-maxhullvert>`，即网格（mesh）凸包中的最大顶点数。
+10. :commit:`c9bcf837` 新增 :ref:`mj_setKeyframe`，用于将当前状态保存到模型的关键帧中。
+11. :commit:`5ed464b4` 在 URDF 解析器中新增对 ``ball`` 关节的支持（URDF 中为 "spherical"）。
+12. :commit:`3f3b39bb` 将此前硬编码在
+    `mjtnum.h <https://github.com/google-deepmind/mujoco/blob/3577e2cf8bf841475b489aefff52276a39f24d51/include/mjtnum.h>`__
+    中的 ``mjUSEDOUBLE`` 替换为构建时标志 ``mjUSESINGLE``。如果未定义该符号，MuJoCo 将照常使用双精度浮点数。
+    如果定义了 ``mjUSESINGLE``，MuJoCo 将使用单精度浮点数。参见 :ref:`mjtNum`。
+
+    与此相关，修复了多处阻碍单精度构建的类型错误。
+13. :commit:`22a10fd2` ``mjData.qpos`` 和 ``mjData.mocap_quat`` 中的四元数（quaternion）不再由 :ref:`mj_kinematics` 就地归一化，
+    而是在使用时才归一化。第一步之后，\ ``mjData.qpos`` 中的四元数将是归一化的。
+14. :commit:`3d1d1d07` 编译器中的网格加载（通常是加载过程中最慢的部分）现在是多线程的。
+
+MJX
+~~~
+15. :commit:`4c3d9461` 新增对 :ref:`椭圆摩擦锥 <option-cone>` 的支持。
+16. :commit:`4c3d9461` 修复了一个错误：在某些困难的约束设置下，该错误会导致线搜索得到次优的解。
+17. :commit:`4c3d9461` 修复了牛顿求解器中的一个错误，该错误有时会导致梯度次优。
+
+
+.. youtube:: P83tKA1iz2Y
+   :align: right
+   :width: 360px
+
+Simulate
+^^^^^^^^
+18. :commit:`1eb70864` 新增了改进的教程视频。
+19. :commit:`f37f8408` 改进了布朗噪声生成器。
+20. :commit:`3d1d1d07` 现在当模型加载时间超过 0.25 秒时会显示加载时间。
+
+Python 绑定
+^^^^^^^^^^^
+21. :commit:`2188cba4` 修复了对 ``mujoco.MjData`` 实例使用 ``copy.deepcopy()`` 时的内存泄漏
+    （:issue:`1572`）。
+
+错误修复
+^^^^^^^^
+22. :commit:`e7301edd` 修复了 ``mj_copyData``\ （或 Python 绑定中的 ``copy.copy()``）没有正确复制接触（contact）信息的问题（:issue:`1710`）。
+23. :commit:`8e827d0d` 修复了保存为 XML 时导致坐标系（frame）被多次写入的问题（:issue:`1802`）。
+
+版本 3.1.6 (Jun 3, 2024)
+------------------------
+
+常规
+^^^^
+
+1. :commit:`02d01545` 新增 :ref:`mj_geomDistance`，用于计算两个 geom 之间的最短有符号距离，并可选地计算连接它们的线段。
+   与此相关，新增了 3 种传感器（sensor）：\ :ref:`distance <sensor-distance>`、
+   :ref:`normal <sensor-normal>`、\ :ref:`fromto <sensor-fromto>`。详见函数和传感器文档。
+   修复了 :issue:`51`。
+2. :commit:`2830a407` 对位置执行器的改进：
+
+   - 为 :ref:`位置执行器 <actuator-position>` 新增 :ref:`timeconst <actuator-position-timeconst>` 属性。
+     当设置为正值时，执行器变为有状态的，具有 :at:`filterexact` 动力学。
+   - 为 :el:`position` 和 :el:`intvelocity` 执行器新增 :ref:`dampratio <actuator-position-dampratio>`。它是
+     :at:`kv` 属性的替代方案，提供了使用自然单位设置执行器阻尼（damping）的便捷方式。
+     详见属性文档。
+
+MJX
+^^^
+
+3. :commit:`c511d022` 新增高度场碰撞支持。修复了 :issue:`1491`。
+4. :commit:`c511d022` 向 ``mjx.Model`` 添加预编译字段 ``mesh_convex``，使网格属性可以被 vmap。
+   修复了 :issue:`1655`。
+5. :commit:`c511d022` 修复了凸网格碰撞中的一个错误：即使已找到面分离轴，仍会错误地生成边接触。
+   修复了 :issue:`1695`。
+
+错误修复
+^^^^^^^^
+
+6. :commit:`96844db9` 修复了一个错误：启用 :ref:`fusestatic <compiler-fusestatic>`\ （URDF 导入时通常如此）时，
+   可能导致漏掉碰撞。修复了 :issue:`1069`、\ :issue:`1577`。
+7. :commit:`1d181786` 修复了一个错误：SDF 迭代的可视化会写入超出存储它们的向量大小的位置。修复了 :issue:`1539`。
+
+版本 3.1.5 (May 7, 2024)
+------------------------
+
+常规
+^^^^
+
+.. youtube:: 5k0_wsIRAFc
+   :aspect: 16:7
+   :align: right
+   :width: 240px
+
+1. :commit:`26f23066` 向 MJCF 添加了 :ref:`replicate <replicate>`，这是一个 :ref:`元元素 <meta-element>`，
+   允许以递增的平移和旋转偏移重复一个子树。
+2. :commit:`ad045968` 在 MuJoCo 编译器中启用了内部缓存，从而加快重新编译的速度。目前会缓存已处理的纹理、hfield 和 OBJ 网格。
+   尚不支持 Unity 环境。
+3. :commit:`6481a838` 新增 ``mjModel.mesh_scale``：应用于资产顶点的缩放，由
+   :ref:`scale <asset-mesh-scale>` 属性指定。
+4. :commit:`caf215e3` 新增了原生渲染器会忽略、但可被外部渲染器使用的视觉属性：
+
+   - :ref:`light/bulbradius <body-light-bulbradius>` 属性及相应的 ``mjModel.light_bulbradius`` 字段。
+   - :ref:`material/metallic <asset-material-metallic>` 属性及相应的 ``mjModel.material_metallic`` 字段。
+   - :ref:`material/roughness <asset-material-roughness>` 属性及相应的 ``mjModel.material_roughness``
+     字段。
+5. :commit:`546a27ca` :ref:`mj_stackAllocNum` 和 :ref:`mj_stackAllocInt` 的 ``size`` 参数类型从 ``int`` 改为 ``size_t``。
+6. :commit:`131b1745` 在 :ref:`flexcomp <body-flexcomp-file>` 中新增对 gmsh 格式 2.2 版表面网格的支持。
+
+MJX
+^^^
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   7. :commit:`718e079c` 移除了已弃用的 ``mjx.device_get_into`` 和 ``mjx.device_put`` 函数，因为它们缺少
+      关键的新功能。
+
+      **迁移：** 使用 ``mjx.get_data_into`` 代替 ``mjx.device_get_into``，使用 ``mjx.put_data`` 代替
+      ``mjx.device_put``。
+
+8. :commit:`0cd28d24` 新增圆柱体-平面碰撞。
+9. :commit:`71333938` 向 ``mjx.Data`` 添加 ``efc_type``，向 ``mjx.Contact`` 添加 ``dim``、\ ``efc_address``。
+10. :commit:`71333938` 向 ``mjx.Contact`` 添加 ``geom``，并将 ``geom1``、\ ``geom2`` 标记为已弃用。
+11. :commit:`3b64217b` 向 ``mjx.Data`` 添加 ``ne``、\ ``nf``、\ ``nl``、\ ``nefc`` 和 ``ncon``，以与 ``mujoco.MjData`` 保持一致。
+12. :commit:`a4df9120` 鉴于上述新增字段，移除了 ``mjx.get_params``、\ ``mjx.ncon`` 和
+    ``mjx.count_constraints``。
+13. :commit:`a4df9120` 改变了网格在设备上的组织方式，以便在一个网格被许多 geom 复用时加快碰撞检测（collision detection）。
+14. :commit:`a4df9120` 修复了一个错误：胶囊体在粗测阶段（broadphase）碰撞检查中可能被忽略。
+15. :commit:`c2d0c5dd` 新增使用 SDF 的圆柱体碰撞。
+16. :commit:`71333938` 新增对所有 :ref:`condim <coContact>` 的支持：1、3、4、6。
+17. :commit:`d15db545` 新增 ``id2name`` 和 ``name2id`` 支持函数，即 :ref:`mj_id2name` 和
+    :ref:`mj_name2id` 的 MJX 版本。
+18. :commit:`e9709900` 新增对 :ref:`gravcomp <body-gravcomp>` 和
+    :ref:`actuatorgravcomp <body-joint-actuatorgravcomp>` 的支持。
+19. :commit:`719476c2` 修复了 ``mjx.ray`` 中的一个错误：射线-网格测试有时会允许负距离。
+20. :commit:`24bc1c8b` 新增了一个
+    `可微物理教程 <https://colab.research.google.com/github/google-deepmind/mujoco/blob/main/mjx/training_apg.ipynb>`__ ，
+    演示如何利用从 MJX 物理步骤自动导出的解析梯度来训练运动策略。
+    贡献者： :github:user:`Andrew-Luo1`。
+
+错误修复
+^^^^^^^^
+21. :commit:`0cd28d24` 光源的默认值未被保存，现已修复。
+22. :commit:`4b6c07cd` 防止保存 XML 时 frame 名称被 body 名称覆盖。该错误于 3.1.4 中引入。
+23. :commit:`2b497581` 修复了 :ref:`mj_saveModel` 的 Python 绑定中的错误：\ ``buffer`` 参数在文档中是可选的，但实际上并非可选。
+24. :commit:`546a27ca` 修复了阻止分配大于 2.15 GB 内存的错误。修复了 :issue:`1606`。
+
+
+版本 3.1.4 (April 10th, 2024)
+-----------------------------
+
+常规
+^^^^
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   1. :commit:`5d26b50f` 移除了原生地向传感器添加噪声的能力。请注意，\ ``mjModel.sensor_noise``
+      字段和 :ref:`相应属性 <CSensor>` 仍被保留，现在作为用户保存标准差信息以供自己使用的便利位置。移除该功能的原因如下：
+
+      - 没有为随机噪声生成器设置种子的机制。
+      - 它不是线程安全的，即使提供了设置种子的功能，在多个线程上采样也会导致结果不可复现。
+      - 该功能被认为是引擎的越俎代庖。添加噪声应当由用户负责。
+      - 我们不知道有任何人实际在使用该功能。
+
+      **迁移：** 请自行向传感器值添加噪声。
+
+2. :commit:`47ba72ea` 新增关节属性 :ref:`actuatorgravcomp <body-joint-actuatorgravcomp>`。启用后，
+   关节上的重力补偿力被视为由执行器施加。详见属性文档。示例模型
+   `refsite.xml <https://github.com/google-deepmind/mujoco/blob/main/test/engine/testdata/actuation/refsite.xml>`__
+   演示了机械臂的笛卡尔空间驱动，现已更新为使用该属性。
+3. :commit:`4f0293c6` 新增对 gmsh 格式 2.2 四面体网格的支持，例如由
+   `fTetwild <https://github.com/wildmeshing/fTetWild>`__ 生成的网格。
+
+4. :commit:`5a365603` 新增 :ref:`mju_euler2Quat`，用于将欧拉角序列转换为四元数。
+
+MJX
+^^^
+5. :commit:`22cd96fb` 改进了凸体碰撞的 SAT 性能。
+6. :commit:`f2e107f7` 修复了球体/胶囊体-凸体深度穿透（penetration）的错误。
+7. :commit:`02c62c11` 修复了一个错误：由 ``mjx.put_data`` 生成的 ``mjx.Data`` 与 ``mjx.make_data`` 的 treedef 不同。
+8. :commit:`2386353b` 对于凸网格碰撞的 margin/gap 抛出错误，因为它们不受支持。
+9. :commit:`2b3f336b` 新增椭球体-平面碰撞。
+10. :commit:`b4419235` 新增对 userdata 的支持。
+11. :commit:`2b3f336b` 新增使用有符号距离函数（SDF）的椭球体-椭球体和椭球体-胶囊体碰撞。
+
+Simulate
+^^^^^^^^
+12. :commit:`bb42ff16` 修复了启用标志字符串顺序中的错误。在此变更之前，使用 simulate 界面切换
+    :ref:`invdiscrete <option-flag-invdiscrete>` 或（现已移除的）\ ``sensornoise`` 标志，实际上会切换另一个标志。
+
+Python 绑定
+^^^^^^^^^^^
+
+.. youtube:: xHDS0n5DpqM
+   :aspect: 16:7
+   :align: right
+   :width: 240px
+
+13. :commit:`adc4b92c` 新增 ``mujoco.minimize`` Python 模块，用于非线性最小二乘，专为系统辨识（sysID）设计。
+    sysID 教程仍在编写中，但此处提供了一个包含示例（包括逆运动学）的教学用 colab notebook： |ls_colab|
+    |br| 右侧的视频展示了教程中的示例片段。
+
+.. |ls_colab| image:: https://colab.research.google.com/assets/colab-badge.png
+              :target: https://colab.research.google.com/github/google-deepmind/mujoco/blob/main/python/least_squares.ipynb
+
+
+版本 3.1.3 (March 5th, 2024)
+----------------------------
+
+常规
+^^^^
+1. :commit:`05150546` 为 :ref:`position <actuator-position>` 和
+   :ref:`intvelocity <actuator-intvelocity>` 执行器新增 :at:`inheritrange` 属性，可根据传动目标（关节或肌腱）的范围，
+   方便地分别设置执行器的 :at:`ctrlrange` 或 :at:`actrange`。详见
+   :ref:`position/inheritrange <actuator-position-inheritrange>`。
+2. :commit:`a4a621f6` 弃用 ``mj_makeEmptyFileVFS``，改用 :ref:`mj_addBufferVFS`。\ :ref:`mjVFS` 现在会计算其内部文件缓冲区的校验和。
+   :ref:`mj_addBufferVFS` 在 mjVFS 中分配一个具有给定名称的空缓冲区并将数据缓冲区复制进去，
+   取代并合并了已弃用的两步流程，即先调用 ``mj_makeEmptyFileVFS``，再直接复制到给定 mjVFS 的内部文件缓冲区。
+3. :commit:`6b7d7142` 新增 :ref:`mj_angmomMat`，用于计算 ``3 x nv`` 角动量矩阵 :math:`H(q)`，
+   它提供了从广义速度到子树角动量 :math:`h = H \dot q` 的线性映射。
+   贡献者： :github:user:`v-r-a`。
+
+MJX
+^^^
+4. :commit:`4933a2c7` 改进了获取和写入设备数据的性能。
+
+   - 使用 ``tobytes()`` 进行 numpy 数组序列化，这比转换为元组快几个数量级。
+   - 当数组形状不变时，避免重新分配主机端 ``mjData`` 数组。
+   - 加快了具有许多 geom 的模型的 ``mjx.ncon`` 计算。
+   - 当可以从 ``mjx.Data`` 推导出 ``nc`` 时，避免在 ``mjx.get_data_into`` 中调用 ``mjx.ncon``。
+5. :commit:`e77c3cb2` 修复了 ``mjx-viewer`` 中导致其无法运行的错误。更新 ``mjx-viewer`` 以使用较新的
+   ``mjx.get_data_into`` 函数调用。
+6. :commit:`47bb4a82` 修复了 ``mjx.euler`` 中的一个错误：使用稠密质量矩阵时会施加不正确的阻尼。
+7. :commit:`47bb4a82` 修复了 ``mjx.solve`` 中的一个错误：在使用 :ref:`mjtSolver` 中的 ``mjSOL_NEWTON`` 时，该错误导致收敛缓慢。
+8. :commit:`6a346c42` 为 ``mjx.Model`` 新增对 :ref:`mjOption.impratio <mjOption>` 的支持。
+9. :commit:`2067e208` 在 ``mjx.Model`` 和 ``mjx.Data`` 中新增对相机的支持。修复了 :issue:`1422`。
+10. :commit:`419be4c6` 新增了使用 `top_k` 和包围球的粗测阶段实现。
+
+Python 绑定
+^^^^^^^^^^^
+11. :commit:`abf6d41b` 修复了绑定中数据类型不正确的问题，涉及 ``mjContact`` 结构体的 ``geom``、\ ``vert``、\ ``elem`` 和 ``flex``
+    数组成员，以及 ``mjrContext`` 结构体的所有数组成员。
+
+版本 3.1.2 (February 05, 2024)
+------------------------------
+
+常规
+^^^^
+1. :commit:`e0864ab7` 改进了 :ref:`discardvisual <compiler-discardvisual>` 编译器标志，它现在会丢弃所有仅用于视觉的资产。
+   详见 :ref:`discardvisual <compiler-discardvisual>`。
+2. :commit:`2feefbc5` 移除了中间阶段（midphase）碰撞检测的 :ref:`计时器 <mjtTimer>`，现在它被并入精测阶段（narrowphase）计时器。
+   这是因为分别对这两个阶段计时需要在碰撞函数内部使用细粒度计时器；这些函数非常小且快，以至于计时器本身会产生可测量的开销。
+3. :commit:`fea7c10b` 向 ``visual/global`` 添加了标志 :ref:`bvactive <visual-global-bvactive>`，允许用户
+   关闭活动包围体的可视化（见 :ref:`此变更日志条目 <midphase>` 中的红/绿框）。
+   对于具有极高分辨率网格的模型，该可视化所需的计算可能会降低仿真速度。修复了 :issue:`1279`。
+
+   - 将 :ref:`包围体 <visual-rgba-bv>` 和 :ref:`活动包围体 <visual-rgba-bvactive>` 的颜色
+     添加到 :ref:`visual/rgba <visual-rgba>`。
+4. :commit:`e143b3db` 高度场海拔数据现在可以直接在 XML 中通过
+   :ref:`elevation <asset-hfield-elevation>` 属性指定（而不仅仅是通过 PNG 文件）。
+   参见 `示例模型 <https://github.com/google-deepmind/mujoco/blob/main/test/user/testdata/hfield_xml.xml>`__。
+
+MJX
+^^^
+5. :commit:`80f50c94` 新增 :ref:`dyntype <actuator-general-dyntype>` ``filterexact``。
+6. :commit:`8ce2c920` 新增 :at:`site` 传动（transmission）。
+7. :commit:`feb92bf5` 使用更稳定的四足机器人环境更新了 MJX colab 教程。
+8. :commit:`a02fc405` 新增 ``mjx.ray``，对应 :ref:`mj_ray`，支持平面、球体、胶囊体、盒体和网格。
+9. :commit:`0a7be173` 新增 ``mjx.is_sparse``\ （对应 :ref:`mj_isSparse`）和 ``mjx.full_m``\ （对应
+   :ref:`mj_fullM`）。
+10. :commit:`0a7be173` 新增通过 :ref:`option-jacobian` 指定稀疏或稠密质量矩阵的支持。
+11. :commit:`508669a9` 当存在非零 frictionloss 时抛出未实现错误。修复了 :issue:`1344`。
+
+Python 绑定
+^^^^^^^^^^^
+12. :commit:`aceb52bd` 改进了 :ref:`rollout <PyRollout>` 模块的实现。请注意以下变更具有破坏性，依赖它的代码需要修改。
+
+    - 使用 :ref:`mjSTATE_FULLPHYSICS <siFullPhysics>` 作为状态规范，从而可以通过检查时间来检测发散。
+    - 允许用户为 :ref:`用户输入 <siInput>` 字段的任意组合定义控制规范，作为控制量。
+    - 输出不再被压缩（squeeze），始终具有 dim=3。
+13. :commit:`7bb0ce42` :ref:`被动查看器 <PyViewerPassive>` 的 ``sync`` 函数现在可以获取 ``user_scn`` 中渲染标志的更改，
+    正如 :issue:`1190` 中所请求的。
+
+错误修复
+^^^^^^^^
+14. :commit:`1e2e0b30` 修复了一个错误：如果柔性体（flex）不在 worldbody 中，则无法将 pin 与插件一起使用。修复了
+    :issue:`1270`。
+15. :commit:`a14a584f` 修复了 :ref:`肌肉模型 <CMuscle>` 中的一个错误，该错误导致在长度范围下界之外产生非零值。修复了 :issue:`1342`。
+
+
+版本 3.1.1 (December 18, 2023)
+------------------------------
+
+错误修复
+^^^^^^^^
+1. :commit:`d39ed1d3` 修复了一个错误（于 3.1.0 引入）：当一个盒体深深嵌入另一个盒体时，盒体-盒体碰撞不产生接触。
+2. :commit:`dc0d0c59` 修复了 :ref:`simulate <saSimulate>` 中的一个错误："LOADING..." 消息未能正确显示。
+3. :commit:`d39ed1d3` 修复了 Python :ref:`被动查看器 <PyViewerPassive>` 在用于包含 Flex 对象的模型时发生的崩溃。
+4. :commit:`0915d69c` 修复了 MJX 中的一个错误：\ ``get_data`` 和 ``put_data`` 中忽略了 ``site_xmat``
+5. :commit:`d39ed1d3` 修复了 MJX 中的一个错误：\ ``get_data`` 中的 ``efc_address`` 有时计算不正确。
+
+
+版本 3.1.0 (December 12, 2023)
+------------------------------
+
+常规
+^^^^
+1. :commit:`8ca51b53` 通过使用线搜索和新的优化目标函数，改进了有符号距离函数（SDF）碰撞的收敛性。这使得寻找接触所需的初始点数量得以减少，
+   并且对于非常小或非常大的 geom 尺寸更加稳健。
+2. :commit:`eb9568a4` 向 MJCF 添加了 :ref:`frame <frame>`，这是一个 :ref:`元元素 <meta-element>`，
+   它对其直接子元素定义纯粹的坐标变换，而无需使用 :ref:`body <body>`。
+3. :commit:`762371c3` 为 :ref:`position <actuator-position>` 和
+   :ref:`intvelocity <actuator-intvelocity>` 执行器新增 :at:`kv` 属性，用于指定执行器施加的阻尼。这可用于
+   实现参考速度为 0 的 PD 控制器。使用此属性时，建议使用 implicitfast 或 implicit :ref:`积分器 <geIntegration>`。
+
+插件
+^^^^
+4. :commit:`f2025c6a` 允许执行器插件使用 ``mjData.act`` 中的激活变量作为其内部状态，而不是 ``mjData.plugin_state``。
+   执行器插件现在可以指定计算激活变量的 :ref:`回调 <mjpPlugin>`，并且可以与内置的 :ref:`dyntype <actuator-plugin-dyntype>` 执行器动力学一起使用。
+5. :commit:`ca046cbf` 新增 `pid <https://github.com/deepmind/mujoco/blob/main/plugin/actuator/README.md>`__
+   执行器插件，这是一个可配置的 PID 控制器，实现了原生 MuJoCo 执行器所不具备的积分项。
+
+MJX
+^^^
+6. :commit:`35c90844` 向 MJX 添加了 ``site_xpos`` 和 ``site_xmat``。
+7. :commit:`67fa7c1d` 新增 ``put_data``、\ ``put_model``、\ ``get_data`` 以取代 ``device_put`` 和 ``device_get_into``，
+   后者将被弃用。这些新函数能正确转换作为中间计算结果的字段，例如 ``efc_J``。
+
+错误修复
+^^^^^^^^
+8. :commit:`cd56a41f` 修复了带可移动 refsite 的笛卡尔空间驱动中的错误，例如在四足机器人上使用以刚体为中心的笛卡尔执行器时。
+   在此修复之前，这类执行器可能导致动量不守恒。
+9. :commit:`cd56a41f` 修复了阻止在 :ref:`simulate <saSimulate>` 中使用柔性体的错误。
+10. :commit:`7d8d4d39` 修复了阻止弹性插件与固定的柔性体顶点一起使用的错误。
+11. :commit:`3c05f9fa` 发布面向 macOS 10.16 的 Python wheel，以支持设置了
+    ``SYSTEM_VERSION_COMPAT`` 的 x86_64 系统。最低支持版本仍为 11.0，但我们发布这些 wheel 以修复
+    这些用户的兼容性。参见 :issue:`1213`。
+12. :commit:`49ddb7ca` 修复了网格的质量计算：使用正确的网格体积，而不是用惯性盒（inertia box）来近似。
+
+版本 3.0.1 (November 15, 2023)
+------------------------------
+
+常规
+^^^^
+1. :commit:`a89412bb` 向 :ref:`mjData` 添加了 ``mjData.qfrc_passive`` 中总被动力的各子项：
+   ``qfrc_{spring, damper, gravcomp, fluid}``。这些向量之和等于 ``qfrc_passive``。
+
+.. youtube:: H9qG9Zf2W44
+   :aspect: 16:7
+   :align: right
+   :width: 240px
+
+2. :commit:`893c4042` 新增 :ref:`actuatorgroupdisable <option-actuatorgroupdisable>` 属性以及相关的
+   :ref:`mjOption.disableactuator <mjOption>` 整数位域，可用于在运行时根据 :ref:`group <actuator-general-group>`
+   禁用成组的执行器。修复了 :issue:`1092`。参见 :ref:`CActDisable`。
+
+   - 前 6 个执行器组可在 :ref:`simulate <saSimulate>` 查看器中切换。参见
+     `示例模型 <https://github.com/google-deepmind/mujoco/blob/main/test/engine/testdata/actuation/actuator_group_disable.xml>`__
+     和右侧的相关屏幕录制。
+
+3. :commit:`7e419276` 将 ``mjMAXUIITEM``\ （Simulate 中每个部分的最大 UI 元素数）增加到 200。
+
+MJX
+^^^
+4. :commit:`3c0a56c1` 新增对牛顿求解器（:ref:`mjtSolver` 中的 ``mjSOL_NEWTON``）的支持。牛顿求解器
+   显著加快了 GPU 上的仿真：
+
+   .. list-table:: 每秒步数，在 A100 上共轭梯度（CG）与牛顿法的对比
+      :header-rows: 1
+      :align: left
+
+      * - 模型
+        - CG
+        - 牛顿法
+        - 加速比
+      * - `Humanoid <https://github.com/google-deepmind/mujoco/tree/56006355b29424658b56aedb48a4269bd4361c68/mjx/mujoco/mjx/benchmark/model/humanoid>`__
+        - 640,000
+        - 1,020,000
+        - **1.6 x**
+      * - `Barkour v0 <https://github.com/google-deepmind/mujoco/tree/56006355b29424658b56aedb48a4269bd4361c68/mjx/mujoco/mjx/benchmark/model/barkour_v0>`__
+        - 1,290,000
+        - 1,750,000
+        - **1.35 x**
+      * - `Shadow Hand <https://github.com/google-deepmind/mujoco/tree/56006355b29424658b56aedb48a4269bd4361c68/mjx/mujoco/mjx/benchmark/model/shadow_hand>`__
+        - 215,000
+        - 270,000
+        - **1.25 x**
+
+   Humanoid 是标准的 MuJoCo 人形机器人，
+   `Google Barkour <https://blog.research.google/2023/05/barkour-benchmarking-animal-level.html>`__ 和 Shadow Hand
+   均可在 :ref:`MuJoCo Menagerie <Menagerie>` 中获得。
+5. :commit:`70699765` 新增对关节等式约束（:ref:`mjtEq` 中的 ``mjEQ_JOINT``）的支持。
+6. :commit:`f6ed57e9` 修复了混合 ``jnt_limited`` 关节未被正确约束的错误。
+7. :commit:`e4a9f535` 使 ``device_put`` 的类型校验信息更详细（修复了 :issue:`1113`）。
+8. :commit:`843360b7` 从 ``MJX`` 中移除了无限位关节的空 EFC 行（修复了 :issue:`1117`）。
+9. :commit:`c8146372` 修复了 ``scan.body_tree`` 中的一个错误，该错误导致某些运动学树（kinematic tree）布局下的光滑动力学（smooth dynamics）不正确。
+
+Python 绑定
+^^^^^^^^^^^
+
+10. :commit:`4c24be9e` 修复了 macOS ``mjpython`` 启动器，使其能与 Apple Command Line Tools 自带的 Python 解释器配合使用。
+11. :commit:`084facc9` 修复了对使用插件的模型复制 ``mujoco.MjData`` 实例时的崩溃。为 ``MjData`` 引入了 ``model``
+    属性，它是对创建该 ``MjData`` 实例所用模型的引用。
+
+Simulate
+^^^^^^^^
+12. :commit:`f6ed57e9` :ref:`simulate <saSimulate>`：正确处理 "Pause update"、"Fullscreen" 和 "VSync"
+    按钮。
+
+文档
+^^^^^^^^^^^^^
+
+.. youtube:: cE3s_IfO4g4
+   :aspect: 16:7
+   :align: right
+   :width: 240px
+
+13. :commit:`8d5966ee` 在 `教程 colab <https://github.com/google-deepmind/mujoco#getting-started>`__
+    中添加了一个单元，提供程序化相机控制的示例：
+14. :commit:`2bb8652b` 新增了 :ref:`UI` 框架的文档。
+15. :commit:`dc8bac2f` 修复了文档中的拼写错误和所支持字段的说明（修复 :issue:`1105` 和 :issue:`1106` ）。
+
+
+错误修复
+^^^^^^^^^
+16. :commit:`86d9c84e` 修复了与使用 :ref:`torquescale<equality-weld-torquescale>` 修改的 weld 有关的错误。
+
+版本 3.0.0 (October 18, 2023)
+--------------------------------
+
+新特性
+^^^^^^^^^^^^
+
+1. :commit:`8f9c690c` 通过新的 :doc:`mjx` （MJX）Python 模块，新增了在 GPU 和 TPU 上的仿真。Python 用户现在可以在 Google TPU
+   或自己的加速器硬件上原生运行每秒数百万步的 MuJoCo 仿真。
+
+   - MJX 旨在与设备端强化学习算法配合使用。该 Colab 笔记本演示了如何结合 MJX 与强化学习来训练人形机器人和四足机器人运动： |colab|
+   - MJX API 与 MuJoCo 兼容，但在此版本中缺少部分功能。更多细节参见
+     :ref:`MJX 功能对等性 <MjxFeatureParity>` 的概述。
+
+.. |colab| image:: https://colab.research.google.com/assets/colab-badge.png
+           :target: https://colab.research.google.com/github/google-deepmind/mujoco/blob/main/mjx/tutorial.ipynb
+
+.. youtube:: QewlEqIZi1o
+   :aspect: 16:7
+   :align: right
+   :width: 240px
+
+2. :commit:`fdb04158` 新增了符号距离场（signed distance field，SDF）碰撞基元。SDF 可以采用任意形状，不受凸性约束。碰撞点通过梯度下降
+   最小化两个相互碰撞的 SDF 的最大值而得到。
+
+   - 新增了用于定义隐式几何体的 SDF 插件（plugin）。该插件必须定义在查询点处计算 SDF 及其梯度的方法。更多细节参见
+     :ref:`文档<exWriting>` 。
+
+.. youtube:: ra2bTiZHGlw
+   :aspect: 16:7
+   :align: right
+   :width: 240px
+
+3. :commit:`139a8ae2` 新增了名为 ``flex`` 的底层模型元素，用于定义可变形对象。这些
+   `单纯复形 <https://en.wikipedia.org/wiki/Simplicial_complex>`__ 的维数可以是 1、2
+   或 3，分别对应可拉伸的线、三角形或四面体。定义柔性体（flex）使用两个新的 MJCF 元素。
+   顶层的 :ref:`deformable<deformable>` 部分包含底层的 flex 定义。
+   :ref:`flexcomp<body-flexcomp>` 元素与 ``composite`` 类似，是用于创建可变形体的便捷宏，并支持 GMSH 四面体文件格式。
+
+   - 新增了 `shell <https://github.com/google-deepmind/mujoco/blob/45fc15b8447b56d3e6f12d3a158e2bc0d4d30dc8/plugin/elasticity/shell.cc>`__ 被动力（passive force）插件，
+     使用恒定的预计算海森矩阵（余切算子）计算弯曲力。
+
+   **注意** ：该功能仍在开发中，可能会发生变化。特别是，可变形对象功能目前既可通过 :ref:`deformable<CDeformable>` 使用，
+   也可通过 ``composite`` 使用，并且二者都可以由官方的
+   `弹性插件 <https://github.com/google-deepmind/mujoco/tree/45fc15b8447b56d3e6f12d3a158e2bc0d4d30dc8/plugin/elasticity>`__ 修改。
+   我们预计未来会统一其中一部分功能。
+
+.. youtube:: Vc1tq0fFvQA
+   :aspect: 16:7
+   :align: right
+   :width: 240px
+
+4. :commit:`3e034e38` 通过 :ref:`mj_island` 新增了约束岛（constraint island）发现功能。约束岛是互不作用的约束（constraint）与自由度（degrees-of-freedom）的不相交集合。
+   目前唯一支持约束岛的求解器（solver）是 :ref:`CG<option-solver>` 。可以使用新的 :ref:`启用标志<option-flag-island>` 来激活约束岛发现。
+   如果启用了约束岛发现，geom、接触（contact）和肌腱（tendon）将按其所属的约束岛着色，见视频。
+   对于含有可变形对象的模型，目前禁用约束岛发现（见上一条）。
+
+5. :commit:`62251869` 新增了 ``mjThreadPool`` 和 ``mjTask`` ，允许在 MuJoCo 引擎流水线内部进行多线程操作。
+   如果启用了引擎内部线程，则以下操作将以多线程方式执行：
+
+   - 约束岛的约束求解，前提是 :ref:`启用<option-flag-island>` 了约束岛发现并且选择了
+     :ref:`CG 求解器<option-solver>` 。
+     `22 humanoids <https://github.com/deepmind/mujoco/blob/main/model/humanoid/22_humanoids.xml>`__ 模型与单线程仿真相比显示出 3 倍的
+     加速。
+   - 与惯性相关的计算和碰撞检测（collision detection）将并行进行。
+
+   引擎内部线程仍在开发中，目前仅在官方代码中通过 :ref:`testspeed<saTestspeed>` 工具提供，并通过 ``npoolthread`` 标志暴露。
+
+6. :commit:`139a8ae2` 新增了从 OBJ 文件初始化 ``composite`` 粒子的能力。修复了
+   :issue:`642` 和 :issue:`674` 。
+
+通用
+^^^^^^^
+
+.. admonition:: 破坏性 API 变更
+   :class: attention
+
+   7. :commit:`ba66bd4f` 移除了宏 ``mjMARKSTACK`` 和 ``mjFREESTACK`` 。
+
+      **迁移：** 这些宏已被新函数 :ref:`mj_markStack` 和
+      :ref:`mj_freeStack` 取代。这些函数以完全封装的方式管理 :ref:`mjData 栈<siStack>` （即，
+      无需在调用处引入局部变量）。
+
+   8. :commit:`9902b735` 将 ``mj_stackAlloc`` 重命名为 :ref:`mj_stackAllocNum` 。新函数 :ref:`mj_stackAllocByte`
+      可分配任意数量的字节，并带有一个额外参数，用于指定返回指针的对齐方式。
+
+      **迁移：** 分配 ``mjtNum`` 数组的功能现在可通过 :ref:`mj_stackAllocNum` 使用。
+
+   9. :commit:`49290772` 将 :ref:`mjModel` 和 :ref:`mjData` 中的 ``nstack`` 字段重命名为 ``narena`` 。将
+      ``narena`` 、 ``pstack`` 和 ``maxuse_stack`` 改为统计字节数，而不是 :ref:`mjtNum` 的个数。
+
+   10. :commit:`86d8b912` 修改了 :ref:`mjData.solver<mjData>` ，即用于收集求解器诊断信息的数组。
+       这个由 :ref:`mjSolverStat` 结构体组成的数组现在长度为 ``mjNISLAND * mjNSOLVER`` ，按矩阵解释。
+       长度为 ``mjNSOLVER`` 的每一行包含每个约束岛各自独立的求解器统计信息。
+       如果求解器不使用约束岛，则只填充第 0 行。
+
+       - 新常量 :ref:`mjNISLAND<glNumericSizes>` 被设为 20。
+       - :ref:`mjNSOLVER<glNumericSizes>` 从 1000 减小到 200。
+       - 新增了 :ref:`mjData.solver_nisland<mjData>` ：求解器运行所覆盖的约束岛数量。
+       - 将 ``mjData.solver_iter`` 重命名为 ``solver_niter`` 。该成员与 ``mjData.solver_nnz`` 现在都是长度为 ``mjNISLAND`` 的整数
+         向量。
+
+   11. :commit:`9cf1f6eb` 移除了 ``mjOption.collision`` 及相关的 ``option/collision`` 属性。
+
+       **迁移：**
+
+       - 对于含有 ``<option collision="all"/>`` 的模型，删除该属性。
+       - 对于含有 ``<option collision="dynamic"/>`` 的模型，删除所有 :ref:`pair<contact-pair>` 元素。
+       - 对于含有 ``<option collision="predefined"/>`` 的模型，通过先删除模型中所有的 :ref:`contype<body-geom-contype>` 和
+         :ref:`conaffinity<body-geom-conaffinity>` 属性，再使用
+         |br| ``<default> <geom contype="0" conaffinity="0"/> </default>`` 将它们全局设为 ``0`` ，来禁用所有动态碰撞（由
+         contype/conaffinity 决定）。
+
+   12. :commit:`d3d46e16` 移除了 :at:`rope` 和 :at:`cloth` 复合体（composite body）。
+
+       **迁移：** 用户应使用 :at:`cable` 和 :at:`shell` 弹性插件。
+
+   13. :commit:`ee78b8f7` 新增了 :ref:`mjData.eq_active<mjData>` 用户输入变量，用于启用/禁用等式约束（equality constraint）的状态。将
+       ``mjModel.eq_active`` 重命名为 :ref:`mjModel.eq_active0<mjModel>` ，其语义现在是“ ``mjData.eq_active`` 的初始值”。修复了
+       :issue:`876` 。
+
+       **迁移：** 将 ``mjModel.eq_active`` 的用法替换为 ``mjData.eq_active`` 。
+
+   14. :commit:`d88675a0` 将 :ref:`autolimits<compiler-autolimits>` 的默认值从 "false" 改为 "true"。这是一个较小的破坏性变更。
+       可能受影响的是那些定义了 "range" 但未设置 "limited" 的元素所在的模型。
+       自 2.2.2 版本（2022 年 7 月）起，这类模型就无法加载。
+
+15. :commit:`2c3297b3` 新增了新的 :ref:`dyntype<actuator-general-dyntype>` 取值 ``filterexact`` ，它用精确公式而不是欧拉积分来更新一阶
+    滤波器状态。
+16. :commit:`2c3297b3` 新增了执行器（actuator）属性 :ref:`actearly<actuator-general-actearly>` ，它对执行器力使用半隐式
+    积分：使用下一步的执行器状态来计算当前的执行器力。
+17. :commit:`a276c49c` 将上一版本中引入的 ``actuatorforcerange`` 和 ``actuatorforcelimited``
+    分别重命名为 :ref:`actuatorfrcrange<body-joint-actuatorfrcrange>` 和
+    :ref:`actuatorfrclimited<body-joint-actuatorfrclimited>` 。
+18. :commit:`b7cf479a` 新增了标志 :ref:`eulerdamp<option-flag-eulerdamp>` ，用于在欧拉积分器中禁用关节阻尼的隐式积分。
+    更多细节参见 :ref:`数值积分<geIntegration>` 一节。
+19. :commit:`819b5cb9` 新增了标志 :ref:`invdiscrete<option-flag-invdiscrete>` ，用于对除 ``RK4`` 之外的所有
+    :ref:`积分器<option-integrator>` 启用离散时间逆动力学。更多细节参见该标志的文档。
+20. :commit:`1a3215e3` 新增了 :ref:`ls_iterations<option-ls_iterations>` 和 :ref:`ls_tolerance<option-ls_tolerance>`
+    选项，用于调整 CG 和牛顿求解器中线搜索的停止准则。它们可用于性能调优。
+21. :commit:`ccda87aa` 在 :ref:`mjModel` 中新增了 ``mesh_pos`` 和 ``mesh_quat`` 字段，用于存储应用于网格（mesh）资源的归一化
+    变换。修复了 :issue:`409` 。
+22. :commit:`8064ad59` 新增了相机 :ref:`resolution<body-camera-resolution>` 属性和
+    :ref:`camprojection<sensor-camprojection>` 传感器。如果相机分辨率设为正值，相机投影传感器将以像素坐标报告目标 site 投影到相机图像上的位置。
+23. :commit:`36d2ffe4` 新增了 :ref:`camera<body-camera>` 标定属性：
+
+    - 新增的属性有 :ref:`resolution<body-camera-resolution>` ， :ref:`focal<body-camera-focal>` ，
+      :ref:`focalpixel<body-camera-focalpixel>` ， :ref:`principal<body-camera-principal>` ，
+      :ref:`principalpixel<body-camera-principalpixel>` 和 :ref:`sensorsize<body-camera-sensorsize>` 。
+    - 指定这些属性后，可使用 :ref:`mjVIS_CAMERA<mjtVisFlag>` 可视化（visualization）标志来可视化标定后的视锥。参见以下
+      `示例模型 <https://github.com/deepmind/mujoco/blob/main/test/engine/testdata/vis_visualize/frustum.xml>`__ 。
+    - 请注意，这些属性仅对离线渲染（rendering）生效，不影响交互式可视化。
+24. :commit:`59164702` 实现了反向 Z 渲染，以获得更好的深度精度。新增了枚举 :ref:`mjtDepthMap` ，其取值为 ``mjDEPTH_ZERONEAR`` 和
+    ``mjDEPTH_ZEROFAR`` ，可用于设置 :ref:`mjrContext` 中新的 ``readDepthMap``
+    属性，以控制 :ref:`mjr_readPixels` 返回的深度如何从 ``znear`` 映射到 ``zfar`` 。贡献 :pr:`978` 由
+    `Levi Burner <https://github.com/aftersomemath>`__ 提供。
+25. :commit:`fb4cf472` 删除了代码示例 ``testxml`` 。该工具提供的功能已在
+    `WriteReadCompare <https://github.com/google-deepmind/mujoco/blob/main/test/xml/xml_native_writer_test.cc>`__
+    测试中实现。
+26. :commit:`a1b6026b` 删除了代码示例 ``derivative`` 。其功能由 :ref:`mjd_transitionFD` 提供。
+
+Python 绑定
+^^^^^^^^^^^^^^^
+
+27. :commit:`631b16e7` 修复了 :issue:`870` ：使用无效的相机名称调用 ``update_scene`` 时会使用默认
+    相机。
+28. :commit:`2e15574b` 在 :ref:`被动查看器<PyViewerPassive>` 句柄中新增了 ``user_scn`` ，允许用户
+    添加自定义的可视化 geom（ :issue:`1023` ）。
+29. :commit:`a1d0cbd6` 为函数
+    ``viewer.launch`` 和 ``viewer.launch_passive`` 新增了可选的布尔关键字参数 ``show_left_ui`` 和 ``show_right_ui`` ，允许用户在隐藏 UI 面板的情况下启动查看器。
+
+Simulate
+^^^^^^^^
+
+.. youtube:: YSvWn_poqWs
+   :aspect: 16:7
+   :align: right
+   :width: 240px
+
+30. :commit:`3e12f0d5` 为 :ref:`simulate<saSimulate>` 和托管的
+    :ref:`Python 查看器<PyViewerManaged>` 新增了 **状态历史** 机制。可以通过拖动 History 滑块查看状态历史，也可以（更精确地）
+    使用左右方向键查看。参见屏幕录制：
+
+31. :commit:`93d1c3c9` 现在能正确显示 ``LOADING...`` 标签。贡献 :pr:`1070` 由
+    `Levi Burner <https://github.com/aftersomemath>`__ 提供。
+
+文档
+^^^^^^^^^^^^^
+
+.. youtube:: nljr0X79vI0
+   :aspect: 16:7
+   :align: right
+   :width: 240px
+
+32. :commit:`18e4e101` 新增了关于流体力建模的 :doc:`详细文档 <computation/fluid>` ，以及一个示例模型，展示使用基于椭球的流体模型的
+    `翻滚的卡片 <https://github.com/google-deepmind/mujoco/blob/main/model/cards/cards.xml>`__ 。
+
+错误修复
+^^^^^^^^^
+
+33. :commit:`b0077e40` 修复了在构建中间阶段（mid-phase）碰撞树时会忽略 :ref:`geom 的 margin<body-geom-margin>` 的
+    错误。
+
+34. :commit:`1bd6c94e` 修复了 ``efc_diagApprox`` 中为 weld 等式约束生成错误值的
+    错误。
+
+
+版本 2.3.7 (July 20, 2023)
+-----------------------------
+
+通用
+^^^^^^^
+
+1. :commit:`a7021df6` 新增了球体-圆柱体接触的基元碰撞器，此前这一对使用通用的凸体-凸体碰撞器。
+#. :commit:`51aa375a` 新增了 :ref:`joint-actuatorforcerange<body-joint-actuatorfrcrange>` ，用于限制关节处的总执行器
+   力；以及 :ref:`sensor-jointactuatorfrc<sensor-jointactuatorfrc>` ，用于测量施加在关节上的总驱动力。关节级执行器力限幅最重要的用例是确保
+   :ref:`笛卡尔执行器<actuator-general-refsite>` 的力可由关节处的各个电机实现。
+   详情参见 :ref:`CForceRange` 。
+#. :commit:`5fcdae77` 为 hfield、texture 和 mesh 资源新增了可选的 ``content_type`` 属性。该属性
+   支持格式化的 `媒体类型 <https://www.iana.org/assignments/media-types/media-types.xhtml>`_ （以前称为
+   MIME 类型）字符串，用于确定资源文件的类型，而无需从文件
+   扩展名中获取类型。
+#. :commit:`5cfbb6ac` 新增了四元数（quaternion） :ref:`减法<mjd_subQuat>` 和
+   :ref:`积分<mjd_quatIntegrate>` （以角速度旋转）的解析导数。导数位于三维切空间中。
+#. :commit:`c50c92cc` 新增了 :ref:`mjv_connector` ，其功能与 ``mjv_makeConnector`` 相同，但参数化方式
+   更方便，采用“from-to”形式。 ``mjv_makeConnector`` 现已弃用。
+#. :commit:`242aea93` 将支持的最低 MacOS 版本从 10.12 提高到 11。MacOS 11 是苹果仍在
+   维护的最旧版本。
+
+Python 绑定
+^^^^^^^^^^^^^^^
+
+7. :commit:`0ccfef73` :ref:`被动查看器<PyViewerPassive>` 句柄现在提供 ``update_hfield`` 、 ``update_mesh`` 和
+   ``update_texture`` 方法，允许用户更新可渲染资源。
+   （问题 :issue:`812` ， :issue:`958` ， :issue:`965` ）。
+#. :commit:`06b70832` 允许在
+   :ref:`被动查看器<PyViewerPassive>` 中指定自定义键盘事件回调（ :issue:`766` ）。
+#. :commit:`f7847ba7` 修复了在被动查看器运行时 Python 退出会导致 GLFW 崩溃的问题（ :issue:`790` ）。
+
+模型
+^^^^^^
+
+10. :commit:`51aa375a` 新增了简单的 `car <https://github.com/google-deepmind/mujoco/blob/main/model/car/car.xml>`__
+    示例模型。
+
+
+版本 2.3.6 (June 20, 2023)
+-----------------------------
+
+.. note::
+   MuJoCo 2.3.6 是最后一个正式支持 Python 3.7 的版本。
+
+.. youtube:: ZppeDArq6AU
+   :align: right
+   :width: 240px
+
+模型
+^^^^^^
+
+1. :commit:`3d71b160` 新增了
+   `3x3x3 魔方 <https://github.com/google-deepmind/mujoco/blob/main/model/cube/cube_3x3x3.xml>`__ 示例模型。详情参见
+   `README <https://github.com/google-deepmind/mujoco/blob/main/model/cube/README.md>`__ 。
+
+错误修复
+^^^^^^^^^
+
+2. :commit:`41a70499` 修复了当体积无效时，网格包围盒和坐标系的计算不正确的错误。在这种情况下，现在只有当
+   :ref:`shellinertia<body-geom-shellinertia>` 等于 ``true`` 时，MuJoCo 才接受非水密几何体。
+#. :commit:`55c7f45d` 修复了用于计算肌腱阻尼和流体力导数的稀疏雅可比（Jacobian）乘法逻辑，该问题会影响
+   :ref:`implicit 和 implicitfast 积分器<geIntegration>` 的行为。
+#. :commit:`c66d7940` 对 :ref:`mj_ray` 的修复，与 geom 可视化约定保持一致：
+
+   - 平面和高度场遵循 ``geom_group`` 和 ``flg_static`` 参数。在此变更之前，射线会无条件地与平面和高度场
+     相交。
+   - ``flg_static`` 现在适用于所有静态 geom，而不仅仅是世界刚体（world body）的直接子级。
+
+.. youtube:: hqIMTNGaLF4
+   :align: right
+   :width: 240px
+
+插件
+^^^^^^^
+
+5. :commit:`b397b312` 新增了 touch-grid 传感器插件。详情参见
+   `文档 <https://github.com/google-deepmind/mujoco/blob/main/plugin/sensor/README.md>`__ ，以及相关的
+   `touch_grid.xml <https://github.com/google-deepmind/mujoco/blob/main/model/plugin/sensor/touch_grid.xml>`__ 示例
+   模型。该插件包含 `场景内可视化 <https://youtu.be/0LOJ3WMnqeA>`__ 。
+
+Simulate
+^^^^^^^^
+
+.. youtube:: mXVPbppGk5I
+   :aspect: 16:7
+   :align: right
+   :width: 240px
+
+6. :commit:`d40c3959` 在 simulate UI 中新增了 Visualization 标签页，对应于 :ref:`visual<visual>`
+   MJCF 元素的各项。在 GUI 中修改数值后，保存的 XML 将包含新值。 :ref:`mjStatistic` 中可修改的成员（ :ref:`extent<statistic-extent>` ，
+   :ref:`meansize<statistic-meansize>` 和
+   :ref:`center<statistic-center>` ）由编译器计算，因此没有默认值。为了使这些
+   属性出现在保存的 XML 中，必须在加载的 XML 中指定一个值。
+
+.. image:: images/changelog/simulate_text_width.png
+   :align: right
+   :width: 380px
+   :alt: Before / After
+
+7. :commit:`d40c3959` 在默认间距下增大了 UI 元素的文本宽度。[之前 / 之后]：
+
+通用
+^^^^^^^
+
+8. :commit:`f67e3595` 新增了 :ref:`mj_getState` 和 :ref:`mj_setState` ，用于以拼接的浮点数向量形式获取和设置仿真状态。详情参见 :ref:`状态<geState>` 一节。
+#. :commit:`d82f5ce5` 新增了 :ref:`mjContact.solreffriction<mjContact>` ，在使用 :ref:`椭圆摩擦锥<option-cone>` 时，允许为接触的法向轴和摩擦轴设置不同的 :ref:`solref<CSolver>`
+   参数。该属性对于弹性摩擦碰撞是必需的，参见相关的
+   `示例模型 <https://github.com/google-deepmind/mujoco/blob/main/test/engine/testdata/spin_recoil.xml>`__ ，
+   它模拟了
+   `弹性橡胶球 <https://www.youtube.com/watch?v=uFLJcRegIVQ&t=3s>`__ 的旋转反弹行为。这是一个高级选项，目前
+   仅由显式的 :ref:`接触对<contact-pair>` 支持，使用
+   :ref:`solreffriction<contact-pair-solreffriction>` 属性。
+#. :commit:`c50177d3` 新增了 :ref:`mjd_inverseFD` ，用于有限差分的逆动力学导数。
+#. :commit:`49efa9cc` 新增了用于“先带状后稠密”的“箭头”矩阵运算的函数。这类矩阵在进行直接轨迹优化时很常见。详情参见 :ref:`mju_cholFactorBand` 的文档。
+#. :commit:`2ad82d59` 新增了 :ref:`mj_multiRay` 函数，用于对从同一点发出的多条射线求交。
+   这比多次调用 :ref:`mj_ray` 要快得多。
+#. :commit:`9d1a21f9` 射线与网格的碰撞现在最多快 10 倍，这是通过使用网格面的包围体层次结构实现的。
+#. :commit:`3d82d2a4` 将 ``mjMAXUIITEM`` （Simulate 中每个分区的最大 UI 元素数）增大到 100。
+#. :commit:`67f0f515` 新增了关于资源提供者的 :ref:`文档<exProvider>` 。
+#. :commit:`49efa9cc` 修改了 :ref:`mju_sigmoid` 的公式，这是一个有限支撑的 sigmoid 函数
+   :math:`s \colon \mathbf R \rightarrow [0, 1]` 。此前，其光滑部分由两段拼接的二次函数组成，一阶
+   连续可微。现在它是单个五次函数，二阶连续可微：
+
+   .. math::
+      s(x) =
+      \begin{cases}
+         0,                    &       & x \le 0  \\
+         6x^5 - 15x^4 + 10x^3, & 0 \lt & x \lt 1  \\
+         1,                    & 1 \le & x \qquad
+      \end{cases}
+
+17. :commit:`770b4b36` 为肌肉执行器新增了可选的 :ref:`tausmooth<actuator-muscle-tausmooth>` 属性。当其
+    为正时，肌肉激活/去激活的时间常数 :math:`\tau` 使用 :ref:`mju_sigmoid` ，在宽度为 tausmooth 的范围内，于
+    `Millard et al. (2013) <https://doi.org/10.1115/1.4023390>`__
+    肌肉模型给出的两个极值之间平滑过渡。更多细节参见 :ref:`肌肉执行器<CMuscle>` 。
+    与此相关， :ref:`mju_muscleDynamics` 现在接受 3 个参数而不是 2 个，新增了平滑宽度参数。
+#. :commit:`f887c1e9` 将公共 C 宏定义从 mujoco.h 移到了一个名为
+    `mjmacro.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjmacro.h>`__ 的新公共头文件中。新文件
+    由 mujoco.h 包含，因此该变更不会破坏现有用户代码。
+#. :commit:`f887c1e9` 新增了对
+    `Address Sanitizer (ASAN) <https://clang.llvm.org/docs/AddressSanitizer.html>`__ 和
+    `Memory Sanitizer (MSAN) <https://clang.llvm.org/docs/MemorySanitizer.html>`__ 的插桩支持，用于在从
+    ``mjData`` 栈和 arena 分配内存时检测内存错误。
+#. :commit:`f887c1e9` 从 ``mj_printData`` 的输出中移除了 ``pstack`` 和 ``parena`` ，因为它们是
+    ``mjData`` 分配器的实现细节，会受插桩构建中诊断填充的影响。
+#. :commit:`466c9aca` 移除了 ``mj_activate`` 和 ``mj_deactivate`` 函数。保留它们是为了兼容 MuJoCo 闭源时期的旧用户代码，
+    但自开源以来它们一直是空操作函数。
+
+
+版本 2.3.5 (April 25, 2023)
+------------------------------
+
+错误修复
+^^^^^^^^^
+
+1. :commit:`d23c5e78` 修复了使用 :ref:`mjVFS` 时，会导致无法从磁盘读取 OBJ 和 PNG 文件的资源加载
+   错误。
+#. :commit:`d23c5e78` 修复了在 Python 被动查看器中施加鼠标扰动时，macOS 上偶发的段错误。
+
+插件
+^^^^^^^
+
+3. :commit:`d23c5e78` :ref:`mjpPlugin` 中的 ``visualize`` 回调现在接收一个 :ref:`mjvOption` 作为输入
+   参数。
+
+
+版本 2.3.4 (April 20, 2023)
+------------------------------
+
+.. note::
+
+   此版本受到一个资源加载错误的影响：使用 ``mjVFS`` 时无法从磁盘读取 OBJ 和 PNG 文件。建议用户直接跳到 2.3.5
+   版本。
+
+通用
+^^^^^^^
+
+1. :commit:`7cc42ecf` 移除了 :ref:`compiler/coordinate<compiler-coordinate>` 属性的 "global" 设置。
+   这个很少使用的设置使编译器逻辑变得复杂，并且阻碍了后续改进。若要转换使用过该选项的旧模型，请在 MuJoCo 2.3.3 或更早版本中加载并保存它们。
+
+.. image:: images/changelog/ellipsoidinertia.gif
+   :align: right
+   :width: 240px
+
+2. :commit:`7cc42ecf` 新增了 :ref:`visual-global<visual-global>` 标志
+   :ref:`ellipsoidinertia<visual-global-ellipsoidinertia>` ，用椭球而不是默认的长方体来可视化等效的刚体（body）惯性。
+#. :commit:`5f132af6` 在 :ref:`mjData` 中新增了中间阶段和粗测阶段（broad-phase）的碰撞统计信息。
+#. :commit:`01b84089` 新增了关于 :ref:`引擎插件<exPlugin>` 的文档。
+#. :commit:`2e23594f` 在 ``introspect`` 模块中新增了结构体信息。
+#. :commit:`fe3dccfd` 新增了一种名为 :ref:`资源提供者<exProvider>` 的扩展机制。该可扩展机制允许 MuJoCo 从本地操作系统文件系统或
+   :ref:`虚拟文件系统<Virtualfilesystem>` 之外的数据源读取资源。
+
+Python 绑定
+^^^^^^^^^^^^^^^
+
+7. :commit:`6d63e046` macOS 上的离屏渲染不再局限于主线程。这是通过使用底层的 Core OpenGL（CGL）API
+   创建 OpenGL 上下文实现的，而不是经由依赖 Cocoa 的 NSOpenGL 的 GLFW。由此得到的上下文不与 Cocoa 窗口绑定，因此也不与主线程绑定。
+#. :commit:`34226bf5` 修复了 ``viewer.launch_passive`` 和 ``viewer.launch_repl`` 中的竞态条件。这些函数
+   此前可能在内部调用 ``mj_forward`` 之前就返回。这会使用户代码得以继续运行，并可能与内部的 ``mj_forward`` 并发地修改物理状态，从而导致例如
+   `MuJoCo 栈溢出错误 <https://github.com/google-deepmind/mujoco/issues/783>`__
+   或 `段错误 <https://github.com/google-deepmind/mujoco/issues/790>`__ 。
+#. :commit:`0db9a453` ``viewer.launch_passive`` 函数现在返回一个可用于与查看器交互的句柄。被动查看器现在还需要显式调用其句柄上的 ``sync`` ，才能获取物理状态的任何更新。
+   这是为了避免可能导致视觉伪影的竞态条件。详情参见
+   :ref:`文档<PyViewerPassive>` 。
+#. :commit:`b362cb49` ``viewer.launch_repl`` 函数已被移除，因为其功能已被
+   ``launch_passive`` 取代。
+#. :commit:`2e23594f` 新增了少量通过新的 ``introspect`` 元数据发现的缺失结构体字段。
+
+错误修复
+^^^^^^^^^
+
+12. :commit:`101c647a` 修复了新的 implicitfast 积分器中处理基于椭球的流体模型力时的
+    错误。
+#. :commit:`0db9a453` 移除了 `mj_copyData` 中多余的整个 arena 复制，这可能会显著
+    `拖慢 <https://github.com/google-deepmind/mujoco/issues/568>`__ 复制操作。
+#. :commit:`2d69b158` 使 :ref:`shellinertia<body-geom-shellinertia>` 忽略 ``exactmeshinertia`` ，后者仅
+    用于旧版体积计算（ `#759 <https://github.com/google-deepmind/mujoco/issues/759>`__ ）。
+
+Version 2.3.3 (March 20, 2023)
+------------------------------
+
+通用
+^^^^
+
+1. :commit:`8c7f6ce5` 隐式积分的改进：
+
+   - RNE 算法的导数现在使用稀疏数学计算，使用\ :ref:`隐式积分器（implicit integrator）<geIntegration>`\ 时，大型模型的速度显著提升。
+   - 新增了名为 ``implicitfast`` 的积分器。它与现有的隐式积分器类似，但跳过了科里奥利力和向心力的导数。详细的动机和讨论请参见\ :ref:`数值积分<geIntegration>`\ 一节。推荐所有新模型使用 implicitfast 积分器，它将在未来版本中成为默认积分器。
+
+   下表显示了使用不同积分器时，627 自由度（DoF）的 `humanoid100
+   <https://github.com/google-deepmind/mujoco/blob/main/model/humanoid/humanoid100.xml>`__ 模型的计算开销。"implicit (old)" 使用稠密的 RNE 导数，"implicit (new)" 是上述稀疏化之后的结果。计时在 AMD 3995WX CPU 的单个核心上测得。
+
+.. csv-table::
+   :header: "timing", "Euler", "implicitfast", "implicit (new)", "implicit (old)"
+   :widths: auto
+   :align: left
+
+   one step (ms),  0.5,   0.53,  0.77,  5.0
+   steps/second,   2000,  1900,  1300,  200
+
+.. image:: images/computation/midphase.gif
+   :align: right
+   :width: 350px
+
+.. _midphase:
+
+2. :commit:`70959c1a` 新增了碰撞中间阶段（mid-phase），用于在刚体（body）对中剪枝 geom，详情请参见\ :ref:`文档<coSelection>`\ 。它基于刚体惯性坐标系（frame）中的静态 AABB 包围体层次结构（BVH 二叉树）。右侧的 GIF 截取自\ `这段更长的视频 <https://youtu.be/e0babIM8hBo>`__\ 。
+#. :commit:`49c939ea` ``mjd_transitionFD`` 函数不再触发传感器（sensor）计算，除非显式请求。
+#. :commit:`c57a588a` 将 :ref:`mjLROpt` 结构体中 ``inteval`` 属性的拼写更正为 ``interval``。
+#. :commit:`9756ed0d` 网格（mesh）的纹理和法线映射现在是每三角形 3 个，而不是每顶点 1 个。网格顶点不再像以前那样为了规避这一限制而被复制。
+#. :commit:`50bebcb4` 稀疏约束（constraint）雅可比（Jacobian）矩阵的非零元素现在会被预先计数，并用于矩阵内存分配。例如，`humanoid100
+   <https://github.com/google-deepmind/mujoco/blob/main/model/humanoid/humanoid100.xml>`__ 模型的约束雅可比矩阵以前需要约 500,000 个 ``mjtNum``，现在只需要约 6000 个。非常大的模型现在可以使用 CG 求解器（solver）加载和运行。
+#. :commit:`d3d789cf` 将 :ref:`mju_error` 和 :ref:`mju_warning` 修改为变参函数（支持类似 printf 的参数）。函数 ``mju_error_i``、\ ``mju_error_s``、\ ``mju_warning_i`` 和 ``mju_warning_s`` 现已弃用。
+#. :commit:`056e8492` 实现了高性能的 ``mju_sqrMatTDSparse`` 函数，不需要分配稠密内存。
+#. :commit:`8696247f` 新增 ``mj_stackAllocInt``，用于获取在 mjData 栈上分配整数的正确大小。栈内存使用量减少了 10% - 15%。
+
+
+Python 绑定
+^^^^^^^^^^^
+
+10. :commit:`e58d53e7` 修复了使用 ``viewer.launch_repl`` 时 IPython 历史记录损坏的问题。\ ``launch_repl`` 函数现在可以无缝地延续 IPython 交互式 shell 会话，不再被视为实验性功能。
+#. :commit:`7a0def97` 新增 ``viewer.launch_passive``，以被动、非阻塞模式启动交互式查看器。对 ``launch_passive`` 的调用会立即返回，允许用户代码继续执行，同时查看器会自动反映物理状态的任何变化。（请注意，该功能目前处于实验/测试阶段，尚未在我们的\ :ref:`查看器文档<PyViewer>`\ 中描述。）
+#. :commit:`7a0def97` 新增了适用于 macOS 的 ``mjpython`` 启动器，\ ``viewer.launch_passive`` 要在 macOS 上运行必须使用它。
+#. :commit:`71c5f179` 从关节（joint）索引器中移除了 ``efc_`` 字段。自引入 arena 内存以来，这些字段的大小是动态的，会随时间步长（time step）之间活动约束数量的变化而变化，从而破坏了关节与 ``efc_`` 行之间的严格对应关系。
+#. :commit:`e20ab6c9` 为 ``mjVisual`` 和 ``mjvPerturb`` 结构体的绑定补充了若干缺失的字段。
+
+Simulate
+^^^^^^^^
+
+15. :commit:`2f0fb1e4` 为 macOS 上\ `损坏的 VSync <https://github.com/glfw/glfw/issues/2249>`__\ 实现了变通方案，使得启用垂直同步（Vertical Sync）开关时帧率能被正确限制。
+
+.. image:: images/changelog/contactlabel.png
+   :align: right
+   :width: 400px
+
+16. :commit:`2607e67f` 为接触（contact）可视化（visualization）新增了可选标签，用于指示是哪两个 geom 在接触（若已定义则显示名称，否则显示 id）。这在杂乱的场景中很有用。
+
+|br|
+
+
+Version 2.3.2 (February 7, 2023)
+--------------------------------
+
+通用
+^^^^
+
+1. :commit:`c741dfce` 实现了性能更高的 mju_transposeSparse，不需要分配稠密内存。对于 `humanoid100.xml <https://github.com/google-deepmind/mujoco/blob/main/model/humanoid/humanoid100.xml>`__ 模型的约束雅可比矩阵，该函数快了 35%。
+#. :commit:`f1007df0` 函数 :ref:`mj_name2id` 现在使用哈希函数而不是线性搜索来实现，以获得更好的性能。
+#. :commit:`929e09f8` 现在会从 URDF 中解析 geom 名称，重复的名称会被忽略。\ ``mj_printData`` 的输出现在包含发生接触的 geom 名称。
+
+缺陷修复
+^^^^^^^^
+
+4. :commit:`6ba4d6f0` 修复了一个缺陷：当 :at:`shellinertia` 等于 ``true`` 时，网格的朝向会被壳惯性（shell inertia）的主成分覆盖，而顶点坐标却是使用体积惯性旋转的。现在在壳的情形下也使用体积惯性的朝向。
+#. :commit:`19b6c70e` 修复了使用包围盒拟合选项 :at:`fitaabb` 时，网格到基本几何体拟合中的错位缺陷。
+
+.. image:: images/changelog/meshfit.png
+   :align: right
+   :width: 300px
+
+6. :commit:`d022cd1a` 修复了 Python 查看器中的 ``launch_repl`` 功能。
+#. :commit:`06557c14` 在 ``mjd_transitionFD`` 中正确设置 ``time``，以支持依赖时间的用户代码。
+#. :commit:`6b80b010` 修复了存在 ``user`` 类型传感器时的传感器数据维度校验。
+#. :commit:`093125c2` 修复了模型编译期间遇到空的 ``nsensordata`` 回调时不正确的插件（plugin）错误信息。
+#. :commit:`e9869d3b` 当 ``mj_fwdConstraint`` 提前返回时，正确地结束计时器（``TM_END``）。
+#. :commit:`436fc6e7` 修复了 ``mj_deleteFileVFS`` 中的无限循环。
+
+Simulate
+^^^^^^^^
+
+12. :commit:`bc0184d6` 将 simulate 传感器绘图 y 轴的精度提高了 1 位
+    (`#719 <https://github.com/google-deepmind/mujoco/issues/719>`_)。
+#. :commit:`79fffdc0` 刚体标签现在绘制在刚体坐标系处，而不是惯性坐标系处，除非正在可视化惯性。
+
+插件
+^^^^
+
+14. :commit:`5c021d04` ``reset`` 回调现在接收特定于实例的 ``plugin_state`` 和 ``plugin_data`` 作为参数，而不是整个 ``mjData``。由于 ``reset`` 是在 ``mj_resetData`` 内部、任何物理前向调用之前被调用的，因此在这个阶段从 ``mjData`` 中读取任何内容都是错误的。
+#. :commit:`30b4309a` ``mjpPlugin`` 中的 ``capabilities`` 字段被重命名为 ``capabilityflags``，以更清楚地表明这是一个位字段。
+
+
+Version 2.3.1 (December 6, 2022)
+--------------------------------
+
+Python 绑定
+^^^^^^^^^^^
+
+1. :commit:`0846f38c` ``simulate`` 图形界面现在可以通过 ``mujoco`` Python 包以 ``mujoco.viewer`` 的形式使用。详情请参见\ :ref:`文档<PyViewer>`\ 。（由 `Levi Burner <https://github.com/aftersomemath>`__ 贡献。）
+#. :commit:`ef695bb8` MuJoCo 教程 Colab 中的 ``Renderer`` 类现在可以直接在原生 Python 绑定中使用。
+
+通用
+^^^^
+
+3. :commit:`893942a7` 肌腱（tendon）的 :at:`springlength` 属性现在可以接受两个值。给定两个非递减的值时，`springlength` 指定弹簧刚度（stiffness）的\ `死区 <https://en.wikipedia.org/wiki/Deadband>`__\ 范围。如果肌腱长度位于这两个值之间，则力为 0。如果长度超出该范围，力的表现与普通弹簧相同，弹簧的静止长度对应于最近的 :at:`springlength` 值。这可以用来创建其限位由弹簧而不是约束来实施的肌腱，这样更廉价，也更易于分析。请参见示例模型
+   `tendon_springlength.xml <https://github.com/google-deepmind/mujoco/blob/main/test/engine/testdata/tendon_springlength.xml>`__\ 。
+
+   .. attention::
+     这是一个小的破坏性 API 变更。\ ``mjModel.tendon_lengthspring`` 的大小现在是 ``ntendon x 2``，而不是 ``ntendon x 1``。
+
+   .. youtube:: -PJ6afdETUg
+      :align: right
+      :height: 150px
+
+#. :commit:`0eb7f871` 移除了无状态执行器（actuator）必须排在有状态执行器之前的要求。
+#. :commit:`f905c7fb` 新增了 :ref:`mju_fill`、\ :ref:`mju_symmetrize` 和 :ref:`mju_eye` 工具函数。
+#. :commit:`23092a11` 为 :ref:`body<body>` 新增了 :at:`gravcomp` 属性，实现重力补偿（gravity compensation）和浮力。请参见示例模型 `balloons.xml <https://github.com/google-deepmind/mujoco/blob/main/model/balloons/balloons.xml>`__\ 。
+#. :commit:`36b30e45` 将 ``cable`` 插件库重命名为 ``elasticity``。
+#. :commit:`0b45129c` 为\ :ref:`通用执行器<actuator-general>`\ 新增了 :at:`actdim` 属性。大于 1 的值仅允许用于 dyntype :at-val:`user`，因为原生的激活（activation）动力学都是标量。在 `engine_forward_test.cc <https://github.com/google-deepmind/mujoco/blob/main/test/engine/engine_forward_test.cc>`__ 中新增了实现二阶激活动力学的示例测试。
+#. :commit:`3b89b0fd` 改进了粒子 ``composite`` 类型，它现在允许用户指定几何体和多个关节。请参见两个新示例：
+   `particle_free.xml <https://github.com/google-deepmind/mujoco/blob/0fcd20f0da67ede7b16ef7e439a28be67505a037/model/composite/particle_free.xml>`__ 和
+   `particle_free2d.xml <https://github.com/google-deepmind/mujoco/blob/0fcd20f0da67ede7b16ef7e439a28be67505a037/model/composite/particle_free2d.xml>`__\ 。
+#. :commit:`7b0fbc63` 针对非 AVX 配置的性能改进：
+
+   - 使用 `restrict <https://en.wikipedia.org/wiki/Restrict>`__ 使 ``mj_solveLD`` 快了 14%。请参见 `engine_core_smooth_benchmark_test
+     <https://github.com/google-deepmind/mujoco/blob/main/test/benchmark/solveLD_benchmark_test.cc>`__。
+   - 使用手动循环展开使 ``mju_dotSparse`` 快了 50%。请参见 `engine_util_sparse_benchmark_test
+     <https://github.com/google-deepmind/mujoco/blob/main/test/benchmark/engine_util_sparse_benchmark_test.cc>`__。
+#. :commit:`d0b1a973` 新增了 :at:`solid` 被动力（passive force）插件：
+
+   .. youtube:: AGcTGHbbze4
+      :align: right
+      :height: 150px
+
+   - 这是一个与 ``composite`` 粒子兼容的新力场。
+   - 生成一个四面体网格，其粒子的质量集中在顶点上。
+   - 使用分段常数应变模型，等价于有限元，但以无坐标的形式表述。这意味着除边的伸长量之外，所有量都可以预先计算，与质点-弹簧模型相同。
+   - 仅适用于小应变（大位移但小形变）。四面体在受到大载荷时可能会翻转。
+
+#. :commit:`9ecade07` 新增了 API 函数 ``mj_loadPluginLibrary`` 和 ``mj_loadAllPluginLibraries``。第一个函数在 POSIX 系统上等同于 ``dlopen``，在 Windows 上等同于 ``LoadLibraryA``。第二个函数会扫描指定目录中的所有动态库文件，并加载找到的每个库。假定通过这些函数打开的动态库在加载时会注册一个或多个 MuJoCo 插件。
+#. :commit:`0d52feaa` 为插件新增了可选的 ``visualize`` 回调，它在 ``mjv_updateScene`` 期间被调用。该回调允许自定义插件的可视化。作为示例，为 Cable 插件启用了应力可视化。
+#. :commit:`dee1d602` :ref:`user<sensor-user>` 类型的传感器不再需要 :at:`objtype`、\ :at:`objname` 和 :at:`needstage`。如果未指定，objtype 现在为 :ref:`mjOBJ_UNKNOWN<mjtObj>`。\ ``user`` 传感器的 :at:`datatype` 默认值现在是 :at-val:`"real"`，\ :at:`needstage` 默认值现在是 :at-val:`"acc"`。
+#. :commit:`638c9a69` 在 URDF 导入中新增了对胶囊体的支持。
+#. :commit:`df25d7d6` 在 macOS 上，当在 Apple Silicon 机器上通过 `Rosetta 2 <https://support.apple.com/en-gb/HT211861>`__ 转译运行时，给出信息明确的错误消息。预构建的 MuJoCo 二进制文件在 x86-64 机器上使用 `AVX <https://en.wikipedia.org/wiki/Advanced_Vector_Extensions>`__ 指令，而 Rosetta 2 不支持这些指令。（在此版本之前，用户只会得到一条含糊的 "Illegal instruction" 消息。）
+
+缺陷修复
+^^^^^^^^
+
+17. :commit:`89185b4a` 修复了 ``mj_addFileVFS`` 中导致文件路径被忽略的缺陷（在 2.1.4 中引入）。
+
+Simulate
+^^^^^^^^
+
+18. :commit:`2ebc5f09` 将 ``simulate`` 应用程序搜索插件的目录从 ``plugin`` 重命名为 ``mujoco_plugin``。
+#. :commit:`165e72f7` 鼠标力扰动现在作用在选取点上，而不是刚体质心上。
+
+
+Version 2.3.0 (October 18, 2022)
+--------------------------------
+
+通用
+^^^^
+
+1. :commit:`58fd72f5` ``mjData`` 中的 ``contact`` 数组和以 ``efc_`` 为前缀的数组被从 ``buffer`` 中移出，放入新的 ``arena`` 内存空间。创建 ``mjData`` 时，这些数组不再以固定大小分配。取而代之的是，在每次调用 :ref:`mj_forward` 时（具体来说是在 :ref:`mj_collision` 和 :ref:`mj_makeConstraint` 中）确定确切的内存需求，并从 ``arena`` 空间中分配这些数组。\ ``stack`` 现在也与 ``arena`` 共享其可用内存。这一变更减少了不使用 PGS 求解器的模型中 ``mjData`` 的内存占用，并将在未来实现显著的内存缩减。详情请参见\ :ref:`内存分配 <CSize>`\ 一节。
+
+   .. youtube:: RHnXD6uO3Mg
+      :aspect: 16:7
+      :align: right
+      :height: 150px
+
+#. :commit:`f151e84a` 新增了 colab notebook 教程，展示如何使用线性二次调节器（Linear Quadratic Regulator）让人形机器人单腿保持平衡。该 notebook 使用 MuJoCo 的原生 Python 绑定，并包含一个 ``Renderer`` 类草稿，以便在 Python 中轻松渲染（rendering）。|br| 亲自试试：|LQRopenincolab|
+
+   .. |LQRopenincolab| image:: https://colab.research.google.com/assets/colab-badge.png
+                       :target: https://colab.research.google.com/github/deepmind/mujoco/blob/main/python/LQR.ipynb
+
+#. :commit:`04d44e1e` 对人形模型的更新：
+   - 新增了两个关键帧（keyframe）（单腿站立和下蹲）。
+   - 增大了最大髋关节屈曲角度。
+   - 新增了腘绳肌肌腱，在髋关节大幅屈曲时耦合髋关节和膝关节。
+   - 总体外观改进，包括更好地使用默认值和更好的命名方案。
+
+#. :commit:`89579766` 新增了 :ref:`mju_boxQP` 和分配函数 :ref:`mju_boxQPmalloc`，用于求解带箱形约束的二次规划（Quadratic Program）：
+
+   .. math::
+
+      x^* = \text{argmin} \; \tfrac{1}{2} x^T H x + x^T g \quad \text{s.t.} \quad l \le x \le u
+
+   该算法由 `Tassa et al. 2014 <https://doi.org/10.1109/ICRA.2014.6907001>`__ 提出，经过 2-5 次 Cholesky 分解即可收敛，与问题规模无关。
+
+#. :commit:`f4e7fa97` 新增了 :ref:`mju_mulVecMatVec`，用于将方阵 :math:`M` 与向量 :math:`x` 和 :math:`y` 在两侧相乘。该函数返回 :math:`x^TMy`。
+
+#. :commit:`1e2a9a53` 新增了插件 API。插件允许开发者在不修改核心引擎代码的情况下扩展 MuJoCo 的能力。插件机制旨在取代现有的回调，不过出于简单用例和向后兼容的考虑，回调目前仍会保留。新机制管理有状态的插件，并支持来自不同来源的多个插件，使 MuJoCo 扩展能够以模块化的方式引入，而不是作为全局覆盖。请注意，在我们进行内部测试期间，新机制目前除代码外没有文档。如果您有兴趣使用插件机制，请先与我们联系。
+
+#. :commit:`cce35e18` 新增了 :at:`assetdir` 编译器选项，它同时设置 :at:`meshdir` 和 :at:`texturedir` 的值。后两个属性中的值优先于 :at:`assetdir`。
+
+#. :commit:`84d16844` 为 :ref:`visual<visual>` 新增了 :at:`realtime` 选项，用于以较慢的速度启动仿真。
+
+#. :commit:`e250ff0d` 新增了 :at:`cable` 复合类型：
+
+   - 缆索单元通过球关节连接。
+   - `initial` 参数指定起始边界处的关节：\ :at:`free`、\ :at:`ball` 或 :at:`none`。
+   - 边界刚体以名称 :at:`B_last` 和 :at:`B_first` 暴露出来。
+   - 顶点的初始位置可以通过参数 :at:`vertex` 直接在 XML 中指定。
+   - 刚体坐标系的朝向\ **就是**\ 曲线材料坐标系的朝向。
+
+#. :commit:`e250ff0d` 新增了 :at:`cable` 被动力插件：
+
+   - 扭转刚度和弯曲刚度可以分别通过参数 :at:`twist` 和 :at:`bend` 设置。
+   - 无应力构型可以通过标志 :at:`flat` 设置为初始构型或平直构型。
+   - 新增 `cable.xml <https://github.com/google-deepmind/mujoco/blob/e250ff0d/model/plugin/elasticity/cable.xml>`__ 示例，展示了缠绕结（plectoneme）的形成。
+   - 新增 `coil.xml <https://github.com/google-deepmind/mujoco/blob/e250ff0d/model/plugin/elasticity/coil.xml>`__  示例，展示了弯曲的平衡构型。
+   - 新增 `belt.xml <https://github.com/google-deepmind/mujoco/blob/e250ff0d/model/plugin/elasticity/belt.xml>`__  示例，展示了扭转与各向异性之间的相互作用。
+   - 新增了使用悬臂梁精确解的测试。
+
+   +--------------------------+--------------------------+--------------------------+
+   | .. youtube:: 25kQP671fJE | .. youtube:: 4DvGe-BodFU | .. youtube:: QcGdpUd5H0c |
+   |   :align: center         |   :align: center         |    :align: center        |
+   |   :height: 140px         |   :height: 140px         |    :height: 140px        |
+   +--------------------------+--------------------------+--------------------------+
+
+Python 绑定
+^^^^^^^^^^^
+11. :commit:`c13979cd` 为\ `具名访问器 <https://mujoco.readthedocs.io/en/latest/python.html#named-access>`__\ 对象新增了 ``id`` 和 ``name`` 属性。它们分别为 ``mj_name2id`` 和 ``mj_id2name`` 提供了更符合 Python 风格的 API 访问方式。
+
+#. :commit:`58fd72f5` ``MjData.contact`` 的长度现在是 ``ncon`` 而不是 ``nconmax``，这样无需检查 ``ncon`` 就可以直接将其用作迭代器。
+
+#. :commit:`ec6ea6a6` 修复了将 Python 可调用对象安装为回调时的内存泄漏
+   (`#527 <https://github.com/google-deepmind/mujoco/issues/527>`__)。
+
+
+Version 2.2.2 (September 7, 2022)
+---------------------------------
+
+通用
+^^^^
+
+.. youtube:: BcHZ5BFeTmU
+   :aspect: 16:7
+   :align: right
+   :height: 150px
+
+1. :commit:`3d77eb1e` 新增了\ :ref:`吸附执行器<actuator-adhesion>`\ ，用于模拟真空夹爪和粘附性的生物力学附肢。
+#. :commit:`3d77eb1e` 新增了相关的\ `示例模型 <https://github.com/google-deepmind/mujoco/tree/main/model/adhesion>`__\ 和视频：
+#. :commit:`fcf41317` 新增了 :ref:`mj_jacSubtreeCom`，用于计算子树质心的平动雅可比。
+#. :commit:`d26501c0` 为 :el:`weld` 约束新增了 :at:`torquescale` 和 :at:`anchor` 属性。\ :at:`torquescale` 设置约束所施加的力矩与力之比，\ :at:`anchor` 设置施加焊接力旋量（wrench）的点。更多细节请参见 :ref:`weld <equality-weld>`。
+#. :commit:`d26501c0` 将 ``mjNEQDATA``\ （``mjModel.eq_data`` 中等式约束（equality constraint）参数的行长度）从 7 增加到 11。
+#. :commit:`d26501c0` 为 :el:`connect` 和 :el:`weld` 约束都新增了锚点的可视化（在 ``simulate`` 中按 'N' 键激活）。
+#. :commit:`8ca5887c` 新增了 `weld.xml <https://github.com/google-deepmind/mujoco/blob/main/test/engine/testdata/weld.xml>`__，展示了新的 weld 属性的不同用法。
+
+   .. youtube:: s-0JHanqV1A
+      :aspect: 16:7
+      :align: right
+      :height: 150px
+
+#. :commit:`46da1285` 现在可以通过为使用 :at:`site` 传动（transmission）的执行器添加参考 site 来实现笛卡尔 6D 末端执行器控制。请参见 :ref:`执行器<actuator-general>`\ 文档中对新的 :at:`refsite` 属性的描述，以及示例模型
+   `refsite.xml <https://github.com/google-deepmind/mujoco/blob/main/test/engine/testdata/actuation/refsite.xml>`__\ 。
+
+#. :commit:`a693a2d9` 新增了 :at:`autolimits` 编译器选项。如果为 ``true``，当对应的范围\ *已定义*\ 时，关节和肌腱的 :at:`limited` 属性以及执行器的 :at:`ctrllimited`、\ :at:`forcelimited` 和 :at:`actlimited` 属性会被自动设置为 ``true``，否则为 ``false``。
+
+   如果 ``autolimits="false"``\ （默认值），指定了 :at:`range` 属性但没有指定 :at:`limited` 属性的模型将无法编译。未来的版本会将 :at:`autolimits` 的默认值改为 ``true``，这个编译错误可以让用户提前发现这一未来的行为变化。
+
+   .. attention::
+     这是一个破坏性变更。对于定义了范围但未指定 :at:`limited` 的模型，请显式地将 limited 设置为 ``false``，或移除该范围，以保持模型当前的行为。
+
+#. :commit:`8ca5887c` 新增了对所有良构网格的转动惯量计算。通过将编译器标志 :at:`exactmeshinertia` 设置为 ``true`` 来激活该选项（默认为 ``false``）。这个默认值将来可能会改变。
+#. :commit:`5c5449bf` 为 :at:`geom` 新增了参数 :at:`shellinertia`，用于将推断出的惯性（inertia）定位在边界（壳）上。目前仅支持网格。
+#. :commit:`833dc740` 对于从中推断体积惯性的网格，如果网格面的朝向不一致，则报错。如果发生这种情况，请在例如 MeshLab 或 Blender 中修复网格。
+
+   .. youtube:: I2q7D0Vda-A
+      :align: right
+      :height: 150px
+
+#. :commit:`ae0ac86e` 新增了悬挂肌腱的悬链线可视化。视频中看到的模型可以在\ `这里 <https://github.com/google-deepmind/mujoco/blob/main/test/engine/testdata/catenary.xml>`__\ 找到。
+#. :commit:`b966a378` 为 :ref:`visual/global<visual-global>` 新增了 ``azimuth`` 和 ``elevation`` 属性，定义模型加载时自由相机的初始朝向。
+#. :commit:`b966a378` 新增了 ``mjv_defaultFreeCamera``，用于设置默认的自由相机，并遵循上述属性。
+#. :commit:`80b4ffdd` ``simulate`` 现在支持通过 File 部分中的按钮或 ``Ctrl-P`` 截屏。
+#. :commit:`834e8dd5` 改进了 `simulate` 中的时间同步，特别是当实际的实时因子与请求的因子不同时（例如时间步长太小，导致仿真无法跟上实时），会报告实际的实时因子。
+#. :commit:`090fe2db` 新增了针对传感器的禁用标志。
+#. :commit:`fdbbc8bb` :ref:`mju_mulQuat` 和 :ref:`mju_mulQuatAxis` 支持原地计算。例如
+   |br| ``mju_mulQuat(a, a, b);`` 会将四元数（quaternion）\ ``a`` 设置为 ``a`` 和 ``b`` 的乘积。
+#. :commit:`e3a82247` 向 ``mjd_transitionFD`` 新增了传感器矩阵（请注意这是一个 API 变更）。
+
+已删除/已弃用的功能
+^^^^^^^^^^^^^^^^^^^
+
+21. :commit:`c8ff7b3d` 移除了 ``distance`` 约束。
+
+缺陷修复
+^^^^^^^^
+
+22. :commit:`f71daed6` 修复了一些透明 geom 在反射中的渲染问题。
+#. :commit:`0b2f19bb` 修复了 ``intvelocity`` 默认值的解析。
+
+
+Version 2.2.1 (July 18, 2022)
+-----------------------------
+
+通用
+^^^^
+
+1. :commit:`228264c9` 新增了 ``mjd_transitionFD``，用于计算状态转移矩阵和控制转移矩阵的高效有限差分近似，更多细节请\ :ref:`参见此处<derivatives>`\ 。
+#. :commit:`373cc894` 新增了椭球流体模型的导数。
+#. :commit:`09a5efc0` 为\ :ref:`关键帧<keyframe>`\ 新增了 ``ctrl`` 属性。
+#. :commit:`c14a7ef4` 新增了 ``clock`` 传感器，用于\ :ref:`测量时间<sensor-clock>`\ 。
+#. :commit:`2d0995b4` 为蒙皮（skin）新增了可视化分组。
+#. :commit:`6ead1461` 为 ``free`` 和 ``ball`` 关节以及使用 ``site`` 传动的执行器新增了执行器可视化。
+#. :commit:`d3a86bb7` 新增了执行器激活的可视化。
+#. :commit:`d3a86bb7` 为“积分速度”执行器新增了 ``<actuator-intvelocity>`` 执行器快捷方式，文档见\ :ref:`此处 <actuator-intvelocity>`\ 。
+#. :commit:`d3a86bb7` 为主动阻尼执行器新增了 ``<actuator-damper>`` 执行器快捷方式，文档见\ :ref:`此处 <actuator-damper>`\ 。
+#. :commit:`ec7133b0` ``mju_rotVecMat`` 和 ``mju_rotVecMatT`` 现在支持原地乘法。
+#. :commit:`d3a86bb7` ``mjData.ctrl`` 的值不再被原地钳位，引擎不会改动它们。
+#. :commit:`d3a86bb7` mjData 缓冲区中的数组现在按 64 字节边界对齐，而不是 8 字节。
+#. :commit:`f887c1e9` 在使用 `Address Sanitizer (ASAN) <https://clang.llvm.org/docs/AddressSanitizer.html>`__ 和 `Memory Sanitizer (MSAN) <https://clang.llvm.org/docs/MemorySanitizer.html>`__ 构建时，新增了内存投毒（memory poisoning）。这使 ASAN 能够检测对 ``mjModel.buffer`` 和 ``mjData.buffer`` 中不属于任何数组的区域的读写，也使 MSAN 能够检测在 ``mj_resetData`` 之后对 ``mjData`` 中未初始化字段的读取。
+#. :commit:`373cc894` 新增了一个\ `曲柄滑块示例模型 <https://github.com/google-deepmind/mujoco/tree/main/model/slider_crank>`__\ 。
+
+错误修复
+^^^^^^^^^
+
+15. :commit:`d3a86bb7` :ref:`激活值钳位 <CActRange>` 此前未应用于 :ref:`隐式积分器<geIntegration>`。
+#. :commit:`d3a86bb7` 对朝向指定符的解析更加严格。在此更改之前，如果一个指定同时包含 ``quat`` 和某个 :ref:`替代指定符<COrientation>`，例如 ``<geom ... quat=".1 .2 .3 .4" euler="10 20 30">``，会导致 ``quat`` 被忽略而仅使用 ``euler``。此更改之后会抛出解析错误。
+#. :commit:`f3453cf8` 对 XML 属性的解析更加严格。在此更改之前，像 ``<geom size="1/2 3 4">`` 这样的错误 XML 片段会被解析为 ``size="1 0 0"`` 且不会抛出任何错误。现在会抛出错误。
+#. :commit:`d3a86bb7` 尝试通过 XML 加载 ``NaN``，例如 ``<geom size="1 NaN 4">``，虽然出于调试目的是允许的，但现在会打印警告。
+#. :commit:`d5672639` 修复了 ``mj_loadModel`` 中的空指针解引用。
+#. :commit:`dbef8e6c` 修复了从 MJB 加载无效模型时的内存泄漏。
+#. :commit:`d3a86bb7` 计算 ``mjModel`` 缓冲区大小时现在会避免整数溢出。
+#. :commit:`d3a86bb7` 为 ``mjWARN_BADCTRL`` 添加了缺失的警告字符串。
+
+打包
+^^^^^^^^^
+
+23. :commit:`d3a86bb7` 更改了 MacOS 的打包方式，使得嵌入在 ``MuJoCo.app`` 中的 ``mujoco.framework`` 副本可用于在外部构建应用程序。
+
+
+版本 2.2.0 (May 23, 2022)
+----------------------------
+
+开源
+^^^^^^^^^^^^^
+
+1. :commit:`1913a02b` MuJoCo 现已成为完全开源的软件。新增的顶层目录如下：
+
+   a. ``src/``：所有源文件。其子目录对应编程章节 :ref:`简介<inIntro>` 中所述的模块：
+
+   - ``src/engine/``：核心引擎。
+   - ``src/xml/``：XML 解析器。
+   - ``src/user/``：模型编译器（model compiler）。
+   - ``src/visualize/``：抽象可视化器。
+   - ``src/ui/``：UI 框架。
+
+   b. ``test/``：测试及相应的资源文件。
+
+   c. ``dist/``：与打包和二进制分发相关的文件。
+
+#. :commit:`1913a02b` 添加了 `贡献者指南 <https://github.com/google-deepmind/mujoco/blob/main/CONTRIBUTING.md>`__ 和 `风格指南 <https://github.com/google-deepmind/mujoco/blob/main/STYLEGUIDE.md>`__ 。
+
+通用
+^^^^^^^
+
+3. :commit:`64bc6d27` 添加了光滑（无约束）动力学力对速度的解析导数：
+
+   - 由递归牛顿-欧拉算法计算的向心力和科里奥利力。
+   - 阻尼和流体阻力等被动力。
+   - 驱动力。
+
+#. :commit:`64bc6d27` 添加了 ``implicit`` 积分器。利用上述解析导数，新增了一种对速度隐式的积分器。就稳定性和计算成本而言，该积分器介于欧拉积分器和 Runge Kutta 积分器之间。它对使用流体阻力的模型（例如飞行或游泳）以及使用 :ref:`速度执行器<actuator-velocity>` 的模型最为有用。更多细节请参见 :ref:`数值积分<geIntegration>` 一节。
+
+#. :commit:`1913a02b` 为 :ref:`通用执行器<actuator-general>` 添加了 :at:`actlimited` 和 :at:`actrange` 属性，用于对执行器内部状态（激活值）进行钳位。这种钳位对于积分速度型执行器很有用，详见 :ref:`激活值钳位 <CActRange>` 一节。
+
+#. :commit:`1913a02b` ``mjData`` 字段 ``qfrc_unc``\ （无约束力）和 ``qacc_unc``\ （无约束加速度）分别被重命名为 ``qfrc_smooth`` 和 ``qacc_smooth``。虽然“unconstrained”更为精确，但“smooth”比“unc”更易理解。
+
+#. :commit:`1913a02b` 公共头文件已从 ``/include`` 移至 ``/include/mujoco/``，与其他开源项目中常见的目录布局保持一致。建议开发者在自己的代码库中通过 ``#include <mujoco/filename.h>`` 来包含 MuJoCo 的公共头文件。
+
+#. :commit:`1913a02b` 由 :ref:`shadowsize<visual-quality>` 属性指定的默认阴影分辨率从 1024 提高到了 4096。
+
+#. :commit:`1913a02b` 保存的 XML 现在使用 2 个空格缩进。
+
+错误修复
+^^^^^^^^^
+
+10. :commit:`1913a02b` 分割渲染时禁用了抗锯齿。在此更改之前，如果 :ref:`offsamples<visual-quality>` 属性大于 0（默认值为 4），与多个 geom 重叠的像素会得到平均后的分割 ID，导致 ID 不正确或不存在。此更改之后，分割渲染期间会忽略 :at:`offsamples`。
+
+#. :commit:`1913a02b` 实验性 multiCCD 功能的启用标志的取值现在与其他启用标志保持连续。\ ``simulate`` UI 及其他地方假定这些标志是连续的。
+
+#. :commit:`1913a02b` 修复了使用 mj_saveLastXML 保存带有 OBJ 网格的模型时网格重复的问题。
+
+
+版本 2.1.5 (Apr. 13, 2022)
+-----------------------------
+
+通用
+^^^^^^^
+
+1. :commit:`87539dbd` 添加了一项实验性功能：多接触凸体碰撞检测，通过启用标志激活。完整描述请参见 :ref:`此处 <option-flag>`。
+
+错误修复
+^^^^^^^^^
+
+2. :commit:`87539dbd` Linux 上的 GLAD 初始化逻辑现在会在进程的全局符号表中尚不存在 ``*GetProcAddress`` 函数时，调用 ``dlopen`` 加载 GL 平台动态库。特别是，使用 GLFW 建立渲染上下文、且没有显式链接 ``libGLX.so`` 的进程（例如 Python 解释器）现在可以正常工作，而不会在调用 ``mjr_makeContext`` 时因 ``gladLoadGL`` 错误而失败。
+
+#. :commit:`87539dbd` 在 Python 绑定中，标量字段（例如执行器的 ``ctrl`` 字段）的命名索引器现在返回形状为 ``(1,)`` 而不是 ``()`` 的 NumPy 数组。这使得给这些字段赋值更加直接。
+
+版本 2.1.4 (Apr. 4, 2022)
+----------------------------
+
+通用
+^^^^^^^
+
+1. :commit:`90dea1bd` MuJoCo 现在使用 GLAD 而不是 GLEW 来管理 OpenGL API 的访问。在 Linux 上，不再需要根据使用的是 GLX、EGL 还是 OSMesa 而链接不同的 GL 封装库。用户只需使用 GLX、EGL 或 OSMesa 创建 GL 上下文，\ ``mjr_makeContext`` 就会检测正在使用的是哪一种。
+
+#. :commit:`90dea1bd` 添加了接触坐标系的可视化。在编写或修改碰撞函数时，接触的 x 轴和 y 轴的实际方向可能很重要，这时该功能很有用。
+
+二进制构建
+^^^^^^^^^^^^
+
+3. :commit:`90dea1bd` Linux 和 Windows 上不再提供 ``_nogl`` 动态库。切换到 GLAD 后，我们可以在调用 ``mjr_makeContext`` 时而不是加载库时解析 OpenGL 符号。因此，MuJoCo 库不再对 OpenGL 有显式的动态依赖，可以在没有 OpenGL 的系统上使用。
+
+Simulate
+^^^^^^^^
+
+4. :commit:`90dea1bd` 修复了 simulate 中的一个错误：在未加载模型时按下 '[' 或 ']' 会导致崩溃。
+
+#. :commit:`90dea1bd` 在 Simulate GUI 中添加了接触坐标系的可视化。
+
+#. :commit:`90dea1bd` 将“set key”和“reset to key”分别重命名为“save key”和“load key”。
+
+#. :commit:`90dea1bd` 将 F6 和 F7 的绑定从用处不大的“vertical sync”和“busy wait”改为更有用的坐标系和标签的循环切换。
+
+错误修复
+^^^^^^^^^
+
+8. :commit:`90dea1bd` ``mj_resetData`` 会将 ``solver_nnz`` 字段清零。
+
+#. :commit:`90dea1bd` 移除了 ``mju_quat2mat`` 中针对单位四元数的特殊分支。此前，如果四元数的实部等于 1.0，\ ``mju_quat2mat`` 会跳过所有计算。对于非常小的角度（例如在有限差分时），在双精度下余弦值可能恰好等于 1.0，而正弦值仍不为零。
+
+
+版本 2.1.3 (Mar. 23, 2022)
+-----------------------------
+
+通用
+^^^^^^^
+
+1. :commit:`df048e54` ``simulate`` 现在支持循环切换相机（使用 ``[`` 和 ``]`` 键）。
+#. :commit:`df048e54` ``mjVIS_STATIC`` 会切换所有静态刚体，而不仅仅是世界刚体的直接子刚体。
+
+Python 绑定
+^^^^^^^^^^^^^^^
+
+3. :commit:`df048e54` 为 ``MjrContext`` 添加了 ``free()`` 方法。
+#. :commit:`df048e54` 枚举现在支持与数字进行算术和按位运算。
+
+错误修复
+^^^^^^^^^
+
+5. :commit:`df048e54` 修复了 2.1.2 中引入的平面渲染错误。该错误曾破坏 `dm_control <https://github.com/google-deepmind/dm_control>`__ 中的迷宫环境。
+
+
+版本 2.1.2 (Mar. 15, 2022)
+-----------------------------
+
+新模块
+^^^^^^^^^^^
+
+1. :commit:`3577e2cf` 添加了新的 :doc:`Python 绑定<python>`，可通过 ``pip install mujoco`` 安装，并通过 ``import mujoco`` 导入。
+#. :commit:`3577e2cf` 添加了新的 :doc:`Unity 插件<unity>`。
+#. :commit:`3577e2cf` 添加了新的 ``introspect`` 模块，它为 MuJoCo 的公共 API 提供类似反射的能力，目前描述函数和枚举。虽然该模块用 Python 实现，但预计它对面向多种语言的自动代码生成普遍有用。（它不作为 ``mujoco`` Python 绑定包的一部分发布。）
+
+API 变更
+^^^^^^^^^^^
+
+4. :commit:`3577e2cf` 将 ``mjtNum`` 浮点类型的定义移到了新的头文件 `mjtnum.h <https://github.com/google-deepmind/mujoco/blob/3577e2cf8bf841475b489aefff52276a39f24d51/include/mjtnum.h>`__ 中。
+#. :commit:`3577e2cf` 将头文件 `mujoco_export.h` 重命名为 :ref:`mjexport.h<inHeader>`。
+#. :commit:`3577e2cf` 添加了 ``mj_printFormattedData``，它接受浮点数的格式字符串，例如可用于提高精度。
+
+通用
+^^^^^^^
+
+7. :commit:`3577e2cf` MuJoCo 可以加载 `OBJ <https://en.wikipedia.org/wiki/Wavefront_.obj_file>`__ 网格文件。
+
+   a. 不支持包含顶点数超过 4 的多边形的网格。
+   #. 在包含多个对象组的 OBJ 文件中，第一个组之后的任何组都会被忽略。
+   #. 添加了（发布后添加，不包含在 2.1.2 归档中）带纹理的 `马克杯 <https://github.com/google-deepmind/mujoco/blob/main/model/mug/mug.xml>`__ 示例模型：
+
+      .. image:: images/changelog/mug.png
+         :width: 300px
+
+
+#. :commit:`3577e2cf` 为 :ref:`framepos<sensor-framepos>`、\ :ref:`framequat<sensor-framequat>`、\ :ref:`framexaxis<sensor-framexaxis>`、\ :ref:`frameyaxis<sensor-frameyaxis>`、\ :ref:`framezaxis<sensor-framezaxis>`、\ :ref:`framelinvel<sensor-framelinvel>` 和 :ref:`frameangvel<sensor-frameangvel>` 传感器添加了可选的参考坐标系指定。参考坐标系由新的 :at:`reftype` 和 :at:`refname` 属性指定。
+
+#. :commit:`3577e2cf` :ref:`用户参数 <CUser>` 的大小现在会被自动推断。
+
+   a. 顶层 :ref:`size <size>` 子句中用户参数的声明（例如 :at:`nuser_body`、\ :at:`nuser_jnt` 等）现在接受 -1 作为取值，这也是默认值。这会自动将该值设为模型中定义的最大的相关 :at:`user` 属性的长度。
+   #. 将取值设为小于 -1 的值会导致编译器错误（此前会导致段错误）。
+   #. 将取值设为小于模型中定义的某个 :at:`user` 属性的长度，会导致错误（此前多出的值会被忽略）。
+
+#. :commit:`3577e2cf` 将 :ref:`mjvScene` 中光源的最大数量从 8 增加到 100。
+
+#. :commit:`3577e2cf` 只有当原始 XML 包含显式的 :ref:`inertial <body-inertial>` 元素时，保存的 XML 文件才会包含它们。由编译器的 :ref:`inertiafromgeom <compiler>` 机制自动推断出的惯性仍保持未指定。
+
+#. :commit:`3577e2cf` 用户选中的 geom 始终以不透明方式渲染。这在交互式可视化器中很有用。
+
+#. :commit:`3577e2cf` 静态 geom 现在在可视化时遵循其 :ref:`geom 组<body-geom>`。在此更改之前，静态 geom 的渲染只能通过 :ref:`mjVIS_STATIC<mjtVisFlag>` 可视化标志来切换。此更改之后，必须同时启用 geom 组和可视化标志，该 geom 才会被渲染。
+
+#. :commit:`3577e2cf` :ref:`mujoco.h<inHeader>` 中函数声明里本应表示定长数组的指针参数，现在被写成带有大小的数组，例如 ``mjtNum quat[4]`` 而不是 ``mjtNum* quat``。从 C 和 C++ 的角度看这不是改变，因为函数签名中的数组类型会退化为指针类型。不过，这使得自动生成的代码能够知道预期的输入形状。
+
+#. :commit:`147efb51` 实验性的无状态流体相互作用模型。如 :ref:`此处 <gePassive>` 所述，流体力使用由刚体惯性计算出的尺寸。虽然有时很方便，但这很少是一个好的近似。在新模型中，力作用于 geom 而不是刚体，并且有若干用户可设置的参数。该模型通过设置一个新属性来激活：\ ``<geom fluidshape="ellipsoid"/>``。参数在 :ref:`此处<body-geom>` 有简要描述，但对该模型及其参数的完整描述，我们留待此功能脱离实验状态时再给出。
+
+错误修复
+^^^^^^^^^
+
+16. :commit:`3577e2cf` ``mj_loadXML`` 和 ``mj_saveLastXML`` 现在与区域设置无关。对于系统区域设置使用逗号作为小数分隔符的用户，Unity 插件现在应当可以正常工作。
+#. :commit:`3577e2cf` VFS 中的 XML 资源不再需要以空字符结尾。取而代之的是，文件大小由相应 VFS 条目的 size 参数确定。
+#. :commit:`3577e2cf` 修复了使用蒙皮时 ``mjrContext`` 中的顶点缓冲对象内存泄漏。
+#. :commit:`3577e2cf` 相机四元数现在会在 XML 编译期间被归一化。
+
+二进制构建
+^^^^^^^^^^^^
+
+20. :commit:`3577e2cf` Windows 二进制文件现在使用 Clang 构建。
+
+版本 2.1.1 (Dec. 16, 2021)
+-----------------------------
+
+API 变更
+^^^^^^^^^^^
+
+1. :commit:`a499b381` 添加了 ``mj_printFormattedModel``，它接受浮点数的格式字符串，例如可用于提高精度。
+#. :commit:`a499b381` 添加了 ``mj_versionString``，它返回表示 MuJoCo 二进制版本的人类可读字符串。
+#. :commit:`a499b381` 为遵循保留标识符的规定，将 API 结构体定义私有实例中的前导下划线改为尾随下划线，参见 `C 标准：第 7.1.3 节 <https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf>`__ 。
+
+   .. attention::
+      这是一个小的破坏性更改。引用私有实例的代码将无法工作。修复方法是将前导下划线替换为尾随下划线，例如 ``_mjModel`` |rarr| ``mjModel_``。
+
+通用
+^^^^^^^
+
+4. :commit:`a499b381` 更安全的字符串处理：分别用 ``strncat``、\ ``strncpy`` 和 ``snprintf`` 替换了 ``strcat``、\ ``strcpy`` 和 ``sprintf``。
+#. :commit:`ee39340a` 将缩进从 4 个空格改为 2 个空格，采用 K&R 大括号风格，并为单行条件语句添加了大括号。
+
+错误修复
+^^^^^^^^^
+
+6. :commit:`a499b381` 修复了 PGS 求解器中读取未初始化内存的问题。
+#. :commit:`a499b381` 计算出的胶囊体惯性现在是精确的。在此更改之前，由 :ref:`编译器 <compiler>` 的 :at:`inertiafromgeom` 机制计算的胶囊体质量和惯性，是用圆柱体近似的，该圆柱体由胶囊体的圆柱形中间部分在两端各延伸半个胶囊体半径构成。现在胶囊体惯性是对两个半球形端盖应用 `平行轴定理 <https://en.wikipedia.org/wiki/Parallel_axis_theorem>`__ 计算的。
+
+   .. attention::
+      这是一个小的破坏性更改。对于具有自动计算的胶囊体惯性的模型，其仿真在数值上会有所不同，例如会导致黄金值测试失败。
+#. :commit:`a499b381` 修复了与 :ref:`力 <sensor-force>` 和 :ref:`力矩 <sensor-torque>` 传感器相关的错误。在此更改之前，F/T 传感器报告的力和力矩会忽略树外的约束力旋量，由接触产生的除外。力和力矩传感器现在能正确考虑 :ref:`connect <equality-connect>` 和 :ref:`weld <equality-weld>` 约束的影响。
+
+   .. note::
+      由位于运动学树之外（即在没有祖先关系的刚体之间）的 :ref:`空间肌腱 <tendon-spatial>` 产生的力，仍然没有被力和力矩传感器考虑在内。这仍是未来的工作项。
+
+代码示例
+^^^^^^^^^^^^
+
+9. :commit:`a499b381` ``testspeed``：添加了伪随机控制噪声的注入，默认开启。这是为了避免陷入某个固定的接触构型而给出不真实的计时结果。
+#. :commit:`a499b381` ``simulate``：
+
+   a. 添加了慢于实时的功能，通过 '+' 和 '-' 键控制。
+   #. 添加了用于向控制注入布朗噪声的滑块。
+   #. 添加了“Print Camera”按钮，用于打印包含当前相机位姿的 MJCF 子句。
+   #. 重新加载同一个模型文件时不再重置相机位姿。
+
+依赖更新
+^^^^^^^^^^^^^^^^^^^^
+
+11. :commit:`a499b381` ``TinyXML`` 被替换为 ``TinyXML2`` 6.2.0。
+#. :commit:`a499b381` ``qhull`` 升级到 8.0.2 版本。
+#. :commit:`a499b381` ``libCCD`` 升级到 1.4 版本。
+#. :commit:`a499b381` 在 Linux 上，\ ``libstdc++`` 被替换为 ``libc++``。
+
+二进制构建
+^^^^^^^^^^^^
+
+15. :commit:`a499b381` MacOS 打包。我们现在发布原生支持 Apple Silicon 和 Intel CPU 的 Universal 二进制文件。
+
+    a. MuJoCo 库现在被打包为 `框架包（Framework Bundle）
+       <https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPFrameworks/Concepts/FrameworkAnato
+       my.html>`__ ，使其更易于集成到 Xcode 项目（包括 Swift 项目）中。建议开发者使用 ``-framework mujoco`` 标志来编译和链接 MuJoCo，不过所有头文件和 ``libmujoco.2.1.1.dylib`` 库仍然可以在框架内部直接访问。
+    #. 示例应用程序现在被打包到名为 ``MuJoCo.app`` 的应用程序包中。通过 GUI 启动时，该包会启动 ``simulate`` 可执行文件。其他预编译的示例程序随该包一起发布（位于 ``MuJoCo.app/Contents/MacOS``），可通过命令行启动。
+    #. 二进制文件现已签名，磁盘映像也已公证。
+
+#. :commit:`a499b381` Windows 二进制文件和库现已签名。
+#. :commit:`a499b381` 在 Linux 和 macOS 上启用了链接时优化，在三个测试模型（``cloth.xml``、\ ``humanoid.xml`` 和 ``humanoid100.xml``）上做基准测试时，平均带来约 20% 的加速。
+#. :commit:`a499b381` Linux 二进制文件现在使用 LLVM/Clang 而不是 GCC 构建。
+#. :commit:`a499b381` 还提供了 AArch64（又名 ARM64）Linux 构建。
+#. :commit:`a499b381` 不再从 Linux 和 MacOS 上的共享库中剥离私有符号。
+
+示例模型
+^^^^^^^^^^^^
+21. :commit:`a499b381` 清理了 ``model/`` 目录。
+
+    a. 重新整理为包含所有依赖项的子目录。
+    #. 在 XML 注释中添加了描述，清理了 XML。
+    #. 删除了一些复合模型：\ ``grid1``、\ ``grid1pin``、\ ``grid2``、\ ``softcylinder``、\ ``softellipsoid``。
+
+#. :commit:`a499b381` 在 ``docs/images/models/`` 中添加了说明性动画：
+
+|humanoid|   |particle|
+
+
+版本 2.1.0 (Oct. 18, 2021)
+-----------------------------
+
+新功能
+^^^^^^^^^^^^
+
+1. 关键帧（keyframe）现在具有 ``mocap_pos`` 和 ``mocap_quat`` 字段（XML 中的 mpos 和 quat 属性），使得 mocap 位姿可以存储在关键帧中。
+2. 新的工具函数：\ ``mju_insertionSortInt``\ （整数插入排序）和 ``mju_sigmoid``\ （由两个半二次函数构造 sigmoid）。
+
+通用
+^^^^^^^
+
+3. 虚拟文件系统（VFS）中预分配的大小增加到 2000 和 1000，以支持更大的项目。
+#. ``mjuiItem`` 联合体中的 C 结构体现在被命名，以保证兼容性。
+#. 已修复：\ ``mjcb_contactfilter`` 的类型是 ``mjfConFilt``\ （此前为 ``mjfGeneric``）。
+#. 已修复：\ ``mjCModel`` 中的传感器数组没有被清空。
+#. 清理了跨平台代码（内部更改，通过 API 不可见）。
+#. 修复了 XML ``texcoord`` 数据解析中的一个错误（与顶点数量有关）。
+#. 修复了 `simulate.cc <https://github.com/google-deepmind/mujoco/blob/main/simulate/simulate.cc>`__ 中与 ``nkey``\ （关键帧数量）有关的一个错误。
+#. 在存在大量互不碰撞的 geom（``contype==0 and conaffinity==0``）时，加速了碰撞检测。
+
+UI
+^^
+
+11. 图表的选择类型从 ``int`` 改为 ``float``。
+#. 启用选择和高亮时，图表现在会显示数据坐标。
+#. 将 ``mjMAXUIMULTI`` 改为 35，\ ``mjMAXUITEXT`` 改为 300，\ ``mjMAXUIRECT`` 改为 25。
+#. 添加了可折叠的子分区，实现为带状态的分隔符：\ ``mjSEPCLOSED`` 表示折叠，\ ``mjSEPCLOSED+1`` 表示展开。
+#. 添加了 ``mjITEM_RADIOLINE`` 项类型。
+#. 添加了函数 ``mjui_addToSection``，以简化 UI 分区的构建。
+#. 为 ``mjvFigure`` 添加了子图标题。
+
+渲染
+^^^^^^^^^
+
+18. ``render_gl2`` 在计算坐标轴范围时防范非有限的浮点数据。
+#. ``render_gl2`` 从后向前绘制线条，以获得更好的可见性。
+#. 添加了函数 ``mjr_label``\ （用于文本标签）。
+#. 如果 ``ngeom==0``，\ ``mjr_render`` 会立即退出，以避免未初始化场景（例如 ``frustrum==0``）引发的错误。
+#. 在 ``mjr_render`` 中添加了裁剪框，这样我们就不会在每一帧都清除整个窗口。
+
+
+许可证管理器
+^^^^^^^^^^^^^^^
+
+23. 移除了整个许可证管理器。函数 ``mj_activate`` 和 ``mj_deactivate`` 为了向后兼容仍然存在，但现在它们什么都不做，也不再需要调用它们。
+#. 移除了远程许可证证书函数 ``mj_certXXX``。
+
+更早的版本
+----------------
+
+有关更早版本的更新日志，请参见 `roboti.us <https://www.roboti.us/download.html>`__ 。
+
+.. |humanoid| image:: images/models/humanoid.gif
+   :width: 270px
+.. |particle| image:: images/models/particle.gif
+   :width: 270px

@@ -1,0 +1,580 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link sizes="16x16" href="../_static/favicons/favicon-16x16.png" rel="icon" type="image/png">
+    <link sizes="32x32" href="../_static/favicons/favicon-32x32.png" rel="icon" type="image/png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../_static/favicons/favicon-180x180.png" type="image/png">
+    <link sizes="180x180" href="../_static/favicons/favicon-180x180.png" rel="icon" type="image/png">
+    <link sizes="192x192" href="../_static/favicons/favicon-192x192.png" rel="icon" type="image/png"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Python Plugins" href="python_plugins.html"><link rel="prev" title="Native Viewers" href="native_viewers.html">
+        <link rel="prefetch" href="../_static/banner.svg" as="image">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Architecture - MuJoCo Documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/katex/katex.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/katex-math.css?v=05624691" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=8d83ad8c" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides_mjwarp.css?v=e08d3b36" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #0053d6;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #123693;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 130%;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #a8caff;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #458dff;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 130%;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #a8caff;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #458dff;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 130%;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">MuJoCo Documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/banner.svg" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">MuJoCo Documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../computation/index.html">Computation</a><input aria-label="Toggle navigation of Computation" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../computation/fluid.html">Fluid forces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computation/speculative.html">Speculative contacts</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../XMLreference.html">XML Reference</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../programming/index.html">Programming</a><input aria-label="Toggle navigation of Programming" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../programming/simulation.html">Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/visualization.html">Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/rendering.html">Rendering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/ui.html">User Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/modeledit.html">Model Editing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/samples.html">Code samples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/extension.html">Extensions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../APIreference/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APItypes.html">Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIfunctions.html">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIglobals.html">Globals</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Studio</a><input aria-label="Toggle navigation of Studio" checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="web_viewers.html">Web Viewers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="native_viewers.html">Native Viewers</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_plugins.html">Python Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python.html">Python</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjx.html">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../unity.html">Unity Plug-in</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/building.html">Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcf_file_format_plugin.html">File Format Plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/importing.html">Importing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/exporting.html">Exporting</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">Model Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/studio/architecture.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="architecture">
+<span id="studioarchitecture"></span><h1>Architecture<a class="headerlink" href="#architecture" title="Link to this heading">#</a></h1>
+<p>MuJoCo Studio’s architecture rests on three core ideas:</p>
+<ol class="arabic simple">
+<li><p><strong>Decoupled simulation and visualization</strong>: Physics simulation and UI/rendering run on separate threads with no
+shared mutable state, communicating strictly through typed <a class="reference internal" href="#studiomessaging"><span class="std std-ref">Snapshot and Event message channels</span></a>. Any <a class="reference internal" href="python_plugins.html#studiopythonplugins"><span class="std std-ref">Python plugin</span></a> therefore works unchanged against both a local
+<a class="reference internal" href="native_viewers.html#studionativeviewers"><span class="std std-ref">NativeViewer</span></a> window and a remote <a class="reference internal" href="web_viewers.html#studiowebviewers"><span class="std std-ref">WebViewer</span></a> browser session.</p></li>
+<li><p><strong>Composable extensibility via plugins</strong>: Built-in features—including the standard Studio UI (<code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code>),
+real-time physics stepping (<code class="docutils literal notranslate"><span class="pre">step_control.StepControl</span></code>), and trajectory history scrubbing
+(<code class="docutils literal notranslate"><span class="pre">sim_history.SimHistory</span></code>)—are implemented as modular <a class="reference internal" href="python_plugins.html#studiopythonplugins"><span class="std std-ref">viewer and simulation plugins</span></a>
+that applications can mix, replace, or extend with custom UI panels, 3D overlays, and stepping backends.</p></li>
+<li><p><strong>Shared C++ components</strong>: Core UI panels, 3D viewport interaction, physics step pacing, trajectory history buffers,
+and <a class="reference internal" href="../programming/rendering.html#filamentrendering"><span class="std std-ref">Filament</span></a> rendering are implemented as modular C++ libraries that compile both to
+native machine code (with Python bindings) and to WebAssembly (with JavaScript bindings), ensuring consistent
+behavior across C++, Python, and browser targets.</p></li>
+</ol>
+<section id="thread-model">
+<span id="studiothreads"></span><h2>Thread Model<a class="headerlink" href="#thread-model" title="Link to this heading">#</a></h2>
+<p>In Python, Studio separates physics simulation from rendering and UI presentation across two execution contexts
+connected by <a class="reference internal" href="#studiomessaging"><span class="std std-ref">message channels</span></a> (<code class="docutils literal notranslate"><span class="pre">SimEndpoint</span></code> ↔ <code class="docutils literal notranslate"><span class="pre">ViewerEndpoint</span></code>), allowing the viewer and
+simulation to run on separate threads or in independent processes:</p>
+<a class="only-light reference internal image-reference" href="../_images/threads_light.svg"><img alt="../_images/threads_light.svg" class="align-center only-light" src="../_images/threads_light.svg" style="width: 100%;" />
+</a>
+<a class="only-dark reference internal image-reference" href="../_images/threads_dark.svg"><img alt="../_images/threads_dark.svg" class="align-center only-dark" src="../_images/threads_dark.svg" style="width: 100%;" />
+</a>
+<p>This decoupled design provides three architectural guarantees:</p>
+<ul class="simple">
+<li><p><strong>Zero shared-state contention</strong>: Unlike the legacy <a class="reference internal" href="../python.html#pyviewerpassive"><span class="std std-ref">passive viewer</span></a>, which required user
+scripts to acquire <code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">viewer.lock():</span></code> before mutating <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> or <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a>, Studio’s simulation thread
+exclusively owns the authoritative physics structs. After each step, <code class="docutils literal notranslate"><span class="pre">ViewerHandle.sync()</span></code> extracts the flat
+integration state vector via <a class="reference internal" href="../APIreference/APIfunctions.html#mj-getstate"><span class="std std-ref">mj_getState</span></a> (<code class="docutils literal notranslate"><span class="pre">mjSTATE_INTEGRATION</span></code>) into an immutable
+<code class="docutils literal notranslate"><span class="pre">StateSnapshot(state,</span> <span class="pre">state_sig)</span></code>. The viewer thread applies the latest snapshot to its private copy of
+<a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> via <a class="reference internal" href="../APIreference/APIfunctions.html#mj-setstate"><span class="std std-ref">mj_setState</span></a> and runs <a class="reference internal" href="../APIreference/APIfunctions.html#mj-forward"><span class="std std-ref">mj_forward</span></a> locally at display refresh rate without blocking
+physics.</p></li>
+<li><p><strong>Background viewer daemon thread</strong>: Both <a class="reference internal" href="native_viewers.html#studionativeviewers"><span class="std std-ref">native</span></a> and <a class="reference internal" href="web_viewers.html#studiowebviewers"><span class="std std-ref">web</span></a>
+Python launchers spawn the viewer loop on a background daemon thread (<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/launch_thread.py">launch_thread.py</a>) while running the
+simulation sync loop or caller <code class="docutils literal notranslate"><span class="pre">with</span></code> block on the calling thread. Unhandled exceptions on the viewer thread are
+logged immediately and re-raised on the simulation thread when <code class="docutils literal notranslate"><span class="pre">ViewerHandle.close()</span></code> runs.</p></li>
+<li><p><strong>Unified plugin contract</strong>: Because <a class="reference internal" href="python_plugins.html#studioviewerplugins"><span class="std std-ref">viewer plugins</span></a> and <a class="reference internal" href="python_plugins.html#studiosimplugins"><span class="std std-ref">simulation plugins</span></a> communicate exclusively through typed <code class="docutils literal notranslate"><span class="pre">Snapshot</span></code> and <code class="docutils literal notranslate"><span class="pre">Event</span></code> messages rather than shared
+memory, plugin classes work unchanged across native desktop windows and remote <a class="reference internal" href="web_viewers.html#studiowebviewer"><span class="std std-ref">WebViewer</span></a>
+browser sessions.</p></li>
+</ul>
+</section>
+<section id="python-vs-c">
+<h2>Python vs. C++<a class="headerlink" href="#python-vs-c" title="Link to this heading">#</a></h2>
+<p>Studio adapts its execution model to each runtime environment:</p>
+<ul class="simple">
+<li><p><strong>Python</strong> (<code class="docutils literal notranslate"><span class="pre">mujoco.studio</span></code>): Simulation and viewer endpoints hold separate <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> and <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a>
+instances and communicate strictly through directional <code class="docutils literal notranslate"><span class="pre">Snapshot</span></code> and <code class="docutils literal notranslate"><span class="pre">Event</span></code> channels.</p></li>
+<li><p><strong>C++ Desktop</strong> (<a class="reference internal" href="cpp.html#studiocpp"><span class="std std-ref">mujoco::studio::App</span></a>): Runs physics on a dedicated background thread synchronized
+with the main UI and rendering loop.</p></li>
+<li><p><strong>C++ WebAssembly</strong> (<a class="reference internal" href="web_viewers.html#studiolive"><span class="std std-ref">MuJoCo Live</span></a>): Drives physics updates, Dear ImGui layout, and Filament WebGL
+rendering sequentially inside the browser’s single-threaded <code class="docutils literal notranslate"><span class="pre">requestAnimationFrame</span></code> loop.</p></li>
+</ul>
+<section id="c-components">
+<span id="studiocppcomponents"></span><h3>C++ Components<a class="headerlink" href="#c-components" title="Link to this heading">#</a></h3>
+<p>Beneath both the Python SDK and the C++ applications sits a shared layer of reusable C++ components under <a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/studio">studio/</a>:</p>
+<ul class="simple">
+<li><p><strong>UI &amp; interaction</strong> (<a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/studio/ux">ux/</a>): Built-in Dear ImGui
+panels—model hierarchy, physics and rendering options, actuator controls, joint sliders, sensor and solver plots, the
+<code class="docutils literal notranslate"><span class="pre">SimHistory</span></code> timeline scrubber, <code class="docutils literal notranslate"><span class="pre">Console</span></code>, picture-in-picture views, and custom widgets in <code class="docutils literal notranslate"><span class="pre">imgui_widgets.h</span></code>—along
+with 3D mouse picking, camera motion, and body perturbation in <code class="docutils literal notranslate"><span class="pre">interaction.h</span></code>. Exposed to Python via
+<code class="docutils literal notranslate"><span class="pre">mujoco.studio.ux</span></code>, which releases the Python GIL during C++ execution.</p></li>
+<li><p><strong>Simulation state management</strong> (<a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/studio/sim">sim/</a>): Real-time
+step pacing and control noise via <code class="docutils literal notranslate"><span class="pre">StepControl</span></code>, ring-buffer trajectory recording and scrubbing via <code class="docutils literal notranslate"><span class="pre">SimHistory</span></code>,
+profiling via <code class="docutils literal notranslate"><span class="pre">SimProfiler</span></code>, and model lifecycle management via <code class="docutils literal notranslate"><span class="pre">ModelHolder</span></code>, wrapped by Python’s
+<code class="docutils literal notranslate"><span class="pre">step_control</span></code> and <code class="docutils literal notranslate"><span class="pre">sim_history</span></code> modules.</p></li>
+<li><p><strong>Rendering &amp; windowing</strong> (<a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/studio/hal">hal/</a>, <a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/studio/render">render/</a>): Hardware-abstracted <a class="reference internal" href="../programming/rendering.html#filamentrendering"><span class="std std-ref">Filament</span></a> rendering via <code class="docutils literal notranslate"><span class="pre">FilamentRenderer</span></code> and <code class="docutils literal notranslate"><span class="pre">ModelScene</span></code>, plus SDL2 and offscreen window management
+across OpenGL, Vulkan, and WebGL.</p></li>
+</ul>
+<p>Because these C++ libraries compile to native binaries, bind to Python via <code class="docutils literal notranslate"><span class="pre">pybind11</span></code>, and compile to WebAssembly via
+Emscripten with JavaScript bindings, any component or custom widget that needs to be shared across C++, Python, and
+JavaScript/WebAssembly surfaces should be implemented in C++ and bound to Python and JS. Pure Python plugins execute on
+the host CPU—streaming their UI draw lists to the browser in <a class="reference internal" href="web_viewers.html#studiowebviewer"><span class="std std-ref">WebViewer</span></a>—whereas C++
+components can run natively on the host <em>and</em> client-side inside WebAssembly browser apps such as <a class="reference internal" href="web_viewers.html#studiolive"><span class="std std-ref">MuJoCo Live</span></a> and the <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> browser client.</p>
+</section>
+</section>
+<section id="message-passing">
+<span id="studiosnapshotsvsevents"></span><span id="studiomessaging"></span><h2>Message Passing<a class="headerlink" href="#message-passing" title="Link to this heading">#</a></h2>
+<p>Because the simulation and viewer loops run on separate threads with no shared mutable state (see <a class="reference internal" href="#studiothreads"><span class="std std-ref">Thread Model</span></a>), all state updates and commands cross the endpoint boundary as typed messages defined in <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/messages.py">messages.py</a>.</p>
+<section id="snapshots-vs-events">
+<h3>Snapshots vs. Events<a class="headerlink" href="#snapshots-vs-events" title="Link to this heading">#</a></h3>
+<p>Communication is divided into two <code class="docutils literal notranslate"><span class="pre">Message</span></code> base classes with distinct delivery semantics. By convention, custom
+message subclasses end in <code class="docutils literal notranslate"><span class="pre">*Snapshot</span></code> or <code class="docutils literal notranslate"><span class="pre">*Event</span></code>:</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 18.0%" />
+<col style="width: 24.0%" />
+<col style="width: 23.0%" />
+<col style="width: 35.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Base Class</p></th>
+<th class="head"><p>Channel Type</p></th>
+<th class="head"><p>Delivery Guarantee</p></th>
+<th class="head"><p>Examples</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">messages.Snapshot</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SnapshotChannel</span></code> is a latest-wins dictionary with one slot per <code class="docutils literal notranslate"><span class="pre">Snapshot</span></code> subclass, keyed by <code class="docutils literal notranslate"><span class="pre">type(msg)</span></code>.</p></td>
+<td><p>Only the most recent snapshot of each type is delivered on drain.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">StateSnapshot</span></code>, <code class="docutils literal notranslate"><span class="pre">StepControlSnapshot</span></code>, <code class="docutils literal notranslate"><span class="pre">SimHistorySnapshot</span></code>, <code class="docutils literal notranslate"><span class="pre">MjOptionSnapshot</span></code>, <code class="docutils literal notranslate"><span class="pre">PerturbSnapshot</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">messages.Event</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">EventChannel</span></code> is a strictly ordered FIFO queue.</p></td>
+<td><p>Every queued event is delivered in order; no event is dropped.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ModelEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">LoadModelEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">StateEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">KeyframeEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">ResetEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">SingleStepEvent</span></code>,
+<code class="docutils literal notranslate"><span class="pre">RequestPauseEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">ThreadPoolEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">HotReloadEvent</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="choosing-a-type">
+<h3>Choosing a Type<a class="headerlink" href="#choosing-a-type" title="Link to this heading">#</a></h3>
+<p>When designing custom messages for GUI widgets or plugin communication:</p>
+<ul class="simple">
+<li><p><strong>Use a</strong> <code class="docutils literal notranslate"><span class="pre">Snapshot</span></code> <strong>for continuous GUI options such as sliders, toggles, and settings</strong> where a message carries
+the complete current value and only the latest value matters, such as <code class="docutils literal notranslate"><span class="pre">StepControlSnapshot</span></code>, <code class="docutils literal notranslate"><span class="pre">MjOptionSnapshot</span></code>,
+or a plugin’s own <code class="docutils literal notranslate"><span class="pre">FooConfigSnapshot</span></code>. If the viewer renders faster than the simulation steps while a user drags a
+slider, intermediate values coalesce automatically instead of queuing up.</p></li>
+<li><p><strong>Use an</strong> <code class="docutils literal notranslate"><span class="pre">Event</span></code> <strong>for discrete GUI button actions and one-shot commands</strong> such as <code class="docutils literal notranslate"><span class="pre">ResetEvent</span></code>,
+<code class="docutils literal notranslate"><span class="pre">SingleStepEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">RequestPauseEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">LoadModelEvent</span></code>, and <code class="docutils literal notranslate"><span class="pre">KeyframeEvent</span></code>, and when distinct partial
+updates of the same class would clobber one another in <code class="docutils literal notranslate"><span class="pre">SnapshotChannel</span></code>’s per-type slot—for example,
+<code class="docutils literal notranslate"><span class="pre">StateEvent(state,</span> <span class="pre">state_sig)</span></code> applies targeted state overrides whose <code class="docutils literal notranslate"><span class="pre">state_sig</span></code> bitmasks differ so each
+component is applied in order.</p></li>
+</ul>
+<p>For chronological <a class="reference internal" href="python_plugins.html#studiolifecycle"><span class="std std-ref">lifecycle event tables</span></a>, <a class="reference internal" href="python_plugins.html#studiodiffsync"><span class="std std-ref">diff-based synchronization</span></a>,
+and <a class="reference internal" href="python_plugins.html#studiopriorities"><span class="std std-ref">handler priorities</span></a>, see <a class="reference internal" href="python_plugins.html#studiopythonplugins"><span class="std std-ref">Python Plugins</span></a>.</p>
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="python_plugins.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Python Plugins</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="native_viewers.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Native Viewers</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Architecture</a><ul>
+<li><a class="reference internal" href="#thread-model">Thread Model</a></li>
+<li><a class="reference internal" href="#python-vs-c">Python vs. C++</a><ul>
+<li><a class="reference internal" href="#c-components">C++ Components</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#message-passing">Message Passing</a><ul>
+<li><a class="reference internal" href="#snapshots-vs-events">Snapshots vs. Events</a></li>
+<li><a class="reference internal" href="#choosing-a-type">Choosing a Type</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/katex.min.js?v=5cc8ed51"></script>
+    <script src="../_static/auto-render.min.js?v=af98beb9"></script>
+    <script src="../_static/katex_autorenderer.js?v=ae454eff"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/linenumbers.js?v=ebda5d35"></script>
+    <script src="../_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+    </body>
+</html>

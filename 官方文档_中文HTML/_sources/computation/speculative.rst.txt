@@ -1,0 +1,360 @@
+﻿推测接触
+========
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+推测接触（speculative contacts）用于防止快速运动的物体相互穿透。由于标准碰撞检测（collision detection）只在离散的时间步长（timestep）处检查 geom 的位姿，当 geom 在单步内的位移超过其厚度时，
+它们可能会相互 *穿隧* （tunnel），即在两个时间步处都没有重叠，却从一侧穿到另一侧。对于包含高速运动刚体（body）、
+薄 geom 或较大时间步长的仿真，这一问题尤为突出。
+
+推测接触的原理是 *推测* 在当前时间步与下一时间步之间本会发生的接触。该功能可通过
+:ref:`speculative<option-flag-speculative>` 标志启用。推测接触的工作方式与普通接触相同，求解器（solver）对它们的处理也一视同仁。
+它们由以下流程产生：
+
+1. :ref:`粗测阶段（broadphase）与球体过滤 <spBroadphase>` 扩展 sweep-and-prune 的 AABB 和包围球检测，
+   以涵盖每个高速运动 geom 在该时间步内的线性运动和旋转运动。
+2. :ref:`保守推进 <spAdvancement>` 对候选 geom 对进行扫掠，确定撞击时间（time of impact，TOI）
+   :math:`0 < t < 1`，以占时间步长的比例表示。
+3. :ref:`视线射线投射 <spRaycasting>` 在两个 geom 之间发射一条射线，以排除被中间其他 geom 遮挡的推测接触。
+4. :ref:`有效接触距离 <spDistance>` 对求解器的参考加速度方程
+   (:math:`\ari = -b_i (J v)_i - k_i r_i`) 求逆，计算出一个合成的接触距离 ``dist``，使约束求解器（constraint solver）
+   在该时间步内抵消相对法向速度的 :math:`(1 - t)` 部分，并在 :math:`t = 1` 时使 geom 落在接触表面上。
+
+演示推测接触的示例模型见
+`model/speculative/ <https://github.com/google-deepmind/mujoco/tree/main/model/speculative>`__。
+
+启用推测接触会在每一步增加与场景相关的碰撞开销，该开销随单步行程超过自身厚度的 geom 数量，以及它们所扫掠经过的候选对数量而增长。
+与此同时，防止穿隧往往允许使用比离散碰撞检测所能容忍的更大的时间步长，从而降低总体的实际运行时间。
+
+.. note::
+   推测扫掠仅使用步前速度 (``mjData.qvel``) 来外推 geom 的运动，而忽略加速度。这一方面是因为碰撞检测在位置阶段运行，早于力和加速度的计算；
+   另一方面是因为在单步内，加速度贡献的位移为 :math:`O(\Delta t^2)`，相比之下速度项为 :math:`O(\Delta t)`。
+   因此，时间步长 :math:`\Delta t` 不能被任意增大：如果一个缓慢运动或静止的 geom 在单步内被很大的外加力、重力，
+   或在约束求解过程中被另一个刚体推动而越过障碍物，其步前速度就无法预测这一运动，它仍然可能发生穿隧。
+
+.. _spBroadphase:
+
+粗测阶段与球体过滤
+------------------
+
+为避免在缓慢运动的物体上产生开销，只有当 geom 表面上任一点在时间步长 :math:`\Delta t` 内行进的最大距离超过其局部 AABB
+半边长的最小尺寸时，该 geom 才被视为高速运动。给定步前线性位移 :math:`\Delta x = \Delta t \, v` 和绕 geom 中心 :math:`c`
+的角位移 :math:`\Delta \omega = \Delta t \, \omega`，geom 表面上的任一点 :math:`p` 在该步内的位移为
+
+.. math::
+   \Delta p = \Delta x + \Delta \omega \times (p - c)
+
+由于 :math:`\|p - c\| \le r_{\text{bound}}`，其中 :math:`r_{\text{bound}}` 是 geom 的包围球半径，根据三角不等式，
+该表面行程以如下扫掠距离为上界
+
+.. math::
+   s = \|\Delta x\| + \|\Delta \omega\| \, r_{\text{bound}}
+
+扫掠距离 :math:`s` 小于其局部 AABB 半边长最小尺寸的 geom，在单步内不可能发生穿隧，因此使用标准的离散包围范围。
+
+扫掠包围球过滤器
+~~~~~~~~~~~~~~~~
+
+对于每个候选 geom 对，包围球过滤器检验两个包围球在时间步长的任一比例 :math:`t \in [0, 1]` 处是否可能重叠。
+记 :math:`p = x_2 - x_1` 为初始中心间距，\ :math:`v = \Delta x_2 - \Delta x_1` 为该步内的相对线性位移，
+则相对中心轨迹为 :math:`r(t) = p + t v`。通过求导数 :math:`\frac{d}{dt}\|r(t)\|^2 = 2(p + t v) \cdot v = 0` 的根 :math:`t^*`，
+我们得到 :math:`\|r(t)\|^2` 在 :math:`[0, 1]` 上的全局极小点 :math:`\tau`：
+
+.. math::
+   \tau =
+   \begin{cases}
+      0,   & \phantom{0 \lt {}} t^* \le 0 \\
+      t^*, & 0 \lt t^* \lt 1 \\
+      1,   & 1 \le t^*
+   \end{cases}
+   \qquad \text{where } t^* = -\frac{p \cdot v}{\|v\|^2}
+
+若 :math:`\|r(\tau)\| > r_{\text{bound},1} + r_{\text{bound},2} + \text{margin} + \text{gap}`，则该对被剪除。当其中一个 geom
+是单位法向量为 :math:`n` 的平面时，过滤器检查端点 :math:`t \in \{0, 1\}` 处的最小有符号距离，若
+:math:`\min(d_0,\, d_0 + n \cdot \Delta x) > r_{\text{bound}} + \text{margin} + \text{gap}`，则剪除该对。
+
+扫掠粗测阶段 AABB
+~~~~~~~~~~~~~~~~~
+
+在 sweep-and-prune 期间 (:ref:`选择 <coSelection>`)，每个 geom 的有向包围盒会被投影到场景协方差坐标系的三个主轴
+:math:`\hat{u}_j` 上。对于高速运动的 geom，沿 :math:`\hat{u}_j` 的静态半投影首先按其旋转扫掠半径
+:math:`\|\Delta \omega\| \, r_{\text{bound}}` 膨胀，再与其包围球半径 :math:`r_{\text{bound}}` 取交集（因为绕 geom 中心的旋转不可能把任何点移到
+:math:`r_{\text{bound}}` 之外）。随后，所得区间 :math:`[\text{lo}_j, \text{hi}_j]` 按线性位移投影
+:math:`\Delta x \cdot \hat{u}_j` 沿方向延伸：
+
+.. math::
+   \big[\text{lo}_j + \min(0, \Delta x \cdot \hat{u}_j) - \text{margin},\;
+        \text{hi}_j + \max(0, \Delta x \cdot \hat{u}_j) + \text{margin}\big]
+
+由于每个刚体的包围体层次结构（bounding volume hierarchy，BVH）(``mjModel.bvh_aabb``) 是在编译时于刚体坐标系中静态预先计算的，
+对于包含高速运动 geom 的刚体对，会跳过中间阶段（mid-phase）的 BVH 树遍历，以免被扫掠的 geom 对被未膨胀的内部树节点剔除。
+
+.. _spAdvancement:
+
+保守推进
+--------
+
+计算撞击时间有许多方法，概览可参见 Erin Catto 的
+`GDC 2013 演讲 <https://box2d.org/files/ErinCatto_ContinuousCollision_GDC2013.pdf>`__。在
+MuJoCo 中，当离散精测阶段（narrow-phase）碰撞检测未发现有效的表面接触（``dist < margin``），且该对中至少有一个 geom
+超过快速扫掠阈值时，我们使用一种单侧的 *有向保守推进* 算法来求撞击时间 :math:`t \in (0, 1)`。
+
+.. raw:: html
+
+   <style>
+     .ca-widget {
+       border: 1px solid var(--color-background-border, #e2e8f0);
+       border-radius: 10px;
+       background: var(--color-background-secondary, #f8fafc);
+       padding: 12px 14px;
+       margin: 1em 0;
+       font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+     }
+     .ca-scenes {
+       display: flex;
+       flex-wrap: wrap;
+       align-items: center;
+       justify-content: center;
+       gap: 6px;
+       margin-bottom: 8px;
+       padding-bottom: 8px;
+       border-bottom: 1px solid var(--color-background-border, #e2e8f0);
+     }
+     .ca-controls {
+       display: flex;
+       flex-wrap: wrap;
+       align-items: center;
+       justify-content: center;
+       gap: 4px;
+       margin-bottom: 10px;
+     }
+     .ca-btn {
+       border: 1px solid var(--color-background-border, #cbd5e1);
+       background: var(--color-background-primary, #ffffff);
+       color: var(--color-foreground-primary, #1e293b);
+       border-radius: 6px;
+       padding: 4px 10px;
+       font-size: 12.5px;
+       font-weight: 600;
+       cursor: pointer;
+       transition: all 0.15s ease;
+       font-family: inherit;
+     }
+     .ca-btn:hover {
+       border-color: #3b82f6;
+       color: #2563eb;
+     }
+     .ca-btn.ca-active {
+       background: #2563eb;
+       color: #ffffff;
+       border-color: #2563eb;
+     }
+     .ca-svg-wrap {
+       background: var(--color-background-primary, #ffffff);
+       border: 1px solid var(--color-background-border, #e2e8f0);
+       border-radius: 8px;
+       overflow: hidden;
+     }
+     .ca-svg-wrap svg {
+       width: 100%;
+       height: auto;
+       display: block;
+     }
+     .ca-caption {
+       margin: 10px 0 0 0;
+       font-size: 13px;
+       line-height: 1.5;
+       color: var(--color-foreground-primary, #334155);
+     }
+     /* Theme-aware SVG classes */
+     .ca-widget .ca-txt { fill: #334155; }
+     .ca-widget .ca-muted { fill: #64748b; }
+     .ca-widget .ca-g1-fill { fill: #dbeafe; fill-opacity: 0.75; stroke: #2563eb; }
+     .ca-widget .ca-g2-fill { fill: #ede9fe; fill-opacity: 0.75; stroke: #7c3aed; }
+     .ca-widget .ca-sphere1 { fill: none; stroke: #60a5fa; stroke-opacity: 0.45; }
+     .ca-widget .ca-sphere2 { fill: none; stroke: #a78bfa; stroke-opacity: 0.45; }
+     .ca-widget .ca-path1 { stroke: #93c5fd; stroke-opacity: 0.6; }
+     .ca-widget .ca-path2 { stroke: #c4b5fd; stroke-opacity: 0.6; }
+     .ca-widget .ca-plane { stroke: #10b981; stroke-opacity: 0.75; }
+
+     body[data-theme="dark"] .ca-widget .ca-txt { fill: #e2e8f0; }
+     body[data-theme="dark"] .ca-widget .ca-muted { fill: #94a3b8; }
+     body[data-theme="dark"] .ca-widget .ca-g1-fill { fill: #1e3a8a; fill-opacity: 0.65; stroke: #60a5fa; }
+     body[data-theme="dark"] .ca-widget .ca-g2-fill { fill: #4c1d95; fill-opacity: 0.65; stroke: #a78bfa; }
+     body[data-theme="dark"] .ca-widget .ca-sphere1 { stroke: #60a5fa; stroke-opacity: 0.35; }
+     body[data-theme="dark"] .ca-widget .ca-sphere2 { stroke: #a78bfa; stroke-opacity: 0.35; }
+     body[data-theme="dark"] .ca-widget .ca-path1 { stroke: #3b82f6; stroke-opacity: 0.4; }
+     body[data-theme="dark"] .ca-widget .ca-path2 { stroke: #8b5cf6; stroke-opacity: 0.4; }
+     body[data-theme="dark"] .ca-widget .ca-plane { stroke: #34d399; stroke-opacity: 0.75; }
+     @media (prefers-color-scheme: dark) {
+       body[data-theme="auto"] .ca-widget .ca-txt { fill: #e2e8f0; }
+       body[data-theme="auto"] .ca-widget .ca-muted { fill: #94a3b8; }
+       body[data-theme="auto"] .ca-widget .ca-g1-fill { fill: #1e3a8a; fill-opacity: 0.65; stroke: #60a5fa; }
+       body[data-theme="auto"] .ca-widget .ca-g2-fill { fill: #4c1d95; fill-opacity: 0.65; stroke: #a78bfa; }
+       body[data-theme="auto"] .ca-widget .ca-sphere1 { stroke: #60a5fa; stroke-opacity: 0.35; }
+       body[data-theme="auto"] .ca-widget .ca-sphere2 { stroke: #a78bfa; stroke-opacity: 0.35; }
+       body[data-theme="auto"] .ca-widget .ca-path1 { stroke: #3b82f6; stroke-opacity: 0.4; }
+       body[data-theme="auto"] .ca-widget .ca-path2 { stroke: #8b5cf6; stroke-opacity: 0.4; }
+       body[data-theme="auto"] .ca-widget .ca-plane { stroke: #34d399; stroke-opacity: 0.75; }
+     }
+   </style>
+
+   <div class="ca-widget" id="mj-ca-widget">
+     <div class="ca-scenes">
+       <button type="button" class="ca-btn ca-scene-btn ca-active" data-scene="0">Basic: Sphere &amp; Box (Δω = 0)</button>
+       <button type="button" class="ca-btn ca-scene-btn" data-scene="1">Complex: Two Rotating Boxes (Δω ≠ 0)</button>
+     </div>
+     <div class="ca-controls" id="ca-step-btn-container"></div>
+
+     <div class="ca-svg-wrap">
+       <svg viewBox="0 0 660 255" xmlns="http://www.w3.org/2000/svg">
+         <defs>
+           <marker id="ca-arr-b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+             <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="#3b82f6"/>
+           </marker>
+           <marker id="ca-arr-p" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+             <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="#8b5cf6"/>
+           </marker>
+           <marker id="ca-arr-g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+             <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="#10b981"/>
+           </marker>
+         </defs>
+
+         <!-- Dynamic layer populated by script -->
+         <g id="ca-layer-Main"></g>
+       </svg>
+     </div>
+
+     <p class="ca-caption" id="ca-status-text"></p>
+   </div>
+
+   <script>
+
+.. raw:: html
+   :file: speculative.js
+
+.. raw:: html
+
+   </script>
+
+在每次迭代中，GJK 在当前推进后的位姿下计算两个 geom 之间的最小距离 :math:`\text{dist}(t)`、
+最近见证点（witness points） :math:`(x_1(t), x_2(t))`，以及分离单位法向量
+:math:`n = (x_2(t) - x_1(t)) / \text{dist}(t)` (由 geom 1 指向 geom 2)。根据分离轴定理（Separating Axis Theorem，SAT），
+在 :math:`x_1(t)` 和 :math:`x_2(t)` 处垂直于 :math:`n` 的支撑平面，沿 :math:`n` 方向约束了每一对点
+:math:`p_1(t) \in \text{geom } 1` 和 :math:`p_2(t) \in \text{geom } 2`：
+
+.. math::
+   (p_2(t) - p_1(t)) \cdot n \;\ge\; (x_2(t) - x_1(t)) \cdot n \;=\; \text{dist}(t)
+
+由于每个 geom 绕其中心 :math:`c_i` 平移并旋转，步位移为
+:math:`(\Delta x_i, \Delta \omega_i)`，geom :math:`i` 上的任一点 :math:`p_i` 关于 :math:`t` 的速度为
+:math:`\dot{p}_i = \Delta x_i + \Delta \omega_i \times (p_i - c_i)`。由于 geom :math:`i` 上的每个点都位于以 :math:`c_i`
+为中心、半径为 :math:`r_{\text{bound},i}` 的包围球内
+(:math:`\|p_i - c_i\| \le r_{\text{bound},i}`)，且 :math:`\|n\| = 1`，每个旋转项都满足
+:math:`\big|n \cdot (\Delta \omega_i \times (p_i - c_i))\big| \le \|\Delta \omega_i\| \, r_{\text{bound},i}`。
+因此，将相对闭合速度 :math:`\dot{p}_1 - \dot{p}_2` 投影到固定轴 :math:`n` 上，就得到了两个 geom 上任意两点穿过分离平面的闭合速度的上界
+:math:`v_{\text{bound}}`：
+
+.. math::
+   \begin{aligned}
+   n \cdot (\dot{p}_1 - \dot{p}_2)
+   &= n \cdot (\Delta x_1 - \Delta x_2)
+      + n \cdot \big(\Delta \omega_1 \times (p_1 - c_1)\big)
+      - n \cdot \big(\Delta \omega_2 \times (p_2 - c_2)\big) \\
+   &\le n \cdot (\Delta x_1 - \Delta x_2)
+      + \|\Delta \omega_1\| \, r_{\text{bound},1}
+      + \|\Delta \omega_2\| \, r_{\text{bound},2}
+   \;\equiv\; v_{\text{bound}}
+   \end{aligned}
+
+与最坏情况下的各向同性扫掠 :math:`s_1 + s_2` 不同——后者在所有方向上界定线性运动，当 geom 擦过表面时沿切向快速运动会使其停滞——
+将 :math:`\Delta x_1 - \Delta x_2` 投影到 :math:`n` 上会舍去平行于分离平面的切向线性运动。
+
+若 :math:`v_{\text{bound}} \le 0`，则两个 geom 无法沿 :math:`n` 闭合，搜索在无接触的情况下终止。否则，
+推进 :math:`\Delta t \ge 0` 至多能使沿 :math:`n` 的投影减少
+:math:`\Delta t \, v_{\text{bound}}`，因此 :math:`t + \Delta t` 时的真实间距的下界为
+
+.. math::
+   \text{dist}(t + \Delta t) \;\ge\; \min_{p_1, p_2}\,(p_2(t + \Delta t) - p_1(t + \Delta t)) \cdot n
+                             \;\ge\; \text{dist}(t) - \Delta t \, v_{\text{bound}}
+
+将该下界设为略高于 ``margin`` 的目标间隙
+:math:`\text{dist}_{\text{target}} = \text{margin} + 0.02\,(\text{dist}(0) - \text{margin})`
+(:math:`\text{dist}(t) - \Delta t \, v_{\text{bound}} = \text{dist}_{\text{target}}`)，即可得到保证安全的最大步长：
+
+.. math::
+   \Delta t = \frac{\text{dist}(t) - \text{dist}_{\text{target}}}{v_{\text{bound}}}, \qquad t \leftarrow t + \Delta t
+
+与 *双侧推进* 不同——后者可能越过而进入重叠状态，并借助有符号穿透（penetration）深度查询向前和向后两个方向步进——
+这种单侧推进严格从分离一侧 (:math:`\text{dist}(t) > \text{margin}`) 逼近 :math:`\text{dist}_{\text{target}}`，
+因此 GJK 总能返回定义明确的见证点和分离法向量，而无需调用 EPA。当启用 :ref:`multiccd<option-flag-multiccd>` 时（或其中一个 geom 是
+平面时），多边形裁剪会在推进后的撞击位姿处提取至多四个接触点。
+
+.. _spRaycasting:
+
+视线射线投射
+------------
+
+在撞击时刻 :math:`t` 找到的见证点 :math:`x_1(t)` 和 :math:`x_2(t)`，会从各 geom 推进后的局部坐标系映射回其 :math:`t = 0` 时的世界位姿
+:math:`x_1(0)` 和 :math:`x_2(0)`，并按各 geom 的扫掠比例 :math:`w_i = s_i / (s_1 + s_2)` 插值，得到接触位置：
+
+.. math::
+   x_{\text{contact}} = w_1 \, x_1(0) + w_2 \, x_2(0)
+
+由于精测阶段对每个 geom 对独立求值，高速运动的 geom 可能会与位于中间障碍物 *后方* 的第二个物体产生推测接触
+（例如，一个下落的盒子与它即将撞击的薄桌面下方的地板产生推测接触）。为保证视线可达，会在 :math:`t = 0` 时的见证点
+:math:`x_1(0)` 和 :math:`x_2(0)` 之间投射一条射线段，并将其与所有与两个刚体兼容的其他可碰撞 geom 进行相交测试；
+若任何中间 geom 与该线段相交，则被遮挡的推测接触将被丢弃。
+
+.. _spDistance:
+
+有效接触距离
+------------
+
+由于推测接触是在 :math:`t = 0` 时、即几何重叠发生之前创建的，其真实间距超过 ``margin``。若把真实距离传给约束求解器，
+要么接触保持未激活状态，要么在以零穿透激活时，使参考加速度中的速度阻尼项
+
+.. math::
+   \ari = -b_i (J v)_i - k_i r_i
+
+立即抵消 :math:`100\%` 的接近速度——使刚体在 :math:`t = 0` 时冻结在半空中。
+
+取而代之，碰撞检测会对该参考加速度方程求逆，解出有效接触距离
+:math:`\text{dist} = \text{margin} - \delta`，使得约束求解器在该时间步长内抵消入射法向速度 :math:`|v_n|` 的 :math:`(1 - t)` 部分，
+留下剩余的 :math:`t` 部分速度，在步末将 geom 带到接触表面上 (:math:`z_1 = z_0 + h v_1 = 0`)。
+
+在标准欧拉（Euler）积分器（integrator）下，具有无量纲单步刚度（stiffness） :math:`k_0 = h^2 k` 和阻尼
+:math:`b_0 = h b` (由 :at:`solref` 和 :at:`solimp` 导出) 的接触，会产生如下单步法向速度变化
+
+.. math::
+   h \ari = b_0 |v_n| + k_0 \frac{\delta}{h}
+
+令 :math:`h \ari = (1 - t)|v_n|` 并求解有效穿透深度 :math:`\delta`，得到
+
+.. math::
+   \delta = \frac{1 - t - b_0}{k_0} \, h |v_n|, \qquad \text{dist} = \text{margin} - \delta
+
+在隐式 :ref:`discrete<option-integrator>` 积分器下，弹簧阻尼器在步末位置处求值并除以隐式因子 :math:`1 + b_0 + k_0`，
+分子 :math:`1 - t - b_0` 被替换为 :math:`1 - t - t(b_0 + k_0)`：
+
+.. math::
+   \delta_{\text{discrete}} = \frac{1 - t - t(b_0 + k_0)}{k_0} \, h |v_n|
+
+注意，对于默认的临界阻尼接触 (:math:`b_0 = 1`)，\ :math:`1 - t - b_0 = -t < 0`，因此
+:math:`\delta < 0` 且 :math:`\text{dist} > \text{margin}`：弹簧项会抵着阻尼器向 *回* 拉
+:math:`t |v_n|`，使得在接近步中只去除 :math:`(1 - t)|v_n|`。即使 :math:`\text{dist} \ge \text{margin}`，
+推测接触仍保持激活。
+
+建模注意事项
+~~~~~~~~~~~~
+
+* **弹性恢复：** 标准推测接触将撞击分摊到两个步中——第一步抵消 :math:`(1 - t)|v_n|` 以落到表面上，下一步再处理表面接触。
+  当通过直接设置负的 :at:`solref` 来模拟近似弹性碰撞时（例如 :math:`b_0 \approx 2`，使阻尼器在单步内将 :math:`v_n \to -v_n` 反向，如
+  `newton.xml <https://github.com/google-deepmind/mujoco/blob/main/model/speculative/newton.xml>`__ 中所示），
+  请将刚度设为零（例如 ``solref="0 -499"``），并配合较硬的阻抗（impedance） (``solimp="0.995 0.995 0.001"``)，
+  这样推测位置弹簧项就不会在接近步中抵消弹性阻尼器（注意，零刚度不会为静止接触提供静态位置弹簧）。
+* **单遍步前速度：** 由于推测扫掠使用步前速度 (``mjData.qvel``)，被快速邻居撞击的静止中间刚体，只有在求解器运行之后才会获得其撞击后的速度。
+  在多刚体撞击链（如牛顿摆）中，应在相邻刚体之间保留较小的间隙，或选择一个时间步长，使单步行程不会同时跨越两个间隙。

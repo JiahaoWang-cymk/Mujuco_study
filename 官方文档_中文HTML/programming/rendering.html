@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html class="no-js" data-content_root="../" lang="zh-CN">
+<head><meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="light dark" name="color-scheme"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="../_static/favicons/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+<link href="../_static/favicons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="apple-touch-icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-192x192.png" rel="icon" sizes="192x192" type="image/png"/><link href="../genindex.html" rel="index" title="索引"/><link href="../search.html" rel="search" title="搜索"/><link href="ui.html" rel="next" title="用户界面"/><link href="visualization.html" rel="prev" title="可视化"/>
+<link as="image" href="../_static/banner.svg" rel="prefetch"/>
+<!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+<title>渲染 - MuJoCo 文档（中文）</title>
+<link href="../_static/pygments.css?v=b86133f3" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo.css?v=7bdb33bb" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css?v=05624691" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo-extensions.css?v=8dab3a3b" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides.css?v=8d83ad8c" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides_mjwarp.css?v=e08d3b36" rel="stylesheet" type="text/css"/>
+<link href="../_static/zh_overrides.css?v=ee52c62c" rel="stylesheet" type="text/css"/>
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #16213a;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #2a4fd6;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #2a4fd6;
+  --color-brand-content: #2a4fd6;
+  --color-background-secondary: #f4f6f9;
+  --color-sidebar-background: #f4f6f9;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+      }
+    }
+  }
+</style></head>
+<body>
+<script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+<symbol id="svg-toc" viewbox="0 0 24 24">
+<title>Contents</title>
+<svg fill="currentColor" stroke="currentColor" stroke-width="0" viewbox="0 0 1024 1024">
+<path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"></path>
+</svg>
+</symbol>
+<symbol id="svg-menu" viewbox="0 0 24 24">
+<title>Menu</title>
+<svg class="feather-menu" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<line x1="3" x2="21" y1="12" y2="12"></line>
+<line x1="3" x2="21" y1="6" y2="6"></line>
+<line x1="3" x2="21" y1="18" y2="18"></line>
+</svg>
+</symbol>
+<symbol id="svg-arrow-right" viewbox="0 0 24 24">
+<title>Expand</title>
+<svg class="feather-chevron-right" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</symbol>
+<symbol id="svg-sun" viewbox="0 0 24 24">
+<title>Light mode</title>
+<svg class="feather-sun" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" x2="12" y1="1" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="23"></line>
+<line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+<line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+<line x1="1" x2="3" y1="12" y2="12"></line>
+<line x1="21" x2="23" y1="12" y2="12"></line>
+<line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+<line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
+</svg>
+</symbol>
+<symbol id="svg-moon" viewbox="0 0 24 24">
+<title>Dark mode</title>
+<svg class="icon-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+</svg>
+</symbol>
+<symbol id="svg-sun-with-moon" viewbox="0 0 24 24">
+<title>Auto light/dark, in light mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z" style="opacity: 50%"></path>
+<line x1="14.5" x2="14.5" y1="3.25" y2="1.25"></line>
+<line x1="14.5" x2="14.5" y1="15.85" y2="17.85"></line>
+<line x1="10.044" x2="8.63" y1="5.094" y2="3.68"></line>
+<line x1="19" x2="20.414" y1="14.05" y2="15.464"></line>
+<line x1="8.2" x2="6.2" y1="9.55" y2="9.55"></line>
+<line x1="20.8" x2="22.8" y1="9.55" y2="9.55"></line>
+<line x1="10.044" x2="8.63" y1="14.006" y2="15.42"></line>
+<line x1="19" x2="20.414" y1="5.05" y2="3.636"></line>
+<circle cx="14.5" cy="9.55" r="3.6"></circle>
+</svg>
+</symbol>
+<symbol id="svg-moon-with-sun" viewbox="0 0 24 24">
+<title>Auto light/dark, in dark mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"></path>
+<line style="opacity: 50%" x1="18" x2="18" y1="3.705" y2="2.5"></line>
+<line style="opacity: 50%" x1="18" x2="18" y1="11.295" y2="12.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="4.816" y2="3.964"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="10.212" y2="11.063"></line>
+<line style="opacity: 50%" x1="14.205" x2="13.001" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="21.795" x2="23" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="10.184" y2="11.036"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="4.789" y2="3.937"></line>
+<circle cx="18" cy="7.5" r="2.169" style="opacity: 50%"></circle>
+</svg>
+</symbol>
+<symbol id="svg-pencil" viewbox="0 0 24 24">
+<svg class="icon-tabler-pencil-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
+<path d="M13.5 6.5l4 4"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+<symbol id="svg-eye" viewbox="0 0 24 24">
+<svg class="icon-tabler-eye-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
+<path d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+</svg>
+<input aria-label="Toggle site navigation sidebar" class="sidebar-toggle" id="__navigation" name="__navigation" type="checkbox"/>
+<input aria-label="Toggle table of contents sidebar" class="sidebar-toggle" id="__toc" name="__toc" type="checkbox"/>
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+<div class="page">
+<header class="mobile-header">
+<div class="header-left">
+<label class="nav-overlay-icon" for="__navigation">
+<span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+</label>
+</div>
+<div class="header-center">
+<a href="../index.html"><div class="brand">MuJoCo 文档（中文）</div></a>
+</div>
+<div class="header-right">
+<div class="theme-toggle-container theme-toggle-header">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-header-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+</header>
+<aside class="sidebar-drawer">
+<div class="sidebar-container">
+<div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+<div class="sidebar-logo-container">
+<img alt="Logo" class="sidebar-logo" src="../_static/banner.svg"/>
+</div>
+<span class="sidebar-brand-text">MuJoCo 文档（中文）</span>
+</a><form action="../search.html" class="sidebar-search-container" method="get" role="search">
+<input aria-label="搜索" class="sidebar-search" name="q" placeholder="搜索"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">入门教程</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">概览</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../computation/index.html">计算</a><input aria-label="Toggle navigation of 计算" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../computation/fluid.html">流体力</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computation/speculative.html">推测接触</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">建模</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../XMLreference.html">XML 参考</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">编程</a><input aria-label="Toggle navigation of 编程" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="simulation.html">仿真</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html">可视化</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">渲染</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui.html">用户界面</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modeledit.html">模型编辑</a></li>
+<li class="toctree-l2"><a class="reference internal" href="samples.html">代码示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension.html">扩展</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../APIreference/index.html">API 参考</a><input aria-label="Toggle navigation of API 参考" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APItypes.html">类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIfunctions.html">函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIglobals.html">全局变量</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../studio/index.html">Studio</a><input aria-label="Toggle navigation of Studio" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../studio/web_viewers.html">Web 查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/native_viewers.html">原生查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/architecture.html">架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/python_plugins.html">Python 插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python.html">Python</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjx.html">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../unity.html">Unity 插件</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/building.html">构建</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcf_file_format_plugin.html">文件格式插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/importing.html">导入</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/exporting.html">导出</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">模型库</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">更新日志</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<div class="main">
+<div class="content">
+<div class="article-container">
+<a class="back-to-top muted-link" href="#">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+</svg>
+<span>Back to top</span>
+</a>
+<div class="content-icon-container">
+<div class="view-this-page">
+<a class="muted-link" href="../_sources/programming/rendering.rst.txt" title="View this page">
+<svg><use href="#svg-eye"></use></svg>
+<span class="visually-hidden">View this page</span>
+</a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-content-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+<article id="furo-main-content" role="main">
+<section id="rendering">
+<span id="id1"></span><h1 data-bi="bi-1">渲染<a class="headerlink" href="#rendering" title="链接到此标题。">#</a></h1><div class="en-orig en-h" data-for="bi-1" lang="en">Rendering</div>
+<div class="mt-notice admonition note">
+<p class="admonition-title">备注</p>
+<p>本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 <code class="docutils literal notranslate"><span class="pre">术语表.md</span></code> 。</p>
+</div>
+<p data-bi="bi-2">MuJoCo 提供两个内置的 3D 渲染（rendering）后端，同时支持交互式的屏上查看器和无头离屏渲染：</p><div class="en-orig" data-for="bi-2" lang="en">MuJoCo provides two built-in 3D rendering backends that support both interactive onscreen viewers and headless offscreen
+rendering:</div>
+<ul class="simple">
+<li><p data-bi="bi-3"><a class="reference internal" href="#filamentrendering"><span class="std std-ref">Filament 渲染</span></a> (<code class="docutils literal notranslate"><span class="pre">mjrf</span></code>)：一个现代的、基于物理的渲染（PBR）引擎，支持 OpenGL、Vulkan、Metal 和
+WebGL。它采用 <strong>保留模式</strong> （retained-mode）的异步架构，其中网格（mesh）、纹理、光源和 <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">可渲染对象</span></a>
+一次性从 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 创建，并在每一帧中根据 <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 就地更新。Filament 为 <a class="reference internal" href="../studio/index.html#studio"><span class="std std-ref">MuJoCo Studio</span></a>
+提供支持，也是新应用推荐使用的渲染器。</p><div class="en-orig" data-for="bi-3" lang="en"><a class="reference internal" href="#filamentrendering"><span class="std std-ref">Filament rendering</span></a> (<code class="docutils literal notranslate"><span class="pre">mjrf</span></code>): A modern, physically-based rendering (PBR) engine supporting
+OpenGL, Vulkan, Metal, and WebGL. It uses a <strong>retained-mode</strong>, asynchronous architecture in which meshes, textures,
+lights, and <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">renderables</span></a> are created once from <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> and updated in place from
+<a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> each frame. Filament powers <a class="reference internal" href="../studio/index.html#studio"><span class="std std-ref">MuJoCo Studio</span></a> and is the recommended renderer for new
+applications.</div></li>
+<li><p data-bi="bi-4"><a class="reference internal" href="#classicrendering"><span class="std std-ref">OpenGL 渲染</span></a> (<code class="docutils literal notranslate"><span class="pre">mjr</span></code>)：经典的固定功能 OpenGL 1.5 渲染器，目前处于维护模式。它采用 <strong>立即模式</strong> 场景架构，其中每一帧都由 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-updatescene"><span class="std std-ref">mjv_updateScene</span></a> 用所有几何对象和光源填充一个
+<a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a>，再由 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-render"><span class="std std-ref">mjr_render</span></a> 绘制。它为经典的 <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> 和 <a class="reference internal" href="samples.html#sabasic"><span class="std std-ref">basic.cc</span></a> 示例提供支持。</p><div class="en-orig" data-for="bi-4" lang="en"><a class="reference internal" href="#classicrendering"><span class="std std-ref">OpenGL rendering</span></a> (<code class="docutils literal notranslate"><span class="pre">mjr</span></code>): The classic fixed-function OpenGL 1.5 renderer, now in
+maintenance mode. It uses an <strong>immediate-mode</strong> scene architecture in which <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-updatescene"><span class="std std-ref">mjv_updateScene</span></a> populates an
+<a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> with all geometric objects and lights on every frame, and <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-render"><span class="std std-ref">mjr_render</span></a> draws it. It powers the
+classic <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> and <a class="reference internal" href="samples.html#sabasic"><span class="std std-ref">basic.cc</span></a> samples.</div></li>
+</ul>
+<p data-bi="bi-5">两个渲染器共享与图形无关的 <a class="reference internal" href="visualization.html#visualization"><span class="std std-ref">可视化</span></a> (<code class="docutils literal notranslate"><span class="pre">mjv</span></code>) 层，用于相机控制 (<a class="reference internal" href="../APIreference/APItypes.html#mjvcamera"><span class="std std-ref">mjvCamera</span></a>)、可视化（visualization）选项
+(<a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a>)、对象拾取 (<a class="reference internal" href="../APIreference/APIfunctions.html#mjv-select"><span class="std std-ref">mjv_select</span></a>) 和交互式扰动 (<a class="reference internal" href="../APIreference/APItypes.html#mjvperturb"><span class="std std-ref">mjvPerturb</span></a>)。经典 OpenGL 渲染器依赖 <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a>
+来描述整个场景，而 Filament 渲染器直接根据 <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 更新模型几何，仅将 <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> 用于瞬态装饰性叠加层
+(<code class="docutils literal notranslate"><span class="pre">mjCAT_DECOR</span></code>)。下表给出了两个渲染器主要概念之间的对应关系：</p><div class="en-orig" data-for="bi-5" lang="en">Both renderers share the graphics-independent <a class="reference internal" href="visualization.html#visualization"><span class="std std-ref">Visualization</span></a> (<code class="docutils literal notranslate"><span class="pre">mjv</span></code>) layer for camera control
+(<a class="reference internal" href="../APIreference/APItypes.html#mjvcamera"><span class="std std-ref">mjvCamera</span></a>), visualization options (<a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a>), object picking (<a class="reference internal" href="../APIreference/APIfunctions.html#mjv-select"><span class="std std-ref">mjv_select</span></a>), and interactive
+perturbations (<a class="reference internal" href="../APIreference/APItypes.html#mjvperturb"><span class="std std-ref">mjvPerturb</span></a>). While the classic OpenGL renderer relies on <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> for the entire scene, the
+Filament renderer updates model geometry directly from <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> and uses <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> only for transient
+decorative overlays (<code class="docutils literal notranslate"><span class="pre">mjCAT_DECOR</span></code>). The table below maps the main concepts of the two renderers onto each other:</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 22.0%"/>
+<col style="width: 39.0%"/>
+<col style="width: 39.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>OpenGL (<code class="docutils literal notranslate"><span class="pre">mjr</span></code>)</p></th>
+<th class="head"><p>Filament (<code class="docutils literal notranslate"><span class="pre">mjrf</span></code>)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p data-bi="bi-6">GPU 上下文</p><div class="en-orig" data-for="bi-6" lang="en">GPU context</div></td>
+<td><p data-bi="bi-7"><a class="reference internal" href="../APIreference/APItypes.html#mjrcontext"><span class="std std-ref">mjrContext</span></a>，需要外部创建的 OpenGL 上下文</p><div class="en-orig" data-for="bi-7" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjrcontext"><span class="std std-ref">mjrContext</span></a>, requires an externally created OpenGL context</div></td>
+<td><p data-bi="bi-8"><a class="reference internal" href="../APIreference/APItypes.html#mjrfcontext"><span class="std std-ref">mjrfContext</span></a>，自行拥有其图形上下文（OpenGL 或 Vulkan，带窗口或无头）</p><div class="en-orig" data-for="bi-8" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjrfcontext"><span class="std std-ref">mjrfContext</span></a>, owns its graphics context (OpenGL or Vulkan, windowed or headless)</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-9">模型资源</p><div class="en-orig" data-for="bi-9" lang="en">Model resources</div></td>
+<td><p data-bi="bi-10">由 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-makecontext"><span class="std std-ref">mjr_makeContext</span></a> 上传</p><div class="en-orig" data-for="bi-10" lang="en">Uploaded by <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-makecontext"><span class="std std-ref">mjr_makeContext</span></a></div></td>
+<td><p data-bi="bi-11"><a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a> 和 <a class="reference internal" href="../APIreference/APItypes.html#mjrftexture"><span class="std std-ref">mjrfTexture</span></a>，由 <code class="docutils literal notranslate"><span class="pre">ModelResources</span></code> <a class="reference internal" href="#resupport"><span class="std std-ref">支持类</span></a> 创建</p><div class="en-orig" data-for="bi-11" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a> and <a class="reference internal" href="../APIreference/APItypes.html#mjrftexture"><span class="std std-ref">mjrfTexture</span></a>, created by the <code class="docutils literal notranslate"><span class="pre">ModelResources</span></code> <a class="reference internal" href="#resupport"><span class="std std-ref">support class</span></a></div></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-12">每帧场景</p><div class="en-orig" data-for="bi-12" lang="en">Per-frame scene</div></td>
+<td><p data-bi="bi-13"><a class="reference internal" href="../APIreference/APIfunctions.html#mjv-updatescene"><span class="std std-ref">mjv_updateScene</span></a> 填充 <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a></p><div class="en-orig" data-for="bi-13" lang="en"><a class="reference internal" href="../APIreference/APIfunctions.html#mjv-updatescene"><span class="std std-ref">mjv_updateScene</span></a> fills <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a></div></td>
+<td><p data-bi="bi-14"><code class="docutils literal notranslate"><span class="pre">ModelRenderables::Update</span></code> 就地更新持久的 <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">mjrfRenderable</span></a> 对象；<a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> 仅用于装饰</p><div class="en-orig" data-for="bi-14" lang="en"><code class="docutils literal notranslate"><span class="pre">ModelRenderables::Update</span></code> updates persistent <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">mjrfRenderable</span></a> objects in place; <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> only
+for decorations</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-15">离屏缓冲区</p><div class="en-orig" data-for="bi-15" lang="en">Offscreen buffer</div></td>
+<td><p data-bi="bi-16"><code class="docutils literal notranslate"><span class="pre">mjFB_OFFSCREEN</span></code> ，大小由 <code class="docutils literal notranslate"><span class="pre">mjModel.vis</span></code> 决定</p><div class="en-orig" data-for="bi-16" lang="en"><code class="docutils literal notranslate"><span class="pre">mjFB_OFFSCREEN</span></code>, sized by <code class="docutils literal notranslate"><span class="pre">mjModel.vis</span></code></div></td>
+<td><p data-bi="bi-17"><a class="reference internal" href="../APIreference/APItypes.html#mjrfrendertarget"><span class="std std-ref">mjrfRenderTarget</span></a>，任意大小和格式</p><div class="en-orig" data-for="bi-17" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjrfrendertarget"><span class="std std-ref">mjrfRenderTarget</span></a>, any size and format</div></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-18">像素回读</p><div class="en-orig" data-for="bi-18" lang="en">Pixel readback</div></td>
+<td><p><a class="reference internal" href="../APIreference/APIfunctions.html#mjr-readpixels"><span class="std std-ref">mjr_readPixels</span></a></p></td>
+<td><p data-bi="bi-19"><a class="reference internal" href="../APIreference/APItypes.html#mjrfreadrequest"><span class="std std-ref">mjrfReadRequest</span></a>，与渲染请求一同提交</p><div class="en-orig" data-for="bi-19" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjrfreadrequest"><span class="std std-ref">mjrfReadRequest</span></a>, submitted together with the render request</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-20">模式与效果</p><div class="en-orig" data-for="bi-20" lang="en">Modes and effects</div></td>
+<td><p data-bi="bi-21"><code class="docutils literal notranslate"><span class="pre">mjvScene.flags</span></code> (<a class="reference internal" href="../APIreference/APItypes.html#mjtrndflag"><span class="std std-ref">mjtRndFlag</span></a>) 和 <code class="docutils literal notranslate"><span class="pre">mjvScene.stereo</span></code></p><div class="en-orig" data-for="bi-21" lang="en"><code class="docutils literal notranslate"><span class="pre">mjvScene.flags</span></code> (<a class="reference internal" href="../APIreference/APItypes.html#mjtrndflag"><span class="std std-ref">mjtRndFlag</span></a>) and <code class="docutils literal notranslate"><span class="pre">mjvScene.stereo</span></code></div></td>
+<td><p data-bi="bi-22"><a class="reference internal" href="../APIreference/APItypes.html#mjrdrawmode"><span class="std std-ref">mjrDrawMode</span></a> 以及 <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a> 中每个请求各自的标志；立体渲染是使用不同相机的两个请求</p><div class="en-orig" data-for="bi-22" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjrdrawmode"><span class="std std-ref">mjrDrawMode</span></a> and per-request flags in <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a>; stereo is two requests with
+different cameras</div></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-23">2D 叠加层与文本</p><div class="en-orig" data-for="bi-23" lang="en">2D overlays and text</div></td>
+<td><p><a class="reference internal" href="../APIreference/APIfunctions.html#mjr-overlay"><span class="std std-ref">mjr_overlay</span></a>, <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-text"><span class="std std-ref">mjr_text</span></a>, <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-rectangle"><span class="std std-ref">mjr_rectangle</span></a>, <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-figure"><span class="std std-ref">mjr_figure</span></a></p></td>
+<td><p data-bi="bi-24">无；标签通过回调上报，并由应用程序绘制</p><div class="en-orig" data-for="bi-24" lang="en">None; labels are reported through a callback and drawn by the application</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<section id="filament">
+<span id="filamentrendering"></span><h2 data-bi="bi-25">Filament 渲染<a class="headerlink" href="#filament" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-25" lang="en">Filament rendering</div>
+<p data-bi="bi-26">MuJoCo 提供了一个基于 <a class="reference external" href="https://github.com/google/filament">Filament</a> 的渲染器，Filament 是 Google 的实时、基于物理的渲染引擎。Filament 运行时小巧而快速，可在 Linux、Windows、macOS、Android、iOS 和 Web 上运行，并支持 OpenGL、Vulkan、Metal 和 WebGL 图形后端。Filament 渲染器为 <a class="reference internal" href="../studio/index.html#studio"><span class="std std-ref">MuJoCo Studio</span></a> 和 <a class="reference external" href="https://live.mujoco.org">live.mujoco.org</a> 提供支持。</p><div class="en-orig" data-for="bi-26" lang="en">MuJoCo provides a renderer based on <a class="reference external" href="https://github.com/google/filament">Filament</a>, Google’s real-time physically
+based rendering engine. Filament has a small and fast runtime, runs on Linux, Windows, macOS, Android, iOS and the Web,
+and supports the OpenGL, Vulkan, Metal and WebGL graphics backends. The Filament renderer powers <a class="reference internal" href="../studio/index.html#studio"><span class="std std-ref">MuJoCo Studio</span></a> and <a class="reference external" href="https://live.mujoco.org">live.mujoco.org</a>.</div>
+<p data-bi="bi-27">Filament 渲染器是一个可选的、自包含的库，名为 <code class="docutils literal notranslate"><span class="pre">mujoco_filament</span></code> 。它实现了 <code class="docutils literal notranslate"><span class="pre">mjrf</span></code>
+<a class="reference internal" href="../APIreference/APItypes.html#tyfilamentrenderstructure"><span class="std std-ref">类型</span></a> 和 <a class="reference internal" href="../APIreference/APIfunctions.html#filamentrenderingapi"><span class="std std-ref">函数</span></a>，这些类型和函数定义于 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjrfilament.h">mjrfilament.h</a> 中。</p><div class="en-orig" data-for="bi-27" lang="en">The Filament renderer is an optional, self-contained library named <code class="docutils literal notranslate"><span class="pre">mujoco_filament</span></code>. It implements the <code class="docutils literal notranslate"><span class="pre">mjrf</span></code>
+<a class="reference internal" href="../APIreference/APItypes.html#tyfilamentrenderstructure"><span class="std std-ref">types</span></a> and <a class="reference internal" href="../APIreference/APIfunctions.html#filamentrenderingapi"><span class="std std-ref">functions</span></a> defined in <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjrfilament.h">mjrfilament.h</a>.</div>
+<p data-bi="bi-28">虽然 Filament 运行时非常小巧高效，但它是一个相当庞大的构建依赖项。因此，如果你打算
+<a class="reference internal" href="index.html#inbuild"><span class="std std-ref">从源码构建 MuJoCo</span></a>，则需要设置 CMake 的 <code class="docutils literal notranslate"><span class="pre">MUJOCO_USE_FILAMENT</span></code> 选项，才能包含 Filament 渲染器。</p><div class="en-orig" data-for="bi-28" lang="en">While the filament runtime is very small and efficient, it is a rather large build dependency. As such, if you intend to
+<a class="reference internal" href="index.html#inbuild"><span class="std std-ref">build MuJoCo from source</span></a>, you will need to set the CMake <code class="docutils literal notranslate"><span class="pre">MUJOCO_USE_FILAMENT</span></code> option in order to
+include the Filament renderer.</div>
+<p data-bi="bi-29" id="refilamentcompat">也可以通过额外设置 <code class="docutils literal notranslate"><span class="pre">MUJOCO_USE_FILAMENT_MJR_COMPAT</span></code> CMake 选项，在经典的 <code class="docutils literal notranslate"><span class="pre">mjr</span></code> <a class="reference internal" href="../APIreference/APIfunctions.html#openglrendering"><span class="std std-ref">API</span></a> 中使用 Filament 渲染。该选项实际上是将基于 OpenGL 的 <code class="docutils literal notranslate"><span class="pre">mjr</span></code>
+函数替换为基于 Filament 的实现。这对于无需重写应用代码即可试用 Filament 渲染器很有用。但是，这种兼容模式不支持 Filament 运行时提供的全部定制功能和效果，并且会带来轻微的性能开销。</p><div class="en-orig" data-for="bi-29" lang="en">It is also possible to use Filament rendering with the classic <code class="docutils literal notranslate"><span class="pre">mjr</span></code> <a class="reference internal" href="../APIreference/APIfunctions.html#openglrendering"><span class="std std-ref">API</span></a> by additionally
+setting the <code class="docutils literal notranslate"><span class="pre">MUJOCO_USE_FILAMENT_MJR_COMPAT</span></code> CMake option. This option effectively replaces the OpenGL-based <code class="docutils literal notranslate"><span class="pre">mjr</span></code>
+functions with Filament-based implementations. This is useful for experimenting with the Filament renderer without
+having to rewrite application code. However, this compatibility mode does not support the full range of customization
+and effects available in the Filament runtime and comes with a slight performance overhead.</div>
+<p data-bi="bi-30">你可以在 <a class="reference internal" href="samples.html#sarender"><span class="std std-ref">render.cc</span></a> 示例中找到使用 Filament 渲染器的例子，具体位于
+<code class="docutils literal notranslate"><span class="pre">RenderFilament()</span></code> 函数中。</p><div class="en-orig" data-for="bi-30" lang="en">You can find an example of using the Filament renderer in the <a class="reference internal" href="samples.html#sarender"><span class="std std-ref">render.cc</span></a> sample and, specifically, in
+the <code class="docutils literal notranslate"><span class="pre">RenderFilament()</span></code> function.</div>
+<div class="tip admonition">
+<p class="admonition-title" data-bi="bi-31">光强度决定光照模型</p><div class="en-orig" data-for="bi-31" lang="en">Light intensity switches the lighting model</div>
+<p data-bi="bi-32">Filament 渲染器仅凭一个属性来决定如何为 <strong>整个场景</strong> 打光：模型中是否有任何
+<a class="reference internal" href="../XMLreference.html#body-light"><span class="std std-ref">光源</span></a> 具有正的 <a class="reference internal" href="../XMLreference.html#body-light-intensity"><span class="std std-ref">intensity</span></a>。</p><div class="en-orig" data-for="bi-32" lang="en">The Filament renderer decides how to light the <strong>entire scene</strong> from a single property: whether any
+<a class="reference internal" href="../XMLreference.html#body-light"><span class="std std-ref">light</span></a> in the model has a positive <a class="reference internal" href="../XMLreference.html#body-light-intensity"><span class="std std-ref">intensity</span></a>.</div>
+<ul class="simple">
+<li><p data-bi="bi-33">如果 <strong>没有</strong> 任何光源具有正强度，则假定模型是为经典渲染器编写的。此时会添加默认的环境光，启用头灯，并将固定的总强度分配给模型的各个光源。</p><div class="en-orig" data-for="bi-33" lang="en">If <strong>no</strong> light has positive intensity, the model is assumed to be authored for the classic renderer. A default
+environment light is added, the headlight is enabled, and a fixed total intensity is distributed among the model’s
+lights.</div></li>
+<li><p data-bi="bi-34">如果 <strong>任何</strong> 光源具有正强度，则所有光源都被视为光度学光源：每个光源恰好贡献其自身的强度（因此强度保持为零的光源会变暗），头灯被关闭，并且除非模型定义了 <code class="docutils literal notranslate"><span class="pre">image</span></code> 光源，否则没有环境照明。</p><div class="en-orig" data-for="bi-34" lang="en">If <strong>any</strong> light has positive intensity, all lights are treated as photometric: each light contributes exactly its
+own intensity (so lights left at zero go dark), the headlight is turned off, and there is no ambient illumination
+unless the model defines an <code class="docutils literal notranslate"><span class="pre">image</span></code> light.</div></li>
+</ul>
+<p data-bi="bi-35">因此，在单个光源上设置 <code class="docutils literal notranslate"><span class="pre">intensity</span></code> 会改变其他所有对象的外观。详情参见下文的 <a class="reference internal" href="#relighting"><span class="std std-ref">光照</span></a>。</p><div class="en-orig" data-for="bi-35" lang="en">Setting <code class="docutils literal notranslate"><span class="pre">intensity</span></code> on a single light therefore changes the appearance of everything else. See <a class="reference internal" href="#relighting"><span class="std std-ref">Lighting</span></a> below for details.</div>
+</div>
+<section id="reprogramming">
+<span id="id2"></span><h3 data-bi="bi-36">编程<a class="headerlink" href="#reprogramming" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-36" lang="en">Programming</div>
+<p data-bi="bi-37">Filament 渲染器分为三层。最底层是外部开发的 <a class="reference external" href="https://github.com/google/filament">Filament 库</a> 本身，它提供基于物理的渲染管线和图形 API
+后端。渲染器的公共接口是 <code class="docutils literal notranslate"><span class="pre">mjrf</span></code> C API，声明于 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjrfilament.h">mjrfilament.h</a> 中。与每帧都重绘一个 <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> 的经典 <code class="docutils literal notranslate"><span class="pre">mjr</span></code> API
+不同， <code class="docutils literal notranslate"><span class="pre">mjrf</span></code> 是 <em>保留模式</em> 且 <em>异步</em> 的：应用程序创建长期存在的对象，对其进行增量修改，并提交成批的渲染和像素回读请求。在 C
+API 之上是 C++ <a class="reference internal" href="#resupport"><span class="std std-ref">支持层</span></a>，位于 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/render/filament/support">src/render/filament/support</a> （同时也绑定到 Python 的
+<code class="docutils literal notranslate"><span class="pre">mujoco.mjrf</span></code> 下），可根据 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>、<a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 和
+<a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a> 自动创建和更新 <code class="docutils literal notranslate"><span class="pre">mjrf</span></code> 场景对象。</p><div class="en-orig" data-for="bi-37" lang="en">The Filament renderer is organized in three layers. At the base is the externally developed <a class="reference external" href="https://github.com/google/filament">Filament library</a> itself, which provides the physically-based rendering pipeline and graphics API
+backends. The public interface to the renderer is the <code class="docutils literal notranslate"><span class="pre">mjrf</span></code> C API, declared in <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjrfilament.h">mjrfilament.h</a>. Unlike the classic <code class="docutils literal notranslate"><span class="pre">mjr</span></code> API,
+which redraws an <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> every frame, <code class="docutils literal notranslate"><span class="pre">mjrf</span></code> is <em>retained-mode</em> and <em>asynchronous</em>: applications create
+long-lived objects, mutate them incrementally, and submit batches of render and pixel-readback requests. On top of the C
+API, the C++ <a class="reference internal" href="#resupport"><span class="std std-ref">support layer</span></a> in <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/render/filament/support">src/render/filament/support</a> (also bound in Python under
+<code class="docutils literal notranslate"><span class="pre">mujoco.mjrf</span></code>) automates creating and updating <code class="docutils literal notranslate"><span class="pre">mjrf</span></code> scene objects from <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a>, and
+<a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a>.</div>
+<p data-bi="bi-38">下面是一个简化的 C++ 概要 (改编自 <a class="reference internal" href="samples.html#sarender"><span class="std std-ref">render.cc</span></a> 中的 <code class="docutils literal notranslate"><span class="pre">RenderFilament()</span></code>)，说明这些组件如何配合完成离屏渲染：</p><div class="en-orig" data-for="bi-38" lang="en">Below is a simplified C++ outline (adapted from <code class="docutils literal notranslate"><span class="pre">RenderFilament()</span></code> in <a class="reference internal" href="samples.html#sarender"><span class="std std-ref">render.cc</span></a>) illustrating how
+these components fit together for offscreen rendering:</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="c1">// create Filament context and scene</span>
+<span class="n">mjrfContextConfig</span><span class="w"> </span><span class="n">context_cfg</span><span class="p">;</span>
+<span class="n">mjrf_defaultContextConfig</span><span class="p">(</span><span class="o">&amp;</span><span class="n">context_cfg</span><span class="p">);</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mujoco</span><span class="o">::</span><span class="n">CreateContext</span><span class="p">(</span><span class="n">context_cfg</span><span class="p">);</span>
+
+<span class="n">mjrfSceneParams</span><span class="w"> </span><span class="n">scene_params</span><span class="p">;</span>
+<span class="n">mjrf_defaultSceneParams</span><span class="p">(</span><span class="o">&amp;</span><span class="n">scene_params</span><span class="p">);</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">scene</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mujoco</span><span class="o">::</span><span class="n">CreateScene</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">scene_params</span><span class="p">);</span>
+<span class="n">mjrf_configureSceneFromModel</span><span class="p">(</span><span class="n">scene</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">m</span><span class="p">);</span>
+
+<span class="c1">// create retained model components and decoration helper</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">model_resources</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">ModelResources</span><span class="o">&gt;</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">ctx</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">model_lights</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">ModelLights</span><span class="o">&gt;</span><span class="p">(</span><span class="n">scene</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">model_resources</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">model_renderables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">ModelRenderables</span><span class="o">&gt;</span><span class="p">(</span><span class="n">scene</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">model_resources</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">model_decorations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">ModelDecorations</span><span class="o">&gt;</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">scene</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">m</span><span class="p">);</span>
+
+<span class="c1">// create offscreen render target</span>
+<span class="n">mjrfRenderTargetConfig</span><span class="w"> </span><span class="n">target_cfg</span><span class="p">;</span>
+<span class="n">mjrf_defaultRenderTargetConfig</span><span class="p">(</span><span class="o">&amp;</span><span class="n">target_cfg</span><span class="p">);</span>
+<span class="n">target_cfg</span><span class="p">.</span><span class="n">width</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">width</span><span class="p">;</span>
+<span class="n">target_cfg</span><span class="p">.</span><span class="n">height</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="n">height</span><span class="p">;</span>
+<span class="n">target_cfg</span><span class="p">.</span><span class="n">color_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjPIXEL_FORMAT_RGB8</span><span class="p">;</span>
+<span class="n">target_cfg</span><span class="p">.</span><span class="n">depth_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjPIXEL_FORMAT_DEPTH32F</span><span class="p">;</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">render_target</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">mujoco</span><span class="o">::</span><span class="n">CreateRenderTarget</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">target_cfg</span><span class="p">);</span>
+
+<span class="c1">// update retained lights, renderables, and transient decorations from mjData</span>
+<span class="n">mjrRect</span><span class="w"> </span><span class="n">viewport</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="p">};</span>
+<span class="n">model_renderables</span><span class="o">-&gt;</span><span class="n">SetOptions</span><span class="p">(</span><span class="n">opt</span><span class="p">);</span>
+<span class="n">model_lights</span><span class="o">-&gt;</span><span class="n">Update</span><span class="p">(</span><span class="n">d</span><span class="p">);</span>
+<span class="n">model_renderables</span><span class="o">-&gt;</span><span class="n">Update</span><span class="p">(</span><span class="n">d</span><span class="p">);</span>
+<span class="n">model_decorations</span><span class="o">-&gt;</span><span class="n">Update</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">opt</span><span class="p">,</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">cam</span><span class="p">,</span><span class="w"> </span><span class="n">viewport</span><span class="p">);</span>
+
+<span class="c1">// submit render and pixel-readback requests and wait for completion</span>
+<span class="n">mjrfRenderRequest</span><span class="w"> </span><span class="n">request</span><span class="p">;</span>
+<span class="n">mjrf_defaultRenderRequest</span><span class="p">(</span><span class="o">&amp;</span><span class="n">request</span><span class="p">);</span>
+<span class="n">request</span><span class="p">.</span><span class="n">scene</span><span class="w">               </span><span class="o">=</span><span class="w"> </span><span class="n">scene</span><span class="p">.</span><span class="n">get</span><span class="p">();</span>
+<span class="n">request</span><span class="p">.</span><span class="n">camera</span><span class="w">              </span><span class="o">=</span><span class="w"> </span><span class="n">mjv_camera2GLCamera</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">cam</span><span class="p">);</span>
+<span class="n">request</span><span class="p">.</span><span class="n">viewport</span><span class="w">            </span><span class="o">=</span><span class="w"> </span><span class="n">viewport</span><span class="p">;</span>
+<span class="n">request</span><span class="p">.</span><span class="n">target</span><span class="w">              </span><span class="o">=</span><span class="w"> </span><span class="n">render_target</span><span class="p">.</span><span class="n">get</span><span class="p">();</span>
+<span class="n">request</span><span class="p">.</span><span class="n">headlight</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">m</span><span class="o">-&gt;</span><span class="n">vis</span><span class="p">.</span><span class="n">headlight</span><span class="p">.</span><span class="n">active</span><span class="p">;</span>
+<span class="n">request</span><span class="p">.</span><span class="n">headlight_intensity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">model_lights</span><span class="o">-&gt;</span><span class="n">GetHeadlightIntensity</span><span class="p">();</span>
+
+<span class="n">mjrfReadRequest</span><span class="w"> </span><span class="n">read_request</span><span class="p">;</span>
+<span class="n">mjrf_defaultReadRequest</span><span class="p">(</span><span class="o">&amp;</span><span class="n">read_request</span><span class="p">);</span>
+<span class="n">read_request</span><span class="p">.</span><span class="n">target</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">render_target</span><span class="p">.</span><span class="n">get</span><span class="p">();</span>
+<span class="n">read_request</span><span class="p">.</span><span class="n">output</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">rgb</span><span class="p">.</span><span class="n">data</span><span class="p">();</span>
+<span class="n">read_request</span><span class="p">.</span><span class="n">num_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">height</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
+
+<span class="n">mjrfFrameHandle</span><span class="w"> </span><span class="n">frame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjrf_render</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="o">&amp;</span><span class="n">request</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">read_request</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="n">mjrf_waitForFrame</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">frame</span><span class="p">);</span>
+
+<span class="c1">// remove transient decorations before destroying the scene</span>
+<span class="n">model_decorations</span><span class="o">-&gt;</span><span class="n">Clear</span><span class="p">();</span>
+</pre></div>
+</div>
+<section id="reconcepts">
+<span id="id3"></span><h4 data-bi="bi-39">核心概念<a class="headerlink" href="#reconcepts" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-39" lang="en">Core concepts</div>
+<p data-bi="bi-40"><code class="docutils literal notranslate"><span class="pre">mjrf</span></code> C API 围绕七种不透明对象类型展开，每种都用 <code class="docutils literal notranslate"><span class="pre">mjrf_create*</span></code> 函数创建，并用 <code class="docutils literal notranslate"><span class="pre">mjrf_destroy*</span></code> 释放：<a class="reference internal" href="../APIreference/APItypes.html#mjrfcontext"><span class="std std-ref">mjrfContext</span></a>、<a class="reference internal" href="../APIreference/APItypes.html#mjrfscene"><span class="std std-ref">mjrfScene</span></a>、<a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a>、<a class="reference internal" href="../APIreference/APItypes.html#mjrftexture"><span class="std std-ref">mjrfTexture</span></a>、<a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">mjrfRenderable</span></a>、<a class="reference internal" href="../APIreference/APItypes.html#mjrflight"><span class="std std-ref">mjrfLight</span></a> 和 <a class="reference internal" href="../APIreference/APItypes.html#mjrfrendertarget"><span class="std std-ref">mjrfRenderTarget</span></a>。创建时需要传入由
+<code class="docutils literal notranslate"><span class="pre">mjrf_default*</span></code> 初始化的结构体，其名称编码了一条规则： <code class="docutils literal notranslate"><span class="pre">*Config</span></code> （上下文、纹理、网格、渲染目标）在对象的生命周期内保持固定，而 <code class="docutils literal notranslate"><span class="pre">*Params</span></code> （场景、光源、可渲染对象）是初始值，之后可以通过
+<code class="docutils literal notranslate"><span class="pre">mjrf_set*</span></code> 函数更改。<a class="reference internal" href="../APIreference/APItypes.html#mjrfmaterial"><span class="std std-ref">mjrfMaterial</span></a> 和 <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a> 等普通结构体描述这些对象如何配置和绘制。</p><div class="en-orig" data-for="bi-40" lang="en">The <code class="docutils literal notranslate"><span class="pre">mjrf</span></code> C API revolves around seven opaque object types, each created with an <code class="docutils literal notranslate"><span class="pre">mjrf_create*</span></code> function and freed
+with <code class="docutils literal notranslate"><span class="pre">mjrf_destroy*</span></code>: <a class="reference internal" href="../APIreference/APItypes.html#mjrfcontext"><span class="std std-ref">mjrfContext</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrfscene"><span class="std std-ref">mjrfScene</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrftexture"><span class="std std-ref">mjrfTexture</span></a>,
+<a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">mjrfRenderable</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrflight"><span class="std std-ref">mjrfLight</span></a>, and <a class="reference internal" href="../APIreference/APItypes.html#mjrfrendertarget"><span class="std std-ref">mjrfRenderTarget</span></a>. Creation takes a struct initialized by
+<code class="docutils literal notranslate"><span class="pre">mjrf_default*</span></code>, whose name encodes a rule: a <code class="docutils literal notranslate"><span class="pre">*Config</span></code> (context, texture, mesh, render target) is fixed for the
+lifetime of the object, while <code class="docutils literal notranslate"><span class="pre">*Params</span></code> (scene, light, renderable) are initial values that can later be changed with
+<code class="docutils literal notranslate"><span class="pre">mjrf_set*</span></code> functions. Plain structs such as <a class="reference internal" href="../APIreference/APItypes.html#mjrfmaterial"><span class="std std-ref">mjrfMaterial</span></a> and <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a> describe how these
+objects are configured and drawn.</div>
+<dl class="simple">
+<dt data-bi="bi-41"><strong>上下文与场景</strong> (<a class="reference internal" href="../APIreference/APItypes.html#mjrfcontext"><span class="std std-ref">mjrfContext</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrfscene"><span class="std std-ref">mjrfScene</span></a>)<div class="en-orig" data-for="bi-41" lang="en"><strong>Context and scene</strong> (<a class="reference internal" href="../APIreference/APItypes.html#mjrfcontext"><span class="std std-ref">mjrfContext</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrfscene"><span class="std std-ref">mjrfScene</span></a>)</div></dt><dd><p data-bi="bi-42"><a class="reference internal" href="../APIreference/APItypes.html#mjrfcontext"><span class="std std-ref">mjrfContext</span></a> 是 Filament 渲染器的入口。与经典的 <a class="reference internal" href="../APIreference/APItypes.html#mjrcontext"><span class="std std-ref">mjrContext</span></a> 不同，它管理自己的图形上下文（OpenGL 或 Vulkan，通过
+<a class="reference internal" href="../APIreference/APItypes.html#mjrfcontextconfig"><span class="std std-ref">mjrfContextConfig</span></a> 中的 <a class="reference internal" href="../APIreference/APItypes.html#mjrgraphicsapi"><span class="std std-ref">mjrGraphicsApi</span></a> 选择，可带可选的窗口句柄或使用无头软件渲染），并且独立于任何单个 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>。<a class="reference internal" href="../APIreference/APItypes.html#mjrfscene"><span class="std std-ref">mjrfScene</span></a> 是光源、可渲染对象和可选天空盒纹理的容器；场景级渲染选项和模型中自定义的
+<code class="docutils literal notranslate"><span class="pre">filament.*</span></code> 标志通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-configurescenefrommodel"><span class="std std-ref">mjrf_configureSceneFromModel</span></a> 应用。</p><div class="en-orig" data-for="bi-42" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjrfcontext"><span class="std std-ref">mjrfContext</span></a> is the entry point to the Filament renderer. Unlike the classic <a class="reference internal" href="../APIreference/APItypes.html#mjrcontext"><span class="std std-ref">mjrContext</span></a>, it manages its
+own graphics context (OpenGL or Vulkan, selected via <a class="reference internal" href="../APIreference/APItypes.html#mjrgraphicsapi"><span class="std std-ref">mjrGraphicsApi</span></a> in <a class="reference internal" href="../APIreference/APItypes.html#mjrfcontextconfig"><span class="std std-ref">mjrfContextConfig</span></a>, with optional
+window handle or headless software rendering) and is independent of any single <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>. A <a class="reference internal" href="../APIreference/APItypes.html#mjrfscene"><span class="std std-ref">mjrfScene</span></a> is
+a container of lights, renderables, and an optional skybox texture; scene-level rendering options and custom
+<code class="docutils literal notranslate"><span class="pre">filament.*</span></code> flags from a model are applied via <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-configurescenefrommodel"><span class="std std-ref">mjrf_configureSceneFromModel</span></a>.</div>
+</dd>
+<dt data-bi="bi-43"><strong>网格与纹理</strong> (<a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrftexture"><span class="std std-ref">mjrfTexture</span></a>)<div class="en-orig" data-for="bi-43" lang="en"><strong>Meshes and textures</strong> (<a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrftexture"><span class="std std-ref">mjrfTexture</span></a>)</div></dt><dd><p data-bi="bi-44">GPU 几何体和图像资源只创建一次，并在各帧之间保留。<a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a> 存储通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-uploadmesh"><span class="std std-ref">mjrf_uploadMesh</span></a> 上传的顶点属性（位置、打包的切线坐标系朝向、UV）和索引，以及用于视锥剔除的包围盒。<a class="reference internal" href="../APIreference/APItypes.html#mjrftexture"><span class="std std-ref">mjrfTexture</span></a> 存储通过
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-uploadtexture"><span class="std std-ref">mjrf_uploadTexture</span></a> 上传的 2D、立方体贴图或 KTX 压缩图像数据。两个上传函数都接受一个可选的完成回调，用于在异步 GPU 传输完成后释放主机内存；调用 <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-flush"><span class="std std-ref">mjrf_flush</span></a> 会将待处理的操作刷新到渲染后端，并在下一次 <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-render"><span class="std std-ref">mjrf_render</span></a> 调用之前调用所有已完成的回调。</p><div class="en-orig" data-for="bi-44" lang="en">GPU geometry and image assets are created once and retained across frames. <a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a> stores vertex attributes
+(positions, packed tangent-frame orientations, UVs) and indices uploaded via <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-uploadmesh"><span class="std std-ref">mjrf_uploadMesh</span></a>, along with
+bounding boxes used for frustum culling. <a class="reference internal" href="../APIreference/APItypes.html#mjrftexture"><span class="std std-ref">mjrfTexture</span></a> stores 2D, cubemap, or KTX-compressed image data uploaded
+via <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-uploadtexture"><span class="std std-ref">mjrf_uploadTexture</span></a>. Both upload functions accept an optional completion callback for freeing host memory
+once the asynchronous GPU transfer finishes; calling <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-flush"><span class="std std-ref">mjrf_flush</span></a> flushes pending operations to the rendering
+backend and invokes any completed callbacks before the next <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-render"><span class="std std-ref">mjrf_render</span></a> call.</div>
+</dd>
+<dt data-bi="bi-45"><strong>可渲染对象与材质</strong> (<a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">mjrfRenderable</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrfmaterial"><span class="std std-ref">mjrfMaterial</span></a>)<div class="en-orig" data-for="bi-45" lang="en"><strong>Renderables and materials</strong> (<a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">mjrfRenderable</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrfmaterial"><span class="std std-ref">mjrfMaterial</span></a>)</div></dt><dd><p data-bi="bi-46"><a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">mjrfRenderable</span></a> 是场景中持久存在的可绘制实体，组合了表面几何、材质外观和 3D 变换：</p><div class="en-orig" data-for="bi-46" lang="en">An <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">mjrfRenderable</span></a> is a persistent drawable entity in a scene, combining surface geometry, material appearance,
+and a 3D transform:</div>
+<ul class="simple">
+<li><p data-bi="bi-47"><strong>几何：</strong> 可渲染对象既可以引用自定义的 <a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a> (通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablemesh"><span class="std std-ref">mjrf_setRenderableMesh</span></a>)，也可以引用内置的几何基元，如球体、胶囊体、圆柱体、长方体或椭球体 (通过
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablegeommesh"><span class="std std-ref">mjrf_setRenderableGeomMesh</span></a>，它会在具有相同质量参数的可渲染对象之间缓存并共享底层网格缓冲区)。</p><div class="en-orig" data-for="bi-47" lang="en"><strong>Geometry</strong>: A renderable can reference either a custom <a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a> (via <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablemesh"><span class="std std-ref">mjrf_setRenderableMesh</span></a>) or a
+built-in geometric primitive such as a sphere, capsule, cylinder, box, or ellipsoid (via
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablegeommesh"><span class="std std-ref">mjrf_setRenderableGeomMesh</span></a>, which caches and shares underlying mesh buffers across renderables with matching
+quality parameters).</div></li>
+<li><p data-bi="bi-48"><strong>材质：</strong> <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablematerial"><span class="std std-ref">mjrf_setRenderableMaterial</span></a> 应用一个 <a class="reference internal" href="../APIreference/APItypes.html#mjrfmaterial"><span class="std std-ref">mjrfMaterial</span></a> 结构体，它可在三种着色模型之间选择：金属度-粗糙度 PBR、传统的高光-光泽度 (Phong)，或用于 UI 和装饰性叠加层的无光照渲染 (<code class="docutils literal notranslate"><span class="pre">decor</span></code> ，它还会将对象放在 decor 层并禁用阴影)。材质还携带纹理绑定（颜色、法线、金属度、粗糙度、遮蔽、打包的
+ORM、自发光）、UV 缩放/偏移、选中高亮 (<code class="docutils literal notranslate"><span class="pre">selected</span></code>)，以及用于分割和求解器岛可视化的对象/岛 ID。</p><div class="en-orig" data-for="bi-48" lang="en"><strong>Material</strong>: <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablematerial"><span class="std std-ref">mjrf_setRenderableMaterial</span></a> applies an <a class="reference internal" href="../APIreference/APItypes.html#mjrfmaterial"><span class="std std-ref">mjrfMaterial</span></a> struct, which selects between three
+shading models: metallic-roughness PBR, legacy specular-glossiness (Phong), or unlit rendering for UI and
+decorative overlays (<code class="docutils literal notranslate"><span class="pre">decor</span></code>, which also places the object on the decor layer and disables shadows). The
+material also carries texture bindings (color, normal, metallic, roughness, occlusion, packed
+ORM, emissive), UV scale/offset, selection highlighting (<code class="docutils literal notranslate"><span class="pre">selected</span></code>), and object/island IDs for segmentation and
+solver-island visualization.</div></li>
+<li><p data-bi="bi-49"><strong>位姿、尺寸与阴影：</strong> 每一帧，<a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablepose"><span class="std std-ref">mjrf_setRenderablePose</span></a> 就地更新可渲染对象的 3D 位置和旋转矩阵，<a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablesize"><span class="std std-ref">mjrf_setRenderableSize</span></a> 更新其缩放（处理非均匀的基元缩放，例如保持胶囊体端帽为球形），<a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablecastshadow"><span class="std std-ref">mjrf_setRenderableCastShadow</span></a> 切换其是否投射阴影。可渲染对象通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-addscenerenderable"><span class="std std-ref">mjrf_addSceneRenderable</span></a> 和
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-removescenerenderable"><span class="std std-ref">mjrf_removeSceneRenderable</span></a> 添加到场景或从场景中移除。</p><div class="en-orig" data-for="bi-49" lang="en"><strong>Pose, size, and shadows</strong>: On each frame, <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablepose"><span class="std std-ref">mjrf_setRenderablePose</span></a> updates the renderable’s 3D position and
+rotation matrix in place, <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablesize"><span class="std std-ref">mjrf_setRenderableSize</span></a> updates its scale (handling non-uniform primitive scaling
+such as keeping capsule end-caps spherical), and <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablecastshadow"><span class="std std-ref">mjrf_setRenderableCastShadow</span></a> toggles whether it casts
+shadows. Renderables are added to or removed from a scene with <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-addscenerenderable"><span class="std std-ref">mjrf_addSceneRenderable</span></a> and
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-removescenerenderable"><span class="std std-ref">mjrf_removeSceneRenderable</span></a>.</div></li>
+</ul>
+</dd>
+<dt data-bi="bi-50"><strong>光源</strong> (<a class="reference internal" href="../APIreference/APItypes.html#mjrflight"><span class="std std-ref">mjrfLight</span></a>)<div class="en-orig" data-for="bi-50" lang="en"><strong>Lights</strong> (<a class="reference internal" href="../APIreference/APItypes.html#mjrflight"><span class="std std-ref">mjrfLight</span></a>)</div></dt><dd><p data-bi="bi-51"><a class="reference internal" href="../APIreference/APItypes.html#mjrflight"><span class="std std-ref">mjrfLight</span></a> 表示通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-addscenelight"><span class="std std-ref">mjrf_addSceneLight</span></a> 添加到场景的平行光、聚光灯、点光源或基于图像的（IBL 环境立方体贴图）光源。它们的位姿、强度（单位为坎德拉）、颜色和阴影贴图分辨率都可以动态更新。请注意，与相机对齐的 <strong>头灯</strong> 是在 <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a> 上指定的（强度单位为勒克斯），而不是作为场景光源，因此从多个相机渲染同一场景时不会让各视图相互照亮。</p><div class="en-orig" data-for="bi-51" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjrflight"><span class="std std-ref">mjrfLight</span></a> represents directional, spot, point, or image-based (IBL environment cubemap) light sources added to
+a scene via <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-addscenelight"><span class="std std-ref">mjrf_addSceneLight</span></a>. Their poses, intensities (in candela), colors, and shadow map resolutions
+can be updated dynamically. Note that the camera-aligned <strong>headlight</strong> is specified on <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a>
+(with intensity in lux) rather than as a scene light, so rendering the same scene from multiple cameras does not
+cross-illuminate views.</div>
+</dd>
+<dt data-bi="bi-52"><strong>渲染目标、请求与帧句柄</strong> (<a class="reference internal" href="../APIreference/APItypes.html#mjrfrendertarget"><span class="std std-ref">mjrfRenderTarget</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrfreadrequest"><span class="std std-ref">mjrfReadRequest</span></a>)<div class="en-orig" data-for="bi-52" lang="en"><strong>Render targets, requests, and frame handles</strong> (<a class="reference internal" href="../APIreference/APItypes.html#mjrfrendertarget"><span class="std std-ref">mjrfRenderTarget</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrfreadrequest"><span class="std std-ref">mjrfReadRequest</span></a>)</div></dt><dd><p data-bi="bi-53">渲染通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-render"><span class="std std-ref">mjrf_render</span></a> 成批提交。每个 <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a> 将一个 <a class="reference internal" href="../APIreference/APItypes.html#mjrfscene"><span class="std std-ref">mjrfScene</span></a>
+与相机 (<code class="docutils literal notranslate"><span class="pre">mjrCamera</span></code>)、视口、可选的离屏 <a class="reference internal" href="../APIreference/APItypes.html#mjrfrendertarget"><span class="std std-ref">mjrfRenderTarget</span></a> (使用原生窗口时为 <code class="docutils literal notranslate"><span class="pre">NULL</span></code>)、绘制模式
+(<a class="reference internal" href="../APIreference/APItypes.html#mjrdrawmode"><span class="std std-ref">mjrDrawMode</span></a>，取值包括默认、无纹理、线框、深度、求解器岛，或按 ID/颜色分割) 以及每视图标志（阴影、反射、后处理、头灯）配对。由于相机和绘制模式属于请求而不是场景，因此单个保留的 <a class="reference internal" href="../APIreference/APItypes.html#mjrfscene"><span class="std std-ref">mjrfScene</span></a> 可以在一次调用中从多个相机或以多种绘制模式渲染。离屏像素回读与渲染请求一同通过
+<a class="reference internal" href="../APIreference/APItypes.html#mjrfreadrequest"><span class="std std-ref">mjrfReadRequest</span></a> 请求。<a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-render"><span class="std std-ref">mjrf_render</span></a> 将工作分派到专用的渲染线程，并返回一个
+<code class="docutils literal notranslate"><span class="pre">mjrfFrameHandle</span></code> ，调用方通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-waitforframe"><span class="std std-ref">mjrf_waitForFrame</span></a> 对其进行同步。尽管使用了内部渲染线程， <code class="docutils literal notranslate"><span class="pre">mjrf</span></code> API 并不是线程安全的，所有调用都必须来自同一个线程。</p><div class="en-orig" data-for="bi-53" lang="en">Rendering is submitted in batches via <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-render"><span class="std std-ref">mjrf_render</span></a>. Each <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a> pairs an <a class="reference internal" href="../APIreference/APItypes.html#mjrfscene"><span class="std std-ref">mjrfScene</span></a>
+with a camera (<code class="docutils literal notranslate"><span class="pre">mjrCamera</span></code>), viewport, optional offscreen <a class="reference internal" href="../APIreference/APItypes.html#mjrfrendertarget"><span class="std std-ref">mjrfRenderTarget</span></a> (or <code class="docutils literal notranslate"><span class="pre">NULL</span></code> for the native
+window), draw mode (<a class="reference internal" href="../APIreference/APItypes.html#mjrdrawmode"><span class="std std-ref">mjrDrawMode</span></a>: default, no-textures, wireframe, depth, solver islands, or segmentation by
+ID/color), and per-view flags (shadows, reflections, post-processing, headlight). Because camera and draw mode belong
+to the request rather than the scene, a single retained <a class="reference internal" href="../APIreference/APItypes.html#mjrfscene"><span class="std std-ref">mjrfScene</span></a> can be rendered from multiple cameras or in
+multiple draw modes in one call. Offscreen pixel readbacks are requested alongside render requests via
+<a class="reference internal" href="../APIreference/APItypes.html#mjrfreadrequest"><span class="std std-ref">mjrfReadRequest</span></a>. <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-render"><span class="std std-ref">mjrf_render</span></a> dispatches work to a dedicated render thread and returns an
+<code class="docutils literal notranslate"><span class="pre">mjrfFrameHandle</span></code>, which the caller synchronizes on with <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-waitforframe"><span class="std std-ref">mjrf_waitForFrame</span></a>. Despite using an internal render
+thread, the <code class="docutils literal notranslate"><span class="pre">mjrf</span></code> API is not thread-safe and all calls must be made from a single thread.</div>
+</dd>
+</dl>
+</section>
+<section id="resupport">
+<span id="id4"></span><h4 data-bi="bi-54">支持层<a class="headerlink" href="#resupport" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-54" lang="en">Support layer</div>
+<p data-bi="bi-55">虽然应用程序可以直接管理底层的 <code class="docutils literal notranslate"><span class="pre">mjrf</span></code> 对象，但大多数 MuJoCo 应用程序使用
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/render/filament/support">src/render/filament/support</a> 中的支持层 (以及用于
+RAII <code class="docutils literal notranslate"><span class="pre">UniquePtr</span></code> 封装器的 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/render/filament/support/mjrf_ptr.h">support/mjrf_ptr.h</a>)，它同样在 Python 的 <code class="docutils literal notranslate"><span class="pre">mujoco.mjrf</span></code> 下公开：</p><div class="en-orig" data-for="bi-55" lang="en">While applications can manage low-level <code class="docutils literal notranslate"><span class="pre">mjrf</span></code> objects directly, most MuJoCo applications use the support layer in
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/render/filament/support">src/render/filament/support</a> (and
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/render/filament/support/mjrf_ptr.h">support/mjrf_ptr.h</a> for
+RAII <code class="docutils literal notranslate"><span class="pre">UniquePtr</span></code> wrappers), which is also exposed in Python under <code class="docutils literal notranslate"><span class="pre">mujoco.mjrf</span></code>:</div>
+<ul class="simple">
+<li><p data-bi="bi-56"><code class="docutils literal notranslate"><span class="pre">ModelResources</span></code> ：根据 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 创建并拥有所有 <a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a> 资源（网格、凸包和高度场）以及
+<a class="reference internal" href="../APIreference/APItypes.html#mjrftexture"><span class="std std-ref">mjrfTexture</span></a> 资源，并支持动态重新上传修改后的资源。</p><div class="en-orig" data-for="bi-56" lang="en"><code class="docutils literal notranslate"><span class="pre">ModelResources</span></code>: Creates and owns all <a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a> (meshes, convex hulls, and heightfields) and
+<a class="reference internal" href="../APIreference/APItypes.html#mjrftexture"><span class="std std-ref">mjrfTexture</span></a> resources from an <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>, and supports re-uploading modified assets dynamically.</div></li>
+<li><p data-bi="bi-57"><code class="docutils literal notranslate"><span class="pre">ModelLights</span></code> ：根据 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 和 <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 填充并更新场景的 <a class="reference internal" href="../APIreference/APItypes.html#mjrflight"><span class="std std-ref">mjrfLight</span></a> 实例，并在模型未定义光度学光强时自动配置后备的环境光和平行光。由于头灯属于渲染请求， <code class="docutils literal notranslate"><span class="pre">GetHeadlightIntensity()</span></code> 会报告应用程序应在 <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a> 中传入的强度。</p><div class="en-orig" data-for="bi-57" lang="en"><code class="docutils literal notranslate"><span class="pre">ModelLights</span></code>: Populates and updates the scene’s <a class="reference internal" href="../APIreference/APItypes.html#mjrflight"><span class="std std-ref">mjrfLight</span></a> instances from <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> and <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a>,
+and automatically configures fallback environment and directional lighting when a model does not define photometric
+light intensities. Since the headlight belongs to the render request, <code class="docutils literal notranslate"><span class="pre">GetHeadlightIntensity()</span></code> reports the
+intensity that the application should pass in <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a>.</div></li>
+<li><p data-bi="bi-58"><code class="docutils literal notranslate"><span class="pre">ModelRenderables</span></code> ：为所有模型的 geom、site、蒙皮、柔性体（flex）和空间肌腱创建持久的 <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">mjrfRenderable</span></a> 实体。调用 <code class="docutils literal notranslate"><span class="pre">Update(data)</span></code> 会在不构建 <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> 的情况下，根据
+<a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 就地更新它们的位姿、尺寸和动态材质属性，而 <code class="docutils literal notranslate"><span class="pre">SetOptions(opt)</span></code> 则根据 <a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a> 应用分组和类别可见性。</p><div class="en-orig" data-for="bi-58" lang="en"><code class="docutils literal notranslate"><span class="pre">ModelRenderables</span></code>: Creates persistent <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">mjrfRenderable</span></a> entities for all model geoms, sites, skins, flexes, and
+spatial tendons. Calling <code class="docutils literal notranslate"><span class="pre">Update(data)</span></code> updates their poses, sizes, and dynamic material properties in place from
+<a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> without constructing an <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a>, while <code class="docutils literal notranslate"><span class="pre">SetOptions(opt)</span></code> applies group and category visibility
+from <a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a>.</div></li>
+<li><p data-bi="bi-59"><code class="docutils literal notranslate"><span class="pre">ModelDecorations</span></code> ：桥接抽象可视化器，用于瞬态装饰几何。由于装饰性叠加层（接触力箭头、惯性盒、关节/执行器轴、扰动系绳、文本标签）是每帧以程序方式生成的，而不是作为持久的模型元素存储， <code class="docutils literal notranslate"><span class="pre">ModelDecorations</span></code> 在内部调用
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjv-updatescene"><span class="std std-ref">mjv_updateScene</span></a>，并且只将 <code class="docutils literal notranslate"><span class="pre">mjCAT_DECOR</span></code> geom（以及非蒙皮的 flex 调试线框）转换为临时的
+decor 可渲染对象。Filament 渲染器没有 2D 文本 API；文本标签改为报告给传递给 <code class="docutils literal notranslate"><span class="pre">Update()</span></code> 的可选回调，由应用程序负责绘制
+(参见 <a class="reference internal" href="samples.html#sarender"><span class="std std-ref">render.cc</span></a> 中的 <code class="docutils literal notranslate"><span class="pre">DrawBitmapText()</span></code>)。</p><div class="en-orig" data-for="bi-59" lang="en"><code class="docutils literal notranslate"><span class="pre">ModelDecorations</span></code>: Bridges the abstract visualizer for transient decorative geometry. Because decorative overlays
+(contact force arrows, inertia boxes, joint/actuator axes, perturbation tethers, text labels) are generated
+procedurally each frame rather than stored as persistent model elements, <code class="docutils literal notranslate"><span class="pre">ModelDecorations</span></code> internally calls
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjv-updatescene"><span class="std std-ref">mjv_updateScene</span></a> and converts only the <code class="docutils literal notranslate"><span class="pre">mjCAT_DECOR</span></code> geoms (and non-skin flex debug wireframes) into temporary
+decor renderables. The Filament renderer has no 2D text API; text labels are instead reported to an optional callback
+passed to <code class="docutils literal notranslate"><span class="pre">Update()</span></code>, and the application is responsible for drawing them (see <code class="docutils literal notranslate"><span class="pre">DrawBitmapText()</span></code> in
+<a class="reference internal" href="samples.html#sarender"><span class="std std-ref">render.cc</span></a>).</div></li>
+</ul>
+</section>
+</section>
+<section id="reauthoring">
+<span id="id5"></span><h3 data-bi="bi-60">场景编写<a class="headerlink" href="#reauthoring" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-60" lang="en">Authoring scenes</div>
+<p data-bi="bi-61" id="repbr"><a class="reference internal" href="#classicrendering"><span class="std std-ref">经典渲染器</span></a> 实现了传统的 Phong 光照模型：表面颜色是环境光、漫反射、镜面反射和自发光各项之和，光强是凭目测调节的无量纲数值。现代基于物理的渲染（PBR）引擎用可经验测量的属性描述表面，用光度学单位描述光源。由于材质和光照参数都是物理量，资源在不同场景和光照条件下能保持其外观，并且诸如 <a class="reference external" href="https://google.github.io/filament/Filament.html#lighting/imagebasedlights">基于图像的光照</a> 和逼真的金属等效果成为可能。有关底层理论的介绍，参见 Filament 的 <a class="reference external" href="https://google.github.io/filament/Filament.html">PBR 文档</a>。</p><div class="en-orig" data-for="bi-61" lang="en">The <a class="reference internal" href="#classicrendering"><span class="std std-ref">classic renderer</span></a> implements a traditional Phong lighting model: surface color is a sum of
+ambient, diffuse, specular and emissive terms, and light intensities are dimensionless values tuned by eye. Modern
+physically-based rendering (PBR) engines describe surfaces with empirically measurable properties and lights with
+photometric units. Because material and lighting parameters are physical, assets retain their appearance across scenes
+and lighting conditions, and effects like <a class="reference external" href="https://google.github.io/filament/Filament.html#lighting/imagebasedlights">image-based lighting</a> and realistic metals become possible. For
+an introduction to the underlying theory, see Filament’s <a class="reference external" href="https://google.github.io/filament/Filament.html">PBR documentation</a>.</div>
+<p data-bi="bi-62">Filament 渲染器同时支持这两种模型。总体而言，我们建议使用现代 PBR（例如金属度-粗糙度）方法编写场景，以获得最佳效果。不过，我们假定许多现有模型是为经典渲染器编写的，因此默认使用
+Filament 基于 PBR 的 Phong 着色近似。这种后备模式已经过调校，可产生合理的结果，但最终图像与经典渲染器相比可能存在显著差异。这两个决定（如何对材质着色以及如何为场景打光）是相互独立做出的，下文将分别介绍。</p><div class="en-orig" data-for="bi-62" lang="en">The Filament renderer supports both models. In general, we recommend that scenes are authored with modern PBR
+(e.g. metallic-roughness) methods to produce the best results. However, we assume that many existing models are authored
+for the classic renderer and so we default to using Filament’s PBR-based approximation of Phong shading. This fallback
+mode has been tuned to produce reasonable results, but the final image can vary significantly compared to the classic
+renderer. The two decisions, how to shade materials and how to light the scene, are made independently and are described
+below.</div>
+<section id="rematerials">
+<span id="id6"></span><h4 data-bi="bi-63">材质<a class="headerlink" href="#rematerials" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-63" lang="en">Materials</div>
+<p data-bi="bi-64">如果材质定义了任何物理属性，则使用 PBR 光照模型着色：非负的
+<a class="reference internal" href="../XMLreference.html#asset-material-metallic"><span class="std std-ref">metallic</span></a> 或 <a class="reference internal" href="../XMLreference.html#asset-material-roughness"><span class="std std-ref">roughness</span></a> 系数，或者具有 PBR 角色（金属度、粗糙度、打包的遮蔽-粗糙度-金属度、法线、自发光、遮蔽）的纹理 <a class="reference internal" href="../XMLreference.html#material-layer"><span class="std std-ref">层</span></a>。没有物理属性的材质被假定为面向经典渲染器设计，使用 Phong 光照模型着色，其经典参数会按以下
+<a class="reference internal" href="#reflags"><span class="std std-ref">自定义标志</span></a> 进行缩放：</p><div class="en-orig" data-for="bi-64" lang="en">A material is shaded with the PBR lighting model if it defines any physical property: a non-negative
+<a class="reference internal" href="../XMLreference.html#asset-material-metallic"><span class="std std-ref">metallic</span></a> or <a class="reference internal" href="../XMLreference.html#asset-material-roughness"><span class="std std-ref">roughness</span></a> coefficient, or texture
+<a class="reference internal" href="../XMLreference.html#material-layer"><span class="std std-ref">layers</span></a> with PBR roles (metallic, roughness, packed occlusion-roughness-metallic, normal,
+emissive, occlusion). Materials with no physical properties are assumed to be designed with the classic renderer in mind
+and are shaded with a Phong lighting model, whose classic parameters are rescaled by the following
+<a class="reference internal" href="#reflags"><span class="std std-ref">custom flags</span></a>:</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%"/>
+<col style="width: 10.0%"/>
+<col style="width: 12.0%"/>
+<col style="width: 46.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-65">名称 (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</p><div class="en-orig" data-for="bi-65" lang="en">Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</div></th>
+<th class="head"><p data-bi="bi-66">类型</p><div class="en-orig" data-for="bi-66" lang="en">Type</div></th>
+<th class="head"><p data-bi="bi-67">默认值</p><div class="en-orig" data-for="bi-67" lang="en">Default</div></th>
+<th class="head"><p data-bi="bi-68">描述</p><div class="en-orig" data-for="bi-68" lang="en">Description</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">phong.specular_multiplier</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0.2</p></td>
+<td><p data-bi="bi-69">应用于传统（Phong）材质 <a class="reference internal" href="../XMLreference.html#asset-material-specular"><span class="std std-ref">specular</span></a> 的乘数。</p><div class="en-orig" data-for="bi-69" lang="en">Multiplier applied to legacy (Phong) material <a class="reference internal" href="../XMLreference.html#asset-material-specular"><span class="std std-ref">specular</span></a>.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">phong.shininess_multiplier</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0.1</p></td>
+<td><p data-bi="bi-70">应用于传统（Phong）材质 <a class="reference internal" href="../XMLreference.html#asset-material-shininess"><span class="std std-ref">shininess</span></a> 的乘数。</p><div class="en-orig" data-for="bi-70" lang="en">Multiplier applied to legacy (Phong) material <a class="reference internal" href="../XMLreference.html#asset-material-shininess"><span class="std std-ref">shininess</span></a>.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">phong.emissive_multiplier</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0.3</p></td>
+<td><p data-bi="bi-71">应用于传统（Phong）材质 <a class="reference internal" href="../XMLreference.html#asset-material-emission"><span class="std std-ref">emission</span></a> 的乘数。</p><div class="en-orig" data-for="bi-71" lang="en">Multiplier applied to legacy (Phong) material <a class="reference internal" href="../XMLreference.html#asset-material-emission"><span class="std std-ref">emission</span></a>.</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="relighting">
+<span id="id7"></span><h4 data-bi="bi-72">光照<a class="headerlink" href="#relighting" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-72" lang="en">Lighting</div>
+<p data-bi="bi-73">物理光照由光源本身启用：如果模型中有任何光源具有正的
+<a class="reference internal" href="../XMLreference.html#body-light-intensity"><span class="std std-ref">intensity</span></a>，则所有光源都被视为光度学光源，强度以
+<a class="reference external" href="https://en.wikipedia.org/wiki/Candela">坎德拉</a> 为单位。<a class="reference internal" href="../XMLreference.html#body-light-type"><span class="std std-ref">type</span></a> 为 <code class="docutils literal notranslate"><span class="pre">image</span></code> 的光源提供基于图像的光照：被引用的 <a class="reference internal" href="../XMLreference.html#body-light-texture"><span class="std std-ref">texture</span></a> 作为环境贴图照亮场景。光源的 <a class="reference internal" href="../XMLreference.html#body-light-bulbradius"><span class="std std-ref">bulbradius</span></a> 控制其阴影的柔和程度。在此模式下，头灯被禁用，也不会自动添加环境光，因此具有物理光源但没有 <code class="docutils literal notranslate"><span class="pre">image</span></code> 光源的模型没有环境照明。</p><div class="en-orig" data-for="bi-73" lang="en">Physical lighting is enabled by the lights themselves: if any light in the model has positive
+<a class="reference internal" href="../XMLreference.html#body-light-intensity"><span class="std std-ref">intensity</span></a>, all lights are assumed to be photometric, with intensities measured in
+<a class="reference external" href="https://en.wikipedia.org/wiki/Candela">candela</a>. Lights of <a class="reference internal" href="../XMLreference.html#body-light-type"><span class="std std-ref">type</span></a> <code class="docutils literal notranslate"><span class="pre">image</span></code> provide
+image-based lighting: the referenced <a class="reference internal" href="../XMLreference.html#body-light-texture"><span class="std std-ref">texture</span></a> illuminates the scene as an environment map. A
+light’s <a class="reference internal" href="../XMLreference.html#body-light-bulbradius"><span class="std std-ref">bulbradius</span></a> controls the softness of its shadows. In this mode the headlight is
+disabled and no environment light is added automatically, so a model with physical lights but no <code class="docutils literal notranslate"><span class="pre">image</span></code> light has no
+ambient illumination.</div>
+<p data-bi="bi-74">如果没有光源具有正强度，则模型被视为为经典渲染器编写的：会添加默认的环境光，启用头灯，并将默认的总强度平均分配给模型的各个光源。这些默认值由以下 <a class="reference internal" href="#reflags"><span class="std std-ref">自定义标志</span></a> 设置：</p><div class="en-orig" data-for="bi-74" lang="en">If no light has positive intensity, the model is treated as authored for the classic renderer: a default environment
+light is added, the headlight is enabled, and a default total intensity is distributed equally among the model’s lights.
+These defaults are set by the following <a class="reference internal" href="#reflags"><span class="std std-ref">custom flags</span></a>:</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%"/>
+<col style="width: 10.0%"/>
+<col style="width: 12.0%"/>
+<col style="width: 46.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-75">名称 (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</p><div class="en-orig" data-for="bi-75" lang="en">Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</div></th>
+<th class="head"><p data-bi="bi-76">类型</p><div class="en-orig" data-for="bi-76" lang="en">Type</div></th>
+<th class="head"><p data-bi="bi-77">默认值</p><div class="en-orig" data-for="bi-77" lang="en">Default</div></th>
+<th class="head"><p data-bi="bi-78">描述</p><div class="en-orig" data-for="bi-78" lang="en">Description</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fallback.environment_light_intensity</span></code></p></td>
+<td><p>real</p></td>
+<td><p>5000</p></td>
+<td><p data-bi="bi-79">后备环境光的强度。</p><div class="en-orig" data-for="bi-79" lang="en">Intensity of the fallback environment light.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fallback.scene_light_intensity</span></code></p></td>
+<td><p>real</p></td>
+<td><p>80000</p></td>
+<td><p data-bi="bi-80">分配给模型各光源的总强度。</p><div class="en-orig" data-for="bi-80" lang="en">Total intensity distributed among the model’s lights.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fallback.head_light_intensity</span></code></p></td>
+<td><p>real</p></td>
+<td><p>40000</p></td>
+<td><p data-bi="bi-81"><a class="reference internal" href="../XMLreference.html#visual-headlight"><span class="std std-ref">头灯</span></a> 的强度，单位为勒克斯。</p><div class="en-orig" data-for="bi-81" lang="en">Intensity of the <a class="reference internal" href="../XMLreference.html#visual-headlight"><span class="std std-ref">headlight</span></a>, in lux.</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="reflags">
+<span id="id8"></span><h3 data-bi="bi-82">渲染选项<a class="headerlink" href="#reflags" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-82" lang="en">Rendering options</div>
+<p data-bi="bi-83">Filament 渲染器提供了一组用于控制最终图像渲染方式的选项。其中一些选项可以如上所述直接设置在场景元素上（例如设置材质的 PBR 属性或灯光的强度），而另一些功能则由名称以 <code class="docutils literal notranslate"><span class="pre">filament.</span></code> 开头的 <a class="reference internal" href="../XMLreference.html#custom"><span class="std std-ref">自定义</span></a> 模型元素（例如 <a class="reference internal" href="../XMLreference.html#custom-numeric"><span class="std std-ref">numeric</span></a> 或 <a class="reference internal" href="../XMLreference.html#custom-text"><span class="std std-ref">text</span></a>）控制。随着功能集趋于稳定，重要的标志将被提升为一等的 MJCF 属性。</p><div class="en-orig" data-for="bi-83" lang="en">The Filament renderer provides a set of options for controlling how the final image is rendered. While some of these
+options can be set directly on the scene elements as described above (e.g. setting the PBR properties of the material or
+the intensities of the lights), some features are controlled by <a class="reference internal" href="../XMLreference.html#custom"><span class="std std-ref">custom</span></a> model elements (e.g.
+<a class="reference internal" href="../XMLreference.html#custom-numeric"><span class="std std-ref">numeric</span></a> or <a class="reference internal" href="../XMLreference.html#custom-text"><span class="std std-ref">text</span></a>) whose names begin with <code class="docutils literal notranslate"><span class="pre">filament.</span></code> As the feature set
+stabilizes, important flags will be promoted to first-class MJCF attributes.</div>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;custom&gt;</span>
+<span class="w">  </span><span class="nt">&lt;numeric</span><span class="w"> </span><span class="na">name=</span><span class="s">"filament.clear_color"</span><span class="w"> </span><span class="na">data=</span><span class="s">"0.5 0.6 0.7 1"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/custom&gt;</span>
+</pre></div>
+</div>
+<p data-bi="bi-84">大多数标志直接对应于 Filament 的 <a class="reference external" href="https://github.com/google/filament/blob/main/filament/include/filament/Options.h">渲染选项</a>，并由 <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-configurescenefrommodel"><span class="std std-ref">mjrf_configureSceneFromModel</span></a> 读取。布尔标志是取值为 0 或 1 的 numeric。枚举标志（例如 <code class="docutils literal notranslate"><span class="pre">filament.ao.quality</span></code>）取字符串值，对应于底层枚举的名称标识符。模型中未指定的标志使用下面列出的默认值。所有标志名称均以 <code class="docutils literal notranslate"><span class="pre">filament.</span></code> 开头。</p><div class="en-orig" data-for="bi-84" lang="en">Most flags correspond directly to Filament’s <a class="reference external" href="https://github.com/google/filament/blob/main/filament/include/filament/Options.h">rendering options</a> and are read by
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-configurescenefrommodel"><span class="std std-ref">mjrf_configureSceneFromModel</span></a>. Boolean flags are numerics taking values 0 or 1. Enum flags (e.g.
+<code class="docutils literal notranslate"><span class="pre">filament.ao.quality</span></code>) take string values that correspond to the underlying enum’s name identifier. Flags not
+specified in the model use the defaults listed below. All flag names begin with <code class="docutils literal notranslate"><span class="pre">filament.</span></code></div>
+<details class="summary-">
+<summary>阴影</summary><div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%"/>
+<col style="width: 10.0%"/>
+<col style="width: 12.0%"/>
+<col style="width: 46.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-85">名称（<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>）</p><div class="en-orig" data-for="bi-85" lang="en">Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</div></th>
+<th class="head"><p data-bi="bi-86">类型</p><div class="en-orig" data-for="bi-86" lang="en">Type</div></th>
+<th class="head"><p data-bi="bi-87">默认值</p><div class="en-orig" data-for="bi-87" lang="en">Default</div></th>
+<th class="head"><p data-bi="bi-88">说明</p><div class="en-orig" data-for="bi-88" lang="en">Description</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">shadows.type</span></code></p></td>
+<td><p>string</p></td>
+<td><p>"pcf"</p></td>
+<td><p data-bi="bi-89"><a class="reference external" href="https://github.com/google/filament/blob/main/filament/include/filament/Options.h">阴影算法</a>；"pcf"、"vsm" 或 "pcss"。</p><div class="en-orig" data-for="bi-89" lang="en"><a class="reference external" href="https://github.com/google/filament/blob/main/filament/include/filament/Options.h">Shadow algorithm</a>; “pcf”, “vsm”, or “pcss”.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">shadows.map_size</span></code></p></td>
+<td><p>int</p></td>
+<td><p>min( <a class="reference internal" href="../XMLreference.html#visual-quality-shadowsize"><span class="std std-ref">shadowsize</span></a>, 2048)</p></td>
+<td><p data-bi="bi-90">阴影贴图分辨率，以纹素为单位。</p><div class="en-orig" data-for="bi-90" lang="en">Shadow map resolution, in texels.</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</details><details class="summary-">
+<summary>屏幕空间环境光遮蔽</summary><div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%"/>
+<col style="width: 10.0%"/>
+<col style="width: 12.0%"/>
+<col style="width: 46.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-91">名称（<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>）</p><div class="en-orig" data-for="bi-91" lang="en">Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</div></th>
+<th class="head"><p data-bi="bi-92">类型</p><div class="en-orig" data-for="bi-92" lang="en">Type</div></th>
+<th class="head"><p data-bi="bi-93">默认值</p><div class="en-orig" data-for="bi-93" lang="en">Default</div></th>
+<th class="head"><p data-bi="bi-94">说明</p><div class="en-orig" data-for="bi-94" lang="en">Description</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ao.enabled</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>1 (true)</p></td>
+<td><p data-bi="bi-95">启用屏幕空间环境光遮蔽。</p><div class="en-orig" data-for="bi-95" lang="en">Enable screen-space ambient occlusion.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ao.quality</span></code></p></td>
+<td><p>string</p></td>
+<td><p>"ultra"</p></td>
+<td><p data-bi="bi-96">采样质量；"low"、"medium"、"high" 或 "ultra"。</p><div class="en-orig" data-for="bi-96" lang="en">Sampling quality; “low”, “medium”, “high”, or “ultra”.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ao.low_pass_filter</span></code></p></td>
+<td><p>string</p></td>
+<td><p>"ultra"</p></td>
+<td><p data-bi="bi-97">深度感知模糊滤波器的质量；"low"、"medium"、"high" 或 "ultra"。</p><div class="en-orig" data-for="bi-97" lang="en">Quality of the depth-aware blur filter; “low”, “medium”, “high”, or “ultra”.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ao.upsampling</span></code></p></td>
+<td><p>string</p></td>
+<td><p>"ultra"</p></td>
+<td><p data-bi="bi-98">遮蔽缓冲区上采样的质量；"low"、"medium"、"high" 或 "ultra"。</p><div class="en-orig" data-for="bi-98" lang="en">Quality of the occlusion buffer upsampling; “low”, “medium”, “high”, or “ultra”.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ao.bent_normals</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>0 (false)</p></td>
+<td><p data-bi="bi-99">为镜面遮蔽计算弯曲法线。</p><div class="en-orig" data-for="bi-99" lang="en">Compute bent normals for specular occlusion.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ao.ssct</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>0 (false)</p></td>
+<td><p data-bi="bi-100">启用屏幕空间锥体追踪。</p><div class="en-orig" data-for="bi-100" lang="en">Enable screen-space cone tracing.</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</details><details class="summary-">
+<summary>泛光</summary><div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%"/>
+<col style="width: 10.0%"/>
+<col style="width: 12.0%"/>
+<col style="width: 46.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-101">名称（<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>）</p><div class="en-orig" data-for="bi-101" lang="en">Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</div></th>
+<th class="head"><p data-bi="bi-102">类型</p><div class="en-orig" data-for="bi-102" lang="en">Type</div></th>
+<th class="head"><p data-bi="bi-103">默认值</p><div class="en-orig" data-for="bi-103" lang="en">Default</div></th>
+<th class="head"><p data-bi="bi-104">说明</p><div class="en-orig" data-for="bi-104" lang="en">Description</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">bloom.enabled</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>0 (false)</p></td>
+<td><p data-bi="bi-105">启用泛光。</p><div class="en-orig" data-for="bi-105" lang="en">Enable bloom.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">bloom.strength</span></code></p></td>
+<td><p>real</p></td>
+<td><p data-bi="bi-106">[filament 默认值]</p><div class="en-orig" data-for="bi-106" lang="en">[filament default]</div></td>
+<td><p data-bi="bi-107">泛光效果的强度，介于 0 和 1 之间。</p><div class="en-orig" data-for="bi-107" lang="en">Strength of the bloom effect, between 0 and 1.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">bloom.quality</span></code></p></td>
+<td><p>string</p></td>
+<td><p>"low"</p></td>
+<td><p data-bi="bi-108">泛光各通道的质量；"low"、"medium"、"high" 或 "ultra"。</p><div class="en-orig" data-for="bi-108" lang="en">Quality of the bloom passes; “low”, “medium”, “high”, or “ultra”.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">bloom.levels</span></code></p></td>
+<td><p>int</p></td>
+<td><p data-bi="bi-109">[filament 默认值]</p><div class="en-orig" data-for="bi-109" lang="en">[filament default]</div></td>
+<td><p data-bi="bi-110">模糊层级数。</p><div class="en-orig" data-for="bi-110" lang="en">Number of blur levels.</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</details><details class="summary-">
+<summary>色彩分级</summary><p data-bi="bi-111">参见 Filament 的 <a class="reference external" href="https://github.com/google/filament/blob/main/filament/include/filament/ColorGrading.h">ColorGrading.h</a>。</p><div class="en-orig" data-for="bi-111" lang="en">See Filament’s <a class="reference external" href="https://github.com/google/filament/blob/main/filament/include/filament/ColorGrading.h">ColorGrading.h</a>.</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%"/>
+<col style="width: 10.0%"/>
+<col style="width: 12.0%"/>
+<col style="width: 46.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-112">名称（<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>）</p><div class="en-orig" data-for="bi-112" lang="en">Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</div></th>
+<th class="head"><p data-bi="bi-113">类型</p><div class="en-orig" data-for="bi-113" lang="en">Type</div></th>
+<th class="head"><p data-bi="bi-114">默认值</p><div class="en-orig" data-for="bi-114" lang="en">Default</div></th>
+<th class="head"><p data-bi="bi-115">说明</p><div class="en-orig" data-for="bi-115" lang="en">Description</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.exposure</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0</p></td>
+<td><p data-bi="bi-116">曝光调整，以档（stop）为单位。</p><div class="en-orig" data-for="bi-116" lang="en">Exposure adjustment, in stops.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.temperature</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0</p></td>
+<td><p data-bi="bi-117">白平衡色温，介于 -1（冷）和 1（暖）之间。</p><div class="en-orig" data-for="bi-117" lang="en">White balance temperature, between -1 (cool) and 1 (warm).</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.tint</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0</p></td>
+<td><p data-bi="bi-118">白平衡色调，介于 -1（绿）和 1（品红）之间。</p><div class="en-orig" data-for="bi-118" lang="en">White balance tint, between -1 (green) and 1 (magenta).</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.slope</span></code></p></td>
+<td><p>real(3)</p></td>
+<td><p>1 1 1</p></td>
+<td><p data-bi="bi-119"><a class="reference external" href="https://en.wikipedia.org/wiki/ASC_CDL">ASC CDL</a> 斜率。</p><div class="en-orig" data-for="bi-119" lang="en"><a class="reference external" href="https://en.wikipedia.org/wiki/ASC_CDL">ASC CDL</a> slope.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.offset</span></code></p></td>
+<td><p>real(3)</p></td>
+<td><p>0 0 0</p></td>
+<td><p data-bi="bi-120"><a class="reference external" href="https://en.wikipedia.org/wiki/ASC_CDL">ASC CDL</a> 偏移。</p><div class="en-orig" data-for="bi-120" lang="en"><a class="reference external" href="https://en.wikipedia.org/wiki/ASC_CDL">ASC CDL</a> offset.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.power</span></code></p></td>
+<td><p>real(3)</p></td>
+<td><p>1 1 1</p></td>
+<td><p data-bi="bi-121"><a class="reference external" href="https://en.wikipedia.org/wiki/ASC_CDL">ASC CDL</a> 幂。</p><div class="en-orig" data-for="bi-121" lang="en"><a class="reference external" href="https://en.wikipedia.org/wiki/ASC_CDL">ASC CDL</a> power.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.shadows</span></code></p></td>
+<td><p>real(4)</p></td>
+<td><p>1 1 1 1</p></td>
+<td><p data-bi="bi-122">阴影部分的颜色偏移；第四个分量用于偏移亮度。</p><div class="en-orig" data-for="bi-122" lang="en">Shadow color shift; the fourth component shifts luminance.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.midtones</span></code></p></td>
+<td><p>real(4)</p></td>
+<td><p>1 1 1 1</p></td>
+<td><p data-bi="bi-123">中间调的颜色偏移；第四个分量用于偏移亮度。</p><div class="en-orig" data-for="bi-123" lang="en">Midtone color shift; the fourth component shifts luminance.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.highlights</span></code></p></td>
+<td><p>real(4)</p></td>
+<td><p>1 1 1 1</p></td>
+<td><p data-bi="bi-124">高光部分的颜色偏移；第四个分量用于偏移亮度。</p><div class="en-orig" data-for="bi-124" lang="en">Highlight color shift; the fourth component shifts luminance.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.tonal_ranges</span></code></p></td>
+<td><p>real(4)</p></td>
+<td><p>0 0.33 0.55 1</p></td>
+<td><p data-bi="bi-125">阴影和高光色调范围的边界。</p><div class="en-orig" data-for="bi-125" lang="en">Boundaries of the shadow and highlight tonal ranges.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.shadow_gamma</span></code></p></td>
+<td><p>real(3)</p></td>
+<td><p>1 1 1</p></td>
+<td><p data-bi="bi-126">阴影的 gamma 调整。</p><div class="en-orig" data-for="bi-126" lang="en">Gamma adjustment of shadows.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.mid_point</span></code></p></td>
+<td><p>real(3)</p></td>
+<td><p>1 1 1</p></td>
+<td><p data-bi="bi-127">阴影与高光之间的边界。</p><div class="en-orig" data-for="bi-127" lang="en">Boundary between shadows and highlights.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.highlight_scale</span></code></p></td>
+<td><p>real(3)</p></td>
+<td><p>1 1 1</p></td>
+<td><p data-bi="bi-128">高光的缩放。</p><div class="en-orig" data-for="bi-128" lang="en">Scale of highlights.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.contrast</span></code></p></td>
+<td><p>real</p></td>
+<td><p>1</p></td>
+<td><p data-bi="bi-129">对比度，介于 0 和 2 之间。</p><div class="en-orig" data-for="bi-129" lang="en">Contrast, between 0 and 2.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.vibrance</span></code></p></td>
+<td><p>real</p></td>
+<td><p>1</p></td>
+<td><p data-bi="bi-130">自然饱和度，介于 0 和 2 之间。</p><div class="en-orig" data-for="bi-130" lang="en">Vibrance, between 0 and 2.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.saturation</span></code></p></td>
+<td><p>real</p></td>
+<td><p>1</p></td>
+<td><p data-bi="bi-131">饱和度，介于 0 和 2 之间。</p><div class="en-orig" data-for="bi-131" lang="en">Saturation, between 0 and 2.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.tone_mapping</span></code></p></td>
+<td><p>string</p></td>
+<td><p>"pbr_neutral"</p></td>
+<td><p data-bi="bi-132">色调映射算子；"aces"、"aces_legacy"、"filmic"、"linear" 或 "pbr_neutral"。</p><div class="en-orig" data-for="bi-132" lang="en">Tone mapping operator; “aces”, “aces_legacy”, “filmic”, “linear”, or “pbr_neutral”.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.output_color_space</span></code></p></td>
+<td><p>string</p></td>
+<td><p>"srgb"</p></td>
+<td><p data-bi="bi-133">输出色彩空间；"linear" 或 "srgb"。</p><div class="en-orig" data-for="bi-133" lang="en">Output color space; “linear” or “srgb”.</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</details><details class="summary-">
+<summary>指数高度雾</summary><div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%"/>
+<col style="width: 10.0%"/>
+<col style="width: 12.0%"/>
+<col style="width: 46.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-134">名称（<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>）</p><div class="en-orig" data-for="bi-134" lang="en">Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</div></th>
+<th class="head"><p data-bi="bi-135">类型</p><div class="en-orig" data-for="bi-135" lang="en">Type</div></th>
+<th class="head"><p data-bi="bi-136">默认值</p><div class="en-orig" data-for="bi-136" lang="en">Default</div></th>
+<th class="head"><p data-bi="bi-137">说明</p><div class="en-orig" data-for="bi-137" lang="en">Description</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fog.enabled</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>0 (false)</p></td>
+<td><p data-bi="bi-138">启用雾。</p><div class="en-orig" data-for="bi-138" lang="en">Enable fog.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fog.color</span></code></p></td>
+<td><p>real(3)</p></td>
+<td><p data-bi="bi-139">[filament 默认值]</p><div class="en-orig" data-for="bi-139" lang="en">[filament default]</div></td>
+<td><p data-bi="bi-140">雾的颜色。</p><div class="en-orig" data-for="bi-140" lang="en">Fog color.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fog.distance</span></code></p></td>
+<td><p>real</p></td>
+<td><p data-bi="bi-141">[filament 默认值]</p><div class="en-orig" data-for="bi-141" lang="en">[filament default]</div></td>
+<td><p data-bi="bi-142">雾开始出现处与相机的距离。</p><div class="en-orig" data-for="bi-142" lang="en">Distance from the camera at which the fog starts.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fog.density</span></code></p></td>
+<td><p>real</p></td>
+<td><p data-bi="bi-143">[filament 默认值]</p><div class="en-orig" data-for="bi-143" lang="en">[filament default]</div></td>
+<td><p data-bi="bi-144">雾的密度。</p><div class="en-orig" data-for="bi-144" lang="en">Fog density.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fog.cut_off_distance</span></code></p></td>
+<td><p>real</p></td>
+<td><p data-bi="bi-145">[filament 默认值]</p><div class="en-orig" data-for="bi-145" lang="en">[filament default]</div></td>
+<td><p data-bi="bi-146">超过该距离后不再应用雾。</p><div class="en-orig" data-for="bi-146" lang="en">Distance beyond which fog is not applied.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fog.maximum_opacity</span></code></p></td>
+<td><p>real</p></td>
+<td><p data-bi="bi-147">[filament 默认值]</p><div class="en-orig" data-for="bi-147" lang="en">[filament default]</div></td>
+<td><p data-bi="bi-148">雾的最大不透明度，介于 0 和 1 之间。</p><div class="en-orig" data-for="bi-148" lang="en">Maximum opacity of the fog, between 0 and 1.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fog.height</span></code></p></td>
+<td><p>real</p></td>
+<td><p data-bi="bi-149">[filament 默认值]</p><div class="en-orig" data-for="bi-149" lang="en">[filament default]</div></td>
+<td><p data-bi="bi-150">高于该高度后雾的密度开始降低。</p><div class="en-orig" data-for="bi-150" lang="en">Height above which the fog density decreases.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fog.height_falloff</span></code></p></td>
+<td><p>real</p></td>
+<td><p data-bi="bi-151">[filament 默认值]</p><div class="en-orig" data-for="bi-151" lang="en">[filament default]</div></td>
+<td><p data-bi="bi-152">雾密度随高度的衰减。</p><div class="en-orig" data-for="bi-152" lang="en">Falloff of fog density with height.</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</details><details class="summary-">
+<summary>渐晕</summary><div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%"/>
+<col style="width: 10.0%"/>
+<col style="width: 12.0%"/>
+<col style="width: 46.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-153">名称（<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>）</p><div class="en-orig" data-for="bi-153" lang="en">Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</div></th>
+<th class="head"><p data-bi="bi-154">类型</p><div class="en-orig" data-for="bi-154" lang="en">Type</div></th>
+<th class="head"><p data-bi="bi-155">默认值</p><div class="en-orig" data-for="bi-155" lang="en">Default</div></th>
+<th class="head"><p data-bi="bi-156">说明</p><div class="en-orig" data-for="bi-156" lang="en">Description</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">vignette.enabled</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>0 (false)</p></td>
+<td><p data-bi="bi-157">启用渐晕。</p><div class="en-orig" data-for="bi-157" lang="en">Enable vignette.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">vignette.midpoint</span></code></p></td>
+<td><p>real</p></td>
+<td><p data-bi="bi-158">[filament 默认值]</p><div class="en-orig" data-for="bi-158" lang="en">[filament default]</div></td>
+<td><p data-bi="bi-159">渐晕被限制在离角落多近的位置，介于 0 和 1 之间。</p><div class="en-orig" data-for="bi-159" lang="en">How close to the corners the vignette is restricted, between 0 and 1.</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</details><details class="summary-">
+<summary>材质</summary><div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%"/>
+<col style="width: 10.0%"/>
+<col style="width: 12.0%"/>
+<col style="width: 46.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-160">名称（<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>）</p><div class="en-orig" data-for="bi-160" lang="en">Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</div></th>
+<th class="head"><p data-bi="bi-161">类型</p><div class="en-orig" data-for="bi-161" lang="en">Type</div></th>
+<th class="head"><p data-bi="bi-162">默认值</p><div class="en-orig" data-for="bi-162" lang="en">Default</div></th>
+<th class="head"><p data-bi="bi-163">说明</p><div class="en-orig" data-for="bi-163" lang="en">Description</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">material.base_color_type</span></code></p></td>
+<td><p>string</p></td>
+<td><p>"srgb"</p></td>
+<td><p data-bi="bi-164">如何解释材质的颜色；"linear" 或 "srgb"。</p><div class="en-orig" data-for="bi-164" lang="en">How to interpret the color of a material; “linear” or “srgb”.</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</details><details class="summary-">
+<summary>背景</summary><div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%"/>
+<col style="width: 10.0%"/>
+<col style="width: 12.0%"/>
+<col style="width: 46.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-165">名称（<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>）</p><div class="en-orig" data-for="bi-165" lang="en">Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</div></th>
+<th class="head"><p data-bi="bi-166">类型</p><div class="en-orig" data-for="bi-166" lang="en">Type</div></th>
+<th class="head"><p data-bi="bi-167">默认值</p><div class="en-orig" data-for="bi-167" lang="en">Default</div></th>
+<th class="head"><p data-bi="bi-168">说明</p><div class="en-orig" data-for="bi-168" lang="en">Description</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">clear_color</span></code></p></td>
+<td><p>real(4)</p></td>
+<td><p>0 0 0 1</p></td>
+<td><p data-bi="bi-169">背景颜色，RGBA（见下方说明）。</p><div class="en-orig" data-for="bi-169" lang="en">Background color, RGBA (see the note below).</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p data-bi="bi-170">渲染器库本身不会读取 <code class="docutils literal notranslate"><span class="pre">filament.clear_color</span></code> 标志，因为背景是渲染器的属性，而不是场景的属性：例如，可以把多个场景渲染到同一个目标上以同时显示它们。仅渲染单个场景的应用程序，例如 MuJoCo Studio 和 <code class="docutils literal notranslate"><span class="pre">mjr</span></code> 兼容模式，会从模型中读取该标志，并通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setclearcolor"><span class="std std-ref">mjrf_setClearColor</span></a> 应用它。如果您自行管理渲染目标，则需要自己负责设置清除颜色。</p><div class="en-orig" data-for="bi-170" lang="en">The <code class="docutils literal notranslate"><span class="pre">filament.clear_color</span></code> flag is not read by the renderer library itself, because the background is a property
+of the renderer rather than of a scene: multiple scenes can, for example, be rendered to the same target to display
+them simultaneously. Applications that render a single scene, such as MuJoCo Studio and the <code class="docutils literal notranslate"><span class="pre">mjr</span></code> compatibility
+mode, read this flag from the model and apply it with <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setclearcolor"><span class="std std-ref">mjrf_setClearColor</span></a>. If you are managing your own render
+targets, you are responsible for setting the clear color yourself.</div>
+</details></section>
+</section>
+<section id="opengl">
+<span id="classicrendering"></span><h2 data-bi="bi-171">OpenGL 渲染<a class="headerlink" href="#opengl" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-171" lang="en">OpenGL rendering</div>
+<p data-bi="bi-172">经典的 OpenGL 渲染器（<code class="docutils literal notranslate"><span class="pre">mjr</span></code>）接收在 <a class="reference internal" href="visualization.html#visualization"><span class="std std-ref">可视化</span></a> 阶段填充的 <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> 数据结构并对其进行渲染。它还提供基本的二维绘制和帧缓冲区访问，因此大多数应用程序无需直接调用 OpenGL。它处于维护模式；新的应用程序应优先使用 <a class="reference internal" href="#filamentrendering"><span class="std std-ref">Filament 渲染器</span></a>。</p><div class="en-orig" data-for="bi-172" lang="en">The classic OpenGL renderer (<code class="docutils literal notranslate"><span class="pre">mjr</span></code>) takes the <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> data structure populated in the
+<a class="reference internal" href="visualization.html#visualization"><span class="std std-ref">Visualization</span></a> stage and renders it. It also provides basic 2D drawing and framebuffer access, so
+that most applications do not need to call OpenGL directly. It is in maintenance mode; new applications should prefer
+the <a class="reference internal" href="#filamentrendering"><span class="std std-ref">Filament renderer</span></a>.</div>
+<p data-bi="bi-173">下面是 C 代码与注释中伪代码的混合，用于说明一个结合了仿真、抽象可视化和经典 OpenGL 渲染的应用程序的结构。这是使用 GLFW 的 <a class="reference internal" href="samples.html#sabasic"><span class="std std-ref">basic.cc</span></a> 代码示例的简化版本。</p><div class="en-orig" data-for="bi-173" lang="en">Below is a mixture of C code and pseudo-code in comments, illustrating the structure of an application that combines
+simulation, abstract visualization, and classic OpenGL rendering. This is a short version of the <a class="reference internal" href="samples.html#sabasic"><span class="std std-ref">basic.cc</span></a> code sample using GLFW.</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="c1">// MuJoCo data structures</span>
+<span class="n">mjModel</span><span class="o">*</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w">                  </span><span class="c1">// MuJoCo model</span>
+<span class="n">mjData</span><span class="o">*</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w">                   </span><span class="c1">// MuJoCo data</span>
+<span class="n">mjvCamera</span><span class="w"> </span><span class="n">cam</span><span class="p">;</span><span class="w">                      </span><span class="c1">// abstract camera</span>
+<span class="n">mjvOption</span><span class="w"> </span><span class="n">opt</span><span class="p">;</span><span class="w">                      </span><span class="c1">// visualization options</span>
+<span class="n">mjvScene</span><span class="w"> </span><span class="n">scn</span><span class="p">;</span><span class="w">                       </span><span class="c1">// abstract scene</span>
+<span class="n">mjrContext</span><span class="w"> </span><span class="n">con</span><span class="p">;</span><span class="w">                     </span><span class="c1">// custom GPU context</span>
+
+<span class="c1">// ... load model and data</span>
+
+<span class="c1">// init GLFW, create window, make OpenGL context current, request v-sync</span>
+<span class="n">glfwInit</span><span class="p">();</span>
+<span class="n">GLFWwindow</span><span class="o">*</span><span class="w"> </span><span class="n">window</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glfwCreateWindow</span><span class="p">(</span><span class="mi">1200</span><span class="p">,</span><span class="w"> </span><span class="mi">900</span><span class="p">,</span><span class="w"> </span><span class="s">"Demo"</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="n">glfwMakeContextCurrent</span><span class="p">(</span><span class="n">window</span><span class="p">);</span>
+<span class="n">glfwSwapInterval</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+<span class="c1">// initialize visualization data structures</span>
+<span class="n">mjv_defaultCamera</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cam</span><span class="p">);</span>
+<span class="n">mjv_defaultPerturb</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pert</span><span class="p">);</span>
+<span class="n">mjv_defaultOption</span><span class="p">(</span><span class="o">&amp;</span><span class="n">opt</span><span class="p">);</span>
+<span class="n">mjr_defaultContext</span><span class="p">(</span><span class="o">&amp;</span><span class="n">con</span><span class="p">);</span>
+
+<span class="c1">// create scene and context</span>
+<span class="n">mjv_makeScene</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">scn</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">);</span>
+<span class="n">mjr_makeContext</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">con</span><span class="p">,</span><span class="w"> </span><span class="n">mjFONTSCALE_100</span><span class="p">);</span>
+
+<span class="c1">// ... install GLFW keyboard and mouse callbacks</span>
+
+<span class="c1">// run main loop, target real-time simulation and 60 fps rendering</span>
+<span class="k">while</span><span class="p">(</span><span class="w"> </span><span class="o">!</span><span class="n">glfwWindowShouldClose</span><span class="p">(</span><span class="n">window</span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// advance interactive simulation for 1/60 sec</span>
+<span class="w">  </span><span class="c1">//  Assuming MuJoCo can simulate faster than real-time, which it usually can,</span>
+<span class="w">  </span><span class="c1">//  this loop will finish on time for the next frame to be rendered at 60 fps.</span>
+<span class="w">  </span><span class="c1">//  Otherwise add a cpu timer and exit this loop when it is time to render.</span>
+<span class="w">  </span><span class="n">mjtNum</span><span class="w"> </span><span class="n">simstart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d</span><span class="o">-&gt;</span><span class="n">time</span><span class="p">;</span>
+<span class="w">  </span><span class="k">while</span><span class="p">(</span><span class="w"> </span><span class="n">d</span><span class="o">-&gt;</span><span class="n">time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">simstart</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">1.0</span><span class="o">/</span><span class="mf">60.0</span><span class="w"> </span><span class="p">)</span>
+<span class="w">      </span><span class="n">mj_step</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// get framebuffer viewport</span>
+<span class="w">  </span><span class="n">mjrRect</span><span class="w"> </span><span class="n">viewport</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">};</span>
+<span class="w">  </span><span class="n">glfwGetFramebufferSize</span><span class="p">(</span><span class="n">window</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">viewport</span><span class="p">.</span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">viewport</span><span class="p">.</span><span class="n">height</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// update scene and render</span>
+<span class="w">  </span><span class="n">mjv_updateScene</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">opt</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">cam</span><span class="p">,</span><span class="w"> </span><span class="n">mjCAT_ALL</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">scn</span><span class="p">);</span>
+<span class="w">  </span><span class="n">mjr_render</span><span class="p">(</span><span class="n">viewport</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">scn</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">con</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// swap OpenGL buffers (blocking call due to v-sync)</span>
+<span class="w">  </span><span class="n">glfwSwapBuffers</span><span class="p">(</span><span class="n">window</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// process pending GUI events, call GLFW callbacks</span>
+<span class="w">  </span><span class="n">glfwPollEvents</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="c1">// close GLFW, free visualization storage</span>
+<span class="n">glfwTerminate</span><span class="p">();</span>
+<span class="n">mjv_freeScene</span><span class="p">(</span><span class="o">&amp;</span><span class="n">scn</span><span class="p">);</span>
+<span class="n">mjr_freeContext</span><span class="p">(</span><span class="o">&amp;</span><span class="n">con</span><span class="p">);</span>
+
+<span class="c1">// ... free MuJoCo model and data</span>
+</pre></div>
+</div>
+<section id="reopengl">
+<span id="id9"></span><h3 data-bi="bi-174">使用 OpenGL<a class="headerlink" href="#reopengl" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-174" lang="en">Using OpenGL</div>
+<p data-bi="bi-175">MuJoCo 使用兼容性配置文件（compatibility profile）下的 OpenGL 1.5，并带有 <code class="docutils literal notranslate"><span class="pre">ARB_framebuffer_object</span></code> 和 <code class="docutils literal notranslate"><span class="pre">ARB_vertex_buffer_object</span></code> 扩展。OpenGL 符号在首次调用 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-makecontext"><span class="std std-ref">mjr_makeContext</span></a> 函数时通过 <a class="reference external" href="https://github.com/Dav1dde/glad">GLAD</a> 加载。这意味着 MuJoCo 库本身并不显式依赖 OpenGL，只要不调用 <code class="docutils literal notranslate"><span class="pre">mjr_</span></code> 函数，就可以在没有 OpenGL 支持的系统上使用。</p><div class="en-orig" data-for="bi-175" lang="en">MuJoCo uses OpenGL 1.5 in the compatibility profile with the <code class="docutils literal notranslate"><span class="pre">ARB_framebuffer_object</span></code> and <code class="docutils literal notranslate"><span class="pre">ARB_vertex_buffer_object</span></code>
+extensions. OpenGL symbols are loaded via <a class="reference external" href="https://github.com/Dav1dde/glad">GLAD</a> the first time the
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjr-makecontext"><span class="std std-ref">mjr_makeContext</span></a> function is called. This means that the MuJoCo library itself does not have an explicit
+dependency on OpenGL and can be used on systems without OpenGL support, as long as <code class="docutils literal notranslate"><span class="pre">mjr_</span></code> functions are not called.</div>
+<p data-bi="bi-176">使用 MuJoCo 内置渲染功能的应用程序，需要自行负责链接合适的 OpenGL 上下文创建库，并确保在运行的线程上存在一个已设为当前的 OpenGL 上下文。在 Windows 和 macOS 上，操作系统提供了标准的 OpenGL 库。在 Linux 上，MuJoCo 目前支持用于渲染到 X11 窗口的 GLX、用于无头软件渲染的 OSMesa，以及用于硬件加速无头渲染的 EGL。</p><div class="en-orig" data-for="bi-176" lang="en">Applications that use MuJoCo’s built-in rendering functionalities are responsible for linking against an appropriate
+OpenGL context creation library and for ensuring that there is an OpenGL context that is made current on the running
+thread. On Windows and macOS, there is a canonical OpenGL library provided by the operating system. On Linux, MuJoCo
+currently supports GLX for rendering to an X11 window, OSMesa for headless software rendering, and EGL for hardware
+accelerated headless rendering.</div>
+</section>
+<section id="gpu">
+<span id="recontext"></span><h3 data-bi="bi-177">上下文与 GPU 资源<a class="headerlink" href="#gpu" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-177" lang="en">Context and GPU resources</div>
+<p data-bi="bi-178">渲染过程的第一步是创建特定于模型的 GPU 上下文 <a class="reference internal" href="../APIreference/APItypes.html#mjrcontext"><span class="std std-ref">mjrContext</span></a>。具体做法是先用函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-defaultcontext"><span class="std std-ref">mjr_defaultContext</span></a> 清空该数据结构，然后调用函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-makecontext"><span class="std std-ref">mjr_makeContext</span></a>。前面已经演示过这一点；相关代码如下：</p><div class="en-orig" data-for="bi-178" lang="en">The first step in the rendering process is to create the model-specific GPU context <a class="reference internal" href="../APIreference/APItypes.html#mjrcontext"><span class="std std-ref">mjrContext</span></a>. This is done by
+first clearing the data structure with the function <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-defaultcontext"><span class="std std-ref">mjr_defaultContext</span></a>, and then calling the function
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjr-makecontext"><span class="std std-ref">mjr_makeContext</span></a>. This was already illustrated earlier; the relevant code is:</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjModel</span><span class="o">*</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<span class="n">mjrContext</span><span class="w"> </span><span class="n">con</span><span class="p">;</span>
+
+<span class="c1">// clear mjrContext only once before first use</span>
+<span class="n">mjr_defaultContext</span><span class="p">(</span><span class="o">&amp;</span><span class="n">con</span><span class="p">);</span>
+
+<span class="c1">// create window with OpenGL context, make it current</span>
+<span class="n">GLFWwindow</span><span class="o">*</span><span class="w"> </span><span class="n">window</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glfwCreateWindow</span><span class="p">(</span><span class="mi">1200</span><span class="p">,</span><span class="w"> </span><span class="mi">900</span><span class="p">,</span><span class="w"> </span><span class="s">"Demo"</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="n">glfwMakeContextCurrent</span><span class="p">(</span><span class="n">window</span><span class="p">);</span>
+
+<span class="c1">// ... load MuJoCo model</span>
+
+<span class="c1">// make model-specific mjrContext</span>
+<span class="n">mjr_makeContext</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">con</span><span class="p">,</span><span class="w"> </span><span class="n">mjFONTSCALE_100</span><span class="p">);</span>
+
+<span class="c1">// ... load another MuJoCo model</span>
+
+<span class="c1">// make mjrContext for new model (old context freed automatically)</span>
+<span class="n">mjr_makeContext</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">con</span><span class="p">,</span><span class="w"> </span><span class="n">mjFONTSCALE_100</span><span class="p">);</span>
+
+<span class="c1">// free context when done</span>
+<span class="n">mjr_freeContext</span><span class="p">(</span><span class="o">&amp;</span><span class="n">con</span><span class="p">);</span>
+</pre></div>
+</div>
+<p data-bi="bi-179">mjrContext 与 OpenGL 上下文是什么关系？OpenGL 上下文使应用程序能够与显卡驱动通信并发送渲染命令。在调用 mjr_makeContext 之前，它必须已经存在，并且已在调用线程中设为当前。GLFW 及相关库提供了如上所示的必要函数。</p><div class="en-orig" data-for="bi-179" lang="en">How is mjrContext related to an OpenGL context? An OpenGL context is what enables the application to talk to the video
+driver and send rendering commands. It must exist and must be current in the calling thread before mjr_makeContext is
+called. GLFW and related libraries provide the necessary functions as shown above.</div>
+<p data-bi="bi-180">mjrContext 是 MuJoCo 特有的。创建之后，它包含对 mjr_makeContext 上传到 GPU 的所有资源的引用（在 OpenGL 中称为“名称”）。这些资源包括网格和纹理等特定于模型的资源，也包括通用资源，例如指定字体缩放比例下的字体位图、用于阴影映射和离屏渲染的帧缓冲对象，以及相关的渲染缓冲区。它还包含从 <code class="docutils literal notranslate"><span class="pre">mjModel.vis</span></code> 复制而来的与 OpenGL 相关的选项、自动发现的默认窗口帧缓冲区的能力，以及当前用于渲染的活动缓冲区；参见下面的 <a class="reference internal" href="#rebuffer"><span class="std std-ref">缓冲区</span></a>。请注意，尽管 MuJoCo 使用固定功能的 OpenGL，但它避免了立即模式渲染，而是预先把所有资源上传到 GPU。这使它与现代着色器一样高效，甚至可能更高效，因为固定功能的 OpenGL 如今是通过由显卡驱动开发者编写并经过大量调优的内部着色器来实现的。</p><div class="en-orig" data-for="bi-180" lang="en">mjrContext is specific to MuJoCo. After creation, it contains references (called “names” in OpenGL) to all the
+resources that were uploaded to the GPU by mjr_makeContext. These include model-specific resources such as meshes and
+textures, as well as generic resources such as font bitmaps for the specified font scale, framebuffer objects for
+shadow mapping and offscreen rendering, and associated renderbuffers. It also contains OpenGL-related options copied
+from <code class="docutils literal notranslate"><span class="pre">mjModel.vis</span></code>, capabilities of the default window framebuffer that are discovered automatically, and the
+currently active buffer for rendering; see <a class="reference internal" href="#rebuffer"><span class="std std-ref">buffers</span></a> below. Note that even though MuJoCo uses
+fixed-function OpenGL, it avoids immediate mode rendering and instead uploads all resources to the GPU upfront. This
+makes it as efficient as a modern shader, and possibly more efficient, because fixed-function OpenGL is now implemented
+via internal shaders that have been written by the video driver developers and tuned extensively.</div>
+<p data-bi="bi-181">mjrContext 的大多数字段在调用 mjr_makeContext 之后保持不变。唯一的例外是 mjrContext.currentBuffer，它在活动缓冲区改变时随之改变。部分 GPU 资源也可能发生变化，因为用户可以通过函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-uploadtexture"><span class="std std-ref">mjr_uploadTexture</span></a>、<a class="reference internal" href="../APIreference/APIfunctions.html#mjr-uploadmesh"><span class="std std-ref">mjr_uploadMesh</span></a>、<a class="reference internal" href="../APIreference/APIfunctions.html#mjr-uploadhfield"><span class="std std-ref">mjr_uploadHField</span></a> 上传修改后的资源。这可用于实现动态效果，例如把视频画面插入渲染，或者调制地形图。此类修改会影响驻留在 GPU 上的资源，但它们的 OpenGL 名称会被复用；因此，这种变化实际上在 mjrContext 中是不可见的。</p><div class="en-orig" data-for="bi-181" lang="en">Most of the fields of mjrContext remain constant after the call to mjr_makeContext. The only exception is
+mjrContext.currentBuffer which changes whenever the active buffer changes. Some of the GPU resources may also change
+because the user can upload modified resources with the functions <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-uploadtexture"><span class="std std-ref">mjr_uploadTexture</span></a>, <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-uploadmesh"><span class="std std-ref">mjr_uploadMesh</span></a>,
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjr-uploadhfield"><span class="std std-ref">mjr_uploadHField</span></a>. This can be used to achieve dynamic effects such as inserting a video feed into the
+rendering, or modulating a terrain map. Such modifications affect the resources residing on the GPU, but their OpenGL
+names are reused; thus, the change is not actually visible in mjrContext.</div>
+<p data-bi="bi-182">用户 <strong>绝不</strong> 应直接修改 mjrContext。MuJoCo 的渲染器假定只有它自己可以管理 mjrContext。事实上，这类对象通常是不透明的，其内部结构不会暴露给用户。我们之所以将其暴露，是因为 MuJoCo 采用开放式设计，同时也因为用户可能希望把自己的 OpenGL 代码与 MuJoCo 的渲染器交错使用，在这种情况下他们可能需要对 mjrContext 的某些字段具有读取权限。例如在 VR 应用中，用户需要把 MuJoCo 的离屏缓冲区位块传输（blit）到 VR SDK 提供的纹理上。</p><div class="en-orig" data-for="bi-182" lang="en">The user should <strong>never</strong> make changes to mjrContext directly. MuJoCo’s renderer assumes that only it can manage
+mjrContext. In fact this kind of object would normally be opaque and its internal structure would not be exposed to
+the user. We are exposing it because MuJoCo has an open design and also because users may want to interleave their own
+OpenGL code with MuJoCo’s renderer, in which case they may need read access to some fields of mjrContext. For example
+in VR applications the user needs to blit from MuJoCo’s offscreen buffer to a texture provided by a VR SDK.</div>
+<p data-bi="bi-183">当加载另一个 MuJoCo 模型时，必须再次调用 mjr_makeContext。另外还有函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-freecontext"><span class="std std-ref">mjr_freeContext</span></a>，它释放 GPU 资源，同时保留初始化标志和能力标志。应用程序即将退出时应调用该函数。mjr_makeContext 内部会自动调用它，因此在加载另一个模型时无需直接调用，尽管直接调用也不算错误。函数 mjr_defaultContext 必须在渲染开始前调用一次，用于清空为数据结构 mjrContext 分配的内存。如果在调用 mjr_makeContext 之后再调用它，它会抹去所有已分配 GPU 资源的记录，而不会释放这些资源，因此不要那样做。</p><div class="en-orig" data-for="bi-183" lang="en">When a different MuJoCo model is loaded, mjr_makeContext must be called again. There is also the function
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjr-freecontext"><span class="std std-ref">mjr_freeContext</span></a> which frees the GPU resources while preserving the initialization and capabilities flags. This
+function should be called when the application is about to exit. It is called automatically from within
+mjr_makeContext, so you do not need to call it directly when a different model is loaded, although it is not an error
+to do so. The function mjr_defaultContext must be called once before rendering starts, to clear the memory allocated
+for the data structure mjrContext. If you call it after calling mjr_makeContext, it will wipe out any record that GPU
+resources were allocated without freeing those resources, so don’t do that.</div>
+</section>
+<section id="rebuffer">
+<span id="id10"></span><h3 data-bi="bi-184">渲染缓冲区<a class="headerlink" href="#rebuffer" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-184" lang="en">Buffers for rendering</div>
+<p data-bi="bi-185">除默认的窗口帧缓冲区之外，OpenGL 还可以支持数量不限的帧缓冲对象（FBO）用于自定义渲染。在 MuJoCo 中，我们系统地支持两个帧缓冲区：默认的窗口帧缓冲区和一个离屏帧缓冲区。它们由枚举类型 <a class="reference internal" href="../APIreference/APItypes.html#mjtframebuffer"><span class="std std-ref">mjtFramebuffer</span></a> 中的常量引用，即 mjFB_WINDOW 和 mjFB_OFFSCREEN。在任一时刻，这两个缓冲区之一对 MuJoCo 渲染而言处于活动状态，也就是说所有后续命令都会被导向该缓冲区。mjrContext 中还引用了另外两个帧缓冲对象，用于阴影映射和解析多重采样缓冲区，但它们仅供内部使用，用户不应尝试直接访问。</p><div class="en-orig" data-for="bi-185" lang="en">In addition to the default window framebuffer, OpenGL can support unlimited framebuffer objects (FBOs) for custom
+rendering. In MuJoCo we provide systematic support for two framebuffers: the default window framebuffer, and one
+offscreen framebuffer. They are referred to by the constants in the enum type <a class="reference internal" href="../APIreference/APItypes.html#mjtframebuffer"><span class="std std-ref">mjtFramebuffer</span></a>, namely
+mjFB_WINDOW and mjFB_OFFSCREEN. At any time, one of these two buffers is active for the purposes of MuJoCo rendering,
+meaning that all subsequent commands are directed to it. There are two additional framebuffer objects referenced in
+mjrContext, needed for shadow mapping and resolving multi-sample buffers, but these are used internally and the user
+should not attempt to access them directly.</div>
+<p data-bi="bi-186">活动缓冲区通过函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-setbuffer"><span class="std std-ref">mjr_setBuffer</span></a> 设置。它会设置 mjrContext.activeBuffer 的值，并相应地配置 OpenGL 状态。调用 mjr_makeContext 时，其内部会以参数 mjFB_WINDOW 调用 mjr_setBuffer，因此渲染默认从窗口缓冲区开始。如果指定的缓冲区不存在，mjr_setBuffer 会自动默认使用另一个缓冲区（请注意，在 Linux 上使用无头渲染时，可能没有窗口帧缓冲区）。</p><div class="en-orig" data-for="bi-186" lang="en">The active buffer is set with the function <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-setbuffer"><span class="std std-ref">mjr_setBuffer</span></a>. This sets the value of mjrContext.activeBuffer and
+configures the OpenGL state accordingly. When mjr_makeContext is called, internally it calls mjr_setBuffer with
+argument mjFB_WINDOW, so that rendering starts in the window buffer by default. If the specified buffer does not
+exist, mjr_setBuffer automatically defaults to the other buffer (note that when using headless rendering on Linux,
+there may be no window framebuffer).</div>
+<p data-bi="bi-187">从 OpenGL 的角度来看，窗口帧缓冲区与离屏帧缓冲区之间存在重要差异，这些差异会影响 MuJoCo 用户与渲染器的交互方式。窗口帧缓冲区由操作系统而非 OpenGL 创建和管理。因此，分辨率、双缓冲、四缓冲立体、多重采样、垂直同步等属性是在 OpenGL 之外设置的；在我们的代码示例中，这是通过 GLFW 调用完成的。OpenGL 所能做的只是检测这些属性；我们在 mjr_makeContext 中做这件事，并将结果记录在 mjrContext 的各个窗口能力字段中。这就是此类属性不属于 MuJoCo 模型的原因；它们特定于会话/软件，而不是特定于模型。相比之下，离屏帧缓冲区完全由 OpenGL 管理，因此我们可以按任意所需的属性创建该缓冲区，即采用 <code class="docutils literal notranslate"><span class="pre">mjModel.vis</span></code> 中指定的分辨率和多重采样属性。</p><div class="en-orig" data-for="bi-187" lang="en">From the perspective of OpenGL, there are important differences between the window framebuffer and offscreen
+framebuffer, and these differences affect how the MuJoCo user interacts with the renderer. The window framebuffer is
+created and managed by the operating system and not by OpenGL. As a result, properties such as resolution,
+double-buffering, quad-buffered stereo, multi-samples, v-sync are set outside OpenGL; this is done by GLFW calls in our
+code samples. All OpenGL can do is detect these properties; we do this in mjr_makeContext and record the results in the
+various window capabilities fields of mjrContext. This is why such properties are not part of the MuJoCo model; they are
+session/software-specific and not model-specific. In contrast, the offscreen framebuffer is managed entirely by OpenGL,
+and so we can create that buffer with whatever properties we want, namely with the resolution and multi-sample
+properties specified in <code class="docutils literal notranslate"><span class="pre">mjModel.vis</span></code>.</div>
+<p data-bi="bi-188">用户可以直接访问这两个缓冲区中的像素。这通过函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-readpixels"><span class="std std-ref">mjr_readPixels</span></a>、<a class="reference internal" href="../APIreference/APIfunctions.html#mjr-drawpixels"><span class="std std-ref">mjr_drawPixels</span></a> 和 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-blitbuffer"><span class="std std-ref">mjr_blitBuffer</span></a> 完成。读取/绘制是在活动缓冲区与 CPU 之间传输像素。位块传输（blit）则在 GPU 上的两个缓冲区之间传输像素，因此要快得多。传输方向是从活动缓冲区到非活动缓冲区。请注意，mjr_blitBuffer 的源视口和目标视口可以具有不同的大小，从而允许在此过程中缩放图像。</p><div class="en-orig" data-for="bi-188" lang="en">The user can directly access the pixels in the two buffers. This is done with the functions <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-readpixels"><span class="std std-ref">mjr_readPixels</span></a>,
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjr-drawpixels"><span class="std std-ref">mjr_drawPixels</span></a> and <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-blitbuffer"><span class="std std-ref">mjr_blitBuffer</span></a>. Read/draw transfer pixels from/to the active buffer to/from the CPU.
+Blit transfers pixels between the two buffers on the GPU and is therefore much faster. The direction is from the
+active buffer to the buffer that is not active. Note that mjr_blitBuffer has source and destination viewports that can
+have different size, allowing the image to be scaled in the process.</div>
+</section>
+<section id="redraw">
+<span id="id11"></span><h3 data-bi="bi-189">绘制像素<a class="headerlink" href="#redraw" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-189" lang="en">Drawing pixels</div>
+<p data-bi="bi-190">主要的渲染函数是 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-render"><span class="std std-ref">mjr_render</span></a>。它的参数是用于渲染的矩形视口、由抽象可视化器填充的 mjvScene，以及由 mjr_makeContext 创建的 mjrContext。视口可以是整个活动缓冲区，也可以是其一部分，以实现自定义效果。对应整个缓冲区的视口可以通过函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-maxviewport"><span class="std std-ref">mjr_maxViewport</span></a> 获得。请注意，离屏缓冲区的大小不变，而窗口缓冲区的大小会在用户调整窗口大小或将其最大化时改变。因此用户代码不应假定视口大小固定。在代码示例 <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> 中，我们使用了一个在窗口大小改变时触发的回调，而在 <a class="reference internal" href="samples.html#sabasic"><span class="std std-ref">basic.cc</span></a> 中，我们只是在每次渲染时检查窗口大小。在某些缩放显示器上（尤其是 MacOS），窗口大小与帧缓冲区大小可能不同。因此，如果您使用 GLFW 函数获取大小，请使用 glfwGetFramebufferSize 而不是 glfwGetWindowSize。另一方面，鼠标坐标由操作系统以窗口单位而非帧缓冲区单位返回；因此 <a class="reference internal" href="visualization.html#vicamera"><span class="std std-ref">鼠标交互函数</span></a> 应使用 glfwGetWindowSize 来获取对鼠标位移数据做归一化所需的窗口高度。</p><div class="en-orig" data-for="bi-190" lang="en">The main rendering function is <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-render"><span class="std std-ref">mjr_render</span></a>. Its arguments are a rectangular viewport for rendering, the mjvScene
+which was populated by the abstract visualizer, and the mjrContext which was created by mjr_makeContext. The viewport
+can be the entire active buffer, or part of it for custom effects. A viewport corresponding to the entire buffer can
+be obtained with the function <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-maxviewport"><span class="std std-ref">mjr_maxViewport</span></a>. Note that while the offscreen buffer size does not change, the
+window buffer size changes whenever the user resizes or maximizes the window. Therefore user code should not assume
+fixed viewport size. In the code sample <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> we use a callback which is triggered whenever
+the window size changes, while in <a class="reference internal" href="samples.html#sabasic"><span class="std std-ref">basic.cc</span></a> we simply check the window size every time we render. On
+certain scaled displays (notably on MacOS) the window size and framebuffer size can be different. So if you are
+getting the size with GLFW functions, use glfwGetFramebufferSize rather than glfwGetWindowSize. On the other hand,
+mouse coordinates are returned by the operating system in window rather than framebuffer units; thus the
+<a class="reference internal" href="visualization.html#vicamera"><span class="std std-ref">mouse interaction functions</span></a> should use glfwGetWindowSize to obtain the window height needed to
+normalize the mouse displacement data.</div>
+<p data-bi="bi-191">mjr_render 渲染列表 mjvScene.geom 中的所有 mjvGeom。抽象可视化选项 mjvOption 在这里已不再相关；它们被 mjv_updateScene 用来确定要添加哪些 geom，对 mjr_render 而言，这些选项已经固化。不过，mjvScene 中还嵌入了另一组渲染选项，它们会影响 OpenGL 渲染过程。数组 mjvScene.flags 包含以枚举类型 <a class="reference internal" href="../APIreference/APItypes.html#mjtrndflag"><span class="std std-ref">mjtRndFlag</span></a> 为索引的标志，其中的选项用于启用和禁用线框模式、阴影、反射、天空盒和雾。阴影和反射需要额外的渲染通道。MuJoCo 的渲染器非常高效，但根据模型复杂度和可用 GPU 的不同，在某些情况下可能需要禁用其中一种或两种效果。</p><div class="en-orig" data-for="bi-191" lang="en">mjr_render renders all mjvGeoms from the list mjvScene.geom. The abstract visualization options mjvOption are no
+longer relevant here; they are used by mjv_updateScene to determine which geoms to add, and as far as mjr_render is
+concerned these options are already baked-in. There is however another set of rendering options that are embedded in
+mjvScene, and these affect the OpenGL rendering process. The array mjvScene.flags contains flags indexed by the enum
+type <a class="reference internal" href="../APIreference/APItypes.html#mjtrndflag"><span class="std std-ref">mjtRndFlag</span></a> and include options for enabling and disabling wireframe mode, shadows, reflections, skyboxes
+and fog. Shadows and reflections involve additional rendering passes. MuJoCo’s renderer is very efficient, but
+depending on the model complexity and available GPU, it may be necessary to disable one or both of these effects in
+some cases.</div>
+<p data-bi="bi-192">参数 mjvScene.stereo 决定立体模式。其可能取值由枚举类型 <a class="reference internal" href="../APIreference/APItypes.html#mjtstereo"><span class="std std-ref">mjtStereo</span></a> 给出，如下所示：</p><div class="en-orig" data-for="bi-192" lang="en">The parameter mjvScene.stereo determines the stereo mode. The possible values are given by the enum type
+<a class="reference internal" href="../APIreference/APItypes.html#mjtstereo"><span class="std std-ref">mjtStereo</span></a> and are as follows:</div>
+<dl class="simple">
+<dt>mjSTEREO_NONE</dt><dd><p data-bi="bi-193">禁用立体渲染。使用 mjvScene 中两个 OpenGL 相机的平均值。请注意，即使不使用立体渲染，渲染器也始终要求两个相机都被正确定义。</p><div class="en-orig" data-for="bi-193" lang="en">Stereo rendering is disabled. The average of the two OpenGL cameras in mjvScene is used. Note that the renderer
+always expects both cameras to be properly defined, even if stereo is not used.</div>
+</dd>
+<dt>mjSTEREO_QUADBUFFERED</dt><dd><p data-bi="bi-194">该模式仅在活动缓冲区是窗口、且窗口支持四缓冲 OpenGL 时才有效。这需要专业显卡。代码示例 <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> 会尝试打开这样的窗口。在此模式下，当窗口为双缓冲时，MuJoCo 的渲染器使用 GL_BACK_LEFT 和 GL_BACK_RIGHT 缓冲区渲染两个视图（由 mjvScene 中的两个 OpenGL 相机确定），否则使用 GL_FRONT_LEFT 和 GL_FRONT_RIGHT。如果窗口不支持四缓冲 OpenGL，或者活动缓冲区是离屏缓冲区，渲染器会退回到下面描述的并排模式。</p><div class="en-orig" data-for="bi-194" lang="en">This mode works only when the active buffer is the window, and the window supports quad-buffered OpenGL. This
+requires a professional video card. The code sample <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> attempts to open such a window.
+In this mode MuJoCo’s renderer uses the GL_BACK_LEFT and GL_BACK_RIGHT buffers to render the two views (as determined
+by the two OpenGL cameras in mjvScene) when the window is double-buffered, and GL_FRONT_LEFT and GL_FRONT_RIGHT
+otherwise. If the window does not support quad-buffered OpenGL or the active buffer is the offscreen buffer, the
+renderer reverts to the side-by-side mode described next.</div>
+</dd>
+<dt>mjSTEREO_SIDEBYSIDE</dt><dd><p data-bi="bi-195">这种立体模式不需要特殊硬件，始终可用。传给 mjr_render 的视口会被并排分成两个相等的矩形。左视图渲染在左侧，右视图渲染在右侧。原则上，用户可以通过斗鸡眼在普通显示器上看到立体效果，但这里的目标是在立体显示设备中呈现。大多数头戴式显示器都支持这种立体模式。</p><div class="en-orig" data-for="bi-195" lang="en">This stereo mode does not require special hardware and is always available. The viewport given to mjr_render is split
+in two equal rectangles side-by-side. The left view is rendered on the left side and the right view on the right
+side. In principle users can cross their eyes and see stereo on a regular monitor, but the goal here is to show it in
+a stereoscopic device. Most head-mounted displays support this stereo mode.</div>
+</dd>
+</dl>
+<p data-bi="bi-196">除了主要的 mjr_render 函数之外，我们还提供了若干用于“装饰”图像的函数。这些是二维渲染函数，包括 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-overlay"><span class="std std-ref">mjr_overlay</span></a>、<a class="reference internal" href="../APIreference/APIfunctions.html#mjr-text"><span class="std std-ref">mjr_text</span></a>、<a class="reference internal" href="../APIreference/APIfunctions.html#mjr-rectangle"><span class="std std-ref">mjr_rectangle</span></a> 和 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-figure"><span class="std std-ref">mjr_figure</span></a>。用户可以用自己的 OpenGL 代码绘制额外的装饰。这应当在 mjr_render 之后进行，因为 mjr_render 会清空视口。</p><div class="en-orig" data-for="bi-196" lang="en">In addition to the main mjr_render function, we provide several functions for “decorating” the image. These are 2D
+rendering functions and include <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-overlay"><span class="std std-ref">mjr_overlay</span></a>, <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-text"><span class="std std-ref">mjr_text</span></a>, <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-rectangle"><span class="std std-ref">mjr_rectangle</span></a>, and <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-figure"><span class="std std-ref">mjr_figure</span></a>. The
+user can draw additional decorations with their own OpenGL code. This should be done after mjr_render, because
+mjr_render clears the viewport.</div>
+<p data-bi="bi-197">我们还提供函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-finish"><span class="std std-ref">mjr_finish</span></a> 和 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-geterror"><span class="std std-ref">mjr_getError</span></a>，分别用于与 GPU 的显式同步和 OpenGL 错误检查。它们在内部只是简单地调用 glFinish 和 glGetError。这些函数连同上面的基本二维绘制函数，旨在提供足够的功能，使大多数用户无需编写 OpenGL 代码。当然，除非为 OpenGL 的全部功能都提供封装，否则我们无法在所有情况下都做到这一点。</p><div class="en-orig" data-for="bi-197" lang="en">We also provide the functions <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-finish"><span class="std std-ref">mjr_finish</span></a> and <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-geterror"><span class="std std-ref">mjr_getError</span></a> for explicit synchronization with the GPU and
+for OpenGL error checking. They simply call glFinish and glGetError internally. This together with the basic 2d
+drawing functions above is meant to provide enough functionality so that most users will not need to write OpenGL
+code. Of course we cannot achieve this in all cases, short of providing wrappers for all of OpenGL.</div>
+</section>
+</section>
+</section>
+</article>
+</div>
+<footer>
+<div class="related-pages">
+<a class="next-page" href="ui.html">
+<div class="page-info">
+<div class="context">
+<span>Next</span>
+</div>
+<div class="title">用户界面</div>
+</div>
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+</a>
+<a class="prev-page" href="visualization.html">
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+<div class="page-info">
+<div class="context">
+<span>Previous</span>
+</div>
+<div class="title">可视化</div>
+</div>
+</a>
+</div>
+<div class="bottom-of-page">
+<div class="left-details">
+<div class="copyright">
+                Copyright © DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+</div>
+<div class="right-details">
+</div>
+</div>
+</footer>
+</div>
+<aside class="toc-drawer">
+<div class="toc-sticky toc-scroll">
+<div class="toc-title-container">
+<span class="toc-title">
+            On this page
+          </span>
+</div>
+<div class="toc-tree-container">
+<div class="toc-tree">
+<ul>
+<li><a class="reference internal" href="#">渲染</a><ul>
+<li><a class="reference internal" href="#filament">Filament 渲染</a><ul>
+<li><a class="reference internal" href="#reprogramming">编程</a><ul>
+<li><a class="reference internal" href="#reconcepts">核心概念</a></li>
+<li><a class="reference internal" href="#resupport">支持层</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#reauthoring">场景编写</a><ul>
+<li><a class="reference internal" href="#rematerials">材质</a></li>
+<li><a class="reference internal" href="#relighting">光照</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#reflags">渲染选项</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#opengl">OpenGL 渲染</a><ul>
+<li><a class="reference internal" href="#reopengl">使用 OpenGL</a></li>
+<li><a class="reference internal" href="#gpu">上下文与 GPU 资源</a></li>
+<li><a class="reference internal" href="#rebuffer">渲染缓冲区</a></li>
+<li><a class="reference internal" href="#redraw">绘制像素</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div><script src="../_static/documentation_options.js?v=7d86a446"></script>
+<script src="../_static/doctools.js?v=fd6eb6e6"></script>
+<script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+<script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+<script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="../_static/copybutton.js?v=f281be69"></script>
+<script src="../_static/translations.js?v=540d3cec"></script>
+<script src="../_static/katex.min.js?v=5cc8ed51"></script>
+<script src="../_static/auto-render.min.js?v=af98beb9"></script>
+<script src="../_static/katex_autorenderer.js?v=ae454eff"></script>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<script src="../_static/linenumbers.js?v=ebda5d35"></script>
+<script src="../_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+<script src="../_static/bilingual.js?v=25c2633d"></script></body></html>

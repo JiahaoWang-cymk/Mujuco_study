@@ -1,0 +1,63 @@
+﻿OpenUSD
+=======
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+.. toctree::
+    :hidden:
+
+    building
+    mjcPhysics
+    mjcf_file_format_plugin
+    importing
+    exporting
+
+.. WARNING:: OpenUSD 支持目前处于实验阶段，可能频繁变动。
+
+简介
+----
+
+本章介绍 MuJoCo 对 `OpenUSD <https://openusd.org/release/intro.html>`__ 的支持。USD（Universal Scene
+Description，通用场景描述）是由 Pixar 开发的、用于描述 3D 场景的开源框架。MuJoCo 的集成使用户能够
+利用 USD 丰富的生态系统和工具链。
+
+什么是 OpenUSD？
+----------------
+
+USD 是一个高性能、可扩展的系统，用于描述、组合、仿真和协作处理 3D 数据。
+USD 最初由 Pixar Animation Studios 开发，目前已广泛应用于视觉特效、动画、游戏和机器人等多个行业，
+以简化复杂的 3D 工作流程。它为不同的软件应用提供了一种交换 3D 场景信息的通用语言。
+
+为什么我们关注 OpenUSD？
+------------------------
+
+将 USD 与 MuJoCo 集成有以下几方面的优势：
+
+*   **互操作性：** 众多 3D 内容创作工具（例如 Houdini、Maya、Blender）都支持 USD。
+    这使 MuJoCo 用户可以轻松导入在这些工具中创建的场景和资产。
+*   **丰富的场景描述：** USD 提供了一种强大而灵活的方式来表示复杂场景，包括
+    几何体、材质、光照和层级结构。
+*   **协作：** USD 的分层与组合特性支持强大而高效的
+    非破坏性创作流程。
+
+USD 支持概览
+------------
+
+*   **导入：** 您可以通过 MJCF 加载 USD 资产（具体为 ``.usd``、\ ``.usda``、\ ``.usdc``、\ ``.usdz`` 文件），
+    也可以将其拖放到 :ref:`simulate.cc <saSimulate>` 中。
+*   **Schema：** MuJoCo 主要使用标准的 `UsdPhysics
+    <https://openusd.org/dev/api/usd_physics_page_front.html>`__ schema 来表示物理属性。
+*   **扩展：** 提供自定义的 :doc:`mjcPhysics` schema，用于涵盖 ``UsdPhysics`` 中没有的 MuJoCo 特有功能。
+*   **MJCF 文件格式插件：** :doc:`mjcf_file_format_plugin` 允许在任何原生 USD 应用中将 MJCF 文件视为 USD 图层。
+*   **导出：** MuJoCo 场景可以导出为 USD。
+
+在哪里可以进一步了解 USD？
+--------------------------
+
+*   `Remedy 的 USD 之书 <https://remedy-entertainment.github.io/USDBook>`__ ：对 USD 的友好入门介绍。
+*   `OpenUSD 官方文档 <https://openusd.org/release/intro.html>`__ ：API 与实现细节的官方文档。
+*   `Pixar 的 USD 简介 <https://graphics.pixar.com/usd/release/index.html>`__ ：USD 的简单使用示例。
+*   `NVIDIA 的 USD 资源 <https://developer.nvidia.com/usd>`__ ：主要关注资产结构的一组 USD 资源。

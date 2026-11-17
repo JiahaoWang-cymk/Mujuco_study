@@ -1,0 +1,33 @@
+﻿导出
+====
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+.. WARNING:: OpenUSD 支持目前仍处于实验阶段，可能会频繁变动。
+
+目前，将 MuJoCo 场景导出为 OpenUSD 格式是一个正在积极开发的领域。预计主要的导出方式是通过 Python API。
+
+原生 C++ 导出器（mujoco-usd）
+-----------------------------------
+
+在 Linux ``x86_64``、Windows ``x86_64`` 和 macOS ``arm64`` 上的 Python 3.11--3.13 中，安装 ``mujoco-usd``
+（``pip install mujoco-usd`` 或 ``pip install mujoco[usd]``）后，即可通过 ``mujoco.usd.writer`` 和
+``mujoco.usd.layer_sink`` 进行原生 C++ OpenUSD stage 编写与轨迹记录，其底层由 :doc:`mjcPhysics <mjcPhysics>` schema 支持。
+
+USDExporter
+-----------
+
+MuJoCo 还在 :doc:`../python` 中提供了纯 Python 实现的 :ref:`USDExporter <PyUSDexport>`\ （仅需要 ``usd-core`` 和
+``pillow``），可在所有平台和 Python 版本上导出场景和轨迹。
+
+mujoco-usd-converter
+--------------------
+
+若要按照严格的编写规范将现有 MJCF 资产转换为 USD，我们推荐使用 `Newton mujoco-usd-converter
+<https://github.com/newton-physics/mujoco-usd-converter>`__。这些资产不会引用原始的 MJCF 资产，而是使用
+:doc:`mjcPhysics <mjcPhysics>` schema 来忠实地表示源资产。
+
+打开时，这些资产应与 :doc:`MJCF 文件格式插件 <mjcf_file_format_plugin>` 生成的资产相似，但不会有将 MJCF 转换为 USD 所带来的任何运行时开销。

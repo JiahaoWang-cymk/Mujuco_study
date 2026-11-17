@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html class="no-js" data-content_root="../" lang="zh-CN">
+<head><meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="light dark" name="color-scheme"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="../_static/favicons/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+<link href="../_static/favicons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="apple-touch-icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-192x192.png" rel="icon" sizes="192x192" type="image/png"/><link href="../genindex.html" rel="index" title="索引"/><link href="../search.html" rel="search" title="搜索"/><link href="rendering.html" rel="next" title="渲染"/><link href="simulation.html" rel="prev" title="仿真"/>
+<link as="image" href="../_static/banner.svg" rel="prefetch"/>
+<!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+<title>可视化 - MuJoCo 文档（中文）</title>
+<link href="../_static/pygments.css?v=b86133f3" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo.css?v=7bdb33bb" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css?v=05624691" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo-extensions.css?v=8dab3a3b" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides.css?v=8d83ad8c" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides_mjwarp.css?v=e08d3b36" rel="stylesheet" type="text/css"/>
+<link href="../_static/zh_overrides.css?v=ee52c62c" rel="stylesheet" type="text/css"/>
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #16213a;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #2a4fd6;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #2a4fd6;
+  --color-brand-content: #2a4fd6;
+  --color-background-secondary: #f4f6f9;
+  --color-sidebar-background: #f4f6f9;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+      }
+    }
+  }
+</style></head>
+<body>
+<script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+<symbol id="svg-toc" viewbox="0 0 24 24">
+<title>Contents</title>
+<svg fill="currentColor" stroke="currentColor" stroke-width="0" viewbox="0 0 1024 1024">
+<path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"></path>
+</svg>
+</symbol>
+<symbol id="svg-menu" viewbox="0 0 24 24">
+<title>Menu</title>
+<svg class="feather-menu" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<line x1="3" x2="21" y1="12" y2="12"></line>
+<line x1="3" x2="21" y1="6" y2="6"></line>
+<line x1="3" x2="21" y1="18" y2="18"></line>
+</svg>
+</symbol>
+<symbol id="svg-arrow-right" viewbox="0 0 24 24">
+<title>Expand</title>
+<svg class="feather-chevron-right" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</symbol>
+<symbol id="svg-sun" viewbox="0 0 24 24">
+<title>Light mode</title>
+<svg class="feather-sun" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" x2="12" y1="1" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="23"></line>
+<line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+<line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+<line x1="1" x2="3" y1="12" y2="12"></line>
+<line x1="21" x2="23" y1="12" y2="12"></line>
+<line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+<line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
+</svg>
+</symbol>
+<symbol id="svg-moon" viewbox="0 0 24 24">
+<title>Dark mode</title>
+<svg class="icon-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+</svg>
+</symbol>
+<symbol id="svg-sun-with-moon" viewbox="0 0 24 24">
+<title>Auto light/dark, in light mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z" style="opacity: 50%"></path>
+<line x1="14.5" x2="14.5" y1="3.25" y2="1.25"></line>
+<line x1="14.5" x2="14.5" y1="15.85" y2="17.85"></line>
+<line x1="10.044" x2="8.63" y1="5.094" y2="3.68"></line>
+<line x1="19" x2="20.414" y1="14.05" y2="15.464"></line>
+<line x1="8.2" x2="6.2" y1="9.55" y2="9.55"></line>
+<line x1="20.8" x2="22.8" y1="9.55" y2="9.55"></line>
+<line x1="10.044" x2="8.63" y1="14.006" y2="15.42"></line>
+<line x1="19" x2="20.414" y1="5.05" y2="3.636"></line>
+<circle cx="14.5" cy="9.55" r="3.6"></circle>
+</svg>
+</symbol>
+<symbol id="svg-moon-with-sun" viewbox="0 0 24 24">
+<title>Auto light/dark, in dark mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"></path>
+<line style="opacity: 50%" x1="18" x2="18" y1="3.705" y2="2.5"></line>
+<line style="opacity: 50%" x1="18" x2="18" y1="11.295" y2="12.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="4.816" y2="3.964"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="10.212" y2="11.063"></line>
+<line style="opacity: 50%" x1="14.205" x2="13.001" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="21.795" x2="23" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="10.184" y2="11.036"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="4.789" y2="3.937"></line>
+<circle cx="18" cy="7.5" r="2.169" style="opacity: 50%"></circle>
+</svg>
+</symbol>
+<symbol id="svg-pencil" viewbox="0 0 24 24">
+<svg class="icon-tabler-pencil-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
+<path d="M13.5 6.5l4 4"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+<symbol id="svg-eye" viewbox="0 0 24 24">
+<svg class="icon-tabler-eye-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
+<path d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+</svg>
+<input aria-label="Toggle site navigation sidebar" class="sidebar-toggle" id="__navigation" name="__navigation" type="checkbox"/>
+<input aria-label="Toggle table of contents sidebar" class="sidebar-toggle" id="__toc" name="__toc" type="checkbox"/>
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+<div class="page">
+<header class="mobile-header">
+<div class="header-left">
+<label class="nav-overlay-icon" for="__navigation">
+<span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+</label>
+</div>
+<div class="header-center">
+<a href="../index.html"><div class="brand">MuJoCo 文档（中文）</div></a>
+</div>
+<div class="header-right">
+<div class="theme-toggle-container theme-toggle-header">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-header-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+</header>
+<aside class="sidebar-drawer">
+<div class="sidebar-container">
+<div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+<div class="sidebar-logo-container">
+<img alt="Logo" class="sidebar-logo" src="../_static/banner.svg"/>
+</div>
+<span class="sidebar-brand-text">MuJoCo 文档（中文）</span>
+</a><form action="../search.html" class="sidebar-search-container" method="get" role="search">
+<input aria-label="搜索" class="sidebar-search" name="q" placeholder="搜索"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">入门教程</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">概览</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../computation/index.html">计算</a><input aria-label="Toggle navigation of 计算" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../computation/fluid.html">流体力</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computation/speculative.html">推测接触</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">建模</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../XMLreference.html">XML 参考</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">编程</a><input aria-label="Toggle navigation of 编程" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="simulation.html">仿真</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">可视化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rendering.html">渲染</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui.html">用户界面</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modeledit.html">模型编辑</a></li>
+<li class="toctree-l2"><a class="reference internal" href="samples.html">代码示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension.html">扩展</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../APIreference/index.html">API 参考</a><input aria-label="Toggle navigation of API 参考" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APItypes.html">类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIfunctions.html">函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIglobals.html">全局变量</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../studio/index.html">Studio</a><input aria-label="Toggle navigation of Studio" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../studio/web_viewers.html">Web 查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/native_viewers.html">原生查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/architecture.html">架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/python_plugins.html">Python 插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python.html">Python</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjx.html">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../unity.html">Unity 插件</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/building.html">构建</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcf_file_format_plugin.html">文件格式插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/importing.html">导入</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/exporting.html">导出</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">模型库</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">更新日志</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<div class="main">
+<div class="content">
+<div class="article-container">
+<a class="back-to-top muted-link" href="#">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+</svg>
+<span>Back to top</span>
+</a>
+<div class="content-icon-container">
+<div class="view-this-page">
+<a class="muted-link" href="../_sources/programming/visualization.rst.txt" title="View this page">
+<svg><use href="#svg-eye"></use></svg>
+<span class="visually-hidden">View this page</span>
+</a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-content-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+<article id="furo-main-content" role="main">
+<section id="abstract">
+<span id="visualization"></span><span id="id1"></span><h1 data-bi="bi-1">可视化<a class="headerlink" href="#abstract" title="链接到此标题。">#</a></h1><div class="en-orig en-h" data-for="bi-1" lang="en">Visualization</div>
+<div class="mt-notice admonition note">
+<p class="admonition-title">备注</p>
+<p>本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 <code class="docutils literal notranslate"><span class="pre">术语表.md</span></code> 。</p>
+</div>
+<p data-bi="bi-2">MuJoCo 拥有一个独立于任何图形库的原生 3D 可视化（visualization）层。它提供交互式相机控制、基于射线投射的对象拾取、鼠标驱动的力与位姿扰动、可视化选项，并能自动生成装饰性和诊断性的几何体，例如接触点和接触力、等效惯性盒、凸包、运动学树、约束违反量、空间坐标系以及文字标签。这些元素有助于深入了解物理仿真，并帮助在交互式查看器（<a class="reference internal" href="../studio/index.html#studio"><span class="std std-ref">MuJoCo Studio</span></a>、<a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a>）和离屏渲染管线（<a class="reference internal" href="samples.html#sarender"><span class="std std-ref">render.cc</span></a>）中微调模型。</p><div class="en-orig" data-for="bi-2" lang="en">MuJoCo has a native 3D visualization layer that is independent of any graphics library. It provides interactive camera
+control, object picking via raycasting, mouse-driven force and pose perturbations, visualization options, and automatic
+generation of decorative and diagnostic geometry such as contact points and forces, equivalent inertia boxes, convex
+hulls, kinematic trees, constraint violations, spatial frames, and text labels. These elements provide insight into the
+physics simulation and help fine-tune models across both interactive viewers (<a class="reference internal" href="../studio/index.html#studio"><span class="std std-ref">MuJoCo Studio</span></a>,
+<a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a>) and offscreen rendering pipelines (<a class="reference internal" href="samples.html#sarender"><span class="std std-ref">render.cc</span></a>).</div>
+<p data-bi="bi-3">抽象可视化层中的所有数据结构和函数都带有前缀 <code class="docutils literal notranslate"><span class="pre">mjv</span></code>，并在 <code class="docutils literal notranslate"><span class="pre">mjvisualize.h</span></code> 中声明：</p><div class="en-orig" data-for="bi-3" lang="en">All data structures and functions in the abstract visualization layer have the prefix <code class="docutils literal notranslate"><span class="pre">mjv</span></code> and are declared in
+<code class="docutils literal notranslate"><span class="pre">mjvisualize.h</span></code>:</div>
+<ul class="simple">
+<li><p data-bi="bi-4"><a class="reference internal" href="../APIreference/APItypes.html#mjvcamera"><span class="std std-ref">mjvCamera</span></a> 和 <a class="reference internal" href="../APIreference/APItypes.html#mjvglcamera"><span class="std std-ref">mjvGLCamera</span></a> 分别表示高层交互式相机和底层视锥相机。</p><div class="en-orig" data-for="bi-4" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjvcamera"><span class="std std-ref">mjvCamera</span></a> and <a class="reference internal" href="../APIreference/APItypes.html#mjvglcamera"><span class="std std-ref">mjvGLCamera</span></a> represent high-level interactive cameras and low-level frustum cameras.</div></li>
+<li><p data-bi="bi-5"><a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a> 控制哪些元素类别、geom 组和诊断叠加层可见。</p><div class="en-orig" data-for="bi-5" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a> controls which element categories, geom groups, and diagnostic overlays are visible.</div></li>
+<li><p data-bi="bi-6"><a class="reference internal" href="../APIreference/APItypes.html#mjvperturb"><span class="std std-ref">mjvPerturb</span></a> 跟踪交互式对象选择以及鼠标施加的力和力矩。</p><div class="en-orig" data-for="bi-6" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjvperturb"><span class="std std-ref">mjvPerturb</span></a> tracks interactive object selection and mouse-applied forces and torques.</div></li>
+<li><p data-bi="bi-7"><a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> 和 <a class="reference internal" href="../APIreference/APItypes.html#mjvgeom"><span class="std std-ref">mjvGeom</span></a> 保存对 3D 场景及其装饰的完整逐帧几何描述。</p><div class="en-orig" data-for="bi-7" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> and <a class="reference internal" href="../APIreference/APItypes.html#mjvgeom"><span class="std std-ref">mjvGeom</span></a> hold a complete per-frame geometric description of the 3D scene and its decorations.</div></li>
+</ul>
+<p data-bi="bi-8">将抽象可视化与<a class="reference internal" href="rendering.html#rendering"><span class="std std-ref">渲染</span></a>（rendering）分离，可使交互和场景逻辑独立于图形 API，并允许多个渲染后端共享相同的相机、选择、扰动和选项机制。<a class="reference internal" href="rendering.html#classicrendering"><span class="std std-ref">经典 OpenGL 渲染器</span></a>在每一帧都会使用整个 <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a>，而 <a class="reference internal" href="rendering.html#filamentrendering"><span class="std std-ref">Filament 渲染器</span></a>则根据 <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 更新其自身的持久场景，仅将 <code class="docutils literal notranslate"><span class="pre">mjvScene</span></code> 用于瞬态装饰；两者的并排比较参见<a class="reference internal" href="rendering.html#rendering"><span class="std std-ref">渲染</span></a>一章。第三方渲染器也可以直接使用 <code class="docutils literal notranslate"><span class="pre">mjvScene</span></code>。</p><div class="en-orig" data-for="bi-8" lang="en">Separating abstract visualization from <a class="reference internal" href="rendering.html#rendering"><span class="std std-ref">rendering</span></a> keeps interaction and scene logic independent of
+graphics APIs and allows multiple rendering backends to share the same camera, selection, perturbation, and option
+mechanisms. The <a class="reference internal" href="rendering.html#classicrendering"><span class="std std-ref">classic OpenGL renderer</span></a> consumes the entire <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> on every frame,
+while the <a class="reference internal" href="rendering.html#filamentrendering"><span class="std std-ref">Filament renderer</span></a> updates its own persistent scene from <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> and uses
+<code class="docutils literal notranslate"><span class="pre">mjvScene</span></code> only for transient decorations; see the <a class="reference internal" href="rendering.html#rendering"><span class="std std-ref">Rendering</span></a> chapter for a side-by-side comparison.
+Third-party renderers can also consume <code class="docutils literal notranslate"><span class="pre">mjvScene</span></code> directly.</div>
+<section id="vicamera">
+<span id="id2"></span><h2 data-bi="bi-9">相机<a class="headerlink" href="#vicamera" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-9" lang="en">Cameras</div>
+<p data-bi="bi-10">相机对象有两种类型：一种是以独立数据结构 <a class="reference internal" href="../APIreference/APItypes.html#mjvcamera"><span class="std std-ref">mjvCamera</span></a> 表示的抽象相机，另一种是以数据结构 <a class="reference internal" href="../APIreference/APItypes.html#mjvglcamera"><span class="std std-ref">mjvGLCamera</span></a>（也别名为 <code class="docutils literal notranslate"><span class="pre">mjrCamera</span></code>）表示的底层相机，后者嵌入在 <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> 中，或通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-camera2glcamera"><span class="std std-ref">mjv_camera2GLCamera</span></a> 直接计算得到。存在抽象相机时，它被用来自动计算渲染器所使用的底层相机参数。或者，用户也可以绕过抽象相机机制，直接设置底层相机参数，如下文<a class="reference internal" href="#vivr"><span class="std std-ref">虚拟现实</span></a>一节所述。</p><div class="en-orig" data-for="bi-10" lang="en">There are two types of camera objects: an abstract camera represented with the stand-alone data structure
+<a class="reference internal" href="../APIreference/APItypes.html#mjvcamera"><span class="std std-ref">mjvCamera</span></a>, and a low-level camera represented with the data structure <a class="reference internal" href="../APIreference/APItypes.html#mjvglcamera"><span class="std std-ref">mjvGLCamera</span></a> (also aliased as
+<code class="docutils literal notranslate"><span class="pre">mjrCamera</span></code>) which is embedded in <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> or computed directly via <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-camera2glcamera"><span class="std std-ref">mjv_camera2GLCamera</span></a>. When present,
+the abstract camera is used to automatically compute the low-level camera parameters consumed by the renderer.
+Alternatively, the user can bypass the abstract camera mechanism and set the low-level camera parameters directly, as
+discussed in the <a class="reference internal" href="#vivr"><span class="std std-ref">Virtual reality</span></a> section below.</div>
+<p data-bi="bi-11">抽象相机可以表示三种不同的相机类型，由 mjvCamera.type 决定。可能的设置由枚举 mjtCamera 定义：</p><div class="en-orig" data-for="bi-11" lang="en">The abstract camera can represent three different camera types as determined by mjvCamera.type. The possible settings
+are defined by the enum mjtCamera:</div>
+<dl class="simple">
+<dt>mjCAMERA_FREE</dt><dd><p data-bi="bi-12">这是最常用的抽象相机。它可以用鼠标自由移动。它具有注视点、到注视点的距离、方位角和仰角；不允许绕视线方向扭转。函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-movecamera"><span class="std std-ref">mjv_moveCamera</span></a> 是一个鼠标钩子，用于通过鼠标交互式地控制所有这些相机属性。<a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> 首次启动时使用的就是自由相机。</p><div class="en-orig" data-for="bi-12" lang="en">This is the most commonly used abstract camera. It can be freely moved with the mouse. It has a lookat point,
+distance to the lookat point, azimuth, and elevation; twist around the line of sight is not allowed. The function
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjv-movecamera"><span class="std std-ref">mjv_moveCamera</span></a> is a mouse hook for controlling all these camera properties interactively with the mouse.
+When <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> first starts, it uses the free camera.</div>
+</dd>
+<dt>mjCAMERA_TRACKING</dt><dd><p data-bi="bi-13">这与自由相机类似，只是注视点不再是自由参数，而是与 id 由 mjvCamera.trackbodyid 给出的 MuJoCo body 耦合。每次更新时，注视点被设置为以指定 body 为根的运动学子树的质心。此外还有一些滤波处理，以产生平滑的相机运动。距离、方位角和仰角由用户控制，不会被自动修改。这对于在不转动相机的情况下跟踪运动中的 body 很有用。要在 <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> 中从自由相机切换到跟踪相机，请按住 Ctrl 并在目标 body 上右键双击。按 Esc 可返回自由相机。</p><div class="en-orig" data-for="bi-13" lang="en">This is similar to the free camera, except the lookat point is no longer a free parameter but instead is coupled to
+the MuJoCo body whose id is given by mjvCamera.trackbodyid. At each update, the lookat point is set to the center of
+mass of the kinematic subtree rooted at the specified body. There is also some filtering which produces smooth camera
+motion. The distance, azimuth, and elevation are controlled by the user and are not modified automatically. This is
+useful for tracking a body as it moves around, without turning the camera. To switch from the free to the tracking
+camera in <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a>, hold Ctrl and right-double-click on the body of interest. Press Esc to go
+back to the free camera.</div>
+</dd>
+<dt>mjCAMERA_FIXED</dt><dd><p data-bi="bi-14">这指的是在模型中显式定义的相机，不同于仅存在于可视化器中、并未在模型中定义的自由相机和跟踪相机。模型相机的 id 由 mjvCamera.fixedcamid 给出。该相机是固定的，意思是可视化器不能改变其位姿或任何其他参数。但是，仿真器会在每个时间步计算相机位姿，如果该相机附着在运动的 body 上，或处于跟踪或瞄准模式，它就会移动。</p><div class="en-orig" data-for="bi-14" lang="en">This refers to a camera explicitly defined in the model, unlike the free and tracking cameras which only exist in the
+visualizer and are not defined in the model. The id of the model camera is given by mjvCamera.fixedcamid. This camera
+is fixed in the sense that the visualizer cannot change its pose or any other parameters. However the simulator
+computes the camera pose at each time step, and if the camera is attached to a moving body or is in tracking or
+targeting mode, it will move.</div>
+</dd>
+<dt>mjCAMERA_USER</dt><dd><p data-bi="bi-15">这表示在更新期间忽略抽象相机，并且底层 OpenGL 相机不会改变。这等价于完全不指定抽象相机，即在下文所述的更新函数中将 NULL 指针传给 mjvCamera。</p><div class="en-orig" data-for="bi-15" lang="en">This means that the abstract camera is ignored during an update and the low-level OpenGL cameras are not changed. It
+is equivalent to not specifying an abstract camera at all, i.e., passing a NULL pointer to mjvCamera in the update
+functions explained below.</div>
+</dd>
+</dl>
+<p data-bi="bi-16">底层 mjvGLCamera 决定实际的渲染。mjvScene 中嵌入了两个这样的相机，每只眼睛一个。每个相机具有位置、前向和上向。前向对应于相机坐标系的负 Z 轴，而上向对应于正 Y 轴。此外还有 OpenGL 意义上的视锥，只不过我们存储的是左右视锥边缘的平均值，然后在渲染期间根据视口的宽高比、并假设像素宽高比为 1:1，计算出实际的边缘。两个相机位置之间的距离对应于瞳距（ipd）。当底层相机参数根据抽象相机自动计算时，对于自由相机和跟踪相机，瞳距以及垂直视场角（fovy）取自 <code class="docutils literal notranslate"><span class="pre">mjModel.vis.global.ipd</span></code>/<code class="docutils literal notranslate"><span class="pre">fovy</span></code>，对于模型中定义的相机，则取自相机专属的 <code class="docutils literal notranslate"><span class="pre">mjModel.cam_ipd/fovy</span></code>。当未启用立体模式（由 mjvScene.stereo 决定）时，两只眼睛的相机数据会在渲染期间于内部取平均。</p><div class="en-orig" data-for="bi-16" lang="en">The low-level mjvGLCamera is what determines the actual rendering. There are two such cameras embedded in mjvScene, one
+for each eye. Each has position, forward and up directions. Forward corresponds to the negative Z axis of the camera
+frame, while up corresponds to the positive Y axis. There is also a frustum in the sense of OpenGL, except we store the
+average of the left and right frustum edges and then during rendering compute the actual edges from the viewport aspect
+ratio assuming 1:1 pixel aspect ratio. The distance between the two camera positions corresponds to the inter-pupillary
+distance (ipd). When the low-level camera parameters are computed automatically from an abstract camera, the ipd as well
+as vertical field of view (fovy) are taken from <code class="docutils literal notranslate"><span class="pre">mjModel.vis.global.ipd</span></code>/<code class="docutils literal notranslate"><span class="pre">fovy</span></code> for free and tracking cameras, and
+from the camera-specific <code class="docutils literal notranslate"><span class="pre">mjModel.cam_ipd/fovy</span></code> for cameras defined in the model. When stereoscopic mode is not
+enabled, as determined by mjvScene.stereo, the camera data for the two eyes are internally averaged during rendering.</div>
+</section>
+<section id="viselect">
+<span id="id3"></span><h2 data-bi="bi-17">选择<a class="headerlink" href="#viselect" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-17" lang="en">Selection</div>
+<p data-bi="bi-18">在许多应用中，我们需要点击某个点并确定该点/像素所属的 3D 对象。这通过函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-select"><span class="std std-ref">mjv_select</span></a> 完成，它使用<a class="reference internal" href="../APIreference/APIfunctions.html#raycollisions"><span class="std std-ref">射线碰撞</span></a>。射线碰撞功能属于引擎层，不依赖可视化器（实际上它也用于独立于可视化地仿真<a class="reference internal" href="../XMLreference.html#sensor-rangefinder"><span class="std std-ref">测距仪</span></a>传感器），但选择函数是在可视化器中实现的，因为它需要相机和视口的信息。</p><div class="en-orig" data-for="bi-18" lang="en">In many applications we need to click on a point and determine the 3D object to which this point/pixel belongs. This is
+done with the function <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-select"><span class="std std-ref">mjv_select</span></a>, which uses <a class="reference internal" href="../APIreference/APIfunctions.html#raycollisions"><span class="std std-ref">ray collisions</span></a>. Ray collisions functionality
+is engine-level and does not depend on the visualizer (indeed it is also used to simulate <a class="reference internal" href="../XMLreference.html#sensor-rangefinder"><span class="std std-ref">rangefinder</span></a> sensors independent of visualization), but the select function is implemented in the visualizer
+because it needs information about the camera and viewport.</div>
+<p data-bi="bi-19">函数 mjv_select 返回指定窗口坐标处的 geom 的索引，如果该坐标处没有 geom 则返回 -1。同时还会返回 3D 位置。该函数的使用示例参见代码样例 <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a>。在内部，mjv_select 调用引擎层函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-ray"><span class="std std-ref">mj_ray</span></a>，后者又调用逐 geom 的函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-raymesh"><span class="std std-ref">mj_rayMesh</span></a>、<a class="reference internal" href="../APIreference/APIfunctions.html#mj-rayhfield"><span class="std std-ref">mj_rayHfield</span></a> 和 <a class="reference internal" href="../APIreference/APIfunctions.html#mju-raygeom"><span class="std std-ref">mju_rayGeom</span></a>。用户可以通过直接调用这些函数来实现自定义的选择机制。例如在 VR 应用中，将手持控制器用作可以选择对象的“激光指示器”会很合理。</p><div class="en-orig" data-for="bi-19" lang="en">The function mjv_select returns the index of the geom at the specified window coordinates, or -1 if there is no geom
+at those coordinates. The 3D position is also returned. See the code sample <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> for an
+example of how to use this function. Internally, mjv_select calls the engine-level function <a class="reference internal" href="../APIreference/APIfunctions.html#mj-ray"><span class="std std-ref">mj_ray</span></a> which in turn
+calls the per-geom functions <a class="reference internal" href="../APIreference/APIfunctions.html#mj-raymesh"><span class="std std-ref">mj_rayMesh</span></a>, <a class="reference internal" href="../APIreference/APIfunctions.html#mj-rayhfield"><span class="std std-ref">mj_rayHfield</span></a>, and <a class="reference internal" href="../APIreference/APIfunctions.html#mju-raygeom"><span class="std std-ref">mju_rayGeom</span></a>. The user can implement
+custom selection mechanisms by calling these functions directly. In a VR application for example, it would make sense to
+use the hand-held controller as a “laser pointer” that can select objects.</div>
+</section>
+<section id="viperturb">
+<span id="id4"></span><h2 data-bi="bi-20">扰动<a class="headerlink" href="#viperturb" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-20" lang="en">Perturbations</div>
+<p data-bi="bi-21">事实证明，交互式扰动对于探索模型动力学（dynamics）以及探查闭环控制系统非常有用。用户可以自由实现自己选择的任何扰动机制，方法是将 <code class="docutils literal notranslate"><span class="pre">mjData.qfrc_applied</span></code> 或 <code class="docutils literal notranslate"><span class="pre">mjData.xfrc_applied</span></code> 设置为合适的力（分别以广义坐标和笛卡尔坐标表示）。</p><div class="en-orig" data-for="bi-21" lang="en">Interactive perturbations have proven very useful in exploring the model dynamics as well as probing closed-loop control
+systems. The user is free to implement any perturbation mechanism of their choice by setting <code class="docutils literal notranslate"><span class="pre">mjData.qfrc_applied</span></code> or
+<code class="docutils literal notranslate"><span class="pre">mjData.xfrc_applied</span></code> to suitable forces (in generalized and Cartesian coordinates respectively).</div>
+<p data-bi="bi-22">实现交互式扰动所需的所有对象都被归入数据结构 <a class="reference internal" href="../APIreference/APItypes.html#mjvperturb"><span class="std std-ref">mjvPerturb</span></a>。其用法在 <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> 中有所展示。其思路是选择一个感兴趣的 MuJoCo body，并为该 body 提供一个参考位姿（即 3D 位置和四元数（quaternion）姿态）。它们存储在 mjPerturb.refpos/quat 中。函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-moveperturb"><span class="std std-ref">mjv_movePerturb</span></a> 是一个鼠标钩子，用于通过鼠标控制参考位姿。函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-initperturb"><span class="std std-ref">mjv_initPerturb</span></a> 用于在扰动开始时将参考位姿设置为等于所选 body 的位姿，以避免跳变。</p><div class="en-orig" data-for="bi-22" lang="en">All objects needed to implement interactive perturbations are grouped into the data structure <a class="reference internal" href="../APIreference/APItypes.html#mjvperturb"><span class="std std-ref">mjvPerturb</span></a>.
+Its use is illustrated in <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a>.
+The idea is to select a MuJoCo body of interest, and provide a reference pose (i.e., a 3D position and quaternion
+orientation) for that body. These are stored in mjPerturb.refpos/quat. The function <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-moveperturb"><span class="std std-ref">mjv_movePerturb</span></a> is a mouse
+hook for controlling the reference pose with the mouse. The function <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-initperturb"><span class="std std-ref">mjv_initPerturb</span></a> is used to set the
+reference pose equal to the selected body pose at the onset of perturbation, so as to avoid jumps.</div>
+<p data-bi="bi-23">随后，该扰动对象可用于直接移动所选 body（在仿真暂停时，或所选 body 是 mocap 刚体时），或对该 body 施加力和力矩。这分别通过函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-applyperturbpose"><span class="std std-ref">mjv_applyPerturbPose</span></a> 和 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-applyperturbforce"><span class="std std-ref">mjv_applyPerturbForce</span></a> 完成。后一个函数会将所选 body 的外部扰动力写入 <code class="docutils literal notranslate"><span class="pre">mjData.xfrc_applied</span></code>。但它不会清除其余 body 的 <code class="docutils literal notranslate"><span class="pre">mjData.xfrc_applied</span></code>，因此建议在用户代码中将其清除，以防所选 body 发生了变化，而某个扰动力是上一个时间步遗留下来的。如果有多个设备可以施加扰动，或者用户代码需要添加来自其他来源的扰动，则用户必须实现必要的逻辑，使 <code class="docutils literal notranslate"><span class="pre">mjData.xfrc_applied</span></code> 中只存在所需的扰动，并清除所有旧的扰动。</p><div class="en-orig" data-for="bi-23" lang="en">This perturbation object can then be used to move the selected body directly (when the simulation is paused or when the
+selected body is a mocap body), or to apply forces and torques to the body. This is done with the functions
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjv-applyperturbpose"><span class="std std-ref">mjv_applyPerturbPose</span></a> and <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-applyperturbforce"><span class="std std-ref">mjv_applyPerturbForce</span></a> respectively. The latter function writes the external
+perturbation force to <code class="docutils literal notranslate"><span class="pre">mjData.xfrc_applied</span></code> for the selected body. However it does not clear <code class="docutils literal notranslate"><span class="pre">mjData.xfrc_applied</span></code>
+for the remaining bodies, thus it is recommended to clear it in user code, in case the selected body changed and some
+perturbation force was left over from a previous time step. If there is more than one device that can apply
+perturbations or user code needs to add perturbations from other sources, the user must implement the necessary logic so
+that only the desired perturbations are present in <code class="docutils literal notranslate"><span class="pre">mjData.xfrc_applied</span></code> and any old perturbations are cleared.</div>
+<p data-bi="bi-24">除了影响仿真之外，扰动对象还能被抽象可视化器识别并被渲染。这是通过添加一条表示位置差的可视化弦，以及一个表示所选 body 参考姿态的旋转立方体来实现的。当启用 <a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a> 中相应的可视化标志时，扰动力本身也可以被渲染。</p><div class="en-orig" data-for="bi-24" lang="en">In addition to affecting the simulation, the perturbation object is recognized by the abstract visualizer and can be
+rendered. This is done by adding a visual string to denote the positional difference, and a rotating cube to denote
+the reference orientation of the selected body. The perturbation forces themselves can also be rendered when the
+corresponding visualization flag in <a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a> is enabled.</div>
+</section>
+<section id="vioption">
+<span id="id5"></span><h2 data-bi="bi-25">可视化选项<a class="headerlink" href="#vioption" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-25" lang="en">Visualization options</div>
+<p data-bi="bi-26">数据结构 <a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a> 控制显示什么，与如何渲染无关。<a class="reference internal" href="../APIreference/APIfunctions.html#mjv-updatescene"><span class="std std-ref">mjv_updateScene</span></a> 在填充 <code class="docutils literal notranslate"><span class="pre">mjvScene</span></code> 时使用它，<a class="reference internal" href="rendering.html#filamentrendering"><span class="std std-ref">Filament 渲染器</span></a>也直接读取它，以设置其持久对象的可见性。其字段包括：</p><div class="en-orig" data-for="bi-26" lang="en">The data structure <a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a> controls what is shown, independently of how it is rendered. It is consumed by
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjv-updatescene"><span class="std std-ref">mjv_updateScene</span></a> when populating <code class="docutils literal notranslate"><span class="pre">mjvScene</span></code> and read directly by the <a class="reference internal" href="rendering.html#filamentrendering"><span class="std std-ref">Filament renderer</span></a> to set the visibility of its persistent objects. Its fields are:</div>
+<ul class="simple">
+<li><p data-bi="bi-27"><code class="docutils literal notranslate"><span class="pre">flags</span></code> 以 <a class="reference internal" href="../APIreference/APItypes.html#mjtvisflag"><span class="std std-ref">mjtVisFlag</span></a> 为索引，用于启用各种装饰性和诊断性元素：接触点和接触力、关节和执行器轴、约束违反量、惯性盒、凸包、蒙皮、肌腱、扰动力等等。</p><div class="en-orig" data-for="bi-27" lang="en"><code class="docutils literal notranslate"><span class="pre">flags</span></code>, indexed by <a class="reference internal" href="../APIreference/APItypes.html#mjtvisflag"><span class="std std-ref">mjtVisFlag</span></a>, enable the decorative and diagnostic elements: contact points and forces,
+joint and actuator axes, constraint violations, inertia boxes, convex hulls, skins, tendons, perturbation forces,
+and so on.</div></li>
+<li><p data-bi="bi-28"><code class="docutils literal notranslate"><span class="pre">geomgroup</span></code>、<code class="docutils literal notranslate"><span class="pre">sitegroup</span></code>、<code class="docutils literal notranslate"><span class="pre">jointgroup</span></code>、<code class="docutils literal notranslate"><span class="pre">tendongroup</span></code>、<code class="docutils literal notranslate"><span class="pre">actuatorgroup</span></code>、<code class="docutils literal notranslate"><span class="pre">flexgroup</span></code> 和 <code class="docutils literal notranslate"><span class="pre">skingroup</span></code> 按模型元素的 <a class="reference internal" href="../XMLreference.html#body-geom-group"><span class="std std-ref">group</span></a> 属性切换其可见性。</p><div class="en-orig" data-for="bi-28" lang="en"><code class="docutils literal notranslate"><span class="pre">geomgroup</span></code>, <code class="docutils literal notranslate"><span class="pre">sitegroup</span></code>, <code class="docutils literal notranslate"><span class="pre">jointgroup</span></code>, <code class="docutils literal notranslate"><span class="pre">tendongroup</span></code>, <code class="docutils literal notranslate"><span class="pre">actuatorgroup</span></code>, <code class="docutils literal notranslate"><span class="pre">flexgroup</span></code> and <code class="docutils literal notranslate"><span class="pre">skingroup</span></code>
+toggle the visibility of model elements by their <a class="reference internal" href="../XMLreference.html#body-geom-group"><span class="std std-ref">group</span></a> attribute.</div></li>
+<li><p data-bi="bi-29"><code class="docutils literal notranslate"><span class="pre">label</span></code>（<a class="reference internal" href="../APIreference/APItypes.html#mjtlabel"><span class="std std-ref">mjtLabel</span></a>）和 <code class="docutils literal notranslate"><span class="pre">frame</span></code>（<a class="reference internal" href="../APIreference/APItypes.html#mjtframe"><span class="std std-ref">mjtFrame</span></a>）分别选择为哪一类对象添加文字标签，以及绘制哪些空间坐标系。</p><div class="en-orig" data-for="bi-29" lang="en"><code class="docutils literal notranslate"><span class="pre">label</span></code> (<a class="reference internal" href="../APIreference/APItypes.html#mjtlabel"><span class="std std-ref">mjtLabel</span></a>) and <code class="docutils literal notranslate"><span class="pre">frame</span></code> (<a class="reference internal" href="../APIreference/APItypes.html#mjtframe"><span class="std std-ref">mjtFrame</span></a>) select which category of objects is labeled with text and
+which spatial frames are drawn.</div></li>
+<li><p data-bi="bi-30"><code class="docutils literal notranslate"><span class="pre">bvh_depth</span></code> 和 <code class="docutils literal notranslate"><span class="pre">flex_layer</span></code> 分别选择显示包围体层次结构的哪一层，以及 3D flex 元素的哪一层。</p><div class="en-orig" data-for="bi-30" lang="en"><code class="docutils literal notranslate"><span class="pre">bvh_depth</span></code> and <code class="docutils literal notranslate"><span class="pre">flex_layer</span></code> select which level of the bounding volume hierarchy and which layer of 3D flex
+elements are shown, respectively.</div></li>
+</ul>
+<p data-bi="bi-31">函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-defaultoption"><span class="std std-ref">mjv_defaultOption</span></a> 将所有字段设置为其默认值，其中第 0、1 和 2 组可见，标志取 <a class="reference internal" href="../APIreference/APIglobals.html#mjvisstring"><span class="std std-ref">mjVISSTRING</span></a> 中列出的默认值。</p><div class="en-orig" data-for="bi-31" lang="en">The function <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-defaultoption"><span class="std std-ref">mjv_defaultOption</span></a> sets all fields to their defaults, in which groups 0, 1 and 2 are visible and
+flags take the defaults listed in <a class="reference internal" href="../APIreference/APIglobals.html#mjvisstring"><span class="std std-ref">mjVISSTRING</span></a>.</div>
+</section>
+<section id="viupdate">
+<span id="id6"></span><h2 data-bi="bi-32">场景更新<a class="headerlink" href="#viupdate" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-32" lang="en">Scene update</div>
+<p data-bi="bi-33">最后，我们将以上所有元素整合起来，说明 <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> 是如何更新的。在经典 <a class="reference internal" href="rendering.html#classicrendering"><span class="std std-ref">OpenGL 渲染器</span></a>这样的立即模式渲染器中，<code class="docutils literal notranslate"><span class="pre">mjvScene</span></code> 是渲染阶段的主要输入；而在 <a class="reference internal" href="rendering.html#filamentrendering"><span class="std std-ref">Filament</span></a> 这样的保留模式渲染器中，模型几何体直接根据 <code class="docutils literal notranslate"><span class="pre">mjData</span></code> 更新，<code class="docutils literal notranslate"><span class="pre">mjvScene</span></code> 仅用于装饰元素（<code class="docutils literal notranslate"><span class="pre">mjCAT_DECOR</span></code>）。</p><div class="en-orig" data-for="bi-33" lang="en">Finally, we bring all of the above elements together and explain how <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> is updated. In immediate-mode
+renderers such as the classic <a class="reference internal" href="rendering.html#classicrendering"><span class="std std-ref">OpenGL renderer</span></a>, <code class="docutils literal notranslate"><span class="pre">mjvScene</span></code> is the primary input to the
+rendering stage; in retained-mode renderers such as <a class="reference internal" href="rendering.html#filamentrendering"><span class="std std-ref">Filament</span></a>, model geometry is updated
+directly from <code class="docutils literal notranslate"><span class="pre">mjData</span></code> and <code class="docutils literal notranslate"><span class="pre">mjvScene</span></code> is used only for decorative elements (<code class="docutils literal notranslate"><span class="pre">mjCAT_DECOR</span></code>).</div>
+<p data-bi="bi-34">更新 <code class="docutils literal notranslate"><span class="pre">mjvScene</span></code> 只需在每一帧调用一次函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-updatescene"><span class="std std-ref">mjv_updateScene</span></a>。mjvCamera 和 mjvPerturb 是该函数的参数，也可以是 NULL 指针，此时相应的功能被禁用。在 VR 应用中，每一帧还必须设置 mjvScene.camera[n]（n=0,1）的参数；这由 mjv_updateScene 之外的用户代码完成。函数 mjv_updateScene 检查 mjModel 和 mjData，构造所有需要渲染的 geom（依据指定的可视化选项），并用 <a class="reference internal" href="../APIreference/APItypes.html#mjvgeom"><span class="std std-ref">mjvGeom</span></a> 对象填充数组 mjvScene.geoms。请注意，mjvGeom 是抽象 geom，与 mjModel 和 mjData 中的仿真 geom 并非一一对应。具体而言，mjvGeom 包含 geom 的位姿、缩放、形状（mjModel 中的基元或网格索引）、材质属性、纹理（mjModel 中的索引）、标注，以及指定如何进行渲染所需的其他一切。mjvScene 还包含从模型复制而来的至多 <code class="docutils literal notranslate"><span class="pre">mjMAXLIGHT</span></code> 个光源，以及一个头灯（若存在，则位于 0 号光源位置）。</p><div class="en-orig" data-for="bi-34" lang="en">Updating <code class="docutils literal notranslate"><span class="pre">mjvScene</span></code> can be done with a single call to the function <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-updatescene"><span class="std std-ref">mjv_updateScene</span></a> at each frame.
+mjvCamera and mjvPerturb are arguments to this function, or they can be NULL pointers in which case the corresponding
+functionality is disabled. In VR applications the parameters of mjvScene.camera[n], n=0,1 must also be set at each
+frame; this is done by user code outside mjv_updateScene. The function mjv_updateScene examines mjModel and mjData,
+constructs all geoms that need to be rendered (according to the specified visualization options), and populates the
+array mjvScene.geoms with <a class="reference internal" href="../APIreference/APItypes.html#mjvgeom"><span class="std std-ref">mjvGeom</span></a> objects. Note that mjvGeom is an abstract geom, and is not in one-to-one
+correspondence with the simulation geoms in mjModel and mjData. In particular, mjvGeom contains the geom pose, scale,
+shape (primitive or mesh index in mjModel), material properties, textures (index in mjModel), labeling, and everything
+else needed to specify how rendering should be done. mjvScene also contains up to <code class="docutils literal notranslate"><span class="pre">mjMAXLIGHT</span></code> lights copied from the
+model, as well as a headlight which is in light position 0 when present.</div>
+<p data-bi="bi-35">上述过程是最常见的做法，它在每一帧更新整个场景。此外，我们还提供了两个用于更精细控制的函数。<a class="reference internal" href="../APIreference/APIfunctions.html#mjv-updatecamera"><span class="std std-ref">mjv_updateCamera</span></a> 只更新相机（即将抽象的 mjvCamera 映射到底层的 mjvGLCamera），而不触碰 geom 或光源；另外，<a class="reference internal" href="../APIreference/APIfunctions.html#mjv-camera2glcamera"><span class="std std-ref">mjv_camera2GLCamera</span></a> 直接返回单个 <code class="docutils literal notranslate"><span class="pre">mjvGLCamera</span></code>，无需 <code class="docutils literal notranslate"><span class="pre">mjvScene</span></code>。当仿真暂停而用户在快速移动相机时，或使用 Filament 渲染器时（相机参数通过 <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a> 传递），这很有用。</p><div class="en-orig" data-for="bi-35" lang="en">The above procedure is the most common approach, and it updates the entire scene at each frame. In addition, we
+provide two functions for finer control. <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-updatecamera"><span class="std std-ref">mjv_updateCamera</span></a> updates only the camera (i.e., maps the abstract
+mjvCamera to the low-level mjvGLCamera) but does not touch the geoms or lights; alternatively,
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjv-camera2glcamera"><span class="std std-ref">mjv_camera2GLCamera</span></a> returns a single <code class="docutils literal notranslate"><span class="pre">mjvGLCamera</span></code> directly without requiring an <code class="docutils literal notranslate"><span class="pre">mjvScene</span></code>. This is useful
+when the user is moving the camera rapidly while the simulation is paused, or when using the Filament renderer where
+camera parameters are passed via <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a>.</div>
+<p data-bi="bi-36">通过操作抽象 geom 的列表，可以实现更高级的渲染效果。例如，用户可以在列表末尾添加自定义 geom。有时我们希望渲染一系列仿真状态（即轨迹），而不仅仅是当前状态。为此，我们提供了函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-addgeoms"><span class="std std-ref">mjv_addGeoms</span></a>，它将当前仿真状态对应的 geom 添加到 mjvScene 中已有的列表中。它不会改变光源列表，因为光照是叠加的，光源过多会使场景过亮。重要的是，用户可以通过枚举类型 mjtCatBit 的位掩码来选择要添加哪些 geom 类别：</p><div class="en-orig" data-for="bi-36" lang="en">More advanced rendering effects can be achieved by manipulating the list of abstract geoms. For example, the user can
+add custom geoms at the end of the list. Sometimes it is desirable to render a sequence of simulation states (i.e., a
+trajectory) and not just the current state. For this purpose, we have provided the function <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-addgeoms"><span class="std std-ref">mjv_addGeoms</span></a> which
+adds the geoms corresponding to the current simulation state to the list already in mjvScene. It does not change the
+list of lights, because lighting is additive and having too many lights will make the scene too bright. Importantly,
+the user can select which geom categories will be added, via a bitmask of enum type mjtCatBit:</div>
+<dl class="simple">
+<dt>mjCAT_STATIC</dt><dd><p data-bi="bi-37">选择属于世界刚体（world body，body id 为 0）的 MuJoCo geom 和 site。</p><div class="en-orig" data-for="bi-37" lang="en">This selects MuJoCo geoms and sites belonging to the world body (which has body id 0).</div>
+</dd>
+<dt>mjCAT_DYNAMIC</dt><dd><p data-bi="bi-38">选择属于世界刚体之外的 body 的 MuJoCo geom 和 site。</p><div class="en-orig" data-for="bi-38" lang="en">This selects MuJoCo geoms and sites belonging to bodies other than the world body.</div>
+</dd>
+<dt>mjCAT_DECOR</dt><dd><p data-bi="bi-39">选择装饰元素，例如力箭头、自动生成的骨架、等效惯性盒，以及由抽象可视化器添加、与模型中定义的 MuJoCo geom 和 site 并不对应的任何其他元素。</p><div class="en-orig" data-for="bi-39" lang="en">This selects decorative elements such as force arrows, automatically-generated skeletons, equivalent inertia boxes,
+and any other elements that were added by the abstract visualizer and do not correspond to MuJoCo geoms and sites
+defined in the model.</div>
+</dd>
+<dt>mjCAT_ALL</dt><dd><p data-bi="bi-40">选择以上所有类别。</p><div class="en-orig" data-for="bi-40" lang="en">This selects all of the above categories.</div>
+</dd>
+</dl>
+<p data-bi="bi-41">主更新函数 mjv_updateScene 通常以 mjCAT_ALL 调用。它会清空 geom 列表，并调用 mjv_addGeoms，仅为当前模型状态添加 geom。如果我们想渲染轨迹，就必须注意避免视觉上的杂乱。因此合理的做法是：用 mjCAT_ALL 渲染其中一帧（根据用例，通常是第一帧或最后一帧），而用 mjCAT_DYNAMIC 渲染所有其他帧。由于静态/世界对象不会移动，在每一帧中都渲染它们只会拖慢 GPU 并造成视觉走样。至于装饰元素，在某些情形下我们可能想把它们全部渲染出来，例如为了可视化接触力随时间的演变。总之，mjvScene 的构造方式具有很大的灵活性。我们为主要用例提供了自动化，但用户也可以根据需要通过编程方式进行修改。</p><div class="en-orig" data-for="bi-41" lang="en">The main update function mjv_updateScene would normally be called with mjCAT_ALL. It clears the geom list and calls
+mjv_addGeoms to add only the geoms for the current model state. If we want to render a trajectory, we have to be careful
+to avoid visual clutter. So it makes sense to render one of the frames with mjCAT_ALL (usually the first or the last
+depending on the use case), and all other frames with mjCAT_DYNAMIC. Since the static/world objects are not moving,
+rendering them in each frame will only slow down the GPU and create visual aliasing. As for the decor elements, there
+could be situations where we want to render all of them - for example to visualize the evolution of contact forces over
+time. In summary, there is plenty of flexibility in how mjvScene is constructed. We have provided automation for the
+main use cases, but the user can also make programmatic changes as needed.</div>
+</section>
+<section id="vivr">
+<span id="id7"></span><h2 data-bi="bi-42">虚拟现实<a class="headerlink" href="#vivr" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-42" lang="en">Virtual reality</div>
+<p data-bi="bi-43">在桌面应用中，使用抽象的 mjvCamera 以便直观地用鼠标控制，然后自动将其映射为用于渲染的 mjvGLCamera，是很方便的。在 VR 应用中，情况则大不相同。此时用户的头部/眼睛以及投影面都受到跟踪，因而在房间中具有物理存在。如果有什么东西可以被用户（通过鼠标或其他输入设备）移动，那就是模型相对于房间的位置、朝向和缩放。这称为模型变换，并在 mjvScene 中表示。函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-movemodel"><span class="std std-ref">mjv_moveModel</span></a> 是控制该变换的鼠标钩子。在更新时使用抽象 mjvCamera 的情况下，模型变换会被自动禁用，方法是设置标志 mjvScene.enabletransform = 0，而不是清除实际参数。这样用户就可以在 VR 和桌面相机模式之间切换，而不会丢失模型变换参数。</p><div class="en-orig" data-for="bi-43" lang="en">In desktop applications it is convenient to use an abstract mjvCamera allowing intuitive mouse control, and then
+automatically map it to mjvGLCamera used for rendering. In VR applications the situation is very different. In that
+case the head/eyes of the user as well as the projection surface are being tracked, and therefore have physical
+presence in the room. If anything can be moved by the user (with a mouse or other input device) it is the position,
+orientation and scale of the model relative to the room. This is called model transformation, and is represented in
+mjvScene. The function <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-movemodel"><span class="std std-ref">mjv_moveModel</span></a> is a mouse hook for controlling this transformation. When using an
+abstract mjvCamera during update, the model transformation is automatically disabled, by setting the flag
+mjvScene.enabletransform = 0 rather than clearing the actual parameters. In this way the user can switch between VR
+and desktop camera mode without losing the model transformation parameters.</div>
+<p data-bi="bi-44">由于我们引入了两个空间，即模型空间和房间空间，所以需要在二者之间进行映射，并明确哪些空间量是相对于哪个空间坐标系定义的。仿真器可访问的一切都位于模型空间中。房间空间只有可视化器才能访问。房间空间中定义的量只有 mjvGLCamera 的参数。函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-room2model"><span class="std std-ref">mjv_room2model</span></a>、<a class="reference internal" href="../APIreference/APIfunctions.html#mjv-model2room"><span class="std std-ref">mjv_model2room</span></a>、<a class="reference internal" href="../APIreference/APIfunctions.html#mjv-camerainmodel"><span class="std std-ref">mjv_cameraInModel</span></a> 和 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-camerainroom"><span class="std std-ref">mjv_cameraInRoom</span></a> 执行必要的变换，VR 应用需要用到它们。</p><div class="en-orig" data-for="bi-44" lang="en">Since we have introduced two spaces, namely model space and room space, we need to map between them as well as clarify
+which spatial quantities are defined with respect to which spatial frame. Everything accessible by the simulator lives
+in the model space. The room space is only accessible by the visualizer. The only quantities defined in room space are
+the mjvGLCamera parameters. The functions <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-room2model"><span class="std std-ref">mjv_room2model</span></a>, <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-model2room"><span class="std std-ref">mjv_model2room</span></a>, <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-camerainmodel"><span class="std std-ref">mjv_cameraInModel</span></a>,
+and <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-camerainroom"><span class="std std-ref">mjv_cameraInRoom</span></a> perform the necessary transformations, and are needed for VR applications.</div>
+<p data-bi="bi-45">虽然 MuJoCo 不提供内置的 VR 应用，但它提供了数据结构和函数，以支持在用户代码中集成 VR。</p><div class="en-orig" data-for="bi-45" lang="en">While MuJoCo does not provide a built-in VR application, it provides data structures and functions to support VR
+integration in user code.</div>
+<dl class="simple">
+<dt data-bi="bi-46"><strong>头部跟踪与相机</strong><div class="en-orig" data-for="bi-46" lang="en"><strong>Head tracking and cameras</strong></div></dt><dd><p data-bi="bi-47">在典型的 VR 应用中，跟踪设备实时提供用户双眼的位置和朝向。这些数据可以直接复制到 <code class="docutils literal notranslate"><span class="pre">mjvScene.camera[n]</span></code> 中的两个 <code class="docutils literal notranslate"><span class="pre">mjvGLCamera</span></code> 结构体里（其中 <code class="docutils literal notranslate"><span class="pre">n=0</span></code> 为左眼，<code class="docutils literal notranslate"><span class="pre">n=1</span></code> 为右眼）。还必须根据被跟踪显示器的物理特性设置 <code class="docutils literal notranslate"><span class="pre">mjvGLCamera</span></code> 的视锥参数。</p><div class="en-orig" data-for="bi-47" lang="en">In a typical VR application, a tracking device provides the positions and orientations of the user’s eyes in
+real-time. These data can be copied directly into the two <code class="docutils literal notranslate"><span class="pre">mjvGLCamera</span></code> structures in <code class="docutils literal notranslate"><span class="pre">mjvScene.camera[n]</span></code>
+(where <code class="docutils literal notranslate"><span class="pre">n=0</span></code> is the left eye and <code class="docutils literal notranslate"><span class="pre">n=1</span></code> is the right eye). The <code class="docutils literal notranslate"><span class="pre">mjvGLCamera</span></code> frustum parameters must also be
+set according to the physical characteristics of the tracked display.</div>
+</dd>
+<dt data-bi="bi-48"><strong>控制器与 mocap 刚体</strong><div class="en-orig" data-for="bi-48" lang="en"><strong>Controllers and mocap bodies</strong></div></dt><dd><p data-bi="bi-49">手持空间控制器同样在房间空间中被跟踪。函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-room2model"><span class="std std-ref">mjv_room2model</span></a> 可以将这些位姿映射到模型空间。一旦进入模型空间，控制器的位姿就可以用来更新 MuJoCo 的 <em>mocap 刚体</em>的位置。从物理角度看，mocap 刚体被视为固定的，但用户需要在每个仿真步以编程方式移动它们。它们可以通过接触与仿真相互作用，或者更好的做法是，通过软等式约束连接到与之产生接触的普通 body 上。这提供了有效的动态滤波，并避免了涉及表现得如同无限重的 body 的接触。mocap 刚体随时间变化的位置和朝向存储在 <code class="docutils literal notranslate"><span class="pre">mjData.mocap_pos</span></code> 和 <code class="docutils literal notranslate"><span class="pre">mjData.mocap_quat</span></code> 中。</p><div class="en-orig" data-for="bi-49" lang="en">Hand-held spatial controllers are also tracked in room space. The function <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-room2model"><span class="std std-ref">mjv_room2model</span></a> can map these
+poses to model space. Once in model space, the controller poses can be used to update the position of MuJoCo
+<em>mocap bodies</em>. Mocap bodies are treated as fixed from the viewpoint of physics, yet the user is expected to move
+them programmatically at each simulation step. They can interact with the simulation through contacts, or better
+yet, through soft equality constraints to regular bodies which in turn make contacts. This provides effective
+dynamic filtering and avoids contacts involving bodies that behave as if they are infinitely heavy. The
+time-varying positions and orientations of the mocap bodies are stored in <code class="docutils literal notranslate"><span class="pre">mjData.mocap_pos</span></code> and
+<code class="docutils literal notranslate"><span class="pre">mjData.mocap_quat</span></code>.</div>
+</dd>
+</dl>
+</section>
+</section>
+</article>
+</div>
+<footer>
+<div class="related-pages">
+<a class="next-page" href="rendering.html">
+<div class="page-info">
+<div class="context">
+<span>Next</span>
+</div>
+<div class="title">渲染</div>
+</div>
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+</a>
+<a class="prev-page" href="simulation.html">
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+<div class="page-info">
+<div class="context">
+<span>Previous</span>
+</div>
+<div class="title">仿真</div>
+</div>
+</a>
+</div>
+<div class="bottom-of-page">
+<div class="left-details">
+<div class="copyright">
+                Copyright © DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+</div>
+<div class="right-details">
+</div>
+</div>
+</footer>
+</div>
+<aside class="toc-drawer">
+<div class="toc-sticky toc-scroll">
+<div class="toc-title-container">
+<span class="toc-title">
+            On this page
+          </span>
+</div>
+<div class="toc-tree-container">
+<div class="toc-tree">
+<ul>
+<li><a class="reference internal" href="#">可视化</a><ul>
+<li><a class="reference internal" href="#vicamera">相机</a></li>
+<li><a class="reference internal" href="#viselect">选择</a></li>
+<li><a class="reference internal" href="#viperturb">扰动</a></li>
+<li><a class="reference internal" href="#vioption">可视化选项</a></li>
+<li><a class="reference internal" href="#viupdate">场景更新</a></li>
+<li><a class="reference internal" href="#vivr">虚拟现实</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div><script src="../_static/documentation_options.js?v=7d86a446"></script>
+<script src="../_static/doctools.js?v=fd6eb6e6"></script>
+<script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+<script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+<script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="../_static/copybutton.js?v=f281be69"></script>
+<script src="../_static/translations.js?v=540d3cec"></script>
+<script src="../_static/katex.min.js?v=5cc8ed51"></script>
+<script src="../_static/auto-render.min.js?v=af98beb9"></script>
+<script src="../_static/katex_autorenderer.js?v=ae454eff"></script>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<script src="../_static/linenumbers.js?v=ebda5d35"></script>
+<script src="../_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+<script src="../_static/bilingual.js?v=25c2633d"></script></body></html>

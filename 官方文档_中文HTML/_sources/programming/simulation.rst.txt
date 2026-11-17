@@ -1,0 +1,1036 @@
+﻿.. _Simulation:
+
+仿真
+----
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+.. _siInitialization:
+
+初始化
+~~~~~~
+
+用户永远不应直接分配 :ref:`mjModel` 和 :ref:`mjData` ，它们应由相应的 API 函数分配并初始化。这两个数据结构相当复杂，包含（由其他结构组成的）数组、为所有中间结果预先分配的数据数组，以及一个 :ref:`内部栈 <siStack>` 。我们的策略是在仿真开始时分配全部所需的堆内存，并在仿真结束后释放，这样在仿真过程中就无需调用 C 的内存分配与释放函数。这样做是为了提高速度、避免内存碎片、便于移植到 GPU，并且便于在重置时管理整个仿真器的状态。但这也意味着，由 MJCF 元素 :ref:`size <size>` 中的 :at:`memory` 属性给出的最大可变内存分配量（它影响 :ref:`mjData` 的分配）必须设置为足够大的值。如果仿真过程中超出了这一最大值，它不会被动态增大，而是会产生一个错误。另见下文的 :ref:`诊断 <siDiagnostics>` 。
+
+首先，我们必须调用某个分配并初始化 mjModel 并返回指向它的指针的函数。可选的方式有
+
+.. code-block:: C
+
+   // option 1: parse and compile XML from file
+   mjModel* m = mj_loadXML("mymodel.xml", NULL, errstr, errstr_sz);
+
+   // option 2: parse and compile XML from virtual file system
+   mjModel* m = mj_loadXML("mymodel.xml", vfs, errstr, errstr_sz);
+
+   // option 3: load precompiled model from MJB file
+   mjModel* m = mj_loadModel("mymodel.mjb", NULL);
+
+   // option 4: load precompiled model from virtual file system
+   mjModel* m = mj_loadModel("mymodel.mjb", vfs);
+
+   // option 5: deep copy from existing mjModel
+   mjModel* m = mj_copyModel(NULL, mexisting);
+
+   // option 6: compile model from mjSpec
+   mjModel* m = mj_compile(spec, vfs);
+
+如果出现错误或警告，所有这些函数都会返回 NULL 指针。对于 XML 解析和模型编译，错误的描述会通过作为参数提供的字符串返回。对于其余函数，则会以该错误/警告消息调用底层的 :ref:`mju_error` 或 :ref:`mju_warning` ，参见 :ref:`错误处理 <siError>` 。一旦我们得到了由上述某个函数分配的 mjModel 指针，就把它作为参数传给所有需要访问模型的 API 函数。注意，大多数函数把该指针视为 ``const`` ，更多内容见下文的 :ref:`模型变更 <siChange>` 。
+
+虚拟文件系统（VFS）允许把磁盘资源加载到内存中，或由用户以编程方式创建，然后 MuJoCo 的加载函数会先在 VFS 中查找文件，再访问磁盘。参见 API 参考章节中的 :ref:`Virtualfilesystem` 。
+
+除了保存模型描述的 mjModel 之外，我们还需要 mjData，它是执行所有计算的工作区。注意，mjData 是与特定的 mjModel 相对应的。API 函数通常假定用户清楚自己在做什么，只做最少的参数检查。如果传给任何 API 函数的 mjModel 和 mjData 不兼容（或为 NULL），其结果行为是未定义的。mjData 通过以下方式创建
+
+.. code-block:: C
+
+   // option 1: create mjData corresponding to given mjModel
+   mjData* d = mj_makeData(m);
+
+   // option 2: deep copy from existing mjData
+   mjData* d = mj_copyData(NULL, m, dexisting);
+
+mjModel 和 mjData 都分配并初始化之后，我们就可以调用各种仿真函数。使用完毕后，可以用下面的方式删除它们
+
+.. code-block:: C
+
+   // deallocate existing mjModel
+   mj_deleteModel(m);
+
+   // deallocate existing mjData
+   mj_deleteData(d);
+
+代码示例展示了完整的初始化与终止流程。
+
+MuJoCo 仿真是 :ref:`确定性的 <piReproducibility>` 。
+
+.. _siSimulation:
+
+仿真循环
+~~~~~~~~
+
+在 MuJoCo 中有多种方式运行仿真循环。最简单的方式是在循环中调用顶层仿真函数 :ref:`mj_step` ，例如
+
+.. code-block:: C
+
+   // simulate until t = 10 seconds
+   while (d->time < 10)
+     mj_step(m, d);
+
+由于我们没有提供任何控制信号或施加力，这样做本身只会仿真被动动力学（dynamics）。控制系统的默认方式是实现一个控制回调函数，例如
+
+.. code-block:: C
+
+   // simple controller applying damping to each DOF
+   void mycontroller(const mjModel* m, mjData* d) {
+     if (m->nu == m->nv)
+       mju_scl(d->ctrl, d->qvel, -0.1, m->nv);
+   }
+
+这里体现了两个概念。第一，我们检查控制数量 ``mjModel.nu`` 是否等于自由度（DoF）数量 ``mjModel.nv`` 。一般而言，取决于用户代码的组织方式，同一个回调函数可能被用于多个模型，因此在回调中检查模型维度是个好主意。第二，MuJoCo 有一个类似 BLAS 的函数库，非常有用；事实上，代码库的很大一部分就是在内部调用这类函数。上面的 :ref:`mju_scl` 函数把速度向量 ``mjData.qvel`` 乘以一个常数反馈增益（gain），并把结果复制到控制向量 ``mjData.ctrl`` 中。要安装这个回调函数，只需把它赋给全局控制回调指针 :ref:`mjcb_control` ：
+
+.. code-block:: C
+
+   // install control callback
+   mjcb_control = mycontroller;
+
+现在如果我们调用 :ref:`mj_step` ，那么每当仿真流水线需要控制信号时，就会执行我们的控制回调函数，最终我们就仿真了受控的动力学。
+
+除了依赖控制回调函数，我们也可以直接设置控制向量 ``mjData.ctrl`` 。或者也可以设置施加力，如 :ref:`状态与控制 <siStateControl>` 中所述。如果我们能在调用 ``mj_step`` 之前计算出这些与控制相关的量，那么受控动力学的仿真循环（不使用控制回调）就变成
+
+.. code-block:: C
+
+   while (d->time < 10) {
+     // set d->ctrl or d->qfrc_applied or d->xfrc_applied
+     mj_step(m, d);
+   }
+
+为什么我们不能在调用 ``mj_step`` 之前计算控制量呢？毕竟，因果性不就是这个意思吗？答案微妙但重要，它与我们是在离散时间中进行仿真这一事实有关。顶层仿真函数 ``mj_step`` 做两件事：在连续时间中计算 :ref:`正动力学 <siForward>` ，然后在 ``mjModel.opt.timestep`` 指定的时间段上积分。正动力学根据时刻 ``mjData.time`` 的 :ref:`状态与控制 <siStateControl>` ，计算该时刻的加速度 ``mjData.qacc`` 。随后数值积分器把状态和时间推进到 ``mjData.time + mjModel.opt.timestep`` 。现在，控制被要求是时刻 ``mjData.time`` 状态的函数。然而，一般的反馈控制器可能是非常复杂的函数，依赖于状态的各种特征——尤其是 MuJoCo 作为仿真中间结果计算出的所有特征，其中可能包括接触、雅可比矩阵、被动力。在调用 ``mj_step`` 之前，这些量都不可用（更准确地说，它们是可用的，但是 *滞后了一个时间步长* ）。相比之下，当 ``mj_step`` 调用我们的控制回调函数时，它是在计算过程中尽可能晚的时刻调用的——也就是在所有依赖于状态但不依赖于控制的中间结果都已算出之后。
+
+不使用控制回调函数也可以达到同样的效果。做法是把 ``mj_step`` 拆成两部分：需要控制之前的部分，和需要控制之后的部分。这时仿真循环变为
+
+.. code-block:: C
+
+   while (d->time < 10) {
+     mj_step1(m, d);
+     // set d->ctrl or d->qfrc_applied or d->xfrc_applied
+     mj_step2(m, d);
+   }
+
+不过有一个复杂之处：这种方式只适用于单步 :ref:`积分器 <geIntegration>` （Euler、implicit、implicitfast）。Runge-Kutta 积分器每一步需要多次计算包括反馈控制律在内的完整动力学，这只能通过控制回调函数来实现。对于单步积分器，上述把 ``mj_step`` 拆分为 :ref:`mj_step1` 和 :ref:`mj_step2` 的做法，足以把计算的中间结果提供给控制律。
+
+为了使上面的讨论更清晰，我们给出 :ref:`mj_step` 、 :ref:`mj_step1` 和 :ref:`mj_step2` 的内部实现，省略了一些计算计时诊断信息的代码。主仿真函数为
+
+.. code-block:: C
+
+   void mj_step(const mjModel* m, mjData* d) {
+     // common to all integrators
+     mj_checkPos(m, d);
+     mj_checkVel(m, d);
+     mj_forward(m, d);
+     mj_checkAcc(m, d);
+
+     // use selected integrator
+     switch ((mjtIntegrator) m->opt.integrator) {
+     case mjINT_EULER:
+       mj_Euler(m, d);
+       break;
+
+     case mjINT_RK4:
+       mj_RungeKutta(m, d, 4);
+       break;
+
+     case mjINT_IMPLICIT:
+     case mjINT_IMPLICITFAST:
+       mj_implicit(m, d);
+       break;
+
+     default:
+       mjERROR("invalid integrator");
+     }
+   }
+
+如果任何数值变得无效或过大，检查函数会自动重置仿真。控制回调函数（如果有的话）是在正动力学函数内部被调用的。
+
+接下来我们展示两段式步进方式的实现，不过其中的细节要等到后文解释 :ref:`正动力学 <siForward>` 之后才能理解。注意，由于我们实质上把正动力学函数展开了，控制回调函数现在是被直接调用的。还要注意，在 :ref:`mj_step2` 中我们总是调用单步积分器；如果选择了 RK4，积分器会默认使用 Euler。
+
+.. code-block:: C
+
+   void mj_step1(const mjModel* m, mjData* d) {
+     mj_checkPos(m, d);
+     mj_checkVel(m, d);
+     mj_fwdPosition(m, d);
+     mj_sensorPos(m, d);
+     mj_energyPos(m, d);
+     mj_fwdVelocity(m, d);
+     mj_sensorVel(m, d);
+     mj_energyVel(m, d);
+
+     // if we had a callback we would be using mj_step, but call it anyway
+     if (mjcb_control)
+       mjcb_control(m, d);
+   }
+
+   void mj_step2(const mjModel* m, mjData* d) {
+     mj_fwdActuation(m, d);
+     mj_fwdAcceleration(m, d);
+     mj_fwdConstraint(m, d);
+     mj_sensorAcc(m, d);
+     mj_checkAcc(m, d);
+
+     // integrate with Euler or implicit; RK4 defaults to Euler
+     if (m->opt.integrator == mjINT_IMPLICIT || m->opt.integrator == mjINT_IMPLICITFAST)
+       mj_implicit(m, d);
+     else
+       mj_Euler(m, d);
+   }
+
+.. _siStateControl:
+
+状态与控制
+~~~~~~~~~~
+MuJoCo 有一个定义明确的状态，易于设置、重置并随时间推进。这与动力系统状态的概念密切相关。动力系统通常用如下一般形式描述
+
+.. code-block:: Text
+
+     dx/dt = f(t, x, u)
+
+其中 ``t`` 是时间， ``x`` 是状态向量， ``u`` 是控制向量， ``f`` 是计算状态时间导数的函数。这是一种连续时间的表述，MuJoCo 所仿真的物理模型确实是在连续时间中定义的。尽管数值积分器是在离散时间中运行的，计算的主要部分——即函数 :ref:`mj_forward`——对应于上面的连续时间动力学函数 ``f(t,x,u)`` 。下面我们解释这种对应关系。
+
+.. _siStateComponents:
+
+状态分量
+^^^^^^^^
+状态由若干不同的分量组成，这些分量在 :ref:`mjtState` 位域枚举中有描述，该枚举既列出了单个分量，也列出了分量的组合。它们是：
+
+.. _siPhysicsState:
+
+物理状态
+""""""""
+*物理状态* (:ref:`mjSTATE_PHYSICS<mjtState>`) 包含在步进过程中被时间积分的主要量，即 ``mjData.{qpos, qvel, act, history, plastic}`` ：
+
+位置： ``qpos``
+  广义坐标（generalized coordinates）下的构型，在 :ref:`数值积分<geIntegration>` 一节中记为 :math:`q` 。
+
+速度： ``qvel``
+  广义速度，在 :ref:`数值积分<geIntegration>` 一节中记为 :math:`v` 。当存在四元数（quaternion）时（即使用自由关节或球关节时），位置向量 ``mjData.qpos`` 的维数高于速度向量 ``mjData.qvel`` ，因此这并不是标量意义上的简单时间导数，而是需要考虑四元数代数。
+
+执行器激活： ``act``
+  对于二阶机械系统，状态只包含位置和速度，但 MuJoCo 还对有状态的执行器（actuator，例如生物肌肉）建模，这些执行器有各自的激活状态，汇总在 ``mjData.act`` 中，在 :ref:`数值积分<geIntegration>` 一节中记为 :math:`w` 。
+
+历史缓冲区： ``history``
+  当执行器或传感器（sensor）的 :at:`nsample` 属性为正时（ :ref:`执行器<actuator-general-nsample>` 、 :ref:`传感器<sensor-nsample>` ），该缓冲区存储之前控制值或传感器值的带时间戳的采样。详见 :ref:`延迟<CDelay>` 。
+
+塑性状态： ``plastic``
+  当关节或肌腱的 :at:`springyield` 属性为正时（ :ref:`关节<body-joint-springyield>` 、 :ref:`肌腱<tendon-spatial-springyield>` ），或柔性体的 :at:`yield` 属性为正时（ :ref:`柔性体<flex-elasticity-yield>` ），该缓冲区存储可变的塑性弹簧参考构型、静止长度和单元塑性应变，它们在每一步中通过回映射（return mapping）更新。对于带扭转关节的一维弹性杆（ :ref:`弹性<flex-elasticity>` ），它还存储每条边的时间平行参考坐标系，以及内部顶点的展开参考扭转角。
+
+.. _siFullPhysics:
+
+完整物理状态
+""""""""""""
+上文的 `t, x` 对应于 *完整物理状态* (:ref:`mjSTATE_FULLPHYSICS<mjtState>`)——即所有随时间推进的量。它是 :ref:`物理状态<siPhysicsState>` 再加上两个额外分量：
+
+时间： ``time``
+  虽然力学是时不变的，但用户定义的控制律可能依赖于时间；特别是由轨迹得到的控制律通常以时间为索引。因此时间 ``t`` (``mjData.time``) 是一个状态分量，满足 ``dt/dt == 1`` 。
+
+插件状态： ``plugin_state``
+  ``mjData.plugin_state`` 是由 :ref:`引擎插件<exPlugin>` 声明的状态。更多细节请参见 :ref:`exPluginState` 一节。
+
+.. _siInput:
+
+用户输入
+""""""""
+这些输入字段 (:ref:`mjSTATE_USER<mjtState>`) 由用户设置并影响物理仿真，但不会被仿真器改动。除 MoCap 位姿外，所有输入字段默认为 0。所有 :ref:`用户输入<siInput>` 数组的一个普遍性质是它们不会被库改动。因此，从写入该内存的值是持久的这个意义上讲，它们也可以被视为有状态的。
+
+控制向量 ``u`` 主要对应于数组 ``mjData.ctrl`` ，其中包含由用户设置的驱动信号。之所以说“主要”，是因为力矩和力旋量（wrench）也可以分别通过 ``mjData.qfrc_applied`` 和 ``mjData.xfrc_applied`` 直接施加。mocap 刚体的位姿也是一种用户输入，mocap 刚体是 :ref:`由用户控制的静态刚体<CMocap>` 。字段 ``mjData.userdata`` 是一块固定大小的内存（通过设置 :ref:`nuserdata<size-nuserdata>` 分配），供用户用于任意目的，可用来存储各种类似状态和类似控制的量。
+
+控制： ``ctrl``
+  控制由 XML 的 :ref:`actuator<actuator>` 部分定义。 ``mjData.ctrl`` 的值要么直接产生广义力（generalized force，无状态执行器），要么影响 ``mjData.act`` 中的执行器激活，再由激活产生力。注意，虽然所有执行器都产生力，但 ``ctrl`` 和 ``act`` 的语义取决于 :ref:`执行器模型<geActuation>` 的具体参数。
+
+辅助控制： ``qfrc_applied`` 和 ``xfrc_applied``
+  | ``mjData.qfrc_applied`` 是直接施加的广义力。
+  | ``mjData.xfrc_applied`` 是施加在各个刚体质心上的笛卡尔力旋量。例如， :ref:`原生查看器<saSimulate>` 就用该字段施加鼠标扰动。
+  | 注意， ``qfrc_applied`` 和 ``xfrc_applied`` 的效果可以通过适当的执行器定义来重现。
+
+.. _siMocap:
+
+MoCap 位姿： ``mocap_pos`` 和 ``mocap_quat``
+  ``mjData.mocap_pos`` 和 ``mjData.mocap_quat`` 是特殊的可选运动学状态， :ref:`详见此处<CMocap>` ，它们允许用户实时设置静态刚体的位置和朝向，例如在流式接收来自动作捕捉设备的 6D 位姿时。由 :ref:`mj_resetData` 设置的默认值是这些刚体在默认构型下的位姿。
+
+等式约束开关： ``eq_active``
+  ``mjData.eq_active`` 是一个字节型数组，允许用户在运行时切换等式约束的状态。该数组的初始值是 ``mjModel.eq_active0`` ，可以在 XML 中通过 :ref:`等式约束<coEquality>` 的 :ref:`active<equality-connect-active>` 属性设置。
+
+用户数据： ``userdata``
+  ``mjData.userdata`` 是用户自定义的内存空间，不会被引擎改动。例如，它可以被回调函数使用。更多细节见 :ref:`编程章节<siSimulation>` 。
+
+.. _siWarmstart:
+
+热启动
+""""""
+
+热启动加速度： ``qacc_warmstart``
+  ``mjData.qacc_warmstart`` 是上一步的加速度，用于对约束求解器进行热启动。假设当前解与上一个解相差不大，这可以减少收敛所需的迭代次数，从而加快仿真。当使用像 PGS 这样收敛缓慢的 :ref:`约束求解器<Solver>` 时，热启动可以减少收敛所需的迭代次数，从而加速仿真。不过请注意，默认的 Newton 求解器收敛得非常快（通常 2-3 次迭代），因此热启动对速度的影响往往可以忽略，可以将其 :ref:`禁用<option-flag-warmstart>` 。
+
+  由于我们的优化问题是 :ref:`严格凸的<Solver>` ，只有一个全局极小值，只要达到了收敛，不同的求解器初始化对解没有可察觉的影响。如果没有达到数值收敛，无论是由于收敛缓慢，还是由于 :ref:`iterations<option-iterations>` 或 :ref:`tolerance<option-tolerance>` 被限制（如 :ref:`MJX<MjxPerformance>` 中有时的做法），影响就会变得显著。
+
+  热启动至关重要的另一种情形是需要完美的数值可复现性，即加载非初始状态时（因为初始状态总是冷启动的）。请注意，尽管热启动对物理的影响可以忽略，许多物理系统在时间步进时会 `指数级 <https://en.wikipedia.org/wiki/Lyapunov_exponent>`__ 累积微小差异，使得不同热启动下的轨迹很快发散。更多细节参见 :ref:`可复现性<piReproducibility>` 。
+
+.. _siIntegrationState:
+
+积分状态
+""""""""
+*积分状态* (:ref:`mjSTATE_INTEGRATION<mjtState>`) 是上述所有 :ref:`mjData` 字段的并集，构成了 *正动力学* 的全部输入。具有相同积分状态的两个 :ref:`mjData` 实例，其流水线输出是完全相同的。对于 *逆动力学* ， ``mjData.qacc`` 也被视为输入变量。所有其他 :ref:`mjData` 字段都是积分状态的函数。
+
+注意， :ref:`mjSTATE_INTEGRATION<mjtState>` 给出的完整积分状态是最大化的，包含了通常用不到的字段。如果希望状态尺寸较小，避免保存未使用的字段可能是合理的。特别是 ``xfrc_applied`` 可能相当大（ ``nbody x 6`` ），却经常用不到。
+
+.. _siSimulationState:
+
+仿真状态
+""""""""
+*仿真状态* 是整个 :ref:`mjData` 结构体及其关联的内存缓冲区。该状态包含在动力学计算过程中得到的所有派生量。由于 :ref:`mjData` 缓冲区是按最坏情况预先分配的，从 :ref:`积分状态<siIntegrationState>` 重新计算派生量，往往比使用 :ref:`mj_copyData` 快得多。关于启用休眠时仿真状态的注意事项，参见 :ref:`休眠说明 <siSleepNotes>` 。
+
+.. _siStateManipulation:
+
+状态操作
+^^^^^^^^
+状态的操作借助 :ref:`mjtState` 位域枚举完成，该枚举列出了上文记录的各状态分量。这些分量的组合（其中一些已在枚举本身中提供）可以通过按位或（OR）形成位域值，例如
+
+.. code-block:: C
+
+   int sig = mjSTATE_TIME | mjSTATE_QPOS | mjSTATE_CTRL;  // custom choice of state components
+
+使用这些位域的函数有 :ref:`mj_getState` 、 :ref:`mj_setState` 、 :ref:`mj_copyState` 和 :ref:`mj_extractState` 。例如，把 :ref:`积分状态<siIntegrationState>` 从一个 :ref:`mjData` 实例 ``src`` 复制到另一个实例 ``dst`` 之后：
+
+.. code-block:: C
+
+   mj_copyState(model, src, dst, mjSTATE_INTEGRATION);
+
+对 ``src`` 或 ``dst`` 进行步进将得到相同的结果。状态可以从单个 :ref:`mjtNum` 数组中获取和设置：
+
+.. code-block:: C
+
+   int sig = mjSTATE_TIME | mjSTATE_QPOS | mjSTATE_CTRL;
+   int size = mj_stateSize(model, sig);
+   mjtNum* state = mju_malloc(size * sizeof(mjtNum));
+   mj_getState(model, src, state, sig);  // copy time, qpos and ctrl from src into state
+   mj_setState(model, dst, state, sig);  // copy time, qpos and ctrl from state into dst
+
+整个 mjData 也可以用函数 :ref:`mj_copyData` 复制，但当然比 :ref:`mj_copyState` 慢得多。
+
+在此语境下相关的还有函数 :ref:`mj_resetData` 。它把 ``mjData.qpos`` 设为模型的参考构型 ``mjModel.qpos0`` ，把 ``mjData.mocap_pos`` 和 ``mjData.mocap_quat`` 设为 mjModel 中对应的固定刚体位姿，并把所有其他状态和控制变量设为 0。当某些树被 *初始化为休眠* 时，该函数会做更多工作，见下文的 :ref:`休眠 <siSleepSleeping>` 。
+
+.. _siForward:
+
+正动力学
+~~~~~~~~
+正动力学（forward dynamics）的目标是计算状态的时间导数，即加速度向量 ``mjData.qacc`` 和激活的时间导数 ``mjData.act_dot`` 。在此过程中，它还会计算仿真动力学所需的其他一切，包括活动的接触和其他约束、关节空间惯性及其 :math:`L^TDL` 分解、约束力、传感器数据等。所有这些中间结果都可以在 :ref:`mjData` 中获得，并可用于自定义计算。如上文 :ref:`仿真循环 <siSimulation>` 一节所示，主步进函数 :ref:`mj_step` 调用 :ref:`mj_forward` 完成大部分工作，然后调用数值积分器把仿真状态推进到下一个离散时间点。
+
+正动力学函数 :ref:`mj_forward` 在内部以跳过参数 (mjSTAGE_NONE, 0) 调用 :ref:`mj_forwardSkip` ，后者的实现如下
+
+.. code-block:: C
+
+   void mj_forwardSkip(const mjModel* m, mjData* d, int skipstage, int skipsensor) {
+     // position-dependent
+     if (skipstage < mjSTAGE_POS) {
+       mj_fwdPosition(m, d);
+       if (!skipsensor)
+         mj_sensorPos(m, d);
+       if (mjENABLED(mjENBL_ENERGY))
+         mj_energyPos(m, d);
+     }
+
+     // velocity-dependent
+     if (skipstage < mjSTAGE_VEL) {
+       mj_fwdVelocity(m, d);
+       if (!skipsensor)
+         mj_sensorVel(m, d);
+       if (mjENABLED(mjENBL_ENERGY))
+         mj_energyVel(m, d);
+     }
+
+     // acceleration-dependent
+     if (mjcb_control)
+       mjcb_control(m, d);
+     mj_fwdActuation(m, d);
+     mj_fwdAcceleration(m, d);
+     mj_fwdConstraint(m, d);
+     if (!skipsensor)
+       mj_sensorAcc(m, d);
+   }
+
+注意，这与上文 :ref:`mj_step1` 和 :ref:`mj_step2` 中的调用序列相同，只是省略了实数值的检查以及传感器和能量等特征的计算。被调用的函数是仿真流水线的组成部分，它们又会调用各自的子组件。
+
+整数参数 skipstage 决定哪些部分的计算会被跳过。可选的跳过级别有
+
+mjSTAGE_NONE
+   不跳过任何内容，运行所有计算。
+mjSTAGE_POS
+   跳过依赖于位置、但不依赖于速度、控制或施加力的计算。这类计算的例子包括正运动学、碰撞检测（collision detection）、惯性矩阵的计算与分解。这些计算通常占用最多的 CPU 时间，应尽可能跳过（见下文）。
+mjSTAGE_VEL
+   跳过依赖于位置和速度、但不依赖于控制或施加力的计算。例子包括科里奥利力和离心力的计算、被动阻尼力、约束稳定的参考加速度。
+
+mjData 的中间结果字段按照计算它们所需的状态部分分成若干区段。以 mjSTAGE_POS 调用 :ref:`mj_forwardSkip` 时，假定第一区段（依赖于位置）的字段已经算好，不会重新计算。类似地，mjSTAGE_VEL 假定第一和第二区段（依赖于位置和速度）的字段已经算好。
+
+什么时候可以使用上述机制并跳过部分计算呢？在常规仿真中这是不可能的。然而，MuJoCo 的设计不仅用于仿真，还用于更高级的应用，如基于模型的优化、机器学习等。在这类场景中，常常需要在一簇邻近状态处对动力学采样，或者通过有限差分来近似导数——这是另一种形式的采样。如果采样点按网格排列，其中只有位置、或只有速度、或只有控制与中心点不同，那么上述机制可以使性能提升约 2 倍。
+
+.. _siInverse:
+
+逆动力学
+~~~~~~~~
+
+逆动力学（inverse dynamics）的计算是 MuJoCo 的一项独有特性，在其他任何能够仿真接触的现代引擎中都找不到。得益于概述章节中介绍的 :ref:`软约束模型 <Constraint>` ，逆动力学定义明确且计算非常高效。事实上，一旦完成了与正动力学共享的、依赖于位置和速度的计算，在给定加速度的情况下恢复约束力和施加力就归结为一个解析公式。这个过程非常快，以至于我们实际上用逆动力学（使用上一个时间步长计算出的加速度）来对正动力学中的迭代约束求解器进行热启动。
+
+逆动力学的输入与正动力学中的状态向量相同，如 :ref:`状态与控制 <siStateControl>` 中所示，但不包括 ``mjData.act`` 和 ``mjData.time`` 。假设没有依赖于用户自定义状态变量的回调函数，逆动力学的输入是 mjData 的以下字段：
+
+::
+
+     (mjData.qpos, mjData.qvel, mjData.qacc, mjData.mocap_pos, mjData.mocap_quat)
+
+主要输出是 ``mjData.qfrc_inverse`` 。这是为了实现观测到的加速度 ``mjData.qacc`` ，必须作用在系统上的力。如果正动力学通过让迭代求解器运行到完全收敛而被精确计算，我们将有
+
+::
+
+     mjData.qfrc_inverse = mjData.qfrc_applied + Jacobian'*mjData.xfrc_applied + mjData.qfrc_actuator
+
+其中 ``mjData.qfrc_actuator`` 是执行器产生的关节空间力，雅可比矩阵是从关节空间到笛卡尔空间的映射。当 ``mjModel.opt.enableflags`` 中的 :ref:`fwdinv<option-flag-fwdinv>` 标志被设置时，上述恒等式被用来监测正动力学解的质量。具体而言， ``mjData.solver_fwdinv`` 的两个分量被设置为正动力学解与逆动力学解之差的 L2 范数，分别针对关节力和约束力。
+
+与正动力学类似， :ref:`mj_inverse` 在内部以跳过参数 ``(mjSTAGE_NONE, 0)`` 调用 :ref:`mj_inverseSkip` 。跳过机制与正动力学中相同，可用于加速结构化采样。结果 ``mjData.qfrc_inverse`` 是这样得到的：先用递归牛顿-欧拉算法（Recursive Newton-Euler）计算作用在系统上的净力，再从中减去所有内力。
+
+当有实验数据可用时，逆动力学可以作为一种分析工具。这在机器人学和生物力学中很常见。它也可用于计算驱动系统沿给定参考轨迹运动所需的关节力矩，这称为计算力矩控制。在状态估计、系统辨识和最优控制的情境中，它可用于优化循环内部，寻找在最小化其他代价的同时使物理违背最小的状态序列。物理违背可以量化为逆动力学计算出的任何无法解释的外力的范数。
+
+.. _siMultithread:
+
+多线程
+~~~~~~
+
+MuJoCo 支持步内多线程。当通过 ``mju_threadpool`` 初始化线程池后，仿真流水线的若干部分——例如碰撞检测和跨 :ref:`岛<siSleep>` 的约束求解——可以分布到工作线程上。
+
+更常见且支持更完善的多线程用法，是加速更高级应用中常见的采样操作。仿真在时间上本质上是串行的（一次 mj_step 的输出是下一次的输入），而在采样中，对正动力学或逆动力学的许多调用可以并行执行，因为它们之间没有依赖关系，至多共用一个初始状态。
+
+MuJoCo 从一开始就是为多线程设计的。在大多数现有仿真器中，动力系统状态的概念很难映射到软件状态，往往分散在多个对象中；而在 MuJoCo 中，我们有统一的数据结构 mjData，其中包含了所有随时间变化的内容。请回顾关于 :ref:`状态与控制 <siStateControl>` 的讨论。关键思想是为每个线程创建一个 mjData，然后用它完成该线程的所有计算。下面是一般模板，使用 OpenMP 来简化线程管理。
+
+.. code-block:: C
+
+   // prepare OpenMP
+   int nthread = omp_get_num_procs();      // get number of logical cores
+   omp_set_dynamic(0);                     // disable dynamic scheduling
+   omp_set_num_threads(nthread);           // number of threads = number of logical cores
+
+   // allocate per-thread mjData
+   mjData* d[64];
+   for (int n=0; n < nthread; n++)
+     d[n] = mj_makeData(m);
+
+   // ... serial code, perhaps using its own mjData* dmain
+
+   // parallel section
+   #pragma omp parallel
+   {
+     int n = omp_get_thread_num();       // thread-private variable with thread id (0 to nthread-1)
+
+     // ... initialize d[n] from results in serial code
+
+     // thread function
+     worker(m, d[n]);                    // shared mjModel (read-only), per-thread mjData (read-write)
+   }
+
+   // delete per-thread mjData
+   for (int n=0; n < nthread; n++)
+     mj_deleteData(d[n]);
+
+由于所有顶层 API 函数都把 mjModel 视为 ``const`` ，这种多线程方案是安全的。每个线程只写入它自己的 mjData，因此线程之间不需要进一步同步。
+
+上述模板体现了一种特定的并行处理风格。我们并不是创建大量线程（每个工作项一个）再让 OpenMP 把它们分配给处理器，而是依靠手动调度。更准确地说，我们创建与处理器数量相同的线程，然后在 ``worker`` 函数内部把工作显式分配给各线程。这种方法更高效，因为与处理器缓存相比，线程专用的 mjData 很大。
+
+出于缓存效率，我们还使用共享的 mjModel。在某些情况下，可能无法让所有线程使用同一个 mjModel。一个显而易见的原因是，mjModel 可能需要在线程函数中被修改。另一个原因是，包含在 mjModel 中的 mjOption 结构可能需要调整（例如为了控制求解器迭代次数），不过这对所有并行线程很可能是相同的，因此可以在并行段之前对共享模型进行调整。
+
+线程专用的 mjData 如何初始化、线程函数做什么，当然取决于具体应用。不过，前面章节中的一般效率准则在这里同样适用。把状态复制到线程专用的 mjData 中，再运行 MuJoCo 来填充其余部分，可能比使用 mj_copyData 更快。此外，正动力学和逆动力学中都有的跳过机制在并行采样应用中特别有用，因为样本通常具有某种结构，使得某些计算可以复用。最后请记住，正动力学求解器是迭代的，良好的热启动可以大幅减少所需的迭代次数。当样本在状态和控制空间中彼此接近时，可以用其中一个样本（理想情况下是位于中心的样本）的解来热启动所有其他样本。在这种设置下，重要的是确保邻近样本之间不同的结果反映的是样本间真实的差异，而不是迭代求解器的热启动或终止条件不同所致。
+
+.. _siBatch:
+
+批量仿真
+^^^^^^^^
+
+``mujoco/mjbatch.h`` 中的 :ref:`批量 API<Batchedsimulation>` 封装了这种多线程方案。一个 :ref:`mjBatch` 持有同一个模型的 ``nsim`` 个仿真，并在它自己的线程池上运行它们。无论线程数是多少，结果都与对每个仿真使用一个 mjData 的串行循环逐位一致。下面各段介绍该 API 所基于的概念；细节见 :ref:`函数参考<Batchedsimulation>` 。
+
+**状态行。** 一个仿真就是它的 :ref:`积分状态<siIntegrationState>` ：即正动力学的输入，其他所有 mjData 字段都是它的函数。批量对象把这些状态保存在由 :ref:`mjb_state` 返回的表中，这是一个 ``nsim x nstate`` 的数组，其第 ``i`` 行是仿真 ``i`` 的状态，其中 ``nstate`` 为 :ref:`mjb_nstate` 。这些行是唯一的输入存储。写入 ``ctrl`` 、 ``qpos`` 、 ``mocap_pos`` 或施加力，就是写入行中相应的部分，其地址由 :ref:`mjb_stateComponent` 给出，该写入会成为该仿真在下一次调用时的状态。每个仿真还有警告计数器，由 :ref:`mjb_warning` 返回，它们随其所在的行一同保存和恢复。
+
+**调用。** 诸如 :ref:`mjb_step` 的调用在由 ``ids`` 选定的仿真上运行，或在全部仿真上运行。对每个仿真，它会把该行加载到一个 mjData 中，运行所请求的计算，然后把该行保存回去。如果 MuJoCo 在某个仿真中引发错误，该仿真保持其先前的状态，其他仿真则运行至完成； :ref:`mjb_status` 和 :ref:`mjb_error` 会报告发生了什么。
+
+**输出。** 诸如 ``xpos`` 或 ``sensordata`` 的派生量不属于状态，因此当 mjData 转去处理下一个仿真时，它们会丢失。 :ref:`mjb_output` 把某个 mjData 字段注册为一个 *输出* ：每次调用之后，批量对象都会把它从每个仿真的 mjData 中复制到由批量对象拥有的 ``nsim x size`` 数组中。
+
+**共享与持久的 mjData。** 默认情况下，批量对象为每个线程保留一个 mjData，各线程对它所运行的仿真重复使用该 mjData，因此内存随线程数而不是仿真数增长。此时状态之外的一切都是共享的。调用中未计算的字段，例如 :ref:`mj_step` 之后的 ``qfrc_inverse`` ，保存的是另一个仿真的值；而把状态保存在 ``plugin_state`` 之外的 :ref:`引擎插件<exPlugin>` ，会在一个线程所运行的各个仿真之间共享这些状态。 :ref:`配置<mjBatchConfig>` 为 *持久* 的批量对象则改为每个仿真保留一个 mjData，代价是需要 ``nsim`` 个 mjData 的内存。此时每个字段和插件实例都是该仿真自己的，而 :ref:`mjb_getData` 会复制整个 mjData。启用了 :ref:`休眠<option-flag-sleep>` 或 :ref:`IPC<option-flag-ipc>` 的模型需要持久批量对象，因为它们的记录信息保存在 mjData 中而不是状态里。
+
+**阶段。** 在 :ref:`mj_step` 之后，派生字段描述的是最后一个子步 *之前* 的状态，因为一步先计算它们、然后再积分；参见 :ref:`mjData 中的一致性<piConsistency>` 。要观察新状态，执行步进或重置的调用接受一个 ``stage`` 参数（一个 :ref:`mjtStage` ）：调用完成后，批量对象会在新状态下运行 :ref:`mj_forward` 中直到 ``stage`` 的各个阶段。 ``mjSTAGE_VEL`` 计算位置、速度以及依赖于它们的传感器，就像 :ref:`mj_step1` 所做的那样，这通常正是策略所观察的内容。 ``mjSTAGE_ACC`` 则运行 :ref:`mj_forward` 的全部阶段。详见 :ref:`mjb_step` 。
+
+**延续。** :ref:`mj_step` 就是 :ref:`mj_step1` 后接 :ref:`mj_step2` ：前者计算位置和速度阶段，后者完成这一步。因此，以 ``mjSTAGE_VEL`` 观察新状态所做的工作，与下一步的前半部分相同。在持久批量对象中，仿真的 mjData 在下一次调用时仍保存着这些阶段的结果，因此下一步会跳过它们，并以 :ref:`mj_step2` *延续* ，这样获取新的观测不需要额外开销。只有当结果与完整步进的结果相同时，批量对象才会延续一步：即自这些阶段被计算以来，除 ``ctrl`` 、 ``qfrc_applied`` 和 ``xfrc_applied`` （只有 :ref:`mj_step2` 会读取它们）之外，它们所依赖的内容没有任何改变。非持久的批量对象无法延续，因为其间它的 mjData 已经为其他仿真服务过了。确切条件见 :ref:`mjb_step` 。
+
+**每个仿真独立的模型。** 所有仿真共享由 :ref:`mjb_makeBatch` 制作的批量对象自己的模型副本。若要让各仿真拥有不同的模型或选项值，例如随机化质量、摩擦或重力，可由 :ref:`mjb_expand` 来 *展开* 一个字段。它返回一个由批量对象拥有、以模型的值初始化的 ``nsim x size`` 数组，在对仿真 ``i`` 的每次调用之前，其第 ``i`` 行会被复制到模型中。 :ref:`选项<mjOption>` 字段命名为 ``"opt.<name>"`` ，网格和纹理等资源字段无法被展开。对展开字段的写入不会更新 :ref:`mj_setConst` 由它们导出的常量，例如各刚体的逆质量权重； :ref:`mjb_setConst` 会为每个仿真运行 :ref:`mj_setConst` ，并展开它改变的每一个字段。另一种做法是， :ref:`mjb_setModels` 让每个仿真在调用者编译的模型上运行，例如由同一个 spec 以不同参数编译而来，只要这些模型给出的 mjData 布局与批量对象的模型相同即可。无论哪种方式， :ref:`mjb_getModel` 都会把某个仿真的完整模型写入调用者分配的 mjModel 中，用于渲染或传给任何函数。
+
+**轨迹与查询。** :ref:`mjb_rollout` 记录开环轨迹：它施加给定的控制序列，并在每个子步之后记录选定的状态或字段。 :ref:`mjb_apply` 在每个仿真的模型和数据上运行任意函数，用于雅可比或导数等查询；示例见其参考文档。
+
+.. code-block:: C
+
+   const int nsim = 1024;  // number of simulations
+   const int nstep = 500;  // number of control steps
+
+   // allocate batch
+   char error[1000];
+   mjBatchConfig config;
+   mjb_defaultConfig(&config);
+   config.nthread = 8;  // default 0: all logical CPUs, at most nsim
+   mjBatch* b = mjb_makeBatch(m, nsim, &config, error, sizeof(error));
+   if (!b) {
+     mju_error("could not make batch: %s", error);
+   }
+
+   // pointers into storage that the batch owns, valid until mjb_deleteBatch
+   int nstate = mjb_nstate(b);                                // length of a state row
+   mjtNum* ctrl = mjb_stateComponent(b, mjSTATE_CTRL, NULL);  // ctrl in row 0; row i is nstate*i further
+   mjtNum* xpos = mjb_output(b, "xpos", NULL, NULL);          // nsim x 3*nbody, copied after every call
+
+   // reset all simulations to the model's defaults, then compute every stage so that xpos is current
+   mjb_reset(b, /*ids=*/NULL, 0, /*key=*/NULL, mjSTAGE_ACC);
+
+   for (int k=0; k < nstep; k++) {
+     // write each simulation's controls into its row, from observations of its current state
+     for (int i=0; i < nsim; i++) {
+       policy(xpos + 3*m->nbody*i, ctrl + nstate*i);
+     }
+
+     // step every simulation once, then compute positions at the new state for the next observations
+     if (mjb_step(b, /*ids=*/NULL, 0, 1, mjSTAGE_VEL)) {
+       // simulations that raised an error kept their previous state; see mjb_status and mjb_error
+     }
+   }
+
+   // delete memory and threadpool
+   mjb_deleteBatch(b);
+
+**线程与回调。** 批量对象的线程跨仿真运行，而 :ref:`mju_threadpool` 的线程则在单个仿真内部运行。两者不会结合使用，批量对象从不安装引擎线程池。诸如 :ref:`mjcb_control` 的全局回调函数在批量对象的线程上并发运行，并且不会被告知它们服务于哪个仿真；针对各个仿真的工作应放在 :ref:`mjb_apply` 中。
+
+Python 模块参见 :ref:`mujoco.batch<PyBatch>` 。
+
+.. _siChange:
+
+mjModel 变更
+~~~~~~~~~~~~
+
+.. admonition:: 使用 :ref:`mjSpec` 进行程序化模型编辑
+   :class: tip
+
+   下文关于 :ref:`mjModel` 修改的讨论写于引入程序化 :doc:`模型编辑<modeledit>` 之前。它仍然有效，但新的框架才是修改模型的安全且推荐的方式。在运行时修改 :ref:`mjModel` ，而不是修改 :ref:`mjSpec` 后重新编译，主要原因是 *速度* 。然而，进行某些修改可能是不安全的，要么可能发生段错误，要么物理行为会意外改变。
+
+一般规则是，实数型参数可以安全修改，而结构性的整数参数则不然，因为修改它们可能导致错误的尺寸或索引。这一规则并非普遍成立，下面我们描述其中的例外。
+
+关于 **整数** 类型 **不可安全修改** 这一一般规则的例外：
+
+.. list-table::
+   :widths: 1 1 4
+   :header-rows: 1
+   :class: table-small
+
+   * - 字段
+     - 可修改性
+     - 备注
+   * - ``XXX_limited`` |br| ``XXX_group`` |br| ``XXX_matid`` |br| ``XXX_texid``
+     - 安全
+     -
+   * - ``XXX_sameframe``
+     - 不安全
+     - 该标志告诉引擎跳过父/子坐标系变换。从非零改为零是安全的，反之则不然。
+   * - ``geom_contype`` |br| ``geom_conaffinity``
+     - 不安全
+     - 如果同时把父刚体的 ``body_contype`` 和 ``body_conaffinity`` 更新为所有子 geom 的按位或，则可以安全地进行修改。
+   * - ``geom_condim`` |br| ``geom_priority`` |br| ``geom_castshadow``
+     - 安全
+     -
+   * - ``cam_resolution``
+     - 安全
+     -
+   * - ``light_castshadow`` |br| ``light_active``
+     - 安全
+     -
+   * - ``flex_contype`` |br|  ``flex_conaffinity`` |br|  ``flex_condim`` |br|  ``flex_priority``
+     - 安全
+     -
+   * - ``tex_data``
+     - 安全
+     - 必须调用 :ref:`mjr_uploadTexture` 来更新 GPU 内存中的值。
+
+在考虑“实数型参数可以安全修改”这一规则的例外时，需要注意函数 :ref:`mj_setConst` ，它构成了编译过程的最后一步。该函数把某些字段的改动传播到其他字段，从而允许一些原本不安全的修改。它不会重做编译器根据规范约定一次性推导出的内容：给定 :ref:`dampratio<actuator-position-dampratio>` 时执行器的阻尼、给定 :ref:`springdamper<body-joint-springdamper>` 时关节的刚度和阻尼、未指定弹簧长度的肌腱的弹簧长度，以及模型统计量。这些内容保持为模型编译时计算出的值；要改变它们，请重新编译 spec，或直接设置这些派生值。
+
+:ref:`mj_setConst` 使用传入的 :ref:`mjData` 作为工作区，并会唤醒所有 :ref:`休眠<siSleep>` 的树，因此在继续仿真之前，请调用 :ref:`mj_resetData` 或恢复状态。启用休眠时，静态刚体及其所附元素的位姿只由 :ref:`mj_makeData` 和 :ref:`mj_resetData` 计算；修改它们之后请调用 :ref:`mj_resetData` 。
+
+关于 **实数型** 类型 **可以安全修改** 这一一般规则的例外：
+
+.. list-table::
+   :widths: 1 1 4
+   :header-rows: 1
+   :class: table-small
+
+   * - 字段
+     - 可修改性
+     - 备注
+   * - ``qpos0`` |br| ``qpos_spring``
+     - 配合 :ref:`mj_setConst` 时安全。
+     - 未指定弹簧长度的肌腱，其弹簧长度保持编译时的值。
+   * - ``body_mass`` |br| ``body_inertia`` |br| ``body_ipos`` |br| ``body_iquat``
+     - 配合 :ref:`mj_setConst` 时安全。
+     - 注意，质量和惯性通常一起缩放，因为惯性是 :math:`\sum m r^2` 。分别缩放它们是合理的，但意味着空间质量分布的改变。还要注意，对角惯性必须满足三角不等式。
+   * - ``body_pos`` |br| ``body_quat``
+     - 配合 :ref:`mj_setConst` 时安全。
+     - 对静态刚体不安全，会使中间阶段碰撞结构（BVH）失效。
+   * - ``body_gravcomp``
+     - 安全。
+     - 如果从所有刚体重力补偿均为零的状态，转为部分刚体重力补偿非零的状态（或反之），则必须更新 :ref:`mjModel` 中的 ``flg_gravcomp`` 标志。这可以直接完成，也可以通过调用 :ref:`mj_setConst` 完成。
+   * - ``dof_armature``
+     - 配合 :ref:`mj_setConst` 时安全。
+     -
+   * - ``geom_pos`` |br| ``geom_quat`` |br| ``geom_size``
+     - 配合 :ref:`mj_setConst` 时安全。
+     - geom 和刚体的包围体会随之更新，椭球 :ref:`流体模型<flEllipsoid>` 中 geom 的附加质量也会随之更新；而由 geom 推断出的质量和惯性则不会。网格和 SDF geom 的边界由其网格决定，而不是由其尺寸决定。
+   * - ``geom_margin`` |br| ``geom_gap``
+     - 配合 :ref:`mj_setConst` 时安全。
+     -
+   * - ``geom_contype`` |br| ``geom_conaffinity``
+     - 配合 :ref:`mj_setConst` 时安全。
+     - 模型编译时不发生碰撞的 geom，如果其所在刚体的其他 geom 会发生碰撞，则无法被改为发生碰撞。
+   * - ``geom_surfacevel``
+     - 安全。
+     - 如果从所有 geom 表面速度均为零的状态，转为部分 geom 表面速度非零的状态（或反之），则必须更新 :ref:`mjModel` 中的 ``flg_surfacevel`` 标志。这可以直接完成，也可以通过调用 :ref:`mj_setConst` 完成。
+   * - ``site_pos`` |br| ``site_quat``
+     - 配合 :ref:`mj_setConst` 时安全。
+     - 更新 ``site_sameframe`` 和肌腱静止长度；如果不使用 :ref:`mj_setConst` ，对以刚体或惯性对齐坐标系编译的 site 的修改可能被忽略。
+   * - ``cam_pos`` |br| ``cam_quat`` |br| ``light_pos`` |br| ``light_dir``
+     - 基本安全。
+     - 对于带跟踪的相机和灯光，需要 :ref:`mj_setConst` 。
+   * - ``tendon_stiffness`` |br| ``tendon_damping``
+     - 基本安全。
+     - 影响是否允许运动学树休眠。如果从零改为非零或反之，则需要 :ref:`mj_setConst` 。
+   * - ``actuator_gainprm`` |br| ``actuator_biasprm``
+     - 安全。
+     - 给定 :ref:`dampratio<actuator-position-dampratio>` 时，位置型执行器的阻尼由编译器计算，并保持其值不变。
+   * - ``eq_data``
+     - 配合 :ref:`mj_setConst` 时安全。
+     - 对于刚体之间的 connect 约束， :ref:`mj_setConst` 会计算第二个刚体中的锚点。对于刚体之间由非零 ``eq_data[11]`` 标记的 weld 约束（编译器为未指定相对位姿的约束设置该标记），它会计算相对位姿。
+   * - ``hfield_size``
+     - 配合 :ref:`mj_setConst` 时安全。
+     -
+   * - ``hfield_data``
+     - 安全。
+     - 数据范围必须在 [0, 1] 内。
+       |br| 需要 :ref:`mjr_uploadHField` 来更新 GPU 内存中的值。
+   * -  ``mesh_scale`` |br| ``mesh_pos`` |br| ``mesh_quat``
+     - 并非不安全，但没有效果。
+     - ``mesh_pos`` 和 ``mesh_quat`` 在运行时影响 SDF 传感器。
+   * - ``mesh_vert`` |br| ``mesh_normal`` |br| ``mesh_face`` |br| ``mesh_polynormal``
+     - 对参与碰撞的网格不安全。
+     - 对仅用于视觉的网格是安全的，但需要 :ref:`mjr_uploadMesh` 来更新 GPU 内存中的值。
+   * - ``bvh_aabb`` |br| ``oct_aabb`` |br| ``oct_coeff``
+     - 不安全
+     -
+
+最后，如果在运行时对 mjModel 做了修改，可能希望把它们保存回 XML。函数 :ref:`mj_saveLastXML` 和 :ref:`mj_copyBack` 在有限的意义上做到了这一点：它们把 :ref:`mjModel` 中被修改过的实数型参数复制回 :ref:`mjSpec` （前者复制到全局内部 spec，后者复制到用户的副本），在那里被保存并再次编译；复制了什么以及如何复制，参见 :ref:`mj_copyBack` 。这并不涵盖用户可能做出的所有修改。唯一能保证保存所有修改的方式，是用函数 :ref:`mj_saveModel` 把模型保存为二进制 MJB 文件，或者更好的做法是直接在 XML 或 :ref:`mjSpec` 中进行修改。因此总的来说，我们有合理但并不完美的机制来保存模型修改。这种不完美的原因在于我们处理的是编译后的模型，这就像修改一个二进制可执行文件，再要求“反编译器”对 C 代码做出相应修改——这在一般情况下是不可能的。
+
+.. _siLayout:
+
+数据布局
+~~~~~~~~~~~~~~~~~~~~
+
+MuJoCo 中的所有矩阵都采用 **行主序（row-major）** 格式。例如，线性内存数组 (a0, a1, ... a5) 表示如下的 2 行 3 列矩阵
+
+.. code-block:: Text
+
+     a0 a1 a2
+     a3 a4 a5
+
+这种约定传统上与 C 语言相关联，而相反的列主序（column-major）约定则与 Fortran 相关联。选择哪一种并没有特别的理由，但无论选择哪一种，都必须时刻牢记。MuJoCo 中所有对矩阵进行运算的工具函数，例如 :ref:`mju_mulMatMat`、\ :ref:`mju_mulMatVec` 等，都假定采用这种矩阵布局。对于向量而言，行主序和列主序格式当然没有区别。
+
+只要可能，MuJoCo 就会利用稀疏性。这可能决定了计算量是按 O(N) 还是按 O(N^3) 增长。惯性矩阵（inertia matrix） ``mjData.qM`` 及其 LTDL 分解 ``mjData.qLD`` 始终以稀疏形式表示。\ ``qM`` 使用为对应于树形拓扑的矩阵设计的自定义索引格式，而 ``qLD`` 使用标准的 CSR 格式。\ ``qM`` 将在后续的更新中迁移到 CSR。函数 :ref:`mj_factorM`、\ :ref:`mj_solveM`、\ :ref:`mj_solveM2` 和 :ref:`mj_mulM` 用于稀疏分解、代入以及矩阵-向量乘法。用户也可以使用函数 :ref:`mj_fullM` 将这些矩阵转换为稠密格式，不过 MuJoCo 内部从不这样做。
+
+只要启用了稀疏雅可比选项，约束雅可比矩阵（Jacobian） ``mjData.efc_J`` 就以稀疏形式表示。函数 :ref:`mj_isSparse` 可用于判断当前是否正在使用稀疏格式。在这种情况下，转置雅可比矩阵 ``mjData.efc_JT`` 也会被计算，并且约束逆惯性 ``mjData.efc_AR`` 也变为稀疏。稀疏矩阵以压缩稀疏行（CSR）格式存储。对于维度为 m 行 n 列的一般矩阵 A，该格式如下：
+
+======== ====== ============================================
+变量     大小   含义
+======== ====== ============================================
+A        m \* n 实数值数据
+A_rownnz m      每行的非零元素个数
+A_rowadr m      行数据在 A 和 A_colind 中的起始索引
+A_colind m \* n 列索引
+======== ====== ============================================
+
+
+因此，A[A_rowadr[r]+k] 是底层稠密矩阵中第 r 行、第 A_colind[A_rowadr[r]+k] 列的元素，其中 k < A_rownnz[r]。通常不需要 m*n 的存储空间（假设该矩阵确实是稀疏的），但我们仍按最坏情况分配空间。此外，在可能改变稀疏模式的运算中，将数据分散存放更为高效，这样在插入新数据时就不必执行大量的内存移动。我们把这种稀疏布局称为“未压缩”（uncompressed）布局。它仍然是有效的布局，但不是采用标准约定 A_rowadr[r] = A_rowadr[r-1] + A_rownnz[r]，而是令 A_rowadr[r] = r*n。MuJoCo 在内部使用稀疏矩阵
+
+为了表示三维朝向和旋转，MuJoCo 使用单位四元数（quaternion），即排列为 q = (w, x, y, z) 的四维单位向量。其中 (x, y, z) 是旋转轴单位向量乘以 sin(a/2)，a 为以弧度计的旋转角，而 w = cos(a/2)。因此，零旋转对应的四元数为 (1, 0, 0, 0)。这是 MJCF 中所有四元数的默认设置。
+
+MuJoCo 内部还使用 6 维空间向量（spatial vector）。它们是 mjData 中以 'c' 为前缀的量，即 cvel、cacc、cdot 等。它们是空间运动向量和空间力向量，由 3 维旋转分量后接 3 维平移分量组合而成。我们不提供处理它们的工具函数，对其进行详细说明也超出了本文的范围。请参阅 Roy Featherstone 的网页 `空间代数（Spatial Algebra） <http://royfeatherstone.org/spatial/>`__。这种不寻常的顺序（旋转在前，平移在后）源自该资料，并且过去显然是标准约定。
+
+数据结构 mjModel 和 mjData 包含许多指向预分配缓冲区的指针。这些数据结构的构造函数（mj_makeModel 和 mj_makeData）会分配一个大缓冲区，即 ``mjModel.buffer`` 和 ``mjData.buffer``，然后对其进行划分并设置其中所有其他指针。如下文所述，mjData 在这个主缓冲区之外还包含一个栈。即使两个指针前后相邻，例如 ``mjData.qpos`` 和 ``mjData.qvel``，也不要假定这些数据数组是连续的、彼此之间没有间隙。构造函数会对每个数据数组实施字节对齐，并在必要时跳过若干字节。因此，如果要复制 ``mjData.qpos`` 和 ``mjData.qvel``，正确的做法是老老实实地分开处理：
+
+.. code-block:: C
+
+   // do this
+   mju_copy(myqpos, d->qpos, m->nq);
+   mju_copy(myqvel, d->qvel, m->nv);
+
+   // DO NOT do this, there may be padding at the end of d->qpos
+   mju_copy(myqposqvel, d->qpos, m->nq + m->nv);
+
+可选头文件 ``mjxmacro.h`` 中定义的 :ref:`X 宏 <tyXMacro>` 可用于自动分配与 mjModel 和 mjData 相匹配的数据结构，例如在为脚本语言编写 MuJoCo 封装时。
+
+.. _siStack:
+
+内部栈
+~~~~~~~~~~~~~~~~~~~~
+
+MuJoCo 在 ``mjData.arena`` 中的“竞技场”（arena）空间里分配和管理动态内存。arena 内存空间包含两类动态分配的内存：
+
+ - 与约束相关的内存，因为在一个时间步开始时接触的数量是未知的。
+ - 临时变量的内存，由内部栈机制管理。
+
+关于 arena 和内部栈布局的详细信息，请参阅 :ref:`CSize`。
+
+大多数顶层的 MuJoCo 函数会在 :ref:`mjData` 的栈上分配空间，将其用于内部计算，然后再释放。它们无法使用常规的 C 栈来完成这些工作，因为分配大小是在运行时动态确定的。调用堆内存管理函数则效率低下，并且会导致内存碎片，因此才有了自定义栈。调用任何 MuJoCo 函数后，返回时 ``mjData.pstack`` 的值都与调用前相同。唯一的例外是函数 :ref:`mj_resetData` 及其变体：它们会设置 ``mjData.pstack = 0``。请注意，当 :ref:`mj_step`、\ :ref:`mj_step1` 和 :ref:`mj_step2` 检测到不稳定时，会在内部调用该函数。因此，如果用户函数要利用自定义栈，就需要在两次可能重置仿真的 MuJoCo 调用之间进行。
+
+下面是在用户代码中使用自定义栈的一般模板。
+
+.. code-block:: C
+
+   // mark an mjData stack frame
+   mj_markStack(d);
+
+   // allocate space
+   mjtNum* myqpos = mj_stackAllocNum(d, m->nq);
+   mjtNum* myqvel = mj_stackAllocNum(d, m->nv);
+
+   // restore the mjData stack frame
+   mj_freeStack(d);
+
+函数 :ref:`mj_stackAllocNum` 会检查是否有足够的空间，如果有，就推进栈指针，否则触发错误。它还会记录栈分配的最大值；参见下文的 :ref:`诊断 <siDiagnostics>`。请注意，\ :ref:`mj_stackAllocNum` 仅用于分配 ``mjtNum`` 数组，这是最常见的数组类型。\ :ref:`mj_stackAllocInt` 用于分配整数数组，\ :ref:`mj_stackAllocByte` 则用于分配任意字节数及对齐方式的内存。
+
+.. _siError:
+
+错误、警告与日志
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+MuJoCo 拥有一个统一的日志系统，用于处理错误、警告和信息类消息。所有日志输出都经由类型为 :ref:`mjfLogHandler` 的单个回调函数进行路由，该回调接收一个结构化的 :ref:`mjLogMessage`，其中包含严重级别、消息文本以及可选的源码位置。错误是致命的，默认情况下会终止程序。警告表示存在问题但并非致命的情况。信息类消息提供可选的诊断输出。
+
+.. _siLogHandler:
+
+安装处理器
+^^^^^^^^^^^^^^^^^^^^
+
+若用户希望拦截并处理 MuJoCo 的日志输出，应使用 :ref:`mju_setLogHandler` 安装日志处理器。该处理器通过单个结构化回调接收所有错误、警告和信息类消息：
+
+.. code-block:: C
+
+   void my_handler(const mjLogMessage* msg) {
+     // do something with msg, for example:
+     printf("%s\n", msg->subject);
+   }
+
+   // install handler, save previous
+   mjfLogHandler prev = mju_setLogHandler(my_handler);
+
+   // ... do work ...
+
+   // restore previous handler
+   mju_setLogHandler(prev);
+
+:ref:`mju_setLogHandler` 返回先前安装的处理器（该返回值绝不会是 ``NULL``；传入 ``NULL`` 会恢复默认处理器）。先前的处理器可以通过两种方式使用：
+
+* **保存/恢复：** 库或子系统可以临时安装自己的处理器，之后再恢复先前的处理器。
+* **链式调用：** 自定义处理器可以仅作为观察者，在其回调末尾调用先前的处理器，以保留现有行为。反之，旨在拦截并从错误中恢复的处理器（例如通过 ``longjmp``）则不应链式调用先前的处理器。
+
+当处理器被调用且 ``level == mjLOG_ERROR`` 时，该错误始终是致命的：\ :ref:`默认处理器 <siDefaultHandler>` 会通过 ``exit(EXIT_FAILURE)`` 终止进程（除非安装了旧版错误处理器）。希望从错误中恢复的处理器（例如抛出 C++ 异常，或转换为 Python 异常）绝不能返回，而应在返回之前通过 ``longjmp`` 跳转到先前建立的恢复点，或以其他方式转移控制权。编译器和 Python 绑定正是以这种方式处理错误的。MuJoCo 的编写基于这样的假设：错误处理器不会返回；如果它们返回了，软件的行为是未定义的。
+
+.. warning::
+   日志处理器不得在回调内部调用 :ref:`mju_error`；这会导致无限递归。
+
+.. _siDefaultHandler:
+
+默认处理器
+^^^^^^^^^^^^^^^^^^^^
+
+如果没有安装自定义处理器（或者向 :ref:`mju_setLogHandler` 传入了 ``NULL``），MuJoCo 会使用默认处理器，其行为如下：
+
+#. 如果安装了旧版处理器（:ref:`mju_user_error` 或 :ref:`mju_user_warning`），则以格式化后的消息文本调用它。这为现有代码提供了向后兼容性。
+#. 否则，消息会被写入日志文件（默认：\ ``MUJOCO_LOG.TXT``），并打印到控制台（错误和警告输出到 ``stderr``，信息输出到 ``stdout``）。
+#. 对于错误，程序会通过 ``exit(EXIT_FAILURE)`` 终止（除非安装了旧版错误处理器）。
+
+默认处理器的行为可以使用 :ref:`mju_setLogConfig` 和 :ref:`mju_getLogConfig` 进行配置，它们控制输出是否发送到控制台、日志文件路径（将其设为空字符串即可禁用文件日志），以及启用哪些信息主题。
+
+.. _siErrorRecovery:
+
+错误恢复
+^^^^^^^^^^^^^^^^^^^^
+
+交互式仿真器加载模型文件失败，是一种即使出错也希望继续运行的情形。这可能是因为用户提供了错误的文件名，或者模型编译失败。这由一种避免调用 mju_error 的特殊机制来处理。模型加载函数 :ref:`mj_loadXML` 和 :ref:`mj_loadModel` 在操作失败时返回 NULL，无需退出程序。对于 mj_loadXML，有一个输出参数包含导致失败的解析器或编译器错误，而 mj_loadModel 则会生成相应的警告（见下文）。
+
+在内部，mj_loadXML 实际上使用了 mju_error 机制：它临时安装一个线程局部的处理器（使用内部的 ``_mjPRIVATE_setTlsLogHandler``），该处理器会触发一个 C++ 异常，随后该异常被拦截。这种线程局部的覆盖优先于全局处理器，并且仅影响调用线程。
+
+.. _siInfoMessages:
+
+信息类消息
+^^^^^^^^^^^^^^^^^^^^
+
+MuJoCo 提供两种 :ref:`级别 <mjtLogLevel>` 的可选诊断日志：信息类消息（``mjLOG_INFO``）和调试跟踪（``mjLOG_DEBUG``）。两者都使用来自 :ref:`mjtLogTopic` 枚举的主题标识符，但在过滤的应用方式上存在细微的架构差异：
+
+* **INFO 消息：** 由引擎无条件发出。过滤发生在默认处理器内部的 **消费者端**。通过 :ref:`mju_setLogHandler` 安装的自定义处理器会接收所有 INFO 消息，并可以实现自己的过滤逻辑。
+
+* **DEBUG 消息：** 专为紧凑、高频的仿真循环而设计，在这类循环中构造字符串会成为性能瓶颈。因此，过滤发生在 **生产者端**。如果某个主题被禁用，消息就根本不会被构造或分发。因此，只有当该主题在当前生效的 :ref:`mjLogConfig` 中被显式启用时，自定义处理器才会收到 DEBUG 消息。
+
+在默认处理器中，INFO 消息之后会附加一个空行以提高可读性，而高频的 DEBUG 跟踪则以紧凑方式打印，后面没有空行。
+
+要在默认处理器的配置中启用主题：
+
+.. code-block:: C
+
+   // enable sleep/wake messages
+   mjLogConfig config = mju_getLogConfig();
+   config.topics |= (1 << (mjTOPIC_SLEEP - 1));
+   mju_setLogConfig(config);
+
+主题 0（``mjTOPIC_NONE``）无论主题配置如何，始终会通过。
+
+请注意，主题的编号从 1 开始，因此主题 ``t`` 的位掩码为 ``(1 << (t - 1))``。\ :ref:`mjLogConfig` 的 ``topics`` 字段也是按此方式编码的。
+
+主题还可以通过环境变量 ``MUJOCO_LOG_TOPICS`` 启用，该变量在启动时只读取一次。其值是以逗号分隔的主题名称列表（不区分大小写），主题名称由 :ref:`mjtLogTopic` 枚举去掉 ``mjTOPIC_`` 前缀并转为小写得到（例如 ``mjTOPIC_SLEEP`` 变为 ``sleep``）。例如：
+
+.. code-block:: shell
+
+   export MUJOCO_LOG_TOPICS=sleep,time_stp
+
+这等价于通过 :ref:`mju_setLogConfig` 以编程方式启用相应的主题位，对于不修改代码就启用诊断很有用。
+
+
+.. _siLogFrameworks:
+
+框架与封装
+^^^^^^^^^^^^^^^^^^^^
+
+框架作者（例如构建 Python 绑定、MATLAB 封装或游戏引擎集成的人）应安装自定义日志处理器，将 MuJoCo 的输出路由到其所在环境的日志系统：
+
+.. code-block:: C
+
+   // example: route to a framework's logging API
+   void framework_handler(const mjLogMessage* msg) {
+     if (msg->level == mjLOG_ERROR) {
+       framework_log_error(msg->subject);
+       framework_abort();  // must not return
+     } else if (msg->level == mjLOG_WARNING) {
+       framework_log_warning(msg->subject);
+     } else {
+       framework_log_info(msg->subject);
+     }
+   }
+
+   mju_setLogHandler(framework_handler);
+
+:ref:`mjLogMessage` 结构体还会在可用时提供源码位置信息（``func``、\ ``file``、\ ``line``），这对调试可能很有用。
+
+.. _siLogLegacy:
+
+旧版处理器
+^^^^^^^^^^^^^^^^^^^^
+
+全局函数指针 :ref:`mju_user_error` 和 :ref:`mju_user_warning` 为了向后兼容仍受支持，但已被弃用，推荐使用 :ref:`mju_setLogHandler`。当自定义日志处理器和旧版处理器同时安装时，自定义日志处理器优先。只有在未安装自定义处理器时，\ *默认* 处理器才会查询旧版处理器。
+
+.. _siLogMemory:
+
+内存处理器
+^^^^^^^^^^^^^^^^^^^^
+
+MuJoCo 在堆上分配和释放内存时，始终使用函数 :ref:`mju_malloc` 和 :ref:`mju_free`。这两个函数在安装了用户回调 :ref:`mju_user_malloc` 和 :ref:`mju_user_free` 时会调用它们，否则调用标准 C 函数 malloc 和 free。采用这种间接方式的原因是，用户可能希望 MuJoCo 使用由其控制的堆。例如在 MATLAB 中，用于内存分配的用户回调会使用 mxmalloc 和 mexMakeArrayPersistent。
+
+.. _siDiagnostics:
+
+诊断
+~~~~~~~~~~~~~~~~~~~~
+
+MuJoCo 内置了若干诊断机制，可用于对模型进行精细调整。它们的输出被归入 mjData 开头的诊断部分。
+
+当仿真器遇到的情况并非终止性错误，但仍然可疑并且很可能导致数值结果不准确时，它会触发一个警告。警告有多种可能的类型，由枚举类型 :ref:`mjtWarning` 索引。数组 ``mjData.warning`` 为每种警告类型包含一个 :ref:`mjWarningStat` 数据结构，指示自上次重置以来每种警告类型被触发了多少次，以及关于该警告的任何信息（通常是出问题的模型元素的索引）。计数器在重置时被清零。当给定类型的警告首次触发时，警告文本还会由 mju_warning 打印出来，如上文 :ref:`错误与内存 <siError>` 所述。所有这些都由函数 :ref:`mj_warning` 完成，仿真器在遇到警告时会在内部调用该函数。用户也可以直接调用此函数来模拟一个警告。
+
+当需要针对高速仿真优化模型时，了解流水线中 CPU 时间花在哪里非常重要。这反过来可以提示应当简化模型的哪些部分，或者如何设计用户应用程序。MuJoCo 提供了丰富的性能分析机制。它涉及多个计时器，由枚举类型 :ref:`mjtTimer` 索引。每个计时器对应一个顶层 API 函数，或此类函数的某个组成部分。与警告类似，计时器信息会不断累积，仅在重置时被清除。数组 ``mjData.timer`` 为每个计时器包含一个 :ref:`mjTimerStat` 数据结构。给定计时器（以下例子中对应 ``mj_step``）每次调用的平均耗时可按如下方式计算：
+
+.. code-block:: C
+
+   mjtNum avtm = d->timer[mjTIMER_STEP].duration / mjMAX(1, d->timer[mjTIMER_STEP].number);
+
+这一机制内置于 MuJoCo 中，但只有在用户安装了计时器回调 :ref:`mjcb_time` 时才起作用。否则所有计时器的耗时都为 0。这样设计的原因是，在 C 语言中，不引入额外依赖就无法以与平台无关的方式实现高分辨率计时器。此外，大多数时候用户并不需要计时，在这种情况下就没有理由调用计时函数。
+
+仿真流水线中需要密切监控的一部分是迭代式约束求解器。这里最简单的诊断量是 ``mjData.solver_niter``，它显示求解器在最近一次调用 mj_step 或 ``mj_forward`` 时执行了多少次迭代。请注意，求解器带有用于提前终止的容差参数，因此这个数字通常小于允许的最大迭代次数；当热启动（warm start）得到的解已被判定为收敛时，它可以为 0，此时不执行任何迭代，也不会写入任何统计信息。数组 ``mjData.solver`` 为约束求解器的每次迭代包含一个 :ref:`mjSolverStat` 数据结构，其中含有关于约束状态和线搜索的信息。
+
+当 ``mjModel.opt.enableflags`` 中启用了选项 :at:`fwdinv` 时，字段 ``mjData.fwdinv`` 也会被填充。它包含正动力学与逆动力学之间的差异，以广义力和约束力表示。请记住，逆动力学使用解析公式，始终是精确的，因此任何差异都源于正动力学中迭代求解器收敛不佳。\ ``mjData.solver`` 中接近终止时的数值与 ``mjData.fwdinv`` 中的数值具有相近的数量级，但它们仍是两种不同的诊断量。
+
+由于 MuJoCo 的运行时处理的是已编译的模型，内存是在模型编译或加载时预先分配的。请回忆 MJCF 中 :ref:`size <size>` 元素的 :at:`memory` 属性。它决定了为动态数组预分配的空间。用户应该如何知道合适的取值是多少？如果有可靠的办法，我们早就在编译器中实现了，但目前没有。理论上的最坏情况，即所有 geom 与所有其他 geom 都发生接触，需要巨大的分配量，而这在实践中几乎从不需要。我们的做法是在 MJCF 中提供对大多数模型都足够的默认设置，并允许用户通过上述属性手动调整。如果仿真器在运行时耗尽动态内存，就会触发错误。触发此类错误时，用户应增大 :at:`memory`。字段 ``mjData.maxuse_arena`` 正是为了帮助进行这种调整而设计的。它记录自上次重置以来 arena 的最大使用量。因此一种策略是先做一个非常大的分配，然后在典型仿真过程中监控 ``mjData.maxuse_arena`` 的统计数据，并据此缩减分配量。
+
+当 ``mjModel.opt.enableflags`` 中的相应标志被设置时，动能和势能会被计算并存储在 ``mjData.energy`` 中。这可以用作另一种诊断手段。一般而言，仿真不稳定与能量增加有关。在某些特殊情况下（当所有单边约束、执行器和耗散力都被禁用时），底层物理系统是能量守恒的。此时总能量随时间的任何波动都表明数值积分存在不精确之处。对于这类系统，龙格-库塔（Runge-Kutta）积分器的性能远好于默认的半隐式欧拉积分器。
+
+.. _siJacobian:
+
+雅可比矩阵
+~~~~~~~~~~~~~~~~~~~~
+
+任何向量函数对其向量自变量的导数称为雅可比矩阵。在多关节运动学与动力学中使用这个术语时，它指的是某个空间量作为系统构型函数的导数。此时，雅可比矩阵也是一个线性映射，作用于构型流形的（余）切空间中的向量，例如速度、动量、加速度、力。这里需要注意的一点是：存储在 ``mjData.qpos`` 中的系统构型维数为 ``mjModel.nq``，而切空间的维数为 ``mjModel.nv``，当存在四元数关节时，后者更小。因此，雅可比矩阵的大小为 N 行 ``mjModel.nv`` 列，其中 N 是被微分的空间量的维数。
+
+MuJoCo 可以对许多空间量进行解析微分。这些量包括肌腱长度、执行器传动长度、末端执行器位姿、接触以及其他约束违反量。对于肌腱和执行器传动，对应的量分别是 ``mjData.ten_moment`` 和 ``mjData.actuator_moment``；我们称它们为力臂，但在数学上它们就是雅可比矩阵。所有标量约束违反量的雅可比矩阵存储在 ``mjData.efc_J`` 中。请注意，我们谈论的是约束违反量，而不是约束本身。这是因为约束违反量具有长度的单位，即它们是我们可以微分的空间量。约束则是更抽象的实体，对其求导意味着什么并不清楚。
+
+除了这些自动计算的雅可比矩阵之外，我们还提供了支持函数，允许用户按需计算额外的雅可比矩阵。完成这项工作的主要函数是 :ref:`mj_jac`。给定一个三维点以及该点被视为附着于其上的 MuJoCo 刚体，\ ``mj_jac`` 随后会计算平移雅可比和旋转雅可比，它们告诉我们：如果对运动学构型做一个微小改变，锚定在给定点上的空间坐标系将如何平移和旋转。更准确地说，雅可比矩阵将关节速度映射为末端执行器速度，而雅可比矩阵的转置则将末端执行器的力映射为关节力。此外还有若干其他的 ``mj_jacXXX`` 函数；它们是便捷函数，以不同的关注点（例如刚体质心、geom 中心等）调用主函数 ``mj_jac``。
+
+能够精确而高效地计算末端执行器雅可比矩阵，是在关节坐标下工作的一大关键优势。此类雅可比矩阵是许多控制方案的基础，这些方案将末端执行器误差映射为适合抑制这些误差的执行器指令。通过 ``mj_jac`` 函数在 MuJoCo 中计算末端执行器雅可比矩阵，在 CPU 开销方面基本上是免费的；因此请放心使用该函数。
+
+.. _siContact:
+
+接触
+~~~~~~~~~~~~~~~~
+
+接触（contact）的碰撞检测（collision detection）与接触力求解已在 :doc:`../computation/index` 一章中详细说明。这里我们从编程的角度进一步阐明接触的处理过程。
+
+碰撞检测阶段会找出 geom 之间的接触，并将它们记录在由 :ref:`mjContact` 数据结构组成的数组 ``mjData.contact`` 中。它们经过排序，使得同一对刚体（body）之间的多个接触是连续排列的（请注意，一个刚体可以附有多个 geom），而刚体对本身的排序方式是：第一个刚体作为主索引，第二个刚体作为次索引。并非所有检测到的接触都会被纳入接触力的计算。当某个接触被纳入时，其 mjContact.exclude 字段为 0，并且其 mjContact.efc_address 是它在活动标量约束列表中的地址。被排除的原因可能是 :ref:`geom <body-geom>` 的 :at:`gap` 属性，也可能是某些使用虚拟接触进行中间计算的内部处理。
+
+列表 ``mjData.contact`` 由正动力学和逆动力学的位置阶段生成。这是自动完成的。不过，用户可以覆盖内部的碰撞检测函数，例如用于实现非凸网格碰撞，或者用针对特定 geom 的基元碰撞函数来替换我们使用的某些凸碰撞函数，使其超出 MuJoCo 所提供的范围。全局二维数组 :ref:`mjCOLLISIONFUNC` 中为每一对 geom 类型（位于左上三角部分）存放了碰撞函数指针。要替换它们，只需将这些指针设置为你自己的函数即可。碰撞函数的类型是 :ref:`mjfCollision`。当用户的碰撞函数检测到接触时，应该为每个接触构造一个 :ref:`mjContact` 结构，然后调用函数 :ref:`mj_addContact` 将该接触添加到 ``mjData.contact`` 中。mj_addContact 的参考文档说明了自定义碰撞函数必须填写 mjContact 的哪些字段。请注意，这里谈到的函数对应的是近场阶段（near-phase）的碰撞，并且仅在内部粗测阶段（broad-phase）碰撞机制构造出候选 geom 对列表之后才会被调用。
+
+在约束力计算完成之后，接触 ``i`` 的力向量起始于：
+
+.. code-block:: C
+
+   mjtNum* contactforce = d->efc_force + d->contact[i].efc_address;
+
+对于所有其他 ``efc_XXX`` 向量也是类似的。请记住，接触摩擦锥（friction cone）可以是棱锥型（pyramidal）或椭圆型（elliptic），这取决于在 ``mjModel.opt`` 中选择了哪种求解器。函数 :ref:`mj_isPyramidal` 可用于判断使用的是哪种摩擦锥类型。对于棱锥型摩擦锥，接触力（其地址如上所述计算得出）的解释并不直观，因为其各分量是沿对应于棱锥各条棱的、冗余且非正交的轴方向的力。函数 :ref:`mj_contactForce` 可用于把给定接触产生的力转换为更直观的格式：一个三维力后接一个三维力矩。当 :at:`condim` 为 1 或 3 时，力矩分量为零，否则不为零。该力和力矩是在由 mjContact.frame 给出的接触坐标系中表示的。与 mjData 中所有其他矩阵不同，这个矩阵是以转置形式存储的。通常，对应于一个坐标系的 3 行 3 列矩阵会将坐标系的各轴放在各列上。而这里各轴放在矩阵的各行上。因此，鉴于 MuJoCo 使用行主序格式，接触法线轴（按我们的约定，它是接触坐标系的 X 轴）位于 mjContact.frame[0-2]，Y 轴位于 [3-5]，Z 轴位于 [6-8]。这样安排的原因是，我们可能遇到只使用法线轴的无摩擦接触，因此将法线轴的坐标放在 ``mjContact.frame`` 的前 3 个位置是合理的。
+
+.. _siSleep:
+
+休眠岛
+~~~~~~~~~~~~~~~~
+
+休眠岛（sleeping island）已在 :ref:`计算章节 <Sleeping>` 中作了概括性的描述。这里我们着重介绍实现细节。
+
+:ref:`树 <ElemTree>` 的高层休眠状态由 ``mjData.tree_asleep`` 描述（但请参见下文的注意事项）。负值表示该树处于唤醒状态，非负值表示处于休眠状态。完全唤醒的树取值为 - |-| (1 |-| + |-| :ref:`mjMINAWAKE<glNumericEngine>`)，并且在其速度低于休眠 :ref:`容差 <option-sleep_tolerance>` 的每个时间步，该整数都会递增，直至 -1，表示“准备休眠”。如果一个岛中的所有树都已准备好休眠，则它们会在状态推进期间进入休眠，并且它们在 ``tree_asleep`` 中的相关取值会被设置为一个（非负的）索引循环：即“休眠岛”。如果岛中有任何一棵树被唤醒，则全部被唤醒。
+
+.. _siSleepPolicy:
+
+休眠策略
+^^^^^^^^^^^^^^^^
+
+运动学树能否休眠由模型编译时确定的策略决定。编译器会自动将 :ref:`策略 <mjtSleepPolicy>` 确定为“allowed”（允许）或“never”（从不），不过这些策略可以使用 :ref:`body/sleep <body-sleep>` 属性覆盖（参见其中的文档）。此外还有一种特殊的“init”休眠策略，参见下一节。
+
+.. _siSleepSleeping:
+
+进入休眠
+^^^^^^^^^^^^^^^^
+
+休眠可以通过以下两种方式之一发生：
+
+**自动：**
+  上文所述的速度阈值是针对与某个岛相关联的所有速度的无穷范数（最大绝对值）而言的。在计算该范数之前，速度会按元素乘以 ``mjModel.dof_length`` 进行缩放，因为旋转速度和平移速度具有不同的单位。平移自由度的长度为 1；旋转自由度的长度对应于其相关联几何体的平均长度。因此 :ref:`sleep_tolerance <option-sleep_tolerance>` 的单位为 [长度/时间]。
+
+  当一个岛进入休眠时，与其相关联的速度会被设置为 0。因此，在任何有岛进入休眠的时间步，在休眠状态被传播之前，所有与速度相关的量都必须通过调用 :ref:`mj_forwardSkip` 重新计算。
+
+  如果岛中的任何一棵树具有“never”休眠策略，则整个岛都不能休眠。
+
+**初始化为休眠：**
+  通过将树根的 :ref:`body/sleep<body-sleep>` 属性设置为“init”，可以将其标记为“初始化为休眠”，并在 :ref:`mjData` 初始化期间使其进入休眠。这对于大型模型很有用，因为在大型模型中等待许多树陆续进入休眠的代价可能很高。
+
+  由于共享接触或以其他方式处于同一个岛中的树必须一起休眠，因此如果一个岛中的某些树被初始化为休眠，则它们必须全部被如此标记。\ `此模型 <https://github.com/google-deepmind/mujoco/blob/main/test/engine/testdata/sleep/init_island_fail.xml>`__ 包含一个不满足该条件的 XML 示例。当树无法休眠时，无论是在编译期间还是之后的 :ref:`mj_resetData` 中（例如，因为某个控制回调对它们施加了力），都会发出警告，并且这些树会以唤醒状态开始。最后请注意，初始化为休眠的功能仅适用于默认配置（不适用于关键帧，参见下文的讨论）。
+
+.. _siSleepWaking:
+
+唤醒
+^^^^^^^^^^^^^^^^
+
+唤醒发生在时间步的开始处，要么是在 :ref:`mj_kinematics` 期间，要么是在其后不久仿真流水线的 :ref:`位置阶段 <piStages>` 期间。休眠岛会根据以下准则被唤醒：
+
+- 与其相关联的构型 ``qpos`` 被用户更改，例如在仿真暂停时交互式地重新摆放构型。
+- 与其相关联的速度 ``qvel`` 或施加的力 ``qfrc_applied`` 或 ``xfrc_applied`` 被用户设置为非零值，例如在仿真过程中交互式地扰动模型。请注意，该检查是通过与 0 进行逐字节比较来执行的，因此将相关联的某个元素设置为浮点值 ``-0.0`` 会唤醒该岛，但没有其他副作用。
+- 它与一棵处于唤醒状态的树发生接触。由接触引起的唤醒会导致碰撞检测运行 *两次*，但仅限于其发生的那个时间步。这是为了检测岛内部以及岛与世界之间的接触，这些接触在第一次运行时因该岛被认为处于休眠状态而被跳过。
+- 它与一个 :ref:`mocap 刚体 <CMocap>` 发生接触，或者通过一个活动的等式约束与之相连。mocap 刚体视为唤醒状态，因为用户可以随时移动它们。
+- 它通过一个活动的等式约束（equality constraint）或有限位的肌腱（tendon）与一棵处于唤醒状态的树相连。
+- 它通过一个等式约束与另一个岛中处于休眠状态的树相连。要发生这种情况，该等式约束必须在两棵树都进入休眠时处于禁用状态。
+
+上面列出的自动唤醒准则旨在使休眠岛的行为如同处于唤醒状态一样，但情况并非总是如此。例如，如果地面上的自由刚体进入休眠，然后重力方向被反转，它们将保持原地休眠，直到因其他原因被唤醒。最极端的非物理例子是初始化为休眠的岛。它们可以被放置在半空中或深度碰撞之中，但在被唤醒之前不会移动。
+
+.. _siSleepNotes:
+
+说明
+^^^^^^^^^^^^^^^^
+
+**休眠的执行器**
+  正如 :ref:`body/sleep <body-sleep>` 文档所解释的，带有执行器的树默认不允许休眠，但用户可以覆盖这一设置。默认不允许休眠的原因是：一旦某个执行器被标记为休眠，唤醒它所需的计算就不再执行。即便执行了（即无论执行器的休眠状态如何，始终为所有执行器计算驱动力），该计算也发生在加速度/力阶段，而此时唤醒一棵树已经为时过晚，因为唤醒必须发生在位置阶段。因此，如果允许带有执行器的树休眠，则必须如上所述通过触碰其相关联的速度或力来手动唤醒。
+
+**休眠的传感器**
+  对于大多数传感器，当其相关联的对象处于休眠状态时，我们可以跳过其值的计算，转而报告这些对象上一次处于唤醒状态时计算出的值。有些传感器始终处于唤醒状态，但禁用休眠不会影响它们计算出的值：
+
+  - :ref:`rangefinder<sensor-rangefinder>` 传感器始终处于唤醒状态；它们所附着的 site 的休眠状态与报告的值无关。
+  - :ref:`clock<sensor-clock>` 传感器始终处于唤醒状态（没有相关联的对象）。
+  - :ref:`user<sensor-user>` 和 :ref:`plugin<sensor-plugin>` 传感器始终处于唤醒状态。
+
+  有些传感器始终处于唤醒状态，但禁用休眠可能会影响它们计算出的值。这些传感器明确依赖于接触的存在，而它们上一次处于唤醒状态时存在的接触不足以确定其当前值：
+
+  - 没有对象说明符（匹配所有接触）的 :ref:`contact<sensor-contact>` 传感器。
+  - 唯一的对象说明符为静态对象的 :ref:`contact<sensor-contact>` 传感器。
+  - 使用 :at:`site` 属性的 :ref:`contact<sensor-contact>` 传感器。
+  - 附着于静态刚体的 :ref:`force<sensor-force>` 或 :ref:`torque<sensor-torque>` 传感器（例如，地面上的重量传感器）。
+
+**暂定的选择**
+  某些实现上的选择是暂定的，可能会发生变化。
+
+  一个具体的例子是，我们决定将 :ref:`mjMINAWAKE<glNumericEngine>` 的值硬编码，而不是将其作为运行时选项暴露给用户。这样做有两个原因。首先，在我们的实验中，我们发现更改该值等价于更改 :ref:`sleep_tolerance<option-sleep_tolerance>`，而后者是更有用的调节旋钮。其次，有人可能会主张采用以时间为单位、而不是以整数个时间步为单位的入睡时间语义。在有明确证据表明其中一个或两个原因不成立之前，我们选择了一个简单的数值常量。
+
+**静态刚体**
+  除了允许运动学树休眠这一主要优化之外，休眠功能还包含另一项相关的优化：跳过与静态刚体相关的计算。例如，如果世界刚体（world body）或其静态子刚体包含大量 geom，而它们的位姿只会被计算一次，那么这一优化就很有价值。
+
+  这导致了一个微妙的（尽管不太可能碰到的）“陷阱”。虽然允许在仿真期间启用休眠，但休眠必须在初始化时启用，或者在至少一次 :ref:`mj_step` 之后启用。具体来说：
+
+  .. code-block:: C
+
+     // this is OK:
+     mjData* d = mj_makeData(m);            // sleeping is enabled at init time
+     mj_step(m, d);
+     ...
+
+     // this is also OK:
+     mjData* d = mj_makeData(m);            // sleeping is disabled at init time
+     mj_step(m, d);
+     ...
+     m->opt.enableflags |= mjENABLE_SLEEP;  // enable sleeping after at least one step
+     mj_step(m, d);
+
+     // this is an error:
+     mjData* d = mj_makeData(m);            // sleeping is disabled at init time
+     m->opt.enableflags |= mjENABLE_SLEEP;  // enable sleeping
+     mj_step(m, d);                         // undefined behavior, static elements not computed
+
+
+**被违反的假设**
+  休眠打破了 MuJoCo 核心中内置的若干假设（而在禁用休眠时这些假设仍然成立）。
+
+  *流水线阶段*：通常可以保证，在位置阶段结束之前不会读取与速度相关的量，在速度阶段结束之前不会读取与力相关的量。这一假设是 :ref:`mj_step1`/:ref:`mj_step2` 拆分的核心，但在 :ref:`mj_kinematics` 中读取 ``qvel``、\ ``qfrc_applied`` 和 ``xfrc_applied`` 时被违反了。
+
+  *紧凑状态*：虽然休眠状态名义上由 ``mjData.tree_asleep`` 给出，但这只是一种假象。一旦某个岛进入休眠，mjData 中与之相关联的整个位置和速度相关量的子集就成为一种预先计算好的潜在状态，处于“等待该岛被唤醒”的状态。因此，完整保存和恢复含有休眠元素的仿真状态的唯一方法，是 :ref:`复制 <mj_copyData>` 整个 mjData 结构。这也是休眠初始化仅适用于默认配置而不适用于关键帧的原因。请注意，使用 :ref:`标准工具 <geState>` 保存和加载状态仍然是有效的操作，只是休眠岛会被隐式唤醒。
+
+**RK4 积分器**
+  由于在子步骤内部唤醒存在微妙之处，目前不支持 RK4 积分器（integrator）。
+
+**有限差分导数**
+  不支持 :ref:`mjd_transitionFD` 和 :ref:`mjd_inverseFD`，因为它们的重复求值会改变休眠状态。
+
+
+.. _siCoordinate:
+
+坐标系与变换
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+MuJoCo 中使用了多种坐标系。最上层的区别在于关节坐标与笛卡尔坐标。从关节坐标向量到所有刚体的笛卡尔位置和朝向的映射称为正运动学（forward kinematics），它是物理流水线的第一步。相反的映射称为逆运动学，但它不是唯一确定的，MuJoCo 中也没有实现。请回忆，切空间之间的映射（即从关节速度和力到笛卡尔速度和力）由刚体雅可比矩阵给出。
+
+这里我们进一步解释坐标系的微妙之处和细分，并概述可用的变换函数。在关节坐标中，唯一的复杂之处在于，由于四元数关节的存在，位置向量 ``mjData.qpos`` 与速度和加速度向量 ``mjData.qvel`` 和 ``mjData.qacc`` 的维数不同。函数 :ref:`mj_differentiatePos` 对两个关节位置向量做“减法”并返回一个速度向量。反过来，函数 :ref:`mj_integratePos` 接收一个位置向量和一个速度向量，并返回一个按给定速度发生位移之后的新位置向量。
+
+笛卡尔坐标更为复杂，因为我们使用三种不同的坐标系：局部坐标系、全局坐标系和基于质心（com-based）的坐标系。局部坐标在 mjModel 中用于表示父刚体与子刚体之间的静态偏移，以及刚体与附着其上的任何 geom、site、相机和灯光之间的静态偏移。这些静态偏移是在任何关节变换之外额外施加的。因此 ``mjModel.body_pos``、\ ``mjModel.body_quat`` 以及 mjModel 中所有其他空间量都是在局部坐标中表示的。正运动学的任务是沿运动学树累积关节变换和静态偏移，并计算出全局坐标中的所有位置和朝向。mjData 中以“x”开头的量是在全局坐标中表示的。它们包括 ``mjData.xpos``、\ ``mjData.geom_xpos`` 等。坐标系的朝向通常存储为 3 行 3 列矩阵（xmat），但刚体的朝向还以单位四元数 ``mjData.xquat`` 的形式存储。给定该刚体四元数，附着在该刚体上的所有其他对象的四元数都可以通过四元数乘法重构出来。函数 :ref:`mj_local2Global` 将局部刚体坐标转换为全局笛卡尔坐标。
+
+位姿（pose）是一个三维位置与一个单位四元数朝向的组合。没有单独的数据结构；这种组合是逻辑上的。它表示空间中的一个位置和朝向，换句话说就是一个空间坐标系。请注意，OpenGL 使用 4 行 4 列矩阵来表示相同的信息，只不过这里我们用四元数来表示朝向。函数 mju_mulPose 将两个位姿相乘，意思是用第二个位姿对第一个位姿进行变换（顺序很重要）。\ ``mju_negPose`` 构造相反的位姿，而 ``mju_trnVecPose`` 用一个位姿变换一个三维向量，如果把该位姿看作一个坐标系，就是将向量从局部坐标映射到全局坐标。如果我们只想处理朝向部分，可以使用类似的四元数工具函数 :ref:`mju_mulQuat`、\ :ref:`mju_negQuat` 和 :ref:`mju_rotVecQuat` 来完成。
+
+最后是基于质心的坐标系。它用于表示 6 维空间向量，其中包含一个三维角速度或角加速度或力矩，后接一个三维线速度或线加速度或力。请注意这个逆向的顺序：旋转在前，平移在后。\ ``mjData.cdof`` 和 ``mjData.cacc`` 就是此类向量的例子；它们的名称以“c”开头。这些向量在多关节动力学计算中起着关键作用。对此进行解释超出了我们这里的范围；请参阅 Featherstone 关于该主题的精彩 `幻灯片 <http://royfeatherstone.org/spatial>`__。一般来说，用户应避免直接处理这类量。而应使用函数 :ref:`mj_objectVelocity`、\ :ref:`mj_objectAcceleration` 以及底层的 :ref:`mju_transformSpatial` 来获得给定刚体的线速度和角速度、加速度和力。不过，对于感兴趣的读者，我们概述一下“c”类量最不寻常的方面。假设我们想表示一个原地自旋的刚体。人们可能会期望其空间速度具有非零角速度和零线速度。然而事实并非如此。旋转被解释为绕一条穿过坐标系中心的轴发生，而该中心位于刚体之外（我们使用运动学树的质心）。这样的旋转不仅会使刚体旋转，还会使其平移。因此，空间向量必须具有非零线速度，以补偿绕刚体之外的轴旋转所产生的副作用。如果你调用 mj_objectVelocity，得到的 6 维量将在一个以刚体为中心、与世界对齐的坐标系中表示。这样，线速度分量就会如预期那样为零。该函数还会把平移放在旋转之前，这是我们对局部坐标和全局坐标采用的约定。

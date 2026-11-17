@@ -1,0 +1,494 @@
+﻿.. _exExtension:
+
+扩展
+----
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+本节介绍 MuJoCo 为用户自行编写的扩展所提供的机制。目前，扩展性通过 :ref:`引擎插件<exPlugin>`、\ :ref:`解码器<exDecoder>` 和 :ref:`资源提供者<exProvider>` 来提供。
+
+.. _exPlugin:
+
+引擎插件
+~~~~~~~~
+
+引擎插件（engine plugin）允许将用户自定义的逻辑插入 MuJoCo 计算流水线的各个部分。例如，自定义的传感器和执行器类型都可以实现为插件。插件功能在 MJCF 模型的 XML 内容中被引用，因此即使仿真需求超出了 MuJoCo 内置的能力，MJCF 仍可保持为对系统的抽象物理描述。
+
+插件机制的设计目的是克服 MuJoCo 的 :ref:`物理回调<glPhysics>` 的缺点。这些全局回调（:ref:`用法示例<siSimulation>`）仍然可用，并且适用于快速原型开发，或在用户希望用 Python 实现功能时使用，但作为扩展功能的稳定机制，它们通常已不推荐使用。插件机制的核心特性是：
+
+- **线程安全：** 插件实例（见下文）是线程局部的，从而避免冲突。
+- **有状态性：** 插件可以是有状态的，其状态会被正确地（反）序列化。
+- **互操作性：** 不同的插件可以共存而互不干扰。
+
+插件的使用者和开发者都应当熟悉两个关键概念：
+
+插件（Plugin）
+  **插件** 是一组实现其功能的函数和静态属性的集合，被打包在一个 :ref:`mjpPlugin` 结构体中。插件函数是 **无状态** 的：它们只依赖于传递给它们的参数。当插件需要内部状态时，它会声明该状态，并允许 MuJoCo 对其进行管理并传入。这使得完整仿真状态的（反）序列化成为可能。因此，插件可以被视为功能中的“纯逻辑”部分，并且通常被打包为 C 库。插件既不是模型元素，也不与特定的模型元素相关联。
+
+插件实例（Plugin instance）
+  插件 **实例** 表示由插件所操作的、自包含的运行时状态：当执行插件逻辑时，实例状态由引擎传入。插件实例本身是类型为 :ref:`mjOBJ_PLUGIN<mjtObj>` 的模型元素。共有 ``mjModel.nplugin`` 个实例，其 id 位于 ``[0 nplugin-1]`` 范围内。与其他元素一样，实例可以有名称，\ :ref:`mj_name2id` 和 :ref:`mj_id2name` 在 id 与名称之间进行映射。与只被加载一次并放入全局表中的插件代码不同，同一个插件可以定义多个实例，并且这些实例与其他模型元素之间存在一对多的关系。
+
+  **一对一：**
+    在这种最简单的情形下，每个实例在模型中只被引用一次。例如，两个传感器（sensor）可以声明它们的值由同一个插件的两个插件实例计算得出。在这种情况下，每次计算传感器输出时，插件逻辑都会被单独执行。
+
+  **一对多：**
+    或者，多个元素的行为也可以由单个插件实例来支撑。有两种主要场景适合这样做：
+
+  * 不同元素类型的值与同一个物理实体和同一次计算相关联。例如，考虑一个带有内部温度计的电机。这会表现为一个执行器（actuator）和一个传感器，二者都与同一个插件实例相关联，该实例同时计算力矩输出和温度读数。
+  * 将多个相关元素的计算批量合并在一起是有利的，例如计算值是神经网络的输出时。这里的典型例子是一个配备了 ``N`` 个电机的机器人，其电机动力学（dynamics）由神经网络建模。在这种情况下，在一次前向传播中产生全部 N 个执行器的力矩输出，可以比分别为每个电机计算快得多。
+
+下面，我们首先从用户的角度来描述插件：
+
+* 插件能力的类型。
+* 如何在 MJCF 模型中声明和配置插件。
+* 插件状态如何被纳入 :ref:`mjData`，以及当存在插件实例时，用户需要做什么才能安全地复制和序列化 :ref:`mjData` 结构体。
+
+接下来，我们描述与插件的使用者和开发者都相关的插件注册事宜。之后是面向插件开发者的一节。
+
+.. _exCapabilities:
+
+插件能力
+^^^^^^^^^^^^^^^^^^^
+
+插件由其关联的 :ref:`mjpPlugin` 结构体的内容来描述。\ ``capabilityflags`` 成员是一个整数位域，用于描述插件的能力，其位的语义定义在枚举 :ref:`mjtPluginCapabilityBit` 中。使用位域使得插件可以支持多种类型的计算。目前支持的插件能力有：
+
+* 执行器插件
+* 传感器插件
+* 被动力（passive force）插件
+* 有符号距离场插件
+
+未来将根据需要添加更多能力。
+
+
+.. _exDeclaration:
+
+在 MJCF 中声明
+^^^^^^^^^^^^^^^^^^^
+
+首先，必须通过 ``<extension><plugin>`` 声明插件依赖。解析模型时，如果声明了任何插件但该插件未被注册（见下文），则会引发模型编译错误。如果只有单个 MJCF 元素由插件支撑，则可以就地隐式创建实例。如果多个元素由同一个插件支撑，则必须显式声明实例：
+
+.. code:: xml
+
+   <mujoco>
+     <extension>
+       <plugin plugin="mujoco.test.simple_sensor_plugin"/>
+       <plugin plugin="mujoco.test.actuator_sensor_plugin">
+         <instance name="explicit_instance"/>
+       </plugin>
+     </extension>
+     ...
+     <sensor>
+       <plugin name="sensor0" plugin="mujoco.test.simple_sensor_plugin"/>
+       <plugin name="sensor1" plugin="mujoco.test.simple_sensor_plugin"/>
+       <plugin name="sensor2" instance="explicit_instance"/>
+     </sensor>
+     ...
+     <actuator>
+       <plugin name="actuator2" instance="explicit_instance"/>
+     </actuator>
+   </mujoco>
+
+在上面的示例中，\ ``sensor0`` 和 ``sensor1`` 各自由一个简单的插件支撑，该插件不在元素之间共享计算，因此通过直接引用插件标识符，为每个传感器隐式创建了一个实例。相反，\ ``sensor2`` 和 ``actuator2`` 由一个共享计算的插件支撑，因此它们必须引用一个显式声明的共享实例。
+
+
+.. _exConfiguration:
+
+在 MJCF 中配置
+^^^^^^^^^^^^^^^^^^^^^
+
+插件可以声明自定义属性，用来表示专门的可配置参数。例如，直流电机模型可以将电阻、电感和电容作为配置属性公开。在 MJCF 中，这些属性的值可以通过 ``<config>`` 元素来指定，其中每个 ``<config>`` 都有一个键和一个值。有效的键和值由插件开发者指定，但会在插件注册时向 MuJoCo 声明，以便 MuJoCo 模型编译器（model compiler）可以对无效值报错。
+
+.. code:: xml
+
+   <mujoco>
+     <extension>
+       <plugin plugin="mujoco.test.simple_actuator_plugin">
+         <instance name="explicit_instance">
+           <config key="resistance" value="1.0"/>
+           <config key="inductance" value="2.0"/>
+         </instance>
+       </plugin>
+     </extension>
+     ...
+     <actuator>
+       <plugin name="actuator0" instance="explicit_instance"/>
+       <plugin name="actuator1" plugin="mujoco.test.simple_actuator_plugin">
+           <config key="resistance" value="3.0"/>
+           <config key="inductance" value="4.0"/>
+       </plugin>
+     </actuator>
+   </mujoco>
+
+在上面的示例中，\ ``actuator0`` 引用的是一个预先存在的插件实例，该实例通过 ``<instance>`` 元素创建并配置；而 ``actuator1`` 则是在原地隐式创建并配置一个新的插件实例。请注意，直接向 ``actuator0`` 添加 ``<config>`` 子元素将会出错，因为那里并没有创建新的插件实例。
+
+.. _exPluginState:
+
+插件状态
+^^^^^^^^^^^^
+
+虽然插件代码应当是无状态的，但各个插件实例可以持有与时间相关的状态，这些状态旨在随 MuJoCo 物理一同演化，例如热力学耦合的执行器模型中的温度变量。另外，插件实例也可能希望对其运行过程中可能开销很大的部分进行记忆化（memoize）。例如，由预训练神经网络支撑的传感器或执行器插件，会希望在模型编译时预加载其权重。区分这两种每实例的插件载荷非常重要。术语 **插件状态**\ （plugin state）指插件实例中由 *浮点* 值构成的、与时间相关的状态，而术语 **插件数据**\ （plugin data）则指由记忆化载荷构成的 *任意数据结构*，它们应被视为插件计算的实现细节。
+
+关键在于，插件数据必须仅能通过插件配置属性、插件状态以及 :ref:`MuJoCo 状态变量<geState>` 重新构建。这意味着插件数据不要求可序列化，并且 MuJoCo 在复制或存储数据时不会对其进行序列化。另一方面，插件状态被视为物理的组成部分，必须与 MuJoCo 的其他状态变量一起序列化，才能忠实地恢复物理。
+
+插件必须通过其 :ref:`mjpPlugin` 结构体的 ``nstate`` 回调，声明每个实例所需的浮点数个数。请注意，这个数目可能取决于实例的具体配置。在 :ref:`mj_makeData` 期间，MuJoCo 会在 :ref:`mjData` 的 ``plugin_state`` 字段中为每个插件实例分配所需数量的槽位。\ :ref:`mjModel` 中的 ``plugin_stateadr`` 字段指明了每个插件实例可在整个 ``plugin_state`` 数组中的哪个位置找到其状态值。
+
+然而，从 MuJoCo 的角度来看，插件数据是完全不透明的。在 :ref:`mj_makeData` 期间，MuJoCo 会调用相应 :ref:`mjpPlugin` 的 ``init`` 回调。在该回调中，插件被允许分配或以其他方式创建其运行所需的任意数据结构，并将其指针存储在正在创建的 :ref:`mjData` 的 ``plugin_data`` 字段中。在 :ref:`mj_deleteData` 期间，MuJoCo 会调用同一个 :ref:`mjpPlugin` 的 ``destroy`` 回调，插件负责释放与该实例相关联的内部资源。
+
+``init`` 回调应通过发出 :ref:`mju_warning` 并返回 -1 来报告无效配置，此时 :ref:`mj_makeData`\ （以及模型编译）会失败。插件回调不应调用 :ref:`mju_error`：不返回的错误处理程序（如 Python 绑定和模型编译器的错误处理程序）会跳过位于栈上的、插件中以及 MuJoCo 自身中的 C++ 对象的析构函数。
+
+当通过 :ref:`mj_copyData` 复制 :ref:`mjData` 时，MuJoCo 会复制插件状态。然而，插件代码负责为新复制的 :ref:`mjData` 设置插件数据。为此，MuJoCo 会对每个存在的插件实例调用 :ref:`mjpPlugin` 中的 ``copy`` 回调。
+
+.. _exActuatorAct:
+
+执行器状态
+""""""""""
+
+在编写有状态的执行器插件时，对于执行器状态保存在何处有两种选择。一种是如上所述使用 ``plugin_state``，另一种是通过在 :ref:`mjpPlugin` 上实现相应的回调来使用 ``mjData.act``。
+
+使用后一种选项时，执行器插件的状态会被添加到 ``mjData.act`` 中，并且 MuJoCo 会在各时间步之间自动对 ``mjData.act_dot`` 的值进行积分。这种方法的一个优点是，像 :ref:`mjd_transitionFD` 这样的有限差分函数的工作方式与对原生执行器相同。\ ``mjpPlugin.advance`` 回调将在 ``act_dot`` 被积分之后调用，如果内置积分器（integrator）不合适，执行器插件可以在此时覆盖 ``act`` 的值。
+
+用户可以在执行器插件上指定 :ref:`dyntype<actuator-plugin-dyntype>` 属性，以便在用户输入与执行器状态之间引入滤波器或积分器。这样做时，由 ``dyntype`` 引入的状态变量将被放置在 ``act`` 数组中插件状态变量的 *之后*。
+
+.. _exRegistration:
+
+注册
+^^^^
+
+插件必须先在 MuJoCo 中注册，才能在 MJCF 模型中被引用。
+
+旨在支持特定应用程序的一次性插件（或为帮助排查模型问题而实现的临时插件）可以被静态链接到应用程序中。这可以简单到只需在 ``main`` 函数中准备一个 :ref:`mjpPlugin` 结构体，然后将其传递给 :ref:`mjp_registerPlugin`，以便向 MuJoCo 注册。
+
+一般来说，可复用的插件预期会被打包为库，并应在库加载时注册。在兼容 GCC 的编译器中，这可以通过在用 ``__attribute__((constructor))`` 声明的函数中调用 :ref:`mjp_registerPlugin` 来实现，而在 MSVC 中，则可以通过向 C 运行时初始化中注入代码来实现。MuJoCo 提供了一个便利宏 :ref:`mjPLUGIN_LIB_INIT`，它会根据所用的编译器展开为上述两种构造之一。
+
+对于以上述动态库形式交付的插件，其使用者可以使用函数 :ref:`mj_loadPluginLibrary` 加载该库。这是加载包含 MuJoCo 插件的动态库的首选方式（而不是比如直接调用 ``dlopen`` 或 ``LoadLibraryA``），因为 MuJoCo 期望动态库自动注册插件的确切方式可能会随时间变化，而 :ref:`mj_loadPluginLibrary` 预期也会随之演进，以反映最佳实践。
+
+对于需要能够加载任意用户提供的 MJCF 模型的应用程序，可能希望自动扫描并加载在特定目录中找到的所有动态库。这样，带来了需要插件的 MJCF 的用户，就可以被告知将所需的插件库放置在相应的目录中。例如，\ :ref:`saSimulate` 交互式查看器应用程序就是这样做的。\ :ref:`mj_loadAllPluginLibraries` 函数正是为这种扫描并加载的用例而提供的。目录中某个加载失败的库（例如因为缺少其某个依赖项）会被跳过并给出警告，而不会中止应用程序。
+
+.. _exWriting:
+
+编写插件
+^^^^^^^^
+
+本节面向开发者，内容尚不完整。我们鼓励希望编写自己插件的人联系 MuJoCo 开发团队寻求帮助。对于有经验的开发者，一个很好的起点是 `相关测试 <https://github.com/google-deepmind/mujoco/blob/main/test/engine/engine_plugin_test.cc>`_ 以及 `官方插件目录 <https://github.com/google-deepmind/mujoco/tree/main/plugin>`_ 中的官方插件。
+
+本节未来的版本将包括：
+
+* :ref:`mjpPlugin` 结构体的内容。
+* 为定义一个插件，需要提供哪些函数和属性。
+* 如何为插件声明自定义的 MJCF 属性。
+* 为确保当 :ref:`mjData` 被复制、步进或重置时插件仍能正确工作，开发者需要牢记的事项。
+
+官方插件目录有以下几个：
+
+actuator
+""""""""
+`actuator/ <https://github.com/google-deepmind/mujoco/tree/main/plugin/actuator>`__ 目录中的插件实现自定义执行器，目前只有一个 PID 控制器。详情请参见 `README
+<https://github.com/google-deepmind/mujoco/blob/main/plugin/actuator/README.md>`__。
+
+
+sensor
+""""""
+`sensor/ <https://github.com/google-deepmind/mujoco/tree/main/plugin/sensor>`__ 目录中的插件实现自定义传感器。目前唯一的传感器插件是触摸网格传感器，详情请参见 `README
+<https://github.com/google-deepmind/mujoco/blob/main/plugin/sensor/README.md>`__。
+
+.. _exSDF:
+
+sdf
+"""
+`sdf/ <https://github.com/google-deepmind/mujoco/tree/main/plugin/sdf>`__ 目录中的插件以无网格的方式指定自定义形状，其做法是定义在查询点处计算有符号距离场及其梯度的方法。该形状随后在 `engine_collision_driver.c
+<https://github.com/google-deepmind/mujoco/blob/main/src/engine/engine_collision_driver.c>`__ 顶部的碰撞表中充当一种新的 geom 类型。有关可用的 SDF 以及如何编写自己的隐式几何的更多信息，请参见 `README
+<https://github.com/google-deepmind/mujoco/blob/main/plugin/sdf/README.md>`__。本节其余部分将更详细地介绍碰撞算法和插件引擎接口。
+
+碰撞点是通过梯度下降最小化函数 A + B + abs(max(A, B)) 找到的，其中 A 和 B 是两个相碰撞的 SDF。由于 SDF 是非凸的，需要多个起始点才能收敛到多个局部极小值。起始点的数量通过 :ref:`sdf_initpoints<option-sdf_initpoints>` 设置，并使用 Halton 序列在轴对齐包围盒的交集内部初始化。梯度下降的迭代次数通过 :ref:`sdf_iterations<option-sdf_iterations>` 设置。
+
+虽然 *精确* 的 SDF——即编码到表面的精确有符号距离——是首选，但任何在表面处值为零、远离表面时单调增长、且在内部为负的函数都可以进行碰撞。对于这类函数，仍然可以找到碰撞，只是可能需要增加起始点的数量。请注意，如果在零水平集附近 :math:`\|\nabla f\| \neq 1`，则接触穿透深度会相应缩放，梯度下降的投影步骤也会发生畸变，因此建议在表面附近使 :math:`\|\nabla f\| \approx 1`。
+
+编译器会调用 ``sdf_distance`` 方法，使用 `MarchingCubeCpp <https://github.com/aparis69/MarchingCubeCpp>`__ 所实现的 marching cubes 算法生成用于渲染的可视化网格。
+
+对梯度下降算法的未来改进，例如利用 SDF 性质的线搜索，可能会减少迭代次数和／或起始点数量。
+
+对于 sdf 插件，需要指定以下方法
+
+``sdf_distance``:
+  返回以局部坐标给出的查询点的有符号距离。
+
+``sdf_staticdistance``:
+  这是上一个函数的静态版本，以配置属性作为额外输入。之所以需要此函数，是因为网格的创建发生在模型编译期间，此时插件对象尚未被实例化。
+
+``sdf_gradient``:
+  计算 SDF 在查询点处以局部坐标表示的梯度。
+
+``sdf_aabb``:
+  计算以局部坐标表示的轴对齐包围盒。在调用 marching cubes 算法之前，该体积会被均匀地体素化。
+
+.. _exDecoder:
+
+解码器
+~~~~~~
+
+解码器插件将资产加载能力扩展到 MJCF 和 URDF 之外。它们与其他 MuJoCo 插件类似地进行 :ref:`注册<mjPLUGIN_LIB_INIT>`。
+
+MuJoCo 自带两个用于常见网格格式的内置解码器：
+
+- **OBJ 解码器**\ （``plugin/obj_decoder``）-- `Wavefront OBJ <https://en.wikipedia.org/wiki/Wavefront_.obj_file>`_。
+- **STL 解码器**\ （``plugin/stl_decoder``）-- `STL <https://en.wikipedia.org/wiki/STL_(file_format)>`_。
+
+此外，我们还提供以下可选的解码器插件：
+
+- **USD 解码器**\ （``plugin/usd_decoder``）-- `Universal Scene Description <https://openusd.org/release/index.html>`_。
+
+这些插件也可作为如何编写自定义解码器的示例。obj 解码器或许是最容易理解的，而 USD 解码器由于要支持整个场景，因此更为复杂。
+
+.. _exDecoderInterface:
+
+解码器接口
+^^^^^^^^^^
+
+解码器由 :ref:`mjpDecoder` 结构体描述，该结构体具有以下字段：
+
+``content_type``
+  标识格式的、类似 MIME 的内容类型字符串。例如 ``"model/obj"`` 或 ``"model/stl"``。当 MJCF 中的某个网格资产指定了 ``content-type`` 属性时，该字符串会被用来查找合适的解码器。
+
+``extension``
+  文件扩展名字符串（包含点号），在未指定内容类型时用于匹配。对于具有多个扩展名的格式，多个扩展名可以用竖线（`|`）分隔，例如 ``.usd|.usda|.usdc|.usdz``。
+
+``can_decode``
+  类型为 :ref:`mjfCanDecode` 的回调，用于判断解码器是否能处理给定的资源。它通常通过检查文件扩展名来实现，但也可以检查文件内容以区分不同格式。例如，URDF 和 MJCF 文件的扩展名都是 ``.xml``。如果解码器能够处理该资源，则返回非零值。
+
+``decode``
+  类型为 :ref:`mjfDecode` 的回调，用于执行实际的解码。它接收一个 :ref:`mjResource`，并返回一个新分配的、包含已解码资产数据的 :ref:`mjSpec`。调用方获得所返回 spec 的所有权，并负责使用 :ref:`mj_deleteSpec` 将其释放。失败时返回 ``NULL``，此时解码器应将人类可读的原因写入大小为 ``error_sz`` 的 ``error`` 缓冲区（如果 ``error`` 不为 ``NULL``）。该消息会被传播给用户，例如通过 :ref:`mj_parse` 的 ``error`` 参数，或作为网格资产的编译器错误。非致命问题可以通过 :ref:`mju_warning` 报告。解码器不应调用 :ref:`mju_error`，参见 :ref:`插件状态<exPluginState>`。
+
+当为网格资产调用解码器时，编译器会引用由 ``decode`` 回调所返回的 spec 中的第一个网格元素。
+
+当为模型资产调用解码器时，由 ``decode`` 回调所返回的 spec 可以包含任意数量的任意类型的元素。
+
+.. _exDecoderRegistration:
+
+注册
+^^^^
+
+解码器必须先注册才能使用。注册通过 :ref:`mjp_registerDecoder` 执行。\ :ref:`mjp_defaultDecoder` 函数用默认值初始化一个 :ref:`mjpDecoder` 结构体。\ :ref:`mjPLUGIN_LIB_INIT` 宏用于定义初始化函数，该函数会在库加载时注册解码器。
+
+.. code-block:: C
+
+   mjPLUGIN_LIB_INIT(my_format_decoder) {
+     mjpDecoder decoder;
+     mjp_defaultDecoder(&decoder);
+     decoder.content_type = "model/my-format";
+     decoder.extension = ".myf|.myfa|.myfc";
+     decoder.decode = MyDecode;
+     decoder.can_decode = MyCanDecode;
+     mjp_registerDecoder(&decoder);
+   }
+
+
+.. _exDecoderExample:
+
+示例
+^^^^
+
+下面是一个读取假想二进制网格格式的最小解码器：
+
+.. code-block:: C
+
+   #include <stdio.h>
+   #include <mujoco.h>
+
+   static mjSpec* MyDecode(mjResource* resource, const mjVFS* vfs, char* error, int error_sz) {
+     const void* bytes = NULL;
+     int nbytes = mju_readResource(resource, &bytes);
+     if (nbytes < 0) {
+       if (error) snprintf(error, error_sz, "failed to read resource '%s'", resource->name);
+       return NULL;
+     }
+
+     /* ... parse bytes into vertex/face arrays ... */
+
+     mjSpec* spec = mj_makeSpec();
+     mjsMesh* mesh = mjs_addMesh(spec, NULL);
+     mjs_setString(mesh->file, resource->name);
+     mjs_setFloat(mesh->uservert, vertices, nvert * 3);
+     mjs_setInt(mesh->userface, faces, nface * 3);
+     return spec;
+   }
+
+   static int MyCanDecode(const mjResource* resource) {
+     /* check file extension */
+     const char* name = resource->name;
+     int len = strlen(name);
+     return len > 4 && strcmp(name + len - 4, ".myf") == 0;
+   }
+
+   mjPLUGIN_LIB_INIT(my_format_decoder) {
+     mjpDecoder decoder;
+     mjp_defaultDecoder(&decoder);
+     decoder.content_type = "model/my-format";
+     decoder.extension = ".myf";
+     decoder.decode = MyDecode;
+     decoder.can_decode = MyCanDecode;
+     mjp_registerDecoder(&decoder);
+   }
+
+一旦注册，当 MuJoCo 遇到具有匹配文件扩展名或内容类型的资产时，就会自动使用该解码器：
+
+.. code-block:: xml
+
+   <asset>
+     <mesh file="my_mesh.myf"/>
+   </asset>
+
+
+.. _exEncoder:
+
+编码器
+~~~~~~
+
+编码器插件将资产序列化和模型保存的能力扩展到原生格式（XML、MJB、TXT）之外。编码器与其他 MuJoCo 插件类似地进行 :ref:`注册 <mjPLUGIN_LIB_INIT>`。
+
+MuJoCo 自带一个用于 ``.mjz`` 归档文件的内置 Zip 编码器（``src/xml/mjz/mjz_encoder.cc``）。
+
+.. _exEncoderInterface:
+
+编码器接口
+^^^^^^^^^^
+
+编码器由 :ref:`mjpEncoder` 结构体描述，该结构体具有以下字段：
+
+``content_type``
+  标识输出格式的、类似 MIME 的内容类型字符串（例如 ``"application/zip"``）。当使用显式的 ``content_type`` 参数调用 :ref:`mj_encode` 时，该字符串会被用来查找合适的编码器。
+
+``extension``
+  文件扩展名字符串（包含点号），在未指定内容类型时用于格式匹配。多个扩展名可以用竖线（`|`）分隔，例如 ``.mjz|.zip``。
+
+``encode``
+  类型为 :ref:`mjfEncode` 的回调，用于执行实际的序列化。它接收一个 :ref:`mjSpec`、一个可选的已编译 :ref:`mjModel`、一个可选的 :ref:`mjVFS`，以及一个输出 :ref:`mjResource`。成功时返回写入的字节数，失败时返回 -1。
+
+``close_resource``
+  一个可选的回调，用于释放由 ``encode`` 回调在 ``mjResource.data`` 内部分配的所有内存。
+
+.. _exEncoderRegistration:
+
+注册
+^^^^
+
+编码器必须先注册，才能通过 :ref:`mj_encode` 使用。注册通过 :ref:`mjp_registerEncoder` 执行。\ :ref:`mjp_defaultEncoder` 函数用默认值初始化一个 :ref:`mjpEncoder` 结构体。\ :ref:`mjPLUGIN_LIB_INIT` 宏定义了初始化函数，该函数会在插件库加载时注册编码器。
+
+.. code-block:: C
+
+   mjPLUGIN_LIB_INIT(my_format_encoder) {
+     mjpEncoder encoder;
+     mjp_defaultEncoder(&encoder);
+     encoder.content_type = "application/x-myformat";
+     encoder.extension = ".myf";
+     encoder.encode = MyEncode;
+     encoder.close_resource = MyCloseResource;
+     mjp_registerEncoder(&encoder);
+   }
+
+.. _exProvider:
+
+资源提供者
+~~~~~~~~~~~~~~~~~~
+
+资源提供者（:ref:`mjpResourceProvider`）用于扩展 MuJoCo，使其能够加载并不一定来自操作系统文件系统或虚拟文件系统（:ref:`mjVFS`）的资源文件（XML 文件、网格、纹理等）。例如，从
+Internet 下载资源文件就可以通过资源提供者来实现。MuJoCo 通过 :ref:`mjResource` 结构体来对这些扩展进行抽象处理。
+
+.. _exProviderStructure:
+
+概述
+^^^^
+
+创建新的资源提供者的方法是：通过 :ref:`mjp_registerProvider` 把一个 :ref:`mjpResourceProvider` 结构体注册到全局表中。资源提供者一经注册，所有加载函数都可以使用它。\ :ref:`mjpResourceProvider` 结构体存储三类字段：
+
+.. _Uniform Resource Identifier: https://en.wikipedia.org/wiki/Uniform_Resource_Identifier
+
+资源前缀
+  资源通过其名称中的前缀来标识。所选前缀应符合有效的 `Uniform Resource Identifier`_\ （URI）方案语法。资源名称也应具有有效的 URI 语法，但这一点并不强制要求。语法为 ``{prefix}:{filename}`` 的资源名称将匹配使用方案 ``prefix`` 的提供者。例如，通过
+  Internet 访问资源文件的资源提供者可能会使用 ``http`` 作为其方案，这时名为 ``http://www.example.com/myasset.obj`` 的资源就会与该资源提供者匹配。方案不区分大小写，因此 ``HTTP://www.example.com/myasset.obj`` 同样可以匹配。请注意冒号的重要性：URI 语法要求资源名称中的前缀后面必须紧跟一个冒号，才能与某个方案匹配。例如，\ ``https://www.example.com/myasset.obj`` 就不会匹配，因为其方案是 ``https``。
+
+回调函数
+  资源提供者必须实现三个回调函数：\ :ref:`open<mjfOpenResource>`、\ :ref:`read<mjfReadResource>` 和 :ref:`close<mjfCloseResource>`。另外两个回调函数 :ref:`getdir<mjfGetResourceDir>` 和 :ref:`modified<mjfResourceModified>` 是可选的。下文会给出这些回调函数的更多细节。
+
+数据指针
+  最后，还有一个不透明的数据指针，供提供者向回调函数传递数据。在同一个模型内，该数据指针保持不变。
+
+资源提供者通过回调函数工作：
+
+- :ref:`mjfOpenResource<mjfOpenResource>`：打开回调函数接受一个类型为 :ref:`mjResource` 的参数。应使用资源的 name 字段来验证该资源是否存在，并用资源所需的任何额外信息填充资源的 data 字段。失败时该回调函数应返回 0（false），否则返回 1（true）。
+- :ref:`mjfReadResource<mjfReadResource>`：读取回调函数的参数为一个 :ref:`mjResource` 和一个指向 void 指针的指针，称为 ``buffer``。读取回调函数应让 ``buffer`` 指针指向可以读取该资源字节数据的位置，并返回 ``buffer`` 所指向的字节数。失败时该回调函数应返回 -1。
+- :ref:`mjfCloseResource<mjfCloseResource>`：该回调函数接受一个类型为 :ref:`mjResource` 的参数，应用于释放在所提供资源的 data 字段中分配的所有内存。
+- :ref:`mjfGetResourceDir<mjfGetResourceDir>`：该回调函数是可选的，用于从资源名称中提取目录。例如，资源名称 ``http://www.example.com/myasset.obj`` 的目录为 ``http://www.example.com/``。
+- :ref:`mjfResourceModified<mjfResourceModified>`：该回调函数是可选的，用于检查已打开的现有资源相对于其原始来源是否已被修改。
+
+.. _exProviderUsage:
+
+用法
+^^^^
+
+资源提供者一经注册，就可以立即用于打开资源文件。如果资源文件名的前缀与某个已注册提供者的前缀匹配，则会使用该提供者来加载该资源。
+
+.. _exProviderExample:
+
+示例
+"""""""
+
+.. _data URI scheme: https://en.wikipedia.org/wiki/Data_URI_scheme
+
+本节给出一个基本示例：一个从 `data URI scheme`_ 读取数据的资源提供者。首先我们实现这些回调函数：
+
+.. code-block:: C
+
+   int str_open_callback(mjResource* resource) {
+     // call some util function to validate
+     if (!is_valid_data_uri(resource->name)) {
+       return 0; // return failure
+     }
+
+     // some upper bound for the data
+     resource->data = mju_malloc(get_data_uri_size(resource->name));
+     if (resource->data == NULL) {
+       return 0; // return failure
+     }
+
+     // fill data from string (some util function)
+     get_data_uri(resource->name, &data);
+   }
+
+   int str_read_callback(mjResource* resource, const void** buffer) {
+     *buffer = resource->data;
+     return get_data_uri_size(resource->name);
+   }
+
+   void str_close_callback(mjResource* resource) {
+     mju_free(resource->data);
+   }
+
+接下来，我们创建资源提供者并将其注册到 MuJoCo：
+
+.. code-block:: C
+
+   mjpResourceProvider provider = {
+     .prefix = "data",
+     .open = str_open_callback,
+     .read = str_read_callback,
+     .close = str_close_callback,
+   };
+
+   // return positive number on success
+   if (!mjp_registerProvider(&provider)) {
+     // ...
+     // return failure
+   }
+
+现在，我们就可以在 MJCF 文件中以字符串形式写入资源了：
+
+.. code-block:: xml
+
+   <asset>
+     <texture name="grid" file="grid.png" type="2d"/>
+     <mesh content-type="model/obj" file="data:model/obj;base64,I215IG9iamVjdA0KdiAxIDAgMA0KdiAwIDEgMA0KdiAwIDAgMQ=="/>
+     ...
+   </asset>

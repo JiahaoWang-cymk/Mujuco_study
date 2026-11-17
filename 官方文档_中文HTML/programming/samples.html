@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html class="no-js" data-content_root="../" lang="zh-CN">
+<head><meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="light dark" name="color-scheme"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="../_static/favicons/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+<link href="../_static/favicons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="apple-touch-icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-192x192.png" rel="icon" sizes="192x192" type="image/png"/><link href="../genindex.html" rel="index" title="索引"/><link href="../search.html" rel="search" title="搜索"/><link href="extension.html" rel="next" title="扩展"/><link href="modeledit.html" rel="prev" title="模型编辑"/>
+<link as="image" href="../_static/banner.svg" rel="prefetch"/>
+<!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+<title>代码示例 - MuJoCo 文档（中文）</title>
+<link href="../_static/pygments.css?v=b86133f3" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo.css?v=7bdb33bb" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css?v=05624691" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo-extensions.css?v=8dab3a3b" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides.css?v=8d83ad8c" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides_mjwarp.css?v=e08d3b36" rel="stylesheet" type="text/css"/>
+<link href="../_static/zh_overrides.css?v=ee52c62c" rel="stylesheet" type="text/css"/>
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #16213a;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #2a4fd6;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #2a4fd6;
+  --color-brand-content: #2a4fd6;
+  --color-background-secondary: #f4f6f9;
+  --color-sidebar-background: #f4f6f9;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+      }
+    }
+  }
+</style></head>
+<body>
+<script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+<symbol id="svg-toc" viewbox="0 0 24 24">
+<title>Contents</title>
+<svg fill="currentColor" stroke="currentColor" stroke-width="0" viewbox="0 0 1024 1024">
+<path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"></path>
+</svg>
+</symbol>
+<symbol id="svg-menu" viewbox="0 0 24 24">
+<title>Menu</title>
+<svg class="feather-menu" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<line x1="3" x2="21" y1="12" y2="12"></line>
+<line x1="3" x2="21" y1="6" y2="6"></line>
+<line x1="3" x2="21" y1="18" y2="18"></line>
+</svg>
+</symbol>
+<symbol id="svg-arrow-right" viewbox="0 0 24 24">
+<title>Expand</title>
+<svg class="feather-chevron-right" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</symbol>
+<symbol id="svg-sun" viewbox="0 0 24 24">
+<title>Light mode</title>
+<svg class="feather-sun" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" x2="12" y1="1" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="23"></line>
+<line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+<line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+<line x1="1" x2="3" y1="12" y2="12"></line>
+<line x1="21" x2="23" y1="12" y2="12"></line>
+<line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+<line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
+</svg>
+</symbol>
+<symbol id="svg-moon" viewbox="0 0 24 24">
+<title>Dark mode</title>
+<svg class="icon-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+</svg>
+</symbol>
+<symbol id="svg-sun-with-moon" viewbox="0 0 24 24">
+<title>Auto light/dark, in light mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z" style="opacity: 50%"></path>
+<line x1="14.5" x2="14.5" y1="3.25" y2="1.25"></line>
+<line x1="14.5" x2="14.5" y1="15.85" y2="17.85"></line>
+<line x1="10.044" x2="8.63" y1="5.094" y2="3.68"></line>
+<line x1="19" x2="20.414" y1="14.05" y2="15.464"></line>
+<line x1="8.2" x2="6.2" y1="9.55" y2="9.55"></line>
+<line x1="20.8" x2="22.8" y1="9.55" y2="9.55"></line>
+<line x1="10.044" x2="8.63" y1="14.006" y2="15.42"></line>
+<line x1="19" x2="20.414" y1="5.05" y2="3.636"></line>
+<circle cx="14.5" cy="9.55" r="3.6"></circle>
+</svg>
+</symbol>
+<symbol id="svg-moon-with-sun" viewbox="0 0 24 24">
+<title>Auto light/dark, in dark mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"></path>
+<line style="opacity: 50%" x1="18" x2="18" y1="3.705" y2="2.5"></line>
+<line style="opacity: 50%" x1="18" x2="18" y1="11.295" y2="12.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="4.816" y2="3.964"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="10.212" y2="11.063"></line>
+<line style="opacity: 50%" x1="14.205" x2="13.001" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="21.795" x2="23" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="10.184" y2="11.036"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="4.789" y2="3.937"></line>
+<circle cx="18" cy="7.5" r="2.169" style="opacity: 50%"></circle>
+</svg>
+</symbol>
+<symbol id="svg-pencil" viewbox="0 0 24 24">
+<svg class="icon-tabler-pencil-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
+<path d="M13.5 6.5l4 4"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+<symbol id="svg-eye" viewbox="0 0 24 24">
+<svg class="icon-tabler-eye-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
+<path d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+</svg>
+<input aria-label="Toggle site navigation sidebar" class="sidebar-toggle" id="__navigation" name="__navigation" type="checkbox"/>
+<input aria-label="Toggle table of contents sidebar" class="sidebar-toggle" id="__toc" name="__toc" type="checkbox"/>
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+<div class="page">
+<header class="mobile-header">
+<div class="header-left">
+<label class="nav-overlay-icon" for="__navigation">
+<span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+</label>
+</div>
+<div class="header-center">
+<a href="../index.html"><div class="brand">MuJoCo 文档（中文）</div></a>
+</div>
+<div class="header-right">
+<div class="theme-toggle-container theme-toggle-header">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-header-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+</header>
+<aside class="sidebar-drawer">
+<div class="sidebar-container">
+<div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+<div class="sidebar-logo-container">
+<img alt="Logo" class="sidebar-logo" src="../_static/banner.svg"/>
+</div>
+<span class="sidebar-brand-text">MuJoCo 文档（中文）</span>
+</a><form action="../search.html" class="sidebar-search-container" method="get" role="search">
+<input aria-label="搜索" class="sidebar-search" name="q" placeholder="搜索"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">入门教程</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">概览</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../computation/index.html">计算</a><input aria-label="Toggle navigation of 计算" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../computation/fluid.html">流体力</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computation/speculative.html">推测接触</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">建模</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../XMLreference.html">XML 参考</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">编程</a><input aria-label="Toggle navigation of 编程" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="simulation.html">仿真</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html">可视化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rendering.html">渲染</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui.html">用户界面</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modeledit.html">模型编辑</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">代码示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension.html">扩展</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../APIreference/index.html">API 参考</a><input aria-label="Toggle navigation of API 参考" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APItypes.html">类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIfunctions.html">函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIglobals.html">全局变量</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../studio/index.html">Studio</a><input aria-label="Toggle navigation of Studio" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../studio/web_viewers.html">Web 查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/native_viewers.html">原生查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/architecture.html">架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/python_plugins.html">Python 插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python.html">Python</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjx.html">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../unity.html">Unity 插件</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/building.html">构建</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcf_file_format_plugin.html">文件格式插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/importing.html">导入</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/exporting.html">导出</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">模型库</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">更新日志</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<div class="main">
+<div class="content">
+<div class="article-container">
+<a class="back-to-top muted-link" href="#">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+</svg>
+<span>Back to top</span>
+</a>
+<div class="content-icon-container">
+<div class="view-this-page">
+<a class="muted-link" href="../_sources/programming/samples.rst.txt" title="View this page">
+<svg><use href="#svg-eye"></use></svg>
+<span class="visually-hidden">View this page</span>
+</a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-content-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+<article id="furo-main-content" role="main">
+<section id="sample">
+<span id="id1"></span><h1 data-bi="bi-1">代码示例<a class="headerlink" href="#sample" title="链接到此标题。">#</a></h1><div class="en-orig en-h" data-for="bi-1" lang="en">Code samples</div>
+<div class="mt-notice admonition note">
+<p class="admonition-title">备注</p>
+<p>本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 <code class="docutils literal notranslate"><span class="pre">术语表.md</span></code> 。</p>
+</div>
+<p data-bi="bi-2">MuJoCo 附带了几个提供实用功能的代码示例。其中一些相当复杂（尤其是 <a class="reference internal" href="#sasimulate"><span class="std std-ref">simulate.cc</span></a>），但我们仍然希望它们能帮助用户学习如何使用该库进行编程。</p><div class="en-orig" data-for="bi-2" lang="en">MuJoCo comes with several code samples providing useful functionality. Some of them are quite elaborate
+(<a class="reference internal" href="#sasimulate"><span class="std std-ref">simulate.cc</span></a> in particular) but nevertheless we hope that they will help users learn how to program
+with the library.</div>
+<section id="satestspeed">
+<span id="id2"></span><h2><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/sample/testspeed.cc">testspeed</a><a class="headerlink" href="#satestspeed" title="链接到此标题。">#</a></h2>
+<p data-bi="bi-3">该代码示例对给定模型的仿真进行计时。计时方式很直接：对被动动力学（可选地加入控制噪声）按指定的步数进行展开，同时从内部性能分析中收集接触数量、标量约束数量和 CPU 时间的统计信息，然后将结果打印到控制台。如果要仿真受控动力学而非被动动力学，可以安装控制回调 <a class="reference internal" href="../APIreference/APIglobals.html#mjcb-control"><span class="std std-ref">mjcb_control</span></a>，或者按照下文<a class="reference internal" href="simulation.html#sisimulation"><span class="std std-ref">仿真循环</span></a>一节的说明修改代码以显式设置控制信号。这个命令行工具的运行方式为</p><div class="en-orig" data-for="bi-3" lang="en">This code sample times the simulation of a given model. The timing is straightforward: the simulation of the passive
+dynamics (with optional control noise) is rolled-out for the specified number of steps, while collecting statistics
+about the number of contacts, scalar constraints, and CPU times from internal profiling. The results are then printed to
+the console. To simulate controlled dynamics instead of passive dynamics one can either install a control callback
+<a class="reference internal" href="../APIreference/APIglobals.html#mjcb-control"><span class="std std-ref">mjcb_control</span></a>, or modify the code to set control signals explicitly, as explained in the <a class="reference internal" href="simulation.html#sisimulation"><span class="std std-ref">simulation loop</span></a> section below. This command-line utility is run with</div>
+<div class="highlight-Shell notranslate"><div class="highlight"><pre><span></span>testspeed<span class="w"> </span><span class="o">[</span>options<span class="o">]</span><span class="w"> </span>model
+</pre></div>
+</div>
+<p data-bi="bi-4">其中命令行选项和参数为</p><div class="en-orig" data-for="bi-4" lang="en">Where the command-line options and arguments are</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-left" style="width: 95%">
+<colgroup>
+<col style="width: 28.6%"/>
+<col style="width: 14.3%"/>
+<col style="width: 57.1%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-5">选项</p><div class="en-orig" data-for="bi-5" lang="en">Option</div></th>
+<th class="head"><p data-bi="bi-6">默认值</p><div class="en-orig" data-for="bi-6" lang="en">Default</div></th>
+<th class="head"><p data-bi="bi-7">含义</p><div class="en-orig" data-for="bi-7" lang="en">Meaning</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">model</span></code></p></td>
+<td><p data-bi="bi-8">（必需）</p><div class="en-orig" data-for="bi-8" lang="en">(required)</div></td>
+<td><p data-bi="bi-9">模型路径（位置参数）</p><div class="en-orig" data-for="bi-9" lang="en">path to model (positional argument)</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--nstep=N</span></code></p></td>
+<td><p>10000</p></td>
+<td><p data-bi="bi-10">每次展开的步数</p><div class="en-orig" data-for="bi-10" lang="en">number of steps per rollout</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--nthread=N</span></code></p></td>
+<td><p>1</p></td>
+<td><p data-bi="bi-11">并行展开所用的线程数</p><div class="en-orig" data-for="bi-11" lang="en">number of threads running parallel rollouts</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--noisestd=X</span></code></p></td>
+<td><p>0.01</p></td>
+<td><p data-bi="bi-12">注入执行器的伪随机噪声的尺度</p><div class="en-orig" data-for="bi-12" lang="en">scale of pseudo-random noise injected into actuators</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--noiserate=X</span></code></p></td>
+<td><p>0.1</p></td>
+<td><p data-bi="bi-13">向 ctrl 关键帧/中点收敛的速率</p><div class="en-orig" data-for="bi-13" lang="en">rate of convergence to ctrl keyframe/midpoint</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--nenginethread=N</span></code></p></td>
+<td><p>0</p></td>
+<td><p data-bi="bi-14">引擎内部线程池中的工作线程数</p><div class="en-orig" data-for="bi-14" lang="en">number of worker threads in engine-internal threadpool</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--solver=S</span></code></p></td>
+<td><p>Newton</p></td>
+<td><p data-bi="bi-15">覆盖约束求解器算法（PGS、CG、Newton）</p><div class="en-orig" data-for="bi-15" lang="en">override constraint solver algorithm (PGS, CG, Newton)</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--cone=C</span></code></p></td>
+<td><p>Pyramidal</p></td>
+<td><p data-bi="bi-16">覆盖摩擦锥类型（Pyramidal、Elliptic）</p><div class="en-orig" data-for="bi-16" lang="en">override friction cone type (Pyramidal, Elliptic)</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--jacobian=J</span></code></p></td>
+<td><p>Auto</p></td>
+<td><p data-bi="bi-17">覆盖约束雅可比矩阵类型（Dense、Sparse、Auto）</p><div class="en-orig" data-for="bi-17" lang="en">override constraint Jacobian type (Dense, Sparse, Auto)</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--integrator=I</span></code></p></td>
+<td><p>Euler</p></td>
+<td><p data-bi="bi-18">覆盖积分模式（Euler、RK4、Implicit、ImplicitFast）</p><div class="en-orig" data-for="bi-18" lang="en">override integration mode (Euler, RK4, Implicit, ImplicitFast)</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--iterations=N</span></code></p></td>
+<td><p>100</p></td>
+<td><p data-bi="bi-19">覆盖求解器迭代次数上限</p><div class="en-orig" data-for="bi-19" lang="en">override solver iterations limit</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--tolerance=X</span></code></p></td>
+<td><p>1e-8</p></td>
+<td><p data-bi="bi-20">覆盖求解器收敛容差</p><div class="en-orig" data-for="bi-20" lang="en">override solver convergence tolerance</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--sleep_tolerance=X</span></code></p></td>
+<td><p>1e-4</p></td>
+<td><p data-bi="bi-21">覆盖休眠容差</p><div class="en-orig" data-for="bi-21" lang="en">override sleep tolerance</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--noslip_iterations=N</span></code></p></td>
+<td><p>0</p></td>
+<td><p data-bi="bi-22">覆盖 noslip 求解器迭代次数上限</p><div class="en-orig" data-for="bi-22" lang="en">override noslip solver iterations limit</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p data-bi="bi-23"><strong>注意事项：</strong></p><div class="en-orig" data-for="bi-23" lang="en"><strong>Notes:</strong></div>
+<ul class="simple">
+<li><p data-bi="bi-24">当指定 <code class="docutils literal notranslate"><span class="pre">nthread</span> <span class="pre">&gt;</span> <span class="pre">1</span></code> 时，代码会分配一个 mjModel 和每个线程各自的 mjData，并并行运行 <code class="docutils literal notranslate"><span class="pre">nthread</span></code> 个相同的仿真。这会在所有核心都处于活动状态的情况下测试性能，如同在并行收集样本的强化学习场景中一样。最优的 <code class="docutils literal notranslate"><span class="pre">nthread</span></code> 通常等于逻辑核心数。</p><div class="en-orig" data-for="bi-24" lang="en">When <code class="docutils literal notranslate"><span class="pre">nthread</span> <span class="pre">&gt;</span> <span class="pre">1</span></code> is specified, the code allocates a single mjModel and per-thread mjData, and runs <code class="docutils literal notranslate"><span class="pre">nthread</span></code>
+identical simulations in parallel. This tests performance with all cores active, as in Reinforcement
+Learning scenarios where samples are collected in parallel. The optimal <code class="docutils literal notranslate"><span class="pre">nthread</span></code> usually equals the number of
+logical cores.</div></li>
+<li><p data-bi="bi-25">默认情况下，仿真从模型的参考构型（reference configuration）以零速度开始。但是，如果模型中存在名为 "test" 的关键帧（keyframe），则以该关键帧作为初始状态。</p><div class="en-orig" data-for="bi-25" lang="en">By default, the simulation starts from the model reference configuration with zero velocities. However, if a
+keyframe named “test” is present in the model, it is used as the initial state.</div></li>
+<li><p data-bi="bi-26">物理选项覆盖标志（如 <code class="docutils literal notranslate"><span class="pre">--solver</span></code>）只有在命令行中被显式指定时才会覆盖模型设置；否则，保留 XML 文件中配置的模型选项。</p><div class="en-orig" data-for="bi-26" lang="en">The physics option override flags (such as <code class="docutils literal notranslate"><span class="pre">--solver</span></code>) only override the model settings if they are explicitly
+specified on the command line; otherwise, the model options configured in the XML file are preserved.</div></li>
+<li><p data-bi="bi-27">控制噪声参数（<code class="docutils literal notranslate"><span class="pre">noisestd</span></code> 和 <code class="docutils literal notranslate"><span class="pre">noiserate</span></code>）可以防止模型稳定到静止状态；在静止状态下，由于热启动（warmstart），测得的仿真速度会被人为地加快。</p><div class="en-orig" data-for="bi-27" lang="en">The control noise arguments (<code class="docutils literal notranslate"><span class="pre">noisestd</span></code> and <code class="docutils literal notranslate"><span class="pre">noiserate</span></code>) prevent models from settling into a static state where,
+due to warmstarts, one can measure artificially faster simulation.</div></li>
+<li><p data-bi="bi-28">当指定 <code class="docutils literal notranslate"><span class="pre">nenginethread</span> <span class="pre">&gt;</span> <span class="pre">0</span></code> 时，会创建一个包含指定数量工作线程（不含调用线程）的引擎内部线程池，用于加速大型场景的仿真。请注意，虽然可以同时使用 <code class="docutils literal notranslate"><span class="pre">nthread</span></code> 和 <code class="docutils literal notranslate"><span class="pre">nenginethread</span></code>，但需要这两种不同多线程方式的场景通常是互斥的。</p><div class="en-orig" data-for="bi-28" lang="en">When <code class="docutils literal notranslate"><span class="pre">nenginethread</span> <span class="pre">&gt;</span> <span class="pre">0</span></code> is specified, an engine-internal thread pool is created with the specified number of
+worker threads (in addition to the calling thread), to speed up simulation of large scenes. Note that while it is
+possible to use both <code class="docutils literal notranslate"><span class="pre">nthread</span></code> and <code class="docutils literal notranslate"><span class="pre">nenginethread</span></code>, the scenarios for which one would want these different types
+of multithreading are usually mutually exclusive.</div></li>
+<li><p data-bi="bi-29">为了获得更可重复的性能统计数据，请在 Linux 上以 <code class="docutils literal notranslate"><span class="pre">performance</span></code> <a class="reference external" href="https://www.kernel.org/doc/Documentation/cpu-freq/governors.txt">调速器</a>（governor）运行该工具，或在 Windows 上使用 <code class="docutils literal notranslate"><span class="pre">High</span> <span class="pre">Performance</span></code> 电源计划，以减少 CPU 频率缩放带来的噪声。</p><div class="en-orig" data-for="bi-29" lang="en">For more repeatable performance statistics, run the tool with the <code class="docutils literal notranslate"><span class="pre">performance</span></code>
+<a class="reference external" href="https://www.kernel.org/doc/Documentation/cpu-freq/governors.txt">governor</a> on Linux, or the
+<code class="docutils literal notranslate"><span class="pre">High</span> <span class="pre">Performance</span></code> power plan on Windows, to reduce noise from CPU scaling.</div></li>
+<li><p data-bi="bi-30">许多现代 CPU 同时包含“性能”核心和“能效”核心。用户应考虑将进程限制在同一类型的核心上运行，以获得更易于解释的性能统计数据。这可以在 Linux 上通过 <a class="reference external" href="https://man7.org/linux/man-pages/man1/taskset.1.html">taskset</a> 命令完成，或在 Windows 上通过 <a class="reference external" href="https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/start">start /affinity</a> 命令完成（在 macOS 上无法通过有文档记录的 API 方式指定处理器亲和性）。</p><div class="en-orig" data-for="bi-30" lang="en">Many modern CPUs contain a mixture of “performance” and “efficiency” cores. Users should consider restricting the
+process to only run on the same type of cores for more interpretable performance statistics. This can be done via the
+<a class="reference external" href="https://man7.org/linux/man-pages/man1/taskset.1.html">taskset</a> command on Linux, or the
+<a class="reference external" href="https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/start">start /affinity</a>
+command on Windows (processor affinity cannot be specified through documented API means on macOS).</div></li>
+</ul>
+</section>
+<section id="sasimulate">
+<span id="id3"></span><h2><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/simulate">simulate</a><a class="headerlink" href="#sasimulate" title="链接到此标题。">#</a></h2>
+<p data-bi="bi-31">该代码示例是一个功能完备的交互式仿真器。它使用与平台无关的 GLFW 库打开一个 OpenGL 窗口，并在其中渲染仿真状态。它带有内置帮助、仿真统计信息、性能分析器和传感器（sensor）数据曲线。模型文件可以作为命令行参数指定，也可以在运行时通过拖放加载。该代码示例使用原生 UI 来渲染各种控件，并展示了新 UI 框架的预期用法。下面是 <code class="docutils literal notranslate"><span class="pre">simulate</span></code> 运行时的屏幕录像：</p><div class="en-orig" data-for="bi-31" lang="en">This code sample is a fully-featured interactive simulator. It opens an OpenGL window using the platform-independent
+GLFW library, and renders the simulation state in it. There is built-in help, simulation statistics, profiler, sensor
+data plots. The model file can be specified as a command-line argument, or loaded at runtime using drag-and-drop
+functionality. This code sample uses the native UI to render various controls, and provides an
+illustration of how the new UI framework is intended to be used. Below is a screen-capture of <code class="docutils literal notranslate"><span class="pre">simulate</span></code> in action:</div>
+<div class="video_wrapper align-center" style="padding-bottom: 53.437500%; padding-top: 30px; position: relative; text-align: center; width: 95%">
+<iframe allowfullscreen="true" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/P83tKA1iz2Y" style="border: 0; height: 100%; left: 0; position: absolute; top: 0; width: 100%">
+</iframe></div><p data-bi="bi-32">交互通过鼠标完成；按 <code class="docutils literal notranslate"><span class="pre">F1</span></code> 键可以查看内置帮助，其中汇总了可用命令。简而言之，左键双击可选中物体。随后用户可以按住 Ctrl 并拖动鼠标，对选中的物体施加力和力矩。单独拖动鼠标（不按 Ctrl）则移动相机。还有用于暂停仿真、重置和重新加载模型文件的键盘快捷键。后一项功能在 XML 编辑器中编辑模型时非常有用。完整的快捷键见下文的 <a class="reference internal" href="#sasimulateshortcuts"><span class="std std-ref">快捷键</span></a>。</p><div class="en-orig" data-for="bi-32" lang="en">Interaction is done with the mouse; built-in help with a summary of available commands is available by pressing the
+<code class="docutils literal notranslate"><span class="pre">F1</span></code> key. Briefly, an object is selected by left-double-click. The user can then apply forces and torques on the
+selected object by holding Ctrl and dragging the mouse. Dragging the mouse alone (without Ctrl) moves the camera. There
+are keyboard shortcuts for pausing the simulation, resetting, and re-loading the model file. The latter functionality is
+very useful while editing the model in an XML editor. The complete set of shortcuts is given in
+<a class="reference internal" href="#sasimulateshortcuts"><span class="std std-ref">Shortcuts</span></a> below.</div>
+<section id="sasimulateshortcuts">
+<span id="id4"></span><h3 data-bi="bi-33">快捷键<a class="headerlink" href="#sasimulateshortcuts" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-33" lang="en">Shortcuts</div>
+<p data-bi="bi-34"><code class="docutils literal notranslate"><span class="pre">F1</span></code> 帮助浮层列出了最常用的命令。下面的表格是完整的参考，同样适用于通过 <a class="reference internal" href="../python.html#pyviewer"><span class="std std-ref">mujoco.viewer</span></a> 启动的 Python 查看器，因为它基于相同的 <code class="docutils literal notranslate"><span class="pre">Simulate</span></code> UI 构建。在被动模式下（单步推进由用户代码驱动），用于单步执行或暂停仿真的快捷键不起作用。</p><div class="en-orig" data-for="bi-34" lang="en">The <code class="docutils literal notranslate"><span class="pre">F1</span></code> help overlay lists the most common commands. The tables below are the complete reference, and also apply to
+the Python viewer launched with <a class="reference internal" href="../python.html#pyviewer"><span class="std std-ref">mujoco.viewer</span></a>, which is built on the same <code class="docutils literal notranslate"><span class="pre">Simulate</span></code> UI. Shortcuts
+that step or pause the simulation have no effect in passive mode, where stepping is driven by user code.</div>
+<p data-bi="bi-35">除了这里列出的快捷键之外，当鼠标右键按住并悬停在 UI 面板上时，每个 UI 控件都会显示其各自的快捷键。</p><div class="en-orig" data-for="bi-35" lang="en">In addition to the shortcuts listed here, every UI control shows its own shortcut when the right mouse button is held
+over the UI panel.</div>
+<section id="id5">
+<h4 data-bi="bi-36">仿真与相机<a class="headerlink" href="#id5" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-36" lang="en">Simulation and camera</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-left" style="width: 95%">
+<colgroup>
+<col style="width: 25.0%"/>
+<col style="width: 75.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-37">按键</p><div class="en-orig" data-for="bi-37" lang="en">Key</div></th>
+<th class="head"><p data-bi="bi-38">操作</p><div class="en-orig" data-for="bi-38" lang="en">Action</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Space</span></code></p></td>
+<td><p data-bi="bi-39">播放 / 暂停</p><div class="en-orig" data-for="bi-39" lang="en">Play / pause</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Right</span> <span class="pre">arrow</span></code></p></td>
+<td><p data-bi="bi-40">向前单步</p><div class="en-orig" data-for="bi-40" lang="en">Step forward</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Left</span> <span class="pre">arrow</span></code></p></td>
+<td><p data-bi="bi-41">通过历史缓冲区向后单步</p><div class="en-orig" data-for="bi-41" lang="en">Step backward, through the history buffer</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-42"><code class="docutils literal notranslate"><span class="pre">+</span></code>（实际为 <code class="docutils literal notranslate"><span class="pre">=</span></code>）</p><div class="en-orig" data-for="bi-42" lang="en"><code class="docutils literal notranslate"><span class="pre">+</span></code> (actually <code class="docutils literal notranslate"><span class="pre">=</span></code>)</div></td>
+<td><p data-bi="bi-43">加速</p><div class="en-orig" data-for="bi-43" lang="en">Speed up</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-</span></code></p></td>
+<td><p data-bi="bi-44">减速</p><div class="en-orig" data-for="bi-44" lang="en">Slow down</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Backspace</span></code></p></td>
+<td><p data-bi="bi-45">重置</p><div class="en-orig" data-for="bi-45" lang="en">Reset</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Ctrl</span> <span class="pre">C</span></code></p></td>
+<td><p data-bi="bi-46">将状态复制到剪贴板</p><div class="en-orig" data-for="bi-46" lang="en">Copy state to clipboard</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Ctrl</span> <span class="pre">L</span></code></p></td>
+<td><p data-bi="bi-47">重新加载模型</p><div class="en-orig" data-for="bi-47" lang="en">Reload the model</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Ctrl</span> <span class="pre">A</span></code></p></td>
+<td><p data-bi="bi-48">对齐自由相机</p><div class="en-orig" data-for="bi-48" lang="en">Align the free camera</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Esc</span></code></p></td>
+<td><p data-bi="bi-49">切换到自由相机</p><div class="en-orig" data-for="bi-49" lang="en">Switch to the free camera</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">[</span></code> / <code class="docutils literal notranslate"><span class="pre">]</span></code></p></td>
+<td><p data-bi="bi-50">向前 / 向后循环切换模型中定义的固定相机</p><div class="en-orig" data-for="bi-50" lang="en">Cycle down / up through the fixed cameras defined in the model</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Page</span> <span class="pre">Up</span></code></p></td>
+<td><p data-bi="bi-51">选中当前所选刚体的父刚体</p><div class="en-orig" data-for="bi-51" lang="en">Select the parent of the currently selected body</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Tab</span></code> / <code class="docutils literal notranslate"><span class="pre">Shift</span> <span class="pre">Tab</span></code></p></td>
+<td><p data-bi="bi-52">切换显示左 / 右 UI 面板</p><div class="en-orig" data-for="bi-52" lang="en">Toggle the left / right UI panel</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="id6">
+<h4 data-bi="bi-53">面板与文件<a class="headerlink" href="#id6" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-53" lang="en">Panels and files</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-left" style="width: 95%">
+<colgroup>
+<col style="width: 25.0%"/>
+<col style="width: 75.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-54">按键</p><div class="en-orig" data-for="bi-54" lang="en">Key</div></th>
+<th class="head"><p data-bi="bi-55">操作</p><div class="en-orig" data-for="bi-55" lang="en">Action</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">F1</span></code></p></td>
+<td><p data-bi="bi-56">切换帮助浮层</p><div class="en-orig" data-for="bi-56" lang="en">Toggle the help overlay</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">F2</span></code></p></td>
+<td><p data-bi="bi-57">切换信息浮层</p><div class="en-orig" data-for="bi-57" lang="en">Toggle the info overlay</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">F3</span></code></p></td>
+<td><p data-bi="bi-58">切换性能分析器</p><div class="en-orig" data-for="bi-58" lang="en">Toggle the profiler</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">F4</span></code></p></td>
+<td><p data-bi="bi-59">切换传感器曲线</p><div class="en-orig" data-for="bi-59" lang="en">Toggle the sensor plots</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">F5</span></code></p></td>
+<td><p data-bi="bi-60">切换全屏</p><div class="en-orig" data-for="bi-60" lang="en">Toggle fullscreen</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">F6</span></code></p></td>
+<td><p data-bi="bi-61">循环切换坐标系（frame）可视化</p><div class="en-orig" data-for="bi-61" lang="en">Cycle the frame visualization</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">F7</span></code></p></td>
+<td><p data-bi="bi-62">循环切换标签可视化</p><div class="en-orig" data-for="bi-62" lang="en">Cycle the label visualization</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Ctrl</span> <span class="pre">M</span></code></p></td>
+<td><p data-bi="bi-63">将模型打印到 <code class="docutils literal notranslate"><span class="pre">MJMODEL.TXT</span></code></p><div class="en-orig" data-for="bi-63" lang="en">Print the model to <code class="docutils literal notranslate"><span class="pre">MJMODEL.TXT</span></code></div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Ctrl</span> <span class="pre">D</span></code></p></td>
+<td><p data-bi="bi-64">将数据打印到 <code class="docutils literal notranslate"><span class="pre">MJDATA.TXT</span></code></p><div class="en-orig" data-for="bi-64" lang="en">Print the data to <code class="docutils literal notranslate"><span class="pre">MJDATA.TXT</span></code></div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Ctrl</span> <span class="pre">P</span></code></p></td>
+<td><p data-bi="bi-65">保存屏幕截图</p><div class="en-orig" data-for="bi-65" lang="en">Save a screenshot</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Ctrl</span> <span class="pre">Q</span></code></p></td>
+<td><p data-bi="bi-66">退出</p><div class="en-orig" data-for="bi-66" lang="en">Quit</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-67"><code class="docutils literal notranslate"><span class="pre">Alt</span></code> + 字母</p><div class="en-orig" data-for="bi-67" lang="en"><code class="docutils literal notranslate"><span class="pre">Alt</span></code> + letter</div></td>
+<td><p data-bi="bi-68">展开 / 折叠某个 UI 分区：<code class="docutils literal notranslate"><span class="pre">F</span></code> File、<code class="docutils literal notranslate"><span class="pre">O</span></code> Option、<code class="docutils literal notranslate"><span class="pre">S</span></code> Simulation、<code class="docutils literal notranslate"><span class="pre">W</span></code> Watch、<code class="docutils literal notranslate"><span class="pre">P</span></code> Physics、
+<code class="docutils literal notranslate"><span class="pre">R</span></code> Rendering、<code class="docutils literal notranslate"><span class="pre">V</span></code> Visualization、<code class="docutils literal notranslate"><span class="pre">G</span></code> Group enable、<code class="docutils literal notranslate"><span class="pre">L</span></code> Logging、<code class="docutils literal notranslate"><span class="pre">J</span></code> Joint、<code class="docutils literal notranslate"><span class="pre">C</span></code> Control、
+<code class="docutils literal notranslate"><span class="pre">E</span></code> Equality</p><div class="en-orig" data-for="bi-68" lang="en">Expand / collapse a UI section: <code class="docutils literal notranslate"><span class="pre">F</span></code> File, <code class="docutils literal notranslate"><span class="pre">O</span></code> Option, <code class="docutils literal notranslate"><span class="pre">S</span></code> Simulation, <code class="docutils literal notranslate"><span class="pre">W</span></code> Watch, <code class="docutils literal notranslate"><span class="pre">P</span></code> Physics,
+<code class="docutils literal notranslate"><span class="pre">R</span></code> Rendering, <code class="docutils literal notranslate"><span class="pre">V</span></code> Visualization, <code class="docutils literal notranslate"><span class="pre">G</span></code> Group enable, <code class="docutils literal notranslate"><span class="pre">L</span></code> Logging, <code class="docutils literal notranslate"><span class="pre">J</span></code> Joint, <code class="docutils literal notranslate"><span class="pre">C</span></code> Control,
+<code class="docutils literal notranslate"><span class="pre">E</span></code> Equality</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="id7">
+<h4 data-bi="bi-69">可见性分组<a class="headerlink" href="#id7" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-69" lang="en">Visibility groups</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-left" style="width: 95%">
+<colgroup>
+<col style="width: 25.0%"/>
+<col style="width: 75.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-70">按键</p><div class="en-orig" data-for="bi-70" lang="en">Key</div></th>
+<th class="head"><p data-bi="bi-71">操作</p><div class="en-orig" data-for="bi-71" lang="en">Action</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">0</span></code> … <code class="docutils literal notranslate"><span class="pre">5</span></code></p></td>
+<td><p data-bi="bi-72">切换 geom 组 0 … 5 的可见性</p><div class="en-orig" data-for="bi-72" lang="en">Toggle visibility of geom group 0 … 5</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Shift</span> <span class="pre">0</span></code> … <code class="docutils literal notranslate"><span class="pre">Shift</span> <span class="pre">5</span></code></p></td>
+<td><p data-bi="bi-73">切换 site 组 0 … 5 的可见性</p><div class="en-orig" data-for="bi-73" lang="en">Toggle visibility of site group 0 … 5</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="id8">
+<h4 data-bi="bi-74">可视化标志<a class="headerlink" href="#id8" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-74" lang="en">Visualization flags</div>
+<p data-bi="bi-75">这些快捷键用于切换 Rendering 分区中的抽象可视化标志，对应于 <code class="docutils literal notranslate"><span class="pre">mjVISSTRING</span></code> 中声明的快捷键。未分配快捷键的标志（Select Point、Flex 标志和 SDF iters）已省略。</p><div class="en-orig" data-for="bi-75" lang="en">These toggle the abstract visualization flags in the Rendering section, and correspond to the shortcuts declared in
+<code class="docutils literal notranslate"><span class="pre">mjVISSTRING</span></code>. Flags with no shortcut assigned (Select Point, the Flex flags and SDF iters) are omitted.</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-left" style="width: 95%">
+<colgroup>
+<col style="width: 12.5%"/>
+<col style="width: 37.5%"/>
+<col style="width: 12.5%"/>
+<col style="width: 37.5%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-76">按键</p><div class="en-orig" data-for="bi-76" lang="en">Key</div></th>
+<th class="head"><p data-bi="bi-77">标志</p><div class="en-orig" data-for="bi-77" lang="en">Flag</div></th>
+<th class="head"><p data-bi="bi-78">按键</p><div class="en-orig" data-for="bi-78" lang="en">Key</div></th>
+<th class="head"><p data-bi="bi-79">标志</p><div class="en-orig" data-for="bi-79" lang="en">Flag</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">H</span></code></p></td>
+<td><p>Convex Hull</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">X</span></code></p></td>
+<td><p>Texture</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">J</span></code></p></td>
+<td><p>Joint</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Q</span></code></p></td>
+<td><p>Camera</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">U</span></code></p></td>
+<td><p>Actuator</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">,</span></code></p></td>
+<td><p>Activation</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Z</span></code></p></td>
+<td><p>Light</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">V</span></code></p></td>
+<td><p>Tendon</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Y</span></code></p></td>
+<td><p>Range Finder</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">E</span></code></p></td>
+<td><p>Equality</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">I</span></code></p></td>
+<td><p>Inertia</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">'</span></code></p></td>
+<td><p>Scale Inertia</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">B</span></code></p></td>
+<td><p>Perturb Force</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">O</span></code></p></td>
+<td><p>Perturb Object</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">C</span></code></p></td>
+<td><p>Contact Point</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">N</span></code></p></td>
+<td><p>Island</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">F</span></code></p></td>
+<td><p>Contact Force</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">P</span></code></p></td>
+<td><p>Contact Split</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">T</span></code></p></td>
+<td><p>Transparent</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">A</span></code></p></td>
+<td><p>Auto Connect</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">M</span></code></p></td>
+<td><p>Center of Mass</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">D</span></code></p></td>
+<td><p>Static Body</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">;</span></code></p></td>
+<td><p>Skin</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">`</span></code></p></td>
+<td><p>Body Tree</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">\</span></code></p></td>
+<td><p>Mesh Tree</p></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="id9">
+<h4 data-bi="bi-80">渲染标志<a class="headerlink" href="#id9" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-80" lang="en">Rendering flags</div>
+<p data-bi="bi-81">这些快捷键用于切换 Rendering 分区中的 OpenGL 效果，对应于 <code class="docutils literal notranslate"><span class="pre">mjRNDSTRING</span></code> 中声明的快捷键。未分配快捷键的标志（Depth、Id Color 和 Cull Face）已省略。</p><div class="en-orig" data-for="bi-81" lang="en">These toggle the OpenGL effects in the Rendering section, and correspond to the shortcuts declared in <code class="docutils literal notranslate"><span class="pre">mjRNDSTRING</span></code>.
+Flags with no shortcut assigned (Depth, Id Color and Cull Face) are omitted.</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-left" style="width: 95%">
+<colgroup>
+<col style="width: 12.5%"/>
+<col style="width: 37.5%"/>
+<col style="width: 12.5%"/>
+<col style="width: 37.5%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-82">按键</p><div class="en-orig" data-for="bi-82" lang="en">Key</div></th>
+<th class="head"><p data-bi="bi-83">标志</p><div class="en-orig" data-for="bi-83" lang="en">Flag</div></th>
+<th class="head"><p data-bi="bi-84">按键</p><div class="en-orig" data-for="bi-84" lang="en">Key</div></th>
+<th class="head"><p data-bi="bi-85">标志</p><div class="en-orig" data-for="bi-85" lang="en">Flag</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">S</span></code></p></td>
+<td><p>Shadow</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">W</span></code></p></td>
+<td><p>Wireframe</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">R</span></code></p></td>
+<td><p>Reflection</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">L</span></code></p></td>
+<td><p>Additive</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">K</span></code></p></td>
+<td><p>Skybox</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">G</span></code></p></td>
+<td><p>Fog</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">/</span></code></p></td>
+<td><p>Haze</p></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="id10">
+<h4 data-bi="bi-86">鼠标<a class="headerlink" href="#id10" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-86" lang="en">Mouse</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-left" style="width: 95%">
+<colgroup>
+<col style="width: 40.0%"/>
+<col style="width: 60.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-87">操作</p><div class="en-orig" data-for="bi-87" lang="en">Action</div></th>
+<th class="head"><p data-bi="bi-88">效果</p><div class="en-orig" data-for="bi-88" lang="en">Effect</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p data-bi="bi-89">左键拖动</p><div class="en-orig" data-for="bi-89" lang="en">Left drag</div></td>
+<td><p data-bi="bi-90">环绕相机</p><div class="en-orig" data-for="bi-90" lang="en">Orbit the camera</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-91">右键拖动</p><div class="en-orig" data-for="bi-91" lang="en">Right drag</div></td>
+<td><p data-bi="bi-92">在垂直平面内平移相机</p><div class="en-orig" data-for="bi-92" lang="en">Pan camera in vertical plane</div></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-93"><code class="docutils literal notranslate"><span class="pre">Shift</span></code> 右键拖动</p><div class="en-orig" data-for="bi-93" lang="en"><code class="docutils literal notranslate"><span class="pre">Shift</span></code> right drag</div></td>
+<td><p data-bi="bi-94">在水平平面内平移相机</p><div class="en-orig" data-for="bi-94" lang="en">Pan camera in horizontal plane</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-95">滚轮，或中键拖动</p><div class="en-orig" data-for="bi-95" lang="en">Scroll, or middle drag</div></td>
+<td><p data-bi="bi-96">缩放</p><div class="en-orig" data-for="bi-96" lang="en">Zoom</div></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-97">双击</p><div class="en-orig" data-for="bi-97" lang="en">Double-click</div></td>
+<td><p data-bi="bi-98">选中物体</p><div class="en-orig" data-for="bi-98" lang="en">Select an object</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-99">右键双击</p><div class="en-orig" data-for="bi-99" lang="en">Right double-click</div></td>
+<td><p data-bi="bi-100">将相机居中于所点击的点</p><div class="en-orig" data-for="bi-100" lang="en">Center the camera on the clicked point</div></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-101"><code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> 右键双击</p><div class="en-orig" data-for="bi-101" lang="en"><code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> right double-click</div></td>
+<td><p data-bi="bi-102">跟踪所选刚体</p><div class="en-orig" data-for="bi-102" lang="en">Track the selected body</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-103"><code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> 拖动</p><div class="en-orig" data-for="bi-103" lang="en"><code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> drag</div></td>
+<td><p data-bi="bi-104">旋转所选物体</p><div class="en-orig" data-for="bi-104" lang="en">Rotate the selected object</div></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-105"><code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> 右键拖动</p><div class="en-orig" data-for="bi-105" lang="en"><code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> right drag</div></td>
+<td><p data-bi="bi-106">在垂直平面内平移物体</p><div class="en-orig" data-for="bi-106" lang="en">Translate object in vertical plane</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-107"><code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> <code class="docutils literal notranslate"><span class="pre">Shift</span></code> 右键拖动</p><div class="en-orig" data-for="bi-107" lang="en"><code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> <code class="docutils literal notranslate"><span class="pre">Shift</span></code> right drag</div></td>
+<td><p data-bi="bi-108">在水平平面内平移物体</p><div class="en-orig" data-for="bi-108" lang="en">Translate object in horizontal plane</div></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-109">在 UI 上按住右键</p><div class="en-orig" data-for="bi-109" lang="en">Right-button hold over the UI</div></td>
+<td><p data-bi="bi-110">显示每个 UI 控件的快捷键</p><div class="en-orig" data-for="bi-110" lang="en">Show the shortcut of each UI control</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-111">双击 UI 分区标题</p><div class="en-orig" data-for="bi-111" lang="en">Double-click a UI section title</div></td>
+<td><p data-bi="bi-112">展开 / 折叠所有分区</p><div class="en-orig" data-for="bi-112" lang="en">Expand / collapse all sections</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p data-bi="bi-113">代码很长，但注释相当充分，因此最好直接阅读。这里我们给出一个高层概述。<code class="docutils literal notranslate"><span class="pre">main()</span></code> 函数初始化 MuJoCo 和 GLFW，打开一个窗口，并安装用于处理鼠标和键盘的 GLFW 回调。请注意这里没有渲染回调；GLFW 把控制权交给用户，而不是在幕后运行渲染循环。主循环处理 UI 事件和渲染。仿真在后台线程中处理，并与主线程同步。</p><div class="en-orig" data-for="bi-113" lang="en">The code is long yet reasonably commented, so it is best to just read it. Here we provide a high-level overview.
+The <code class="docutils literal notranslate"><span class="pre">main()</span></code> function initializes both MuJoCo and GLFW, opens a window, and install GLFW callbacks for mouse and
+keyboard handling. Note that there is no render callback; GLFW puts the user in charge, instead of running a rendering
+loop behind the scenes. The main loop handles UI events and rendering. The simulation is handled in a background
+thread, which is synchronized with the main thread.</div>
+<p data-bi="bi-114">鼠标和键盘回调执行所需的各种操作。其中许多操作调用了 MuJoCo 的<a class="reference internal" href="visualization.html#abstract"><span class="std std-ref">抽象可视化</span></a>机制所提供的功能。实际上，该机制的设计目的就是或多或少直接挂接到鼠标和键盘事件上，并提供相机以及扰动控制。</p><div class="en-orig" data-for="bi-114" lang="en">The mouse and keyboard callbacks perform whatever action is necessary. Many of these actions invoke functionality
+provided by MuJoCo’s <a class="reference internal" href="visualization.html#abstract"><span class="std std-ref">abstract visualization</span></a> mechanism. Indeed this mechanism is designed to be
+hooked to mouse and keyboard events more or less directly, and provides camera as well as perturbation control.</div>
+<p data-bi="bi-115">性能分析器和传感器数据曲线展示了 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-figure"><span class="std std-ref">mjr_figure</span></a> 函数的用法，该函数可以绘制带有网格、标注、坐标轴缩放等功能的复杂二维图形。性能分析器中显示的信息提取自 mjData 的诊断字段。它是调节约束求解器算法参数的非常有用的工具。模型中定义的传感器的输出以条形图的形式显示。</p><div class="en-orig" data-for="bi-115" lang="en">The profiler and sensor data plots illustrate the use of the <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-figure"><span class="std std-ref">mjr_figure</span></a> function
+that can plot elaborate 2D figures with grids, annotation, axis scaling etc. The information presented in the profiler
+is extracted from the diagnostic fields of mjData. It is a very useful tool for tuning the parameters of the
+constraint solver algorithms. The outputs of the sensors defined in the model are visualized as a bar graph.</div>
+<p data-bi="bi-116">请注意，性能分析器显示的是用高分辨率计时器收集的计时信息。在 Windows 上，根据电源设置，操作系统可能会降低 CPU 频率；这是因为 <a class="reference internal" href="#sasimulate"><span class="std std-ref">simulate.cc</span></a> 大部分时间处于休眠状态，以便减慢到实时速度。这会导致计时不准确。要避免这个问题，请更改 Windows 电源计划，使最小处理器状态为 100%。</p><div class="en-orig" data-for="bi-116" lang="en">Note that the profiler shows timing information collected with high-resolution timers. On Windows, depending on the
+power settings, the OS may reduce the CPU frequency; this is because <a class="reference internal" href="#sasimulate"><span class="std std-ref">simulate.cc</span></a> sleeps most of
+the time in order to slow down to realtime. This results in inaccurate timings. To avoid this problem, change the
+Windows power plan so that the minimum processor state is 100%.</div>
+</section>
+</section>
+</section>
+<section id="sacompile">
+<span id="id11"></span><h2><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/sample/compile.cc">compile</a><a class="headerlink" href="#sacompile" title="链接到此标题。">#</a></h2>
+<p data-bi="bi-117">该代码示例调用内置的解析器和编译器。它实现了从（MJCF、URDF、MJB）格式到（MJCF、MJB、TXT）格式的所有可能的模型转换。模型按照<a class="reference internal" href="modeledit.html#mesaving"><span class="std std-ref">模型编码与保存</span></a>所述的方式保存为 MJCF：默认情况下，保存的是编译后得到的值，采用格式的规范子集，因此 MJCF 到 MJCF 的转换通常会得到不同的文件；当 <a class="reference internal" href="../XMLreference.html#compiler-savecompiled"><span class="std std-ref">savecompiled</span></a> 为 "false" 时，则按原样写出，这会保留其记法，但不保留注释、<a class="reference internal" href="../XMLreference.html#include"><span class="std std-ref">include</span></a> 元素以及被解析器展开的元素。TXT 格式是模型的一份人类可读的路线图。它不能被 MuJoCo 加载，但在模型开发期间可以是非常有用的辅助。它与编译后的 mjModel 一一对应。另请注意，可以使用函数 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-printdata"><span class="std std-ref">mj_printData</span></a> 创建与 mjData 一一对应的文本文件，不过该代码示例并未这样做。</p><div class="en-orig" data-for="bi-117" lang="en">This code sample invokes the built-in parser and compiler. It implements all possible model conversions from (MJCF,
+URDF, MJB) format to (MJCF, MJB, TXT) format. Models are saved as MJCF as <a class="reference internal" href="modeledit.html#mesaving"><span class="std std-ref">Model Encoding &amp; Saving</span></a>
+describes: by default with the values which compilation made of them, in a canonical subset of the format, so that
+MJCF-to-MJCF conversion will generally result in a different file; with <a class="reference internal" href="../XMLreference.html#compiler-savecompiled"><span class="std std-ref">savecompiled</span></a>
+“false”, as they are written, which keeps their notation but not their comments, <a class="reference internal" href="../XMLreference.html#include"><span class="std std-ref">include</span></a> elements and
+the elements which the parser expands.
+The TXT format is a human-readable road-map to the model. It cannot be loaded by MuJoCo, but can be a very useful aid
+during model development. It is in one-to-one correspondence with the compiled mjModel. Note also that one can use the
+function <a class="reference internal" href="../APIreference/APIfunctions.html#mj-printdata"><span class="std std-ref">mj_printData</span></a> to create a text file which is in one-to-one correspondence
+with mjData, although this is not done by the code sample.</div>
+<p data-bi="bi-118">如果输入文件是 MJCF 或 URDF 且输出文件为空，则会执行两次编译，以衡量编译器<a class="reference internal" href="../APIreference/APIfunctions.html#assetcache"><span class="std std-ref">资源缓存</span></a>的影响。每次编译都会打印详细的计时明细，显示总时间、资源处理时间（挂钟时间）以及网格和纹理各类别的 CPU 时间。这些计时数据通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-gettimer"><span class="std std-ref">mjs_getTimer</span></a> 从 <a class="reference internal" href="../APIreference/APItypes.html#mjtctimer"><span class="std std-ref">mjtCTimer</span></a> 字段中读取，在任何一次 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-compile"><span class="std std-ref">mj_compile</span></a> 调用之后都可以通过编程方式读取。</p><div class="en-orig" data-for="bi-118" lang="en">If the input file is MJCF or URDF and the output file is empty, compilation is performed twice to measure the impact
+of the compiler’s <a class="reference internal" href="../APIreference/APIfunctions.html#assetcache"><span class="std std-ref">asset cache</span></a>. A detailed timing breakdown is printed for each compilation, showing
+total time, asset processing time (wall clock), and per-category CPU times for meshes and textures. These timings are
+read from the <a class="reference internal" href="../APIreference/APItypes.html#mjtctimer"><span class="std std-ref">mjtCTimer</span></a> fields via <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-gettimer"><span class="std std-ref">mjs_getTimer</span></a>, which can be read programmatically
+after any call to <a class="reference internal" href="../APIreference/APIfunctions.html#mj-compile"><span class="std std-ref">mj_compile</span></a>.</div>
+</section>
+<section id="sabasic">
+<span id="id12"></span><h2><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/sample/basic.cc">basic</a><a class="headerlink" href="#sabasic" title="链接到此标题。">#</a></h2>
+<p data-bi="bi-119">该代码示例是一个最小化的交互式仿真器。模型文件必须作为命令行参数提供。它使用与平台无关的 GLFW 库打开一个 OpenGL 窗口，以 60 fps 渲染仿真状态，同时以实时速度推进仿真。按 Backspace 可重置仿真。可以用鼠标控制相机：左键拖动旋转，右键拖动在垂直平面内平移，Shift 加右键拖动在水平平面内平移，滚轮或中键拖动缩放。</p><div class="en-orig" data-for="bi-119" lang="en">This code sample is a minimal interactive simulator. The model file must be provided as command-line argument. It
+opens an OpenGL window using the platform-independent GLFW library, and renders the simulation state at 60 fps while
+advancing the simulation in real-time. Press Backspace to reset the simulation. The mouse can be used to control the
+camera: left drag to rotate, right drag to translate in the vertical plane, shift right drag to translate in the
+horizontal plane, scroll or middle drag to zoom.</div>
+<p data-bi="bi-120">下文的 <a class="reference internal" href="visualization.html#visualization"><span class="std std-ref">可视化</span></a> 编程指南解释了可视化的工作原理。该代码示例是对该指南中各概念的最小化演示。</p><div class="en-orig" data-for="bi-120" lang="en">The <a class="reference internal" href="visualization.html#visualization"><span class="std std-ref">Visualization</span></a> programming guide below explains how visualization works. This code sample is a minimal
+illustration of the concepts in that guide.</div>
+</section>
+<section id="sarender">
+<span id="id13"></span><h2><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/sample/render.cc">render</a><a class="headerlink" href="#sarender" title="链接到此标题。">#</a></h2>
+<p data-bi="bi-121">该代码示例将模型离屏渲染为单张 PNG 图像，或渲染为多帧原始 RGB24 帧流；该帧流可以保存为 <code class="docutils literal notranslate"><span class="pre">.rgb</span></code> 文件，或直接通过管道传给 <code class="docutils literal notranslate"><span class="pre">ffmpeg</span></code> 等工具。它既支持采用基于物理的渲染（PBR）的现代 Filament 渲染后端（<a class="reference internal" href="../APIreference/APIfunctions.html#filamentrenderingapi"><span class="std std-ref">mjrf</span></a>），也支持经典的 OpenGL 渲染器（<a class="reference internal" href="../APIreference/APItypes.html#mjrcontext"><span class="std std-ref">mjrContext</span></a>），并且以无头方式运行，无需创建交互式窗口。</p><div class="en-orig" data-for="bi-121" lang="en">This code sample renders a model offscreen into either a single PNG image or a multi-frame stream of raw RGB24 frames
+that can be saved to a <code class="docutils literal notranslate"><span class="pre">.rgb</span></code> file or piped directly to tools such as <code class="docutils literal notranslate"><span class="pre">ffmpeg</span></code>. It supports both the modern
+Filament rendering backend (<a class="reference internal" href="../APIreference/APIfunctions.html#filamentrenderingapi"><span class="std std-ref">mjrf</span></a>) with physically-based rendering (PBR) and the classic
+OpenGL renderer (<a class="reference internal" href="../APIreference/APItypes.html#mjrcontext"><span class="std std-ref">mjrContext</span></a>), running headless without creating an interactive window.</div>
+<div class="highlight-Shell notranslate"><div class="highlight"><pre><span></span>render<span class="w"> </span>model<span class="w"> </span><span class="o">[</span>output<span class="o">]</span><span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
+</pre></div>
+</div>
+<p data-bi="bi-122">其中命令行参数和选项为</p><div class="en-orig" data-for="bi-122" lang="en">Where the command-line arguments and options are</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-left" style="width: 95%">
+<colgroup>
+<col style="width: 28.6%"/>
+<col style="width: 14.3%"/>
+<col style="width: 57.1%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-123">选项</p><div class="en-orig" data-for="bi-123" lang="en">Option</div></th>
+<th class="head"><p data-bi="bi-124">默认值</p><div class="en-orig" data-for="bi-124" lang="en">Default</div></th>
+<th class="head"><p data-bi="bi-125">含义</p><div class="en-orig" data-for="bi-125" lang="en">Meaning</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">model</span></code></p></td>
+<td><p data-bi="bi-126">（必需）</p><div class="en-orig" data-for="bi-126" lang="en">(required)</div></td>
+<td><p data-bi="bi-127">模型路径（位置参数）</p><div class="en-orig" data-for="bi-127" lang="en">path to model (positional argument)</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">output</span></code></p></td>
+<td><p data-bi="bi-128">（默认）</p><div class="en-orig" data-for="bi-128" lang="en">(default)</div></td>
+<td><p data-bi="bi-129">输出路径（位置参数：<code class="docutils literal notranslate"><span class="pre">.png</span></code>、<code class="docutils literal notranslate"><span class="pre">.rgb</span></code>，或用 <code class="docutils literal notranslate"><span class="pre">-</span></code> 表示标准输出；默认为 <code class="docutils literal notranslate"><span class="pre">&lt;model&gt;.png</span></code>，当 <code class="docutils literal notranslate"><span class="pre">--duration</span> <span class="pre">&gt;</span> <span class="pre">0</span></code> 时默认为
+<code class="docutils literal notranslate"><span class="pre">&lt;model&gt;.rgb</span></code>）</p><div class="en-orig" data-for="bi-129" lang="en">output path (positional argument: <code class="docutils literal notranslate"><span class="pre">.png</span></code>, <code class="docutils literal notranslate"><span class="pre">.rgb</span></code>, or <code class="docutils literal notranslate"><span class="pre">-</span></code> for stdout; defaults to <code class="docutils literal notranslate"><span class="pre">&lt;model&gt;.png</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">&lt;model&gt;.rgb</span></code> when <code class="docutils literal notranslate"><span class="pre">--duration</span> <span class="pre">&gt;</span> <span class="pre">0</span></code>)</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--backend=B</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">filament</span></code></p></td>
+<td><p data-bi="bi-130">渲染后端（<code class="docutils literal notranslate"><span class="pre">filament</span></code>、<code class="docutils literal notranslate"><span class="pre">classic</span></code>）</p><div class="en-orig" data-for="bi-130" lang="en">rendering backend (<code class="docutils literal notranslate"><span class="pre">filament</span></code>, <code class="docutils literal notranslate"><span class="pre">classic</span></code>)</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--width=N</span></code></p></td>
+<td><p>640</p></td>
+<td><p data-bi="bi-131">图像宽度（像素）</p><div class="en-orig" data-for="bi-131" lang="en">image width in pixels</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--height=N</span></code></p></td>
+<td><p>480</p></td>
+<td><p data-bi="bi-132">图像高度（像素）</p><div class="en-orig" data-for="bi-132" lang="en">image height in pixels</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--duration=T</span></code></p></td>
+<td><p>0</p></td>
+<td><p data-bi="bi-133">录制时长（秒）（<code class="docutils literal notranslate"><span class="pre">0</span></code> 表示渲染单帧）</p><div class="en-orig" data-for="bi-133" lang="en">recording duration in seconds (<code class="docutils literal notranslate"><span class="pre">0</span></code> renders a single frame)</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--fps=F</span></code></p></td>
+<td><p>60</p></td>
+<td><p data-bi="bi-134"><code class="docutils literal notranslate"><span class="pre">--duration</span> <span class="pre">&gt;</span> <span class="pre">0</span></code> 时的每秒帧数</p><div class="en-orig" data-for="bi-134" lang="en">frames per second when <code class="docutils literal notranslate"><span class="pre">--duration</span> <span class="pre">&gt;</span> <span class="pre">0</span></code></div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--camera=C</span></code></p></td>
+<td><p data-bi="bi-135">（自由）</p><div class="en-orig" data-for="bi-135" lang="en">(free)</div></td>
+<td><p data-bi="bi-136">相机名称或整数索引（默认：自由相机）</p><div class="en-orig" data-for="bi-136" lang="en">camera name or integer index (default: free camera)</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--lookat=X,Y,Z</span></code></p></td>
+<td><p data-bi="bi-137">（中心）</p><div class="en-orig" data-for="bi-137" lang="en">(center)</div></td>
+<td><p data-bi="bi-138">自由相机的注视位置</p><div class="en-orig" data-for="bi-138" lang="en">free camera lookat position</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--distance=D</span></code></p></td>
+<td><p data-bi="bi-139">（适配）</p><div class="en-orig" data-for="bi-139" lang="en">(fit)</div></td>
+<td><p data-bi="bi-140">自由相机的距离</p><div class="en-orig" data-for="bi-140" lang="en">free camera distance</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--azimuth=A</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">90</span></code></p></td>
+<td><p data-bi="bi-141">自由相机的方位角（度）</p><div class="en-orig" data-for="bi-141" lang="en">free camera azimuth in degrees</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--elevation=E</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-45</span></code></p></td>
+<td><p data-bi="bi-142">自由相机的仰角（度）</p><div class="en-orig" data-for="bi-142" lang="en">free camera elevation in degrees</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--key=K</span></code></p></td>
+<td><p data-bi="bi-143">（无）</p><div class="en-orig" data-for="bi-143" lang="en">(none)</div></td>
+<td><p data-bi="bi-144">渲染前要加载的关键帧名称或整数索引</p><div class="en-orig" data-for="bi-144" lang="en">keyframe name or integer index to load prior to rendering</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--steps=N</span></code></p></td>
+<td><p>0</p></td>
+<td><p data-bi="bi-145">渲染前要推进的仿真步数</p><div class="en-orig" data-for="bi-145" lang="en">number of simulation steps to advance before rendering</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--geomgroup=G</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">111000</span></code></p></td>
+<td><p data-bi="bi-146">用 6 个字符的字符串启用/禁用 geom 组 0-5（例如 <code class="docutils literal notranslate"><span class="pre">111111</span></code>）</p><div class="en-orig" data-for="bi-146" lang="en">6-character string enabling/disabling geom groups 0-5 (e.g. <code class="docutils literal notranslate"><span class="pre">111111</span></code>)</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--sitegroup=S</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">111000</span></code></p></td>
+<td><p data-bi="bi-147">用 6 个字符的字符串启用/禁用 site 组 0-5</p><div class="en-orig" data-for="bi-147" lang="en">6-character string enabling/disabling site groups 0-5</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--label=L</span></code></p></td>
+<td><p data-bi="bi-148">（无）</p><div class="en-orig" data-for="bi-148" lang="en">(none)</div></td>
+<td><p data-bi="bi-149">标签类型（例如 <code class="docutils literal notranslate"><span class="pre">--label=geom</span></code>、<code class="docutils literal notranslate"><span class="pre">--label=body</span></code>、<code class="docutils literal notranslate"><span class="pre">--label=site</span></code>）</p><div class="en-orig" data-for="bi-149" lang="en">type of label (e.g. <code class="docutils literal notranslate"><span class="pre">--label=geom</span></code>, <code class="docutils literal notranslate"><span class="pre">--label=body</span></code>, <code class="docutils literal notranslate"><span class="pre">--label=site</span></code>)</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--frame=F</span></code></p></td>
+<td><p data-bi="bi-150">（无）</p><div class="en-orig" data-for="bi-150" lang="en">(none)</div></td>
+<td><p data-bi="bi-151">坐标系类型（例如 <code class="docutils literal notranslate"><span class="pre">--frame=geom</span></code>、<code class="docutils literal notranslate"><span class="pre">--frame=body</span></code>、<code class="docutils literal notranslate"><span class="pre">--frame=site</span></code>）</p><div class="en-orig" data-for="bi-151" lang="en">type of coordinate frame (e.g. <code class="docutils literal notranslate"><span class="pre">--frame=geom</span></code>, <code class="docutils literal notranslate"><span class="pre">--frame=body</span></code>, <code class="docutils literal notranslate"><span class="pre">--frame=site</span></code>)</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--&lt;visflag&gt;=0|1</span></code></p></td>
+<td><p data-bi="bi-152">（默认）</p><div class="en-orig" data-for="bi-152" lang="en">(default)</div></td>
+<td><p data-bi="bi-153">切换 <a class="reference internal" href="../APIreference/APIglobals.html#mjvisstring"><span class="std std-ref">mjVISSTRING</span></a> 中声明的可视化标志（例如 <code class="docutils literal notranslate"><span class="pre">--joint=1</span></code>、<code class="docutils literal notranslate"><span class="pre">--contactpoint=1</span></code>）</p><div class="en-orig" data-for="bi-153" lang="en">toggle visualization flag declared in <a class="reference internal" href="../APIreference/APIglobals.html#mjvisstring"><span class="std std-ref">mjVISSTRING</span></a> (e.g. <code class="docutils literal notranslate"><span class="pre">--joint=1</span></code>, <code class="docutils literal notranslate"><span class="pre">--contactpoint=1</span></code>)</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--&lt;rndflag&gt;=0|1</span></code></p></td>
+<td><p data-bi="bi-154">（默认）</p><div class="en-orig" data-for="bi-154" lang="en">(default)</div></td>
+<td><p data-bi="bi-155">切换 <a class="reference internal" href="../APIreference/APIglobals.html#mjrndstring"><span class="std std-ref">mjRNDSTRING</span></a> 中声明的渲染标志（例如 <code class="docutils literal notranslate"><span class="pre">--shadow=0</span></code>、<code class="docutils literal notranslate"><span class="pre">--wireframe=1</span></code>）</p><div class="en-orig" data-for="bi-155" lang="en">toggle rendering flag declared in <a class="reference internal" href="../APIreference/APIglobals.html#mjrndstring"><span class="std std-ref">mjRNDSTRING</span></a> (e.g. <code class="docutils literal notranslate"><span class="pre">--shadow=0</span></code>, <code class="docutils literal notranslate"><span class="pre">--wireframe=1</span></code>)</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p data-bi="bi-156">例如，可以将每秒 60 帧、时长 5 秒的视频直接通过管道传给 <code class="docutils literal notranslate"><span class="pre">ffmpeg</span></code>，而无需将原始帧写入磁盘：</p><div class="en-orig" data-for="bi-156" lang="en">For example, a 5-second video at 60 frames per second can be piped directly into <code class="docutils literal notranslate"><span class="pre">ffmpeg</span></code> without writing raw frames
+to disk:</div>
+<div class="highlight-Shell notranslate"><div class="highlight"><pre><span></span>render<span class="w"> </span>humanoid.xml<span class="w"> </span>-<span class="w"> </span>--duration<span class="o">=</span><span class="m">5</span><span class="w"> </span>--fps<span class="o">=</span><span class="m">60</span><span class="w"> </span>--width<span class="o">=</span><span class="m">1280</span><span class="w"> </span>--height<span class="o">=</span><span class="m">720</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>ffmpeg<span class="w"> </span>-f<span class="w"> </span>rawvideo<span class="w"> </span>-pixel_format<span class="w"> </span>rgb24<span class="w"> </span>-video_size<span class="w"> </span>1280x720<span class="w"> </span>-framerate<span class="w"> </span><span class="m">60</span><span class="w"> </span><span class="se">\</span>
+<span class="w">         </span>-i<span class="w"> </span>-<span class="w"> </span>-pix_fmt<span class="w"> </span>yuv420p<span class="w"> </span>video.mp4
+</pre></div>
+</div>
+<p data-bi="bi-157"><strong>注意事项：</strong></p><div class="en-orig" data-for="bi-157" lang="en"><strong>Notes:</strong></div>
+<ul class="simple">
+<li><p data-bi="bi-158">不带参数（或带 <code class="docutils literal notranslate"><span class="pre">--help</span></code> / <code class="docutils literal notranslate"><span class="pre">-h</span></code>）运行 <code class="docutils literal notranslate"><span class="pre">render</span></code> 会打印帮助信息。</p><div class="en-orig" data-for="bi-158" lang="en">Running <code class="docutils literal notranslate"><span class="pre">render</span></code> with no arguments (or with <code class="docutils literal notranslate"><span class="pre">--help</span></code> / <code class="docutils literal notranslate"><span class="pre">-h</span></code>) prints the help message.</div></li>
+<li><p data-bi="bi-159">必需的 <code class="docutils literal notranslate"><span class="pre">model</span></code> 路径和可选的 <code class="docutils literal notranslate"><span class="pre">output</span></code> 路径都是位置参数。如果省略 <code class="docutils literal notranslate"><span class="pre">output</span></code>，则输出文件名由模型文件名派生：单帧渲染（<code class="docutils literal notranslate"><span class="pre">--duration=0</span></code>）使用 <code class="docutils literal notranslate"><span class="pre">.png</span></code>，多帧录制（<code class="docutils literal notranslate"><span class="pre">--duration</span> <span class="pre">&gt;</span> <span class="pre">0</span></code>）使用 <code class="docutils literal notranslate"><span class="pre">.rgb</span></code>。将 <code class="docutils literal notranslate"><span class="pre">-</span></code> 作为 <code class="docutils literal notranslate"><span class="pre">output</span></code> 传入时，会把原始 RGB24 帧流式输出到标准输出，并将状态消息发送到标准错误。</p><div class="en-orig" data-for="bi-159" lang="en">The non-optional <code class="docutils literal notranslate"><span class="pre">model</span></code> path and optional <code class="docutils literal notranslate"><span class="pre">output</span></code> path are positional arguments. If <code class="docutils literal notranslate"><span class="pre">output</span></code> is omitted, the
+output filename is derived from the model filename with <code class="docutils literal notranslate"><span class="pre">.png</span></code> for single-frame renders (<code class="docutils literal notranslate"><span class="pre">--duration=0</span></code>) or
+<code class="docutils literal notranslate"><span class="pre">.rgb</span></code> for multi-frame recordings (<code class="docutils literal notranslate"><span class="pre">--duration</span> <span class="pre">&gt;</span> <span class="pre">0</span></code>). Passing <code class="docutils literal notranslate"><span class="pre">-</span></code> as <code class="docutils literal notranslate"><span class="pre">output</span></code> streams raw RGB24 frames to
+standard output and sends status messages to standard error.</div></li>
+<li><p data-bi="bi-160"><code class="docutils literal notranslate"><span class="pre">--backend=filament</span></code> 和 <code class="docutils literal notranslate"><span class="pre">--backend=classic</span></code> 都输出自上而下的 RGB24 帧（第 0 行在顶部），因此 <code class="docutils literal notranslate"><span class="pre">ffmpeg</span></code> 不需要 <code class="docutils literal notranslate"><span class="pre">vflip</span></code> 滤镜。</p><div class="en-orig" data-for="bi-160" lang="en">Both <code class="docutils literal notranslate"><span class="pre">--backend=filament</span></code> and <code class="docutils literal notranslate"><span class="pre">--backend=classic</span></code> emit top-down RGB24 frames (row 0 at the top), so <code class="docutils literal notranslate"><span class="pre">ffmpeg</span></code>
+does not require a <code class="docutils literal notranslate"><span class="pre">vflip</span></code> filter.</div></li>
+<li><p data-bi="bi-161"><code class="docutils literal notranslate"><span class="pre">--backend=filament</span></code> 使用 MuJoCo 的 Filament C API 根据模型配置场景，设置光照、材质和纹理，并通过 Filament 的离屏管线进行渲染。<code class="docutils literal notranslate"><span class="pre">--backend=classic</span></code> 使用标准的 OpenGL 离屏渲染。</p><div class="en-orig" data-for="bi-161" lang="en"><code class="docutils literal notranslate"><span class="pre">--backend=filament</span></code> uses MuJoCo’s Filament C API to configure a scene from the model, setting up lighting,
+materials, and textures, and rendering via Filament’s offscreen pipeline. <code class="docutils literal notranslate"><span class="pre">--backend=classic</span></code> uses standard OpenGL
+offscreen rendering.</div></li>
+<li><p data-bi="bi-162">默认相机是模型的自由相机，注视场景中心。指定 <code class="docutils literal notranslate"><span class="pre">--camera=name</span></code> 会选择模型 XML 中定义的命名相机，而整数索引 <code class="docutils literal notranslate"><span class="pre">0,</span> <span class="pre">1,</span> <span class="pre">...</span></code> 则按定义顺序选择固定相机。使用自由相机时，可以通过 <code class="docutils literal notranslate"><span class="pre">--lookat=x,y,z</span></code>、<code class="docutils literal notranslate"><span class="pre">--distance=d</span></code>、<code class="docutils literal notranslate"><span class="pre">--azimuth=a</span></code> 和 <code class="docutils literal notranslate"><span class="pre">--elevation=e</span></code> 调整其视点。</p><div class="en-orig" data-for="bi-162" lang="en">The default camera is the model’s free camera looking at the center of the scene. Specifying <code class="docutils literal notranslate"><span class="pre">--camera=name</span></code> selects
+a named camera defined in the model XML, while integer indices <code class="docutils literal notranslate"><span class="pre">0,</span> <span class="pre">1,</span> <span class="pre">...</span></code> select fixed cameras in order of definition.
+When using the free camera, its viewpoint can be adjusted via <code class="docutils literal notranslate"><span class="pre">--lookat=x,y,z</span></code>, <code class="docutils literal notranslate"><span class="pre">--distance=d</span></code>, <code class="docutils literal notranslate"><span class="pre">--azimuth=a</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">--elevation=e</span></code>.</div></li>
+<li><p data-bi="bi-163">如果通过 <code class="docutils literal notranslate"><span class="pre">--key</span></code> 指定了关键帧，则在计算运动学并渲染之前，模型状态会被重置为该关键帧。如果未指定关键帧，且模型中存在名为 <code class="docutils literal notranslate"><span class="pre">test</span></code> 的关键帧，则默认使用它。</p><div class="en-orig" data-for="bi-163" lang="en">If a keyframe is specified via <code class="docutils literal notranslate"><span class="pre">--key</span></code>, the model state is reset to that keyframe before evaluating kinematics and
+rendering. If no keyframe is specified and a keyframe named <code class="docutils literal notranslate"><span class="pre">test</span></code> exists in the model, it is used by default.</div></li>
+<li><p data-bi="bi-164"><code class="docutils literal notranslate"><span class="pre">--steps=N</span></code> 会在渲染或开始 <code class="docutils literal notranslate"><span class="pre">--duration</span></code> 录制之前（在任何关键帧重置之后）将仿真推进 <code class="docutils literal notranslate"><span class="pre">N</span></code> 步，因此可以直接捕获通过仿真到达的某个状态或片段。</p><div class="en-orig" data-for="bi-164" lang="en"><code class="docutils literal notranslate"><span class="pre">--steps=N</span></code> advances the simulation by <code class="docutils literal notranslate"><span class="pre">N</span></code> steps (after any keyframe reset) before rendering or starting a
+<code class="docutils literal notranslate"><span class="pre">--duration</span></code> recording, so a state or segment reached by simulating can be captured directly.</div></li>
+<li><p data-bi="bi-165">可以使用 <a class="reference internal" href="../APIreference/APIglobals.html#mjvisstring"><span class="std std-ref">mjVISSTRING</span></a> 和 <a class="reference internal" href="../APIreference/APIglobals.html#mjrndstring"><span class="std std-ref">mjRNDSTRING</span></a> 中的规范化标志名称单独切换可视化和渲染标志。</p><div class="en-orig" data-for="bi-165" lang="en">Visualization and rendering flags can be individually toggled using normalized flag names from <a class="reference internal" href="../APIreference/APIglobals.html#mjvisstring"><span class="std std-ref">mjVISSTRING</span></a>
+and <a class="reference internal" href="../APIreference/APIglobals.html#mjrndstring"><span class="std std-ref">mjRNDSTRING</span></a>.</div></li>
+<li><p data-bi="bi-166">可以使用 <code class="docutils literal notranslate"><span class="pre">--label=L</span></code> 启用标签，其中 <code class="docutils literal notranslate"><span class="pre">L</span></code> 是 <a class="reference internal" href="../APIreference/APIglobals.html#mjlabelstring"><span class="std std-ref">mjLABELSTRING</span></a> 中的标签类型名称（例如 <code class="docutils literal notranslate"><span class="pre">geom</span></code>、<code class="docutils literal notranslate"><span class="pre">body</span></code>、<code class="docutils literal notranslate"><span class="pre">joint</span></code>）或整数索引。</p><div class="en-orig" data-for="bi-166" lang="en">Labels can be enabled using <code class="docutils literal notranslate"><span class="pre">--label=L</span></code> where <code class="docutils literal notranslate"><span class="pre">L</span></code> is a label type name from <a class="reference internal" href="../APIreference/APIglobals.html#mjlabelstring"><span class="std std-ref">mjLABELSTRING</span></a> (e.g. <code class="docutils literal notranslate"><span class="pre">geom</span></code>,
+<code class="docutils literal notranslate"><span class="pre">body</span></code>, <code class="docutils literal notranslate"><span class="pre">joint</span></code>) or an integer index.</div></li>
+<li><p data-bi="bi-167">可以使用 <code class="docutils literal notranslate"><span class="pre">--frame=F</span></code> 渲染坐标系，其中 <code class="docutils literal notranslate"><span class="pre">F</span></code> 是 <a class="reference internal" href="../APIreference/APIglobals.html#mjframestring"><span class="std std-ref">mjFRAMESTRING</span></a> 中的坐标系类型名称（例如 <code class="docutils literal notranslate"><span class="pre">geom</span></code>、<code class="docutils literal notranslate"><span class="pre">body</span></code>、<code class="docutils literal notranslate"><span class="pre">site</span></code>、<code class="docutils literal notranslate"><span class="pre">world</span></code>）或整数索引。</p><div class="en-orig" data-for="bi-167" lang="en">Coordinate frames can be rendered using <code class="docutils literal notranslate"><span class="pre">--frame=F</span></code> where <code class="docutils literal notranslate"><span class="pre">F</span></code> is a frame type name from <a class="reference internal" href="../APIreference/APIglobals.html#mjframestring"><span class="std std-ref">mjFRAMESTRING</span></a> (e.g.
+<code class="docutils literal notranslate"><span class="pre">geom</span></code>, <code class="docutils literal notranslate"><span class="pre">body</span></code>, <code class="docutils literal notranslate"><span class="pre">site</span></code>, <code class="docutils literal notranslate"><span class="pre">world</span></code>) or an integer index.</div></li>
+</ul>
+</section>
+</section>
+</article>
+</div>
+<footer>
+<div class="related-pages">
+<a class="next-page" href="extension.html">
+<div class="page-info">
+<div class="context">
+<span>Next</span>
+</div>
+<div class="title">扩展</div>
+</div>
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+</a>
+<a class="prev-page" href="modeledit.html">
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+<div class="page-info">
+<div class="context">
+<span>Previous</span>
+</div>
+<div class="title">模型编辑</div>
+</div>
+</a>
+</div>
+<div class="bottom-of-page">
+<div class="left-details">
+<div class="copyright">
+                Copyright © DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+</div>
+<div class="right-details">
+</div>
+</div>
+</footer>
+</div>
+<aside class="toc-drawer">
+<div class="toc-sticky toc-scroll">
+<div class="toc-title-container">
+<span class="toc-title">
+            On this page
+          </span>
+</div>
+<div class="toc-tree-container">
+<div class="toc-tree">
+<ul>
+<li><a class="reference internal" href="#">代码示例</a><ul>
+<li><a class="reference internal" href="#satestspeed">testspeed</a></li>
+<li><a class="reference internal" href="#sasimulate">simulate</a><ul>
+<li><a class="reference internal" href="#sasimulateshortcuts">快捷键</a><ul>
+<li><a class="reference internal" href="#id5">仿真与相机</a></li>
+<li><a class="reference internal" href="#id6">面板与文件</a></li>
+<li><a class="reference internal" href="#id7">可见性分组</a></li>
+<li><a class="reference internal" href="#id8">可视化标志</a></li>
+<li><a class="reference internal" href="#id9">渲染标志</a></li>
+<li><a class="reference internal" href="#id10">鼠标</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sacompile">compile</a></li>
+<li><a class="reference internal" href="#sabasic">basic</a></li>
+<li><a class="reference internal" href="#sarender">render</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div><script src="../_static/documentation_options.js?v=7d86a446"></script>
+<script src="../_static/doctools.js?v=fd6eb6e6"></script>
+<script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+<script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+<script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="../_static/copybutton.js?v=f281be69"></script>
+<script src="../_static/translations.js?v=540d3cec"></script>
+<script src="../_static/katex.min.js?v=5cc8ed51"></script>
+<script src="../_static/auto-render.min.js?v=af98beb9"></script>
+<script src="../_static/katex_autorenderer.js?v=ae454eff"></script>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<script src="../_static/linenumbers.js?v=ebda5d35"></script>
+<script src="../_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+<script src="../_static/bilingual.js?v=25c2633d"></script></body></html>

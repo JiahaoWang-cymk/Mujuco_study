@@ -1,0 +1,798 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link sizes="16x16" href="../_static/favicons/favicon-16x16.png" rel="icon" type="image/png">
+    <link sizes="32x32" href="../_static/favicons/favicon-32x32.png" rel="icon" type="image/png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../_static/favicons/favicon-180x180.png" type="image/png">
+    <link sizes="180x180" href="../_static/favicons/favicon-180x180.png" rel="icon" type="image/png">
+    <link sizes="192x192" href="../_static/favicons/favicon-192x192.png" rel="icon" type="image/png"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Code samples" href="samples.html"><link rel="prev" title="User Interface" href="ui.html">
+        <link rel="prefetch" href="../_static/banner.svg" as="image">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Model Editing - MuJoCo Documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/katex/katex.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/katex-math.css?v=05624691" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=8d83ad8c" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides_mjwarp.css?v=e08d3b36" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #0053d6;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #123693;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 130%;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #a8caff;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #458dff;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 130%;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #a8caff;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #458dff;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 130%;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">MuJoCo Documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/banner.svg" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">MuJoCo Documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../computation/index.html">Computation</a><input aria-label="Toggle navigation of Computation" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../computation/fluid.html">Fluid forces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computation/speculative.html">Speculative contacts</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../XMLreference.html">XML Reference</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Programming</a><input aria-label="Toggle navigation of Programming" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="simulation.html">Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html">Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rendering.html">Rendering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui.html">User Interface</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Model Editing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="samples.html">Code samples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension.html">Extensions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../APIreference/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APItypes.html">Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIfunctions.html">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIglobals.html">Globals</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../studio/index.html">Studio</a><input aria-label="Toggle navigation of Studio" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../studio/web_viewers.html">Web Viewers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/native_viewers.html">Native Viewers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/architecture.html">Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/python_plugins.html">Python Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python.html">Python</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjx.html">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../unity.html">Unity Plug-in</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/building.html">Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcf_file_format_plugin.html">File Format Plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/importing.html">Importing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/exporting.html">Exporting</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">Model Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/programming/modeledit.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="model-editing">
+<h1>Model Editing<a class="headerlink" href="#model-editing" title="Link to this heading">#</a></h1>
+<p>It is possible to create and modify models using the <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> struct and related API.
+This data structure is in one-to-one correspondence with MJCF and indeed, MuJoCo’s own XML parsers (both MJCF and URDF)
+use this API when loading a model.</p>
+<section id="overview">
+<span id="meoverview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<p>The API augments the traditional workflow of creating and editing models using XML files, breaking up the <em>parse</em> and
+<em>compile</em> steps. As summarized in the <a class="reference internal" href="../overview.html#instance"><span class="std std-ref">Overview chapter</span></a>, the traditional workflow is:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Create an XML model description file (MJCF or URDF) and associated assets. <br/></p></li>
+<li><p>Call <a class="reference internal" href="../APIreference/APIfunctions.html#mj-loadxml"><span class="std std-ref">mj_loadXML</span></a>, obtain an <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> instance.</p></li>
+</ol>
+</div></blockquote>
+<p>The workflow using <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> is:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Create an empty <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-makespec"><span class="std std-ref">mj_makeSpec</span></a> or parse an existing XML file using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-parsexml"><span class="std std-ref">mj_parseXML</span></a>.</p></li>
+<li><p>Programmatically edit the <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> data structure by adding, modifying, and removing elements.</p></li>
+<li><p>Compile the <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> to an <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> instance using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-compile"><span class="std std-ref">mj_compile</span></a>.</p></li>
+</ol>
+<p>After compilation, the <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> remains editable, so steps 2 and 3 are interchangeable.</p>
+</div></blockquote>
+</section>
+<section id="model-parsing-loading">
+<span id="meloading"></span><span id="load"></span><h2>Model Parsing &amp; Loading<a class="headerlink" href="#model-parsing-loading" title="Link to this heading">#</a></h2>
+<p>As summarized in <a class="reference internal" href="../overview.html#instance"><span class="std std-ref">Model instances</span></a>, model description files (MJCF, MJZ, URDF, USD) are parsed into an
+<a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-parse"><span class="std std-ref">mj_parse</span></a> (or <code class="docutils literal notranslate"><span class="pre">mjSpec.from_file()</span></code> / <code class="docutils literal notranslate"><span class="pre">mjSpec.from_string()</span></code> in Python). The model format is
+inferred from the content type or file extension, and parsing into an <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> is delegated to the appropriate
+<a class="reference internal" href="extension.html#exdecoder"><span class="std std-ref">decoder</span></a> plugin.</p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="kt">char</span><span class="w"> </span><span class="n">error</span><span class="p">[</span><span class="mi">1000</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">""</span><span class="p">;</span>
+<span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">spec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_parse</span><span class="p">(</span><span class="n">vfs</span><span class="p">,</span><span class="w"> </span><span class="s">"robot.xml"</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">error</span><span class="p">));</span>
+</pre></div>
+</div>
+<p>For convenience, <a class="reference internal" href="../APIreference/APIfunctions.html#mj-loadxml"><span class="std std-ref">mj_loadXML</span></a> (or Python <code class="docutils literal notranslate"><span class="pre">MjModel.from_xml_path()</span></code>) combines parsing and compilation into a
+single step, returning a compiled <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> directly from an XML file or <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> archive.</p>
+<p>Alternatively, a pre-compiled <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> can be loaded directly from a binary MJB file using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-loadmodel"><span class="std std-ref">mj_loadModel</span></a>
+(or Python <code class="docutils literal notranslate"><span class="pre">MjModel.from_binary_path()</span></code>).</p>
+</section>
+<section id="model-compilation">
+<span id="mecompilation"></span><span id="compile"></span><h2>Model Compilation<a class="headerlink" href="#model-compilation" title="Link to this heading">#</a></h2>
+<p>Once a high-level <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> is created—by parsing a file, loading an archive, or constructing it
+programmatically—it is compiled into an <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-compile"><span class="std std-ref">mj_compile</span></a>.</p>
+<p>Compilation is independent of loading, working in the exact same way regardless of how <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> was constructed.
+Both the parser and the compiler perform extensive error checking and abort when the first error is encountered. The
+parser uses a custom schema to validate file structure, elements, and attributes, while the compiler applies semantic
+checks and executes a test simulation step to catch runtime errors.</p>
+<p>Parsing and compilation are extremely fast—typically less than a second—making interactive model design, live editing,
+and rapid reloading seamless.</p>
+</section>
+<section id="model-encoding-saving">
+<span id="mesaving"></span><span id="save"></span><h2>Model Encoding &amp; Saving<a class="headerlink" href="#model-encoding-saving" title="Link to this heading">#</a></h2>
+<p>Model specs and compiled models can be serialized to files using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a>, or directly saved to XML strings
+using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-savexmlstring"><span class="std std-ref">mj_saveXMLString</span></a> or <a class="reference internal" href="../APIreference/APIfunctions.html#mj-savexml"><span class="std std-ref">mj_saveXML</span></a>.</p>
+<p>The <a class="reference internal" href="../APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a> function provides a unified entry point for serializing models:</p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="kt">char</span><span class="w"> </span><span class="n">error</span><span class="p">[</span><span class="mi">1024</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">""</span><span class="p">;</span>
+<span class="n">mjtSize</span><span class="w"> </span><span class="n">bytes_written</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_encode</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="s">"robot.mjz"</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">vfs</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">error</span><span class="p">));</span>
+</pre></div>
+</div>
+<p>The output format is selected automatically based on the file extension (case-insensitive) or explicit <code class="docutils literal notranslate"><span class="pre">content_type</span></code>:</p>
+<ul class="simple">
+<li><p><strong>MJCF XML</strong> (<code class="docutils literal notranslate"><span class="pre">.xml</span></code>): Flattens the spec into a single MJCF XML file using <a class="reference internal" href="../APIreference/APIfunctions.html#mj-savexml"><span class="std std-ref">mj_saveXML</span></a>. If an explicit
+<a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> argument is passed, <a class="reference internal" href="../APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a> will copy modified values back from <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> into the spec
+prior to saving. In the Computation chapter we show an <a class="reference external" href="_static/example.xml">example</a> MJCF file and the
+corresponding <a class="reference external" href="_static/example_saved.xml">saved example</a>.</p></li>
+<li><p><strong>MJZ Archive</strong> (<code class="docutils literal notranslate"><span class="pre">.mjz</span></code> or <code class="docutils literal notranslate"><span class="pre">.zip</span></code>): Bundles the spec and all associated external assets (meshes, textures,
+included XMLs) into a self-contained Zip archive via the built-in <code class="docutils literal notranslate"><span class="pre">mjz_encoder</span></code>.</p></li>
+<li><p><strong>MJB Binary</strong> (<code class="docutils literal notranslate"><span class="pre">.mjb</span></code>): Serializes the compiled <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> in MuJoCo binary format via <a class="reference internal" href="../APIreference/APIfunctions.html#mj-savemodel"><span class="std std-ref">mj_saveModel</span></a>.
+MJB files are standalone, do not refer to external files, and load faster than XML, but are version-specific and
+cannot be decompiled back to XML. Requires a compiled <code class="docutils literal notranslate"><span class="pre">model</span></code>; does <strong>not</strong> serialize anything from <code class="docutils literal notranslate"><span class="pre">spec</span></code>.</p></li>
+<li><p><strong>TXT</strong> (<code class="docutils literal notranslate"><span class="pre">.txt</span></code>): Writes a human-readable text dump via <a class="reference internal" href="../APIreference/APIfunctions.html#mj-printmodel"><span class="std std-ref">mj_printModel</span></a>. Useful for diffing and debugging.
+Requires a compiled <code class="docutils literal notranslate"><span class="pre">model</span></code>; does <strong>not</strong> serialize anything from <code class="docutils literal notranslate"><span class="pre">spec</span></code>.</p></li>
+</ul>
+<p>A spec is saved as MJCF in one of two ways, selected by its compiler attribute
+<a class="reference internal" href="../XMLreference.html#compiler-savecompiled"><span class="std std-ref">savecompiled</span></a>:</p>
+<ul class="simple">
+<li><p>“true”, the default: the values which the last compilation made of the model, in the canonical notation. For
+example a body which is <a class="reference internal" href="../XMLreference.html#body-freejoint-align"><span class="std std-ref">aligned</span></a> with its free joint is saved with its aligned pose, and
+a geom which was fitted to a mesh with the size of the fit. The spec must have been compiled.</p></li>
+<li><p>“false”: the model as it is written in the spec. Poses are those of the elements in their <a class="reference internal" href="../XMLreference.html#frame"><span class="std std-ref">frames</span></a>,
+attributes which were written with their default values are kept, and every number is saved exactly. Orientations,
+angles and <code class="docutils literal notranslate"><span class="pre">fromto</span></code> are saved in the notation in which they were written, unless
+<a class="reference internal" href="../XMLreference.html#compiler-savecanonical"><span class="std std-ref">savecanonical</span></a> is “true”. The spec need not have been compiled.</p></li>
+</ul>
+<p>In both cases the saved file compiles to the same model, except where MJCF cannot say what the spec holds. For example,
+the elements of an attached model are compiled with its own compiler settings, while the saved file has one
+<a class="reference internal" href="../XMLreference.html#compiler"><span class="std std-ref">compiler</span></a> element. Saved as written, the angle unit and the Euler sequence of an attached model are
+converted, and a difference in a setting which changes what compilation infers, such as
+<a class="reference internal" href="../XMLreference.html#compiler-inertiafromgeom"><span class="std std-ref">inertiafromgeom</span></a>, is an error which says so; saved as compiled values, such a model may
+compile differently. What the parser does not keep in a spec is not saved: comments other than the one at the top of
+the file, the <a class="reference internal" href="../XMLreference.html#include"><span class="std std-ref">include</span></a> elements, and the elements which it expands into others, such as
+<a class="reference internal" href="../XMLreference.html#replicate"><span class="std std-ref">replicate</span></a>, <a class="reference internal" href="../XMLreference.html#body-flexcomp"><span class="std std-ref">flexcomp</span></a>, <a class="reference internal" href="../XMLreference.html#body-attach"><span class="std std-ref">attach</span></a> and the actuator shortcuts.</p>
+<p>A spec which is saved as written needs a compilation in two cases. The inertials which compilation calculates,
+which <a class="reference internal" href="../XMLreference.html#compiler-saveinertial"><span class="std std-ref">saveinertial</span></a> saves, are those of the last compilation, which must follow any
+structural edit (elements added, deleted or attached), as for compiled values. And <a class="reference internal" href="../XMLreference.html#keyframe"><span class="std std-ref">keyframes</span></a> which
+await compilation, as they do once <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-attach"><span class="std std-ref">mjs_attach</span></a> or <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-delete"><span class="std std-ref">mjs_delete</span></a> changed the kinematic tree of a spec which
+has keyframes, are saved once compilation has assembled their vectors.</p>
+<p>Importantly, saved XML will take into account any defined defaults. This is useful when a model has many repeated
+values, for example if loaded from URDF, which does not support defaults. In such a case one can add default classes,
+set the class of the relevant elements, and save; the resulting XML will use the defaults and be more human-readable.</p>
+</section>
+<section id="mjz-archives">
+<span id="mjzarchives"></span><h2>MJZ Archives<a class="headerlink" href="#mjz-archives" title="Link to this heading">#</a></h2>
+<p>Complex MuJoCo models often consist of multiple files: a main MJCF XML file, included XML sub-trees, and external asset
+files (meshes, textures, height fields). The <strong>MJZ</strong> format (extension <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> or <code class="docutils literal notranslate"><span class="pre">.zip</span></code>) provides a convenient way
+to bundle an entire model and all of its referenced assets into a single <strong>Zip archive</strong>.</p>
+<section id="root-xml-discovery">
+<h3>Root XML Discovery<a class="headerlink" href="#root-xml-discovery" title="Link to this heading">#</a></h3>
+<p>When decoding an <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> archive, MuJoCo searches for the root model XML file in the following order:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model.xml</span></code> at the root of the archive. This is the default format produced by the <strong>MJZ</strong>
+<a class="reference internal" href="extension.html#exencoder"><span class="std std-ref">encoder</span></a> and is the most portable option.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;archive_stem&gt;.xml</span></code> at the root of the archive (e.g. <code class="docutils literal notranslate"><span class="pre">my_model.xml</span></code> inside <code class="docutils literal notranslate"><span class="pre">my_model.mjz</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;archive_stem&gt;/&lt;archive_stem&gt;.xml</span></code> inside a top-level directory matching the archive name (e.g.
+<code class="docutils literal notranslate"><span class="pre">my_model/my_model.xml</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;archive_stem&gt;/model.xml</span></code> inside a top-level directory matching the archive name (e.g. <code class="docutils literal notranslate"><span class="pre">my_model/model.xml</span></code>).</p></li>
+</ol>
+<p>Options 2-4 exist for backwards compatibility with legacy archives and common zip packaging layouts, but are
+susceptible to failure if the archive file is renamed.</p>
+</section>
+</section>
+<section id="custom-formats">
+<span id="mecustomformats"></span><h2>Custom formats<a class="headerlink" href="#custom-formats" title="Link to this heading">#</a></h2>
+<p>Adding support for new file formats can be done with <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-registerdecoder"><span class="std std-ref">mjp_registerDecoder</span></a> and <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-registerencoder"><span class="std std-ref">mjp_registerEncoder</span></a>.
+When <a class="reference internal" href="../APIreference/APIfunctions.html#mj-parse"><span class="std std-ref">mj_parse</span></a> and <a class="reference internal" href="../APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a> are called for a non-native extension or content type, the appropriate plugins
+are found via <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-finddecoder"><span class="std std-ref">mjp_findDecoder</span></a> and <a class="reference internal" href="../APIreference/APIfunctions.html#mjp-findencoder"><span class="std std-ref">mjp_findEncoder</span></a>. For further details on writing custom format plugins,
+see <a class="reference internal" href="extension.html#exdecoder"><span class="std std-ref">Decoders</span></a> and <a class="reference internal" href="extension.html#exencoder"><span class="std std-ref">Encoders</span></a>.</p>
+</section>
+<section id="usage">
+<span id="meusage"></span><h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h2>
+<p>Here we describe the C API for procedural model editing, but it is also exposed in the <a class="reference internal" href="../python.html#pymodeledit"><span class="std std-ref">Python
+bindings</span></a>. Advanced users can refer to <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/test/user/user_api_test.cc">user_api_test.cc</a> and the MJCF parser in
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/xml/xml_native_reader.cc">xml_native_reader.cc</a> for
+more usage examples. After creating a new <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> or parsing an existing XML file to an <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a>,
+procedural editing corresponds to setting attributes. For example, in order to change the timestep, one can do:</p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">spec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span>
+<span class="n">spec</span><span class="o">-&gt;</span><span class="n">opt</span><span class="p">.</span><span class="n">timestep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.01</span><span class="p">;</span>
+<span class="p">...</span>
+<span class="n">mjModel</span><span class="o">*</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_compile</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Attributes which have variable length are C++ vectors and strings, <a class="reference internal" href="../APIreference/APItypes.html#arrayhandles"><span class="std std-ref">exposed to C as opaque types</span></a>.
+In C one uses the provided <a class="reference internal" href="../APIreference/APIfunctions.html#attributegetters"><span class="std std-ref">getters</span></a> and <a class="reference internal" href="../APIreference/APIfunctions.html#attributesetters"><span class="std std-ref">setters</span></a>:</p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjs_setString</span><span class="p">(</span><span class="n">spec</span><span class="o">-&gt;</span><span class="n">modelname</span><span class="p">,</span><span class="w"> </span><span class="s">"my_model"</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>In C++, one can use vectors and strings directly:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">modelname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"my_model"</span><span class="p">;</span>
+<span class="o">*</span><span class="n">spec</span><span class="o">-&gt;</span><span class="n">modelname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">modelname</span><span class="p">;</span>
+</pre></div>
+</div>
+<section id="model-elements">
+<span id="memjselements"></span><h3>Model elements<a class="headerlink" href="#model-elements" title="Link to this heading">#</a></h3>
+<p>Model elements corresponding to MJCF are exposed to the user as C structs with the <code class="docutils literal notranslate"><span class="pre">mjs</span></code> prefix. The definitions are
+listed under the <a class="reference internal" href="../APIreference/APItypes.html#tyspecstructure"><span class="std std-ref">Model Editing</span></a> section of the struct reference. For example, an MJCF
+<a class="reference internal" href="../XMLreference.html#body-geom"><span class="std std-ref">geom</span></a> corresponds to an <a class="reference internal" href="../APIreference/APItypes.html#mjsgeom"><span class="std std-ref">mjsGeom</span></a>.</p>
+<p>Global defaults for all elements are set by <a class="reference internal" href="../APIreference/APIfunctions.html#elementinitialization"><span class="std std-ref">initializers</span></a> like <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-defaultgeom"><span class="std std-ref">mjs_defaultGeom</span></a>.
+These functions are defined in <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/user/user_init.c">user_init.c</a> and are the source of truth for all
+default values.</p>
+<p>Elements cannot be created directly; they are returned to the user by the corresponding constructor function, e.g.
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjs-addgeom"><span class="std std-ref">mjs_addGeom</span></a>. For example, to add a box geom to the world body, one would do</p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">spec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span><span class="w">                                  </span><span class="c1">// make an empty spec</span>
+<span class="n">mjsBody</span><span class="o">*</span><span class="w"> </span><span class="n">world</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_findBody</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span><span class="w"> </span><span class="s">"world"</span><span class="p">);</span><span class="w">                  </span><span class="c1">// find the world body</span>
+<span class="n">mjsGeom</span><span class="o">*</span><span class="w"> </span><span class="n">my_geom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_addGeom</span><span class="p">(</span><span class="n">world</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span><span class="w">                   </span><span class="c1">// add a geom to the world</span>
+<span class="n">my_geom</span><span class="o">-&gt;</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjGEOM_BOX</span><span class="p">;</span><span class="w">                                    </span><span class="c1">// set geom type</span>
+<span class="n">my_geom</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">my_geom</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">my_geom</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.5</span><span class="p">;</span><span class="w">  </span><span class="c1">// set box size</span>
+<span class="n">mjModel</span><span class="o">*</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_compile</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span><span class="w">                       </span><span class="c1">// compile to mjModel</span>
+<span class="p">...</span>
+<span class="n">mj_deleteModel</span><span class="p">(</span><span class="n">model</span><span class="p">);</span><span class="w">                                         </span><span class="c1">// free model</span>
+<span class="n">mj_deleteSpec</span><span class="p">(</span><span class="n">spec</span><span class="p">);</span><span class="w">                                           </span><span class="c1">// free spec</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">NULL</span></code> second argument to <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-addgeom"><span class="std std-ref">mjs_addGeom</span></a> is the optional default class pointer. When using defaults
+procedurally, default classes are passed in explicitly to element constructors. The global defaults of all elements
+(used when no default class is passed in) can be inspected in
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/user/user_init.c">user_init.c</a>.</p>
+<p>Elements are referenced by name, and names are set with <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-setname"><span class="std std-ref">mjs_setName</span></a>. Assets are no exception: a mesh, texture or
+height field added with <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-addmesh"><span class="std std-ref">mjs_addMesh</span></a>, <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-addtexture"><span class="std std-ref">mjs_addTexture</span></a> or <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-addhfield"><span class="std std-ref">mjs_addHField</span></a> must be given a name, even
+when it is loaded from a file. Naming an asset after its file when the name is omitted is a convenience of the XML
+parser only.</p>
+</section>
+<section id="memory-management">
+<span id="mememory"></span><h3>Memory management<a class="headerlink" href="#memory-management" title="Link to this heading">#</a></h3>
+<p>As seen in the examples above, model elements are never allocated by the user directly, but rather returned by a
+constructor. The library takes ownership of all elements and frees them when the parent <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> is deleted using
+<a class="reference internal" href="../APIreference/APIfunctions.html#mj-deletespec"><span class="std std-ref">mj_deleteSpec</span></a>. The user is only responsible for freeing <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> structs.</p>
+</section>
+<section id="attachment">
+<span id="meattachment"></span><h3>Attachment<a class="headerlink" href="#attachment" title="Link to this heading">#</a></h3>
+<p>This framework introduces a powerful new feature: attaching and deleting model subtrees. This feature is already used to
+power the <a class="reference internal" href="../XMLreference.html#body-attach"><span class="std std-ref">attach</span></a> and <a class="reference internal" href="../XMLreference.html#replicate"><span class="std std-ref">replicate</span></a> meta-elements in MJCF. Attachment allows the user to
+move or copy a subtree from one model into another, while also copying or moving related referenced assets and
+referencing elements from outside the kinematic tree (e.g., actuators and sensors). Similarly, deleting a subtree will
+remove all associated elements from the model. The default behavior (“shallow copy”) is to move the child into the
+parent while attaching, so subsequent changes to the child will also change the parent. Alternatively, the user can
+choose to make an entirely new copy during attach using <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-setdeepcopy"><span class="std std-ref">mjs_setDeepCopy</span></a>. This flag is temporarily set to true
+while parsing XMLs. It is possible to <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-attach"><span class="std std-ref">attach a body or an mjSpec to a frame</span></a>:</p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">parent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span>
+<span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">child</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span>
+<span class="n">parent</span><span class="o">-&gt;</span><span class="n">compiler</span><span class="p">.</span><span class="n">degree</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="n">child</span><span class="o">-&gt;</span><span class="n">compiler</span><span class="p">.</span><span class="n">degree</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="n">mjsElement</span><span class="o">*</span><span class="w"> </span><span class="n">frame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_addFrame</span><span class="p">(</span><span class="n">mjs_findBody</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span><span class="w"> </span><span class="s">"world"</span><span class="p">),</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">element</span><span class="p">;</span>
+<span class="n">mjsElement</span><span class="o">*</span><span class="w"> </span><span class="n">body</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_addBody</span><span class="p">(</span><span class="n">mjs_findBody</span><span class="p">(</span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="s">"world"</span><span class="p">),</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">element</span><span class="p">;</span>
+<span class="n">mjsBody</span><span class="o">*</span><span class="w"> </span><span class="n">attached_body_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_asBody</span><span class="p">(</span><span class="n">mjs_attach</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span><span class="w"> </span><span class="n">body</span><span class="p">,</span><span class="w"> </span><span class="s">"attached-"</span><span class="p">,</span><span class="w"> </span><span class="s">"-1"</span><span class="p">));</span>
+</pre></div>
+</div>
+<p>or <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-attach"><span class="std std-ref">attach a body or an mjSpec to a site</span></a>:</p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">parent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span>
+<span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">child</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span>
+<span class="n">mjsElement</span><span class="o">*</span><span class="w"> </span><span class="n">site</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_addSite</span><span class="p">(</span><span class="n">mjs_findBody</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span><span class="w"> </span><span class="s">"world"</span><span class="p">),</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">element</span><span class="p">;</span>
+<span class="n">mjsElement</span><span class="o">*</span><span class="w"> </span><span class="n">body</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_addBody</span><span class="p">(</span><span class="n">mjs_findBody</span><span class="p">(</span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="s">"world"</span><span class="p">),</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">element</span><span class="p">;</span>
+<span class="n">mjsBody</span><span class="o">*</span><span class="w"> </span><span class="n">attached_body_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_asBody</span><span class="p">(</span><span class="n">mjs_attach</span><span class="p">(</span><span class="n">site</span><span class="p">,</span><span class="w"> </span><span class="n">body</span><span class="p">,</span><span class="w"> </span><span class="s">"attached-"</span><span class="p">,</span><span class="w"> </span><span class="s">"-2"</span><span class="p">));</span>
+</pre></div>
+</div>
+<p>or <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-attach"><span class="std std-ref">attach a frame or an mjSpec to a body</span></a>:</p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">parent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span>
+<span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">child</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span>
+<span class="n">mjsElement</span><span class="o">*</span><span class="w"> </span><span class="n">body</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_addBody</span><span class="p">(</span><span class="n">mjs_findBody</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span><span class="w"> </span><span class="s">"world"</span><span class="p">),</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">element</span><span class="p">;</span>
+<span class="n">mjsElement</span><span class="o">*</span><span class="w"> </span><span class="n">frame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_addFrame</span><span class="p">(</span><span class="n">mjs_findBody</span><span class="p">(</span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="s">"world"</span><span class="p">),</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">element</span><span class="p">;</span>
+<span class="n">mjsFrame</span><span class="o">*</span><span class="w"> </span><span class="n">attached_frame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_asFrame</span><span class="p">(</span><span class="n">mjs_attach</span><span class="p">(</span><span class="n">body</span><span class="p">,</span><span class="w"> </span><span class="n">frame</span><span class="p">,</span><span class="w"> </span><span class="s">"attached-"</span><span class="p">,</span><span class="w"> </span><span class="s">"-1"</span><span class="p">));</span>
+</pre></div>
+</div>
+<p>Note that in the above examples, the parent and child models have different values for <code class="docutils literal notranslate"><span class="pre">compiler.degree</span></code>,
+corresponding to the <a class="reference internal" href="../XMLreference.html#compiler-angle"><span class="std std-ref">compiler/angle</span></a> attribute, specifying the units in which angles are
+interpreted. Compiler flags are carried over during attachment, so the child model will be compiled using the child
+flags, while the parent will be compiled using the parent flags.</p>
+<p>Note also that once a child is attached by reference to a parent, the child cannot be compiled on its own or attached
+again as a whole. Its bodies and frames which are not attached yet can be attached, if they contain nothing which is
+attached already. An element of the parent, including one attached to it by reference, can be attached to the parent
+only as a copy, see <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-setdeepcopy"><span class="std std-ref">mjs_setDeepCopy</span></a>.</p>
+<div class="note admonition">
+<p class="admonition-title">Known issues</p>
+<p>The following known limitations exist:</p>
+<ul class="simple">
+<li><p>All assets from the child model will be copied in, whether they are referenced or not, if the parent and the child
+are not the same mjSpec.</p></li>
+<li><p>A child attached by reference more than once moves its assets to the parent with the first attachment. The elements
+of a later attachment find them only if it has the same prefix and suffix.</p></li>
+<li><p>Circular references are not checked for and will lead to infinite loops.</p></li>
+<li><p>When attaching a model with <a class="reference internal" href="../XMLreference.html#keyframe"><span class="std std-ref">keyframes</span></a>, its keyframes are added to the parent right away, but
+their vectors, and those of the keyframes of the parent, are assembled for the combined model only by the next
+compilation. Until then they are empty.</p></li>
+</ul>
+</div>
+</section>
+<section id="attribute-merging">
+<span id="meattributemerging"></span><h3>Attribute Merging<a class="headerlink" href="#attribute-merging" title="Link to this heading">#</a></h3>
+<p>When attaching a child spec (or an element from a child spec) to a parent spec using <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-attach"><span class="std std-ref">mjs_attach</span></a>, global
+attributes from the child may conflict with those in the parent. A conflict occurs when both the parent and child
+specify authored values for the same field and those values differ. Note that for XML-based models, explicitly writing a
+value (even if it matches the default value) counts as authoring and can trigger conflicts. The
+<a class="reference internal" href="../XMLreference.html#compiler-conflict"><span class="std std-ref">compiler/conflict</span></a> attribute controls how such conflicts are resolved. Fields where only one
+side specifies an authored value never conflict.</p>
+<dl class="simple">
+<dt><span class="at-val">warning</span> (default)</dt><dd><p>Parent values take precedence. Whenever a conflict is detected, a warning is emitted but the parent value is not
+modified. This preserves the pre-existing attachment behavior.</p>
+</dd>
+<dt><span class="at-val">merge</span></dt><dd><p>Attribute values are merged using a per-field strategy as described in the table below. When only the child specifies
+an authored value, it is adopted by the parent.</p>
+</dd>
+<dt><span class="at-val">error</span></dt><dd><p>Any conflict results in a compile error. No values are modified.</p>
+</dd>
+</dl>
+<p>The table below describes the per-field merge strategy used in <span class="at-val">merge</span> mode.</p>
+<div class="table-wrapper colwidths-given docutils container" id="meattributemergingtable">
+<table class="docutils align-default" id="meattributemergingtable">
+<caption><span class="caption-text">Attribute Merging Behavior (<span class="at-val">merge</span> mode)</span><a class="headerlink" href="#meattributemergingtable" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 60.0%" />
+<col style="width: 25.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Behavior</p></th>
+<th class="head"><p>Fields</p></th>
+<th class="head"><p>Justification</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Minimum</strong></p></td>
+<td><p><strong>option</strong>: <a class="reference internal" href="../XMLreference.html#option-timestep"><span class="std std-ref">timestep</span></a>, <a class="reference internal" href="../XMLreference.html#option-tolerance"><span class="std std-ref">tolerance</span></a>, <a class="reference internal" href="../XMLreference.html#option-ls-tolerance"><span class="std std-ref">ls_tolerance</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-noslip-tolerance"><span class="std std-ref">noslip_tolerance</span></a>, <a class="reference internal" href="../XMLreference.html#option-ccd-tolerance"><span class="std std-ref">ccd_tolerance</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-sleep-tolerance"><span class="std std-ref">sleep_tolerance</span></a>,
+<br/> <strong>visual</strong>: <a class="reference internal" href="../XMLreference.html#visual-map-znear"><span class="std std-ref">znear</span></a>, <a class="reference internal" href="../XMLreference.html#visual-global-realtime"><span class="std std-ref">realtime</span></a></p></td>
+<td><p>Preserves precision and stability.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Maximum</strong></p></td>
+<td><p><strong>option</strong>: <a class="reference internal" href="../XMLreference.html#option-iterations"><span class="std std-ref">iterations</span></a>, <a class="reference internal" href="../XMLreference.html#option-ls-iterations"><span class="std std-ref">ls_iterations</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-noslip-iterations"><span class="std std-ref">noslip_iterations</span></a>, <a class="reference internal" href="../XMLreference.html#option-ccd-iterations"><span class="std std-ref">ccd_iterations</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-sdf-iterations"><span class="std std-ref">sdf_iterations</span></a>, <a class="reference internal" href="../XMLreference.html#option-sdf-initpoints"><span class="std std-ref">sdf_initpoints</span></a>,
+<br/> <strong>size</strong>: <a class="reference internal" href="../XMLreference.html#size-memory"><span class="std std-ref">memory</span></a>, <a class="reference internal" href="../XMLreference.html#size-nkey"><span class="std std-ref">nkey</span></a>, <a class="reference internal" href="../XMLreference.html#size-nuserdata"><span class="std std-ref">nuserdata</span></a>,
+<a class="reference internal" href="../XMLreference.html#size-nuser-body"><span class="std std-ref">nuser_body</span></a>, <a class="reference internal" href="../XMLreference.html#size-nuser-jnt"><span class="std std-ref">nuser_jnt</span></a>, <a class="reference internal" href="../XMLreference.html#size-nuser-geom"><span class="std std-ref">nuser_geom</span></a>, <a class="reference internal" href="../XMLreference.html#size-nuser-site"><span class="std std-ref">nuser_site</span></a>,
+<a class="reference internal" href="../XMLreference.html#size-nuser-cam"><span class="std std-ref">nuser_cam</span></a>, <a class="reference internal" href="../XMLreference.html#size-nuser-tendon"><span class="std std-ref">nuser_tendon</span></a>, <a class="reference internal" href="../XMLreference.html#size-nuser-actuator"><span class="std std-ref">nuser_actuator</span></a>, <a class="reference internal" href="../XMLreference.html#size-nuser-sensor"><span class="std std-ref">nuser_sensor</span></a>
+<br/> <strong>visual</strong>: <a class="reference internal" href="../XMLreference.html#visual-map-zfar"><span class="std std-ref">zfar</span></a></p></td>
+<td><p>Ensures sufficient resources and limits.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>OR (union)</strong></p></td>
+<td><p><strong>option</strong>: <a class="reference internal" href="../XMLreference.html#option-flag"><span class="std std-ref">disableflags</span></a>, <a class="reference internal" href="../XMLreference.html#option-flag"><span class="std std-ref">enableflags</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-actuatorgroupdisable"><span class="std std-ref">disableactuator</span></a></p></td>
+<td><p>Flags from both models are combined.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Error</strong></p></td>
+<td><p><strong>option</strong>: <a class="reference internal" href="../XMLreference.html#option-gravity"><span class="std std-ref">gravity</span></a>, <a class="reference internal" href="../XMLreference.html#option-wind"><span class="std std-ref">wind</span></a>, <a class="reference internal" href="../XMLreference.html#option-magnetic"><span class="std std-ref">magnetic</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-density"><span class="std std-ref">density</span></a>, <a class="reference internal" href="../XMLreference.html#option-viscosity"><span class="std std-ref">viscosity</span></a>, <a class="reference internal" href="../XMLreference.html#option-integrator"><span class="std std-ref">integrator</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-cone"><span class="std std-ref">cone</span></a>, <a class="reference internal" href="../XMLreference.html#option-jacobian"><span class="std std-ref">jacobian</span></a>, <a class="reference internal" href="../XMLreference.html#option-solver"><span class="std std-ref">solver</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-impratio"><span class="std std-ref">impratio</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-o-margin"><span class="std std-ref">o_margin</span></a>, <a class="reference internal" href="../XMLreference.html#option-o-solref"><span class="std std-ref">o_solref</span></a>, <a class="reference internal" href="../XMLreference.html#option-o-solimp"><span class="std std-ref">o_solimp</span></a>,
+<a class="reference internal" href="../XMLreference.html#option-o-friction"><span class="std std-ref">o_friction</span></a></p></td>
+<td><p>Raised if non-default values conflict.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="default-classes">
+<span id="medefault"></span><h3>Default classes<a class="headerlink" href="#default-classes" title="Link to this heading">#</a></h3>
+<p>Default classes are fully supported in the new API, however using them requires an understanding of how defaults
+are implemented. As explained in the <a class="reference internal" href="../modeling.html#cdefault"><span class="std std-ref">Default settings</span></a> section, default classes are first loaded as a
+tree of dummy elements, which are then used to initialize elements which reference them. When editing models with
+defaults, this initialization is explicit:</p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjSpec</span><span class="o">*</span><span class="w"> </span><span class="n">spec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeSpec</span><span class="p">();</span>
+<span class="n">mjsDefault</span><span class="o">*</span><span class="w"> </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_getSpecDefault</span><span class="p">(</span><span class="n">spec</span><span class="p">);</span>
+<span class="n">main</span><span class="o">-&gt;</span><span class="n">geom</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjGEOM_BOX</span><span class="p">;</span>
+<span class="n">mjsGeom</span><span class="o">*</span><span class="w"> </span><span class="n">geom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjs_addGeom</span><span class="p">(</span><span class="n">mjs_findBody</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span><span class="w"> </span><span class="s">"world"</span><span class="p">),</span><span class="w"> </span><span class="n">main</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Importantly, changing a default class after it has been used to initialize elements will not change the properties of
+already initialized elements.</p>
+<div class="note admonition">
+<p class="admonition-title">Possible future change</p>
+<p>The behavior described above, where defaults are only applied at initialization, is a remnant of the old, XML-only
+loading pipeline. A future API change could allow defaults to be changed and applied after initialization. If you
+think this feature is important to you, please let us know on GitHub.</p>
+</div>
+</section>
+<section id="in-place-recompilation">
+<span id="merecompilation"></span><h3>In-place recompilation<a class="headerlink" href="#in-place-recompilation" title="Link to this heading">#</a></h3>
+<p>Compilation with <a class="reference internal" href="../APIreference/APIfunctions.html#mj-compile"><span class="std std-ref">mj_compile</span></a> can be called at any point to obtain a new mjModel instance. In contrast,
+<a class="reference internal" href="../APIreference/APIfunctions.html#mj-recompile"><span class="std std-ref">mj_recompile</span></a> updates an existing mjModel and mjData pair in-place, while preserving the simulation state. This
+allows model editing to occur <strong>during simulation</strong>, for example adding or removing bodies.</p>
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="samples.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Code samples</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="ui.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">User Interface</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Model Editing</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#model-parsing-loading">Model Parsing &amp; Loading</a></li>
+<li><a class="reference internal" href="#model-compilation">Model Compilation</a></li>
+<li><a class="reference internal" href="#model-encoding-saving">Model Encoding &amp; Saving</a></li>
+<li><a class="reference internal" href="#mjz-archives">MJZ Archives</a><ul>
+<li><a class="reference internal" href="#root-xml-discovery">Root XML Discovery</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#custom-formats">Custom formats</a></li>
+<li><a class="reference internal" href="#usage">Usage</a><ul>
+<li><a class="reference internal" href="#model-elements">Model elements</a></li>
+<li><a class="reference internal" href="#memory-management">Memory management</a></li>
+<li><a class="reference internal" href="#attachment">Attachment</a></li>
+<li><a class="reference internal" href="#attribute-merging">Attribute Merging</a></li>
+<li><a class="reference internal" href="#default-classes">Default classes</a></li>
+<li><a class="reference internal" href="#in-place-recompilation">In-place recompilation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/katex.min.js?v=5cc8ed51"></script>
+    <script src="../_static/auto-render.min.js?v=af98beb9"></script>
+    <script src="../_static/katex_autorenderer.js?v=ae454eff"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/linenumbers.js?v=ebda5d35"></script>
+    <script src="../_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+    </body>
+</html>

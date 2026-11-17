@@ -1,0 +1,108 @@
+﻿mjcPhysics
+==========
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+.. WARNING:: OpenUSD 支持目前处于实验阶段，可能会频繁变动。
+
+``mjcPhysics`` `模式（schema） <https://openusd.org/release/api/_usd__page__generating_schemas.html>`__ 允许直接在 USD 文件中详细描述
+MuJoCo 仿真环境。其目标并非取代 `UsdPhysics
+<https://openusd.org/release/api/usd_physics_page_front.html>`__，而是扩展现有概念，仅在必要时才创建新的类型。
+
+该模式既可以按 `无代码（codeless） <https://openusd.org/dev/api/_usd__page__generating_schemas.html#Codeless_Schemas>`__
+方式使用，也可以通过其 C++ 绑定来构建。我们已通过 `usdGenSchema
+<https://openusd.org/dev/api/_usd__page__generating_schemas.html>`_ 预先生成了供 MuJoCo 内部使用的
+`代码 <https://github.com/google-deepmind/mujoco/tree/main/src/experimental/usd/mjcPhysics>`__，不过它同样应当可以在
+MuJoCo 之外使用。
+
+API 模式
+--------
+
+MjcSceneAPI
+^^^^^^^^^^^
+
+该 API 模式为 MuJoCo 仿真提供全局选项。它综合了 MJCF 中的 ``<option>``、\ ``<option/flag>`` 和 ``<compiler>``
+元素。用户应将其应用到现有的
+`UsdPhysicsScene <https://openusd.org/dev/api/class_usd_physics_scene.html>`__
+prim 上。
+
+主要属性包括：
+
+-   **mjc:option**：该命名空间下的属性映射到 ``<option>`` 元素。
+-   **mjc:flag**：该命名空间下的属性映射到 ``<option/flag>`` 元素。
+-   **mjc:compiler**：该命名空间下的属性映射到 ``<compiler>`` 元素。
+
+MjcSiteAPI
+^^^^^^^^^^
+
+该 API 类用于定义 MuJoCo 的 site，可应用于
+`UsdGeomSphere <https://openusd.org/dev/api/class_usd_geom_sphere.html>`__、
+`UsdGeomCapsule <https://openusd.org/dev/api/class_usd_geom_capsule.html>`__、
+`UsdGeomCylinder <https://openusd.org/dev/api/class_usd_geom_cylinder.html>`__ 以及
+`UsdGeomCube <https://openusd.org/dev/api/class_usd_geom_cube.html>`__。
+
+MjcImageableAPI
+^^^^^^^^^^^^^^^
+
+该 API 类为 MuJoCo 中纯视觉的实体提供属性，用 MuJoCo 的说法，我们将其量化为 ``contype = conaffinity = 0``。
+
+MjcCollisionAPI
+^^^^^^^^^^^^^^^
+
+该 API 类应用于表示碰撞几何体的 prim，并且应与
+`UsdPhysicsCollisionAPI <https://openusd.org/dev/api/class_usd_physics_collision_a_p_i.html>`__
+一同应用。
+
+MjcMeshCollisionAPI
+^^^^^^^^^^^^^^^^^^^
+
+该 API 类应用于表示网格（mesh）碰撞几何体的 prim，并且应与
+`UsdPhysicsMeshCollisionAPI <https://openusd.org/dev/api/class_usd_physics_mesh_collision_a_p_i.html>`__
+一同应用。
+
+MjcJointAPI
+^^^^^^^^^^^
+
+该 API 类应用于 `UsdPhysicsJoint <https://openusd.org/dev/api/class_usd_physics_joint.html>`__ prim，
+添加额外的属性以完整描述 MuJoCo 关节（joint）。
+
+MjcMaterialAPI
+^^^^^^^^^^^^^^
+
+该 API 类为物理材质提供属性，是对 `UsdPhysicsMaterialAPI
+<https://openusd.org/dev/api/class_usd_physics_material_a_p_i.html>`__ 的扩展。
+
+类型模式
+--------
+
+MjcActuator
+^^^^^^^^^^^
+
+该类表示 MuJoCo 的执行器（actuator），负责对通过
+`关系（relationship） <https://openusd.org/dev/api/class_usd_relationship.html>`__ 指定的传动（transmission）目标关节、刚体（body）或
+site 施加力。
+
+我们不使用现有的 `UsdPhysicsDriveAPI <https://openusd.org/dev/api/class_usd_physics_drive_a_p_i.html>`__，因为它
+更接近运行时的构造，其概念与此并不十分对应。
+
+MjcKeyframe
+^^^^^^^^^^^
+
+该类型保存张量值，用以表示特定时间点的仿真器状态。
+
+在 MJCF 中它是 ``<keyframe>`` 元素，并带有 ``time`` 属性。在 USD 中，我们改为将 time 属性映射到
+`timeSamples <https://openusd.org/release/tut_xforms.html>`__。
+
+关键帧（keyframe）中各值的顺序应与组合后的 stage 中刚体（rigidbody）的深度优先遍历顺序相对应。
+
+MjcTendon
+^^^^^^^^^
+
+该类型同时表示固定肌腱和空间肌腱（tendon）。
+
+在 MJCF 中它是 ``<tendon>`` 元素。肌腱路径由 ``mjc:path`` 关系属性中的有序目标列表表示。在 MJCF 中，我们可以在路径目标上指定
+``sidesite`` 和 ``divisor`` 等属性；但在 USD 中，我们无法同样优雅地把数据附加到关系属性上，因此这些属性变成了带索引的
+数组属性，例如 ``mjc:sideSites`` 和 ``mjs:path:divisors``。

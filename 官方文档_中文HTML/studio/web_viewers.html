@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html class="no-js" data-content_root="../" lang="zh-CN">
+<head><meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="light dark" name="color-scheme"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="../_static/favicons/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+<link href="../_static/favicons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="apple-touch-icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-192x192.png" rel="icon" sizes="192x192" type="image/png"/><link href="../genindex.html" rel="index" title="索引"/><link href="../search.html" rel="search" title="搜索"/><link href="native_viewers.html" rel="next" title="原生查看器"/><link href="index.html" rel="prev" title="MuJoCo Studio"/>
+<link as="image" href="../_static/banner.svg" rel="prefetch"/>
+<!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+<title>Web 查看器 - MuJoCo 文档（中文）</title>
+<link href="../_static/pygments.css?v=b86133f3" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo.css?v=7bdb33bb" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css?v=05624691" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo-extensions.css?v=8dab3a3b" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides.css?v=8d83ad8c" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides_mjwarp.css?v=e08d3b36" rel="stylesheet" type="text/css"/>
+<link href="../_static/zh_overrides.css?v=ee52c62c" rel="stylesheet" type="text/css"/>
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #16213a;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #2a4fd6;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #2a4fd6;
+  --color-brand-content: #2a4fd6;
+  --color-background-secondary: #f4f6f9;
+  --color-sidebar-background: #f4f6f9;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+      }
+    }
+  }
+</style></head>
+<body>
+<script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+<symbol id="svg-toc" viewbox="0 0 24 24">
+<title>Contents</title>
+<svg fill="currentColor" stroke="currentColor" stroke-width="0" viewbox="0 0 1024 1024">
+<path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"></path>
+</svg>
+</symbol>
+<symbol id="svg-menu" viewbox="0 0 24 24">
+<title>Menu</title>
+<svg class="feather-menu" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<line x1="3" x2="21" y1="12" y2="12"></line>
+<line x1="3" x2="21" y1="6" y2="6"></line>
+<line x1="3" x2="21" y1="18" y2="18"></line>
+</svg>
+</symbol>
+<symbol id="svg-arrow-right" viewbox="0 0 24 24">
+<title>Expand</title>
+<svg class="feather-chevron-right" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</symbol>
+<symbol id="svg-sun" viewbox="0 0 24 24">
+<title>Light mode</title>
+<svg class="feather-sun" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" x2="12" y1="1" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="23"></line>
+<line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+<line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+<line x1="1" x2="3" y1="12" y2="12"></line>
+<line x1="21" x2="23" y1="12" y2="12"></line>
+<line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+<line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
+</svg>
+</symbol>
+<symbol id="svg-moon" viewbox="0 0 24 24">
+<title>Dark mode</title>
+<svg class="icon-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+</svg>
+</symbol>
+<symbol id="svg-sun-with-moon" viewbox="0 0 24 24">
+<title>Auto light/dark, in light mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z" style="opacity: 50%"></path>
+<line x1="14.5" x2="14.5" y1="3.25" y2="1.25"></line>
+<line x1="14.5" x2="14.5" y1="15.85" y2="17.85"></line>
+<line x1="10.044" x2="8.63" y1="5.094" y2="3.68"></line>
+<line x1="19" x2="20.414" y1="14.05" y2="15.464"></line>
+<line x1="8.2" x2="6.2" y1="9.55" y2="9.55"></line>
+<line x1="20.8" x2="22.8" y1="9.55" y2="9.55"></line>
+<line x1="10.044" x2="8.63" y1="14.006" y2="15.42"></line>
+<line x1="19" x2="20.414" y1="5.05" y2="3.636"></line>
+<circle cx="14.5" cy="9.55" r="3.6"></circle>
+</svg>
+</symbol>
+<symbol id="svg-moon-with-sun" viewbox="0 0 24 24">
+<title>Auto light/dark, in dark mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"></path>
+<line style="opacity: 50%" x1="18" x2="18" y1="3.705" y2="2.5"></line>
+<line style="opacity: 50%" x1="18" x2="18" y1="11.295" y2="12.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="4.816" y2="3.964"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="10.212" y2="11.063"></line>
+<line style="opacity: 50%" x1="14.205" x2="13.001" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="21.795" x2="23" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="10.184" y2="11.036"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="4.789" y2="3.937"></line>
+<circle cx="18" cy="7.5" r="2.169" style="opacity: 50%"></circle>
+</svg>
+</symbol>
+<symbol id="svg-pencil" viewbox="0 0 24 24">
+<svg class="icon-tabler-pencil-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
+<path d="M13.5 6.5l4 4"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+<symbol id="svg-eye" viewbox="0 0 24 24">
+<svg class="icon-tabler-eye-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
+<path d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+</svg>
+<input aria-label="Toggle site navigation sidebar" class="sidebar-toggle" id="__navigation" name="__navigation" type="checkbox"/>
+<input aria-label="Toggle table of contents sidebar" class="sidebar-toggle" id="__toc" name="__toc" type="checkbox"/>
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+<div class="page">
+<header class="mobile-header">
+<div class="header-left">
+<label class="nav-overlay-icon" for="__navigation">
+<span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+</label>
+</div>
+<div class="header-center">
+<a href="../index.html"><div class="brand">MuJoCo 文档（中文）</div></a>
+</div>
+<div class="header-right">
+<div class="theme-toggle-container theme-toggle-header">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-header-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+</header>
+<aside class="sidebar-drawer">
+<div class="sidebar-container">
+<div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+<div class="sidebar-logo-container">
+<img alt="Logo" class="sidebar-logo" src="../_static/banner.svg"/>
+</div>
+<span class="sidebar-brand-text">MuJoCo 文档（中文）</span>
+</a><form action="../search.html" class="sidebar-search-container" method="get" role="search">
+<input aria-label="搜索" class="sidebar-search" name="q" placeholder="搜索"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">入门教程</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">概览</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../computation/index.html">计算</a><input aria-label="Toggle navigation of 计算" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../computation/fluid.html">流体力</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computation/speculative.html">推测接触</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">建模</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../XMLreference.html">XML 参考</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../programming/index.html">编程</a><input aria-label="Toggle navigation of 编程" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../programming/simulation.html">仿真</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/visualization.html">可视化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/rendering.html">渲染</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/ui.html">用户界面</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/modeledit.html">模型编辑</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/samples.html">代码示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/extension.html">扩展</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../APIreference/index.html">API 参考</a><input aria-label="Toggle navigation of API 参考" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APItypes.html">类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIfunctions.html">函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIglobals.html">全局变量</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Studio</a><input aria-label="Toggle navigation of Studio" checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Web 查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="native_viewers.html">原生查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html">架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_plugins.html">Python 插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python.html">Python</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjx.html">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../unity.html">Unity 插件</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/building.html">构建</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcf_file_format_plugin.html">文件格式插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/importing.html">导入</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/exporting.html">导出</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">模型库</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">更新日志</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<div class="main">
+<div class="content">
+<div class="article-container">
+<a class="back-to-top muted-link" href="#">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+</svg>
+<span>Back to top</span>
+</a>
+<div class="content-icon-container">
+<div class="view-this-page">
+<a class="muted-link" href="../_sources/studio/web_viewers.rst.txt" title="View this page">
+<svg><use href="#svg-eye"></use></svg>
+<span class="visually-hidden">View this page</span>
+</a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-content-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+<article id="furo-main-content" role="main">
+<section id="web">
+<span id="studiobrowser"></span><span id="studiowebviewers"></span><h1 data-bi="bi-1">Web 查看器<a class="headerlink" href="#web" title="链接到此标题。">#</a></h1><div class="en-orig en-h" data-for="bi-1" lang="en">Web Viewers</div>
+<div class="mt-notice admonition note">
+<p class="admonition-title">备注</p>
+<p>本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 <code class="docutils literal notranslate"><span class="pre">术语表.md</span></code> 。</p>
+</div>
+<p data-bi="bi-2">Studio 提供两种在 Web 浏览器中运行的方式，区别在于物理仿真和用户代码在哪里执行：</p><div class="en-orig" data-for="bi-2" lang="en">Studio provides two ways to run in a web browser depending on where physics and user code execute:</div>
+<ul class="simple">
+<li><p data-bi="bi-3"><strong>MuJoCo Live</strong> （<a class="reference external" href="https://live.mujoco.org">live.mujoco.org</a>）：将 C++ Studio 直接编译为 WebAssembly，使整个仿真器和渲染器（renderer）都在客户端的静态页面上运行，无需任何安装。</p><div class="en-orig" data-for="bi-3" lang="en"><strong>MuJoCo Live</strong> (<a class="reference external" href="https://live.mujoco.org">live.mujoco.org</a>): Compiles C++ Studio directly to WebAssembly so the
+entire simulator and renderer run client-side on a static page with zero install.</div></li>
+<li><p data-bi="bi-4"><strong>Python</strong> <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> ：在工作站或远程服务器上以无头方式运行你的 Python 仿真和自定义插件（plugin）（宿主机上无需 GPU 或窗口系统），并将 UI 绘制列表和仿真状态流式传输到浏览器。</p><div class="en-orig" data-for="bi-4" lang="en"><strong>Python</strong> <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code>: Runs your Python simulation and custom plugins headlessly on a workstation or remote server
+(no GPU or window system required on the host) and streams UI draw lists and simulation state to the browser.</div></li>
+</ul>
+<section id="mujoco-live">
+<span id="studiolive"></span><h2>MuJoCo Live<a class="headerlink" href="#mujoco-live" title="链接到此标题。">#</a></h2>
+<p data-bi="bi-5"><strong>MuJoCo Live</strong> （<a class="reference external" href="https://live.mujoco.org">live.mujoco.org</a>）是 C++ Studio 应用的独立浏览器构建版本，在浏览器标签页内运行物理仿真、Dear ImGui 用户界面和 <a class="reference internal" href="../programming/rendering.html#filamentrendering"><span class="std std-ref">Filament</span></a> 渲染（rendering），无需后端服务器：</p><div class="en-orig" data-for="bi-5" lang="en"><strong>MuJoCo Live</strong> (<a class="reference external" href="https://live.mujoco.org">live.mujoco.org</a>) is the standalone browser build of the C++ Studio
+application, running physics simulation, Dear ImGui UI, and <a class="reference internal" href="../programming/rendering.html#filamentrendering"><span class="std std-ref">Filament</span></a> rendering inside the
+browser tab with no backend server:</div>
+<ul>
+<li><p data-bi="bi-6"><strong>拖放模型</strong>：将独立的 <code class="docutils literal notranslate"><span class="pre">.xml</span></code> 、<code class="docutils literal notranslate"><span class="pre">.mjb</span></code> ，或自包含的 <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> / <code class="docutils literal notranslate"><span class="pre">.zip</span></code> 压缩包直接拖放到画布上。</p><div class="en-orig" data-for="bi-6" lang="en"><strong>Drag-and-drop models</strong>: Drop a standalone <code class="docutils literal notranslate"><span class="pre">.xml</span></code>, <code class="docutils literal notranslate"><span class="pre">.mjb</span></code>, or self-contained <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> / <code class="docutils literal notranslate"><span class="pre">.zip</span></code> archive
+directly onto the canvas.</div></li>
+<li><p data-bi="bi-7"><strong>可分享的模型 URL（</strong> <code class="docutils literal notranslate"><span class="pre">?model=</span></code> <strong>）</strong>：使用 <code class="docutils literal notranslate"><span class="pre">https://</span></code> 、<code class="docutils literal notranslate"><span class="pre">http://</span></code> 或
+<code class="docutils literal notranslate"><span class="pre">github:</span></code> 简写形式传入 <code class="docutils literal notranslate"><span class="pre">?model=&lt;url&gt;</span></code> ：</p><div class="en-orig" data-for="bi-7" lang="en"><strong>Shareable model URLs (</strong> <code class="docutils literal notranslate"><span class="pre">?model=</span></code> <strong>)</strong>: Pass <code class="docutils literal notranslate"><span class="pre">?model=&lt;url&gt;</span></code> using <code class="docutils literal notranslate"><span class="pre">https://</span></code>, <code class="docutils literal notranslate"><span class="pre">http://</span></code>, or the
+<code class="docutils literal notranslate"><span class="pre">github:</span></code> shorthand:</div>
+<p class="code-size"><a class="reference external" href="https://live.mujoco.org/?model=github:google-deepmind/mujoco/main/model/humanoid/humanoid.xml">https://live.mujoco.org/?model=github:google-deepmind/mujoco/main/model/humanoid/humanoid.xml</a></p>
+<p data-bi="bi-8">通过 URL 加载 XML 模型时，MuJoCo Live 会借助 <code class="docutils literal notranslate"><span class="pre">mju_getXMLDependencies</span></code> 发现其传递依赖的网格（mesh）、纹理和 <code class="docutils literal notranslate"><span class="pre">&lt;include&gt;</span></code> 文件，并在编译之前并行预取它们。<a class="reference external" href="https://github.com/google-deepmind/mujoco_menagerie">MuJoCo
+Menagerie</a> 页面上的每个机器人缩略图都使用这种 <code class="docutils literal notranslate"><span class="pre">github:</span></code> 语法直接链接到 <code class="docutils literal notranslate"><span class="pre">live.mujoco.org</span></code> ，而访问值为空的 <code class="docutils literal notranslate"><span class="pre">?model=</span></code> 会打开一个空白场景，而不加载默认的欢迎模型。</p><div class="en-orig" data-for="bi-8" lang="en">When loading an XML model by URL, MuJoCo Live discovers transitive meshes, textures, and <code class="docutils literal notranslate"><span class="pre">&lt;include&gt;</span></code> files via
+<code class="docutils literal notranslate"><span class="pre">mju_getXMLDependencies</span></code> and prefetches them in parallel before compiling. Every robot thumbnail on the <a class="reference external" href="https://github.com/google-deepmind/mujoco_menagerie">MuJoCo
+Menagerie</a> page links directly to <code class="docutils literal notranslate"><span class="pre">live.mujoco.org</span></code> using
+this <code class="docutils literal notranslate"><span class="pre">github:</span></code> syntax, and visiting <code class="docutils literal notranslate"><span class="pre">?model=</span></code> with an empty value opens a blank scene without loading the default
+welcome model.</div>
+</li>
+</ul>
+<p data-bi="bi-9">关于 Emscripten WebAssembly 构建和 C++ 绑定的详情，请参见 <a class="reference internal" href="cpp.html#studiocpp"><span class="std std-ref">C++</span></a> 中的 <a class="reference internal" href="cpp.html#studiolivecpp"><span class="std std-ref">WebAssembly 构建</span></a>。</p><div class="en-orig" data-for="bi-9" lang="en">For details on the Emscripten WebAssembly build and C++ bindings, see <a class="reference internal" href="cpp.html#studiolivecpp"><span class="std std-ref">WebAssembly Build</span></a> in
+<a class="reference internal" href="cpp.html#studiocpp"><span class="std std-ref">C++</span></a>.</div>
+</section>
+<section id="webviewer">
+<span id="studiowebviewer"></span><h2>WebViewer<a class="headerlink" href="#webviewer" title="链接到此标题。">#</a></h2>
+<p data-bi="bi-10">远程桌面工具（如 Chrome Remote Desktop、X11 转发，或需要宿主机配备 GPU 并流式传输压缩视频帧的服务端视频编码器）与此不同，<code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> （<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/web_viewer.py">web_viewer.py</a>）在宿主机 CPU 上以无头方式运行，没有原生图形或窗口系统依赖，并通过单个 HTTP/WebSocket 端口将 3D 光栅化卸载到客户端浏览器。只有当用户代码自身需要离屏渲染相机观测时，才需要宿主机 GPU。</p><div class="en-orig" data-for="bi-10" lang="en">Unlike remote desktop tools such as Chrome Remote Desktop, X11 forwarding, or server-side video encoders that require a
+GPU on the host machine and stream compressed video frames, <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> (<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/web_viewer.py">web_viewer.py</a>) runs headless on the host
+CPU with no native graphics or windowing dependencies and offloads 3D rasterization to the client browser over a single
+HTTP/WebSocket port. A host GPU is only needed if user code itself renders offscreen camera observations.</div>
+<section id="id1">
+<h3 data-bi="bi-11">启动<a class="headerlink" href="#id1" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-11" lang="en">Launching</div>
+<p data-bi="bi-12">可以从命令行启动 <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> ，也可以通过 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/launch_web.py">launch_web</a> 从 Python 启动。所有内容都通过单个 <code class="docutils literal notranslate"><span class="pre">http_port</span></code> 提供服务，该端口默认为 <code class="docutils literal notranslate"><span class="pre">0</span></code> ，表示选择第一个 <code class="docutils literal notranslate"><span class="pre">&gt;=</span> <span class="pre">8080</span></code> 的空闲端口。在 <code class="docutils literal notranslate"><span class="pre">ViewerConfig</span></code> 上设置 <code class="docutils literal notranslate"><span class="pre">open_browser=True</span></code> 可自动打开浏览器标签页；在远程机器上运行时，请通过 <code class="docutils literal notranslate"><span class="pre">ssh</span> <span class="pre">-L</span> <span class="pre">8080:localhost:8080</span></code> 转发该端口：</p><div class="en-orig" data-for="bi-12" lang="en">Start <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> from the command line or from Python via <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/launch_web.py">launch_web</a>. Everything is served over a
+single <code class="docutils literal notranslate"><span class="pre">http_port</span></code>, which defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code> and selects the first free port <code class="docutils literal notranslate"><span class="pre">&gt;=</span> <span class="pre">8080</span></code>. Set <code class="docutils literal notranslate"><span class="pre">open_browser=True</span></code> on
+<code class="docutils literal notranslate"><span class="pre">ViewerConfig</span></code> to open a browser tab automatically, and forward the port via <code class="docutils literal notranslate"><span class="pre">ssh</span> <span class="pre">-L</span> <span class="pre">8080:localhost:8080</span></code> when
+running on a remote machine:</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>mujoco.studio.viewer<span class="w"> </span>--model<span class="o">=</span>humanoid.xml<span class="w"> </span>--gfx<span class="o">=</span>web
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span> <span class="k">as</span> <span class="n">studio_app</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">launch_web</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">viewer_protocol</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">viewer_protocol</span><span class="o">.</span><span class="n">ViewerConfig</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">'MuJoCo Studio'</span><span class="p">)</span>
+
+<span class="n">launch_web</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">,</span>
+    <span class="n">model_path</span><span class="o">=</span><span class="s1">'humanoid.xml'</span><span class="p">,</span>
+    <span class="n">plugins</span><span class="o">=</span><span class="p">[</span><span class="n">studio_app</span><span class="o">.</span><span class="n">App</span><span class="p">(),</span> <span class="o">*</span><span class="n">studio_app</span><span class="o">.</span><span class="n">SIM_PLUGINS</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p data-bi="bi-13">与 <a class="reference internal" href="native_viewers.html#studioexecutionmodes"><span class="std std-ref">launch_native</span></a> 类似，当把 <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> 附加到现有的仿真循环时，可通过 <code class="docutils literal notranslate"><span class="pre">launch_web.launch</span></code> 使用非阻塞模式；参见 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/sample/studio/custom_sim_loop.py">custom_sim_loop.py</a>。</p><div class="en-orig" data-for="bi-13" lang="en">Like <a class="reference internal" href="native_viewers.html#studioexecutionmodes"><span class="std std-ref">launch_native</span></a>, non-blocking mode is supported via <code class="docutils literal notranslate"><span class="pre">launch_web.launch</span></code> when
+attaching <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> to an existing simulation loop; see <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/sample/studio/custom_sim_loop.py">custom_sim_loop.py</a>.</div>
+<p data-bi="bi-14"><code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> 本身是可选的：省略它会得到一个干净的 3D 视口，由你自己的 <a class="reference internal" href="python_plugins.html#studiopythonplugins"><span class="std std-ref">插件</span></a> 定义整个界面。例如，<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/sample/studio/overview/slideshow.py">overview/slideshow.py</a> 中的交互式幻灯片示例就在不使用 <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> 的情况下运行了一个自定义查看器，它将内置的回放和历史插件与一个极简的标题卡片、时间轴拖动以及后台场景预取结合在一起。</p><div class="en-orig" data-for="bi-14" lang="en"><code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> is itself optional: omitting it gives you a clean 3D viewport where your own <a class="reference internal" href="python_plugins.html#studiopythonplugins"><span class="std std-ref">plugins</span></a> define the entire interface. For example, the interactive slideshow sample in
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/sample/studio/overview/slideshow.py">overview/slideshow.py</a> runs a
+custom viewer without <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code>, pairing the built-in playback and history plugins with a minimal caption
+card, timeline scrubbing, and background scene prefetching.</div>
+</section>
+<section id="id2">
+<h3 data-bi="bi-15">流式传输架构<a class="headerlink" href="#id2" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-15" lang="en">Streaming Architecture</div>
+<a class="only-light reference internal image-reference" href="../_images/webviewer_light.svg"><img alt="../_images/webviewer_light.svg" class="align-center only-light" src="../_images/webviewer_light.svg" style="width: 100%;"/>
+</a>
+<a class="only-dark reference internal image-reference" href="../_images/webviewer_dark.svg"><img alt="../_images/webviewer_dark.svg" class="align-center only-dark" src="../_images/webviewer_dark.svg" style="width: 100%;"/>
+</a>
+<p data-bi="bi-16">Python 的 <a class="reference internal" href="architecture.html#studiomessaging"><span class="std std-ref">消息</span></a> 类型（<code class="docutils literal notranslate"><span class="pre">Snapshot</span></code> 和 <code class="docutils literal notranslate"><span class="pre">Event</span></code> ）只在 Python 仿真端和查看器端点之间传递——宿主机到浏览器的线路协议是固定的，与自定义插件的消息类无关：</p><div class="en-orig" data-for="bi-16" lang="en">Python <a class="reference internal" href="architecture.html#studiomessaging"><span class="std std-ref">Message</span></a> types (<code class="docutils literal notranslate"><span class="pre">Snapshot</span></code> and <code class="docutils literal notranslate"><span class="pre">Event</span></code>) only travel between the Python simulation and
+viewer endpoints—the host-to-browser wire protocol is fixed and independent of custom plugin message classes:</div>
+<ul class="simple">
+<li><p data-bi="bi-17"><strong>UI 流（</strong> <code class="docutils literal notranslate"><span class="pre">/ui</span></code> <strong>）</strong>：宿主机在无头的 Dear ImGui 上下文中执行 <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> 和自定义 Python
+<code class="docutils literal notranslate"><span class="pre">ViewerPlugin</span></code> 窗口的所有 <code class="docutils literal notranslate"><span class="pre">BuildGuiEvent</span></code> 处理函数，并通过 Studio 的 UI 线路编解码器流式传输紧凑的 2D 顶点/索引绘制列表。由于大多数 UI 面板和控件在帧与帧之间保持静态，该编解码器采用按窗口的增量压缩——将每个窗口的顶点、索引和绘制命令缓冲区与上一帧比较，只传输发生变化的元素——使 CPU 开销和带宽保持在极低水平（每秒几千字节），同时以浏览器原生分辨率渲染清晰的矢量 UI。在浏览器中捕获的鼠标点击、拖动、滚轮事件和键盘输入会通过 <code class="docutils literal notranslate"><span class="pre">/ui</span></code> 回传给宿主机。</p><div class="en-orig" data-for="bi-17" lang="en"><strong>UI Stream (</strong> <code class="docutils literal notranslate"><span class="pre">/ui</span></code> <strong>)</strong>: The host executes all <code class="docutils literal notranslate"><span class="pre">BuildGuiEvent</span></code> handlers from <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> and custom Python
+<code class="docutils literal notranslate"><span class="pre">ViewerPlugin</span></code> windows in a headless Dear ImGui context and streams compact 2D vertex/index draw lists via Studio’s
+UI wire codec. Because most UI panels and widgets remain static from frame to frame, the codec applies per-window
+delta compression—comparing each window’s vertex, index, and draw-command buffers against the previous frame and
+transmitting only the elements that changed—keeping CPU overhead and bandwidth minimal at a few kilobytes per second
+while rendering crisp vector UI at native browser resolution. Mouse clicks, drags, scroll wheel events, and
+keystrokes captured in the browser flow back over <code class="docutils literal notranslate"><span class="pre">/ui</span></code> to the host.</div></li>
+<li><p data-bi="bi-18"><strong>场景与模型流（</strong> <code class="docutils literal notranslate"><span class="pre">/model</span></code> <strong>，</strong> <code class="docutils literal notranslate"><span class="pre">/state</span></code> <strong>，</strong> <code class="docutils literal notranslate"><span class="pre">/drop</span></code> <strong>）</strong>：模型加载时，宿主机通过 <code class="docutils literal notranslate"><span class="pre">/model</span></code> 提供编译后的 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> （<code class="docutils literal notranslate"><span class="pre">.mjb</span></code>）和打包的资源，并通过 <code class="docutils literal notranslate"><span class="pre">/state</span></code> 以“最新者优先”的语义流式传输每帧的积分状态、相机变换、<a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a> 标志、<a class="reference internal" href="../APIreference/APItypes.html#mjvperturb"><span class="std std-ref">mjvPerturb</span></a> 状态和 <code class="docutils literal notranslate"><span class="pre">extra_geoms</span></code> ，使浏览器的 WebAssembly 客户端能够运行 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-forward"><span class="std std-ref">mj_forward</span></a> 并通过 Filament WebGL 2.0 进行渲染。仿真插件通过 <code class="docutils literal notranslate"><span class="pre">PreloadModelEvent</span></code> 提前宣告的模型（例如播放列表中接下来的场景）也会按内容哈希提供，浏览器会在后台下载它们，这样之后切换到其中某个模型时就无需再下载。拖放到浏览器画布上的模型文件或文件夹会通过 <code class="docutils literal notranslate"><span class="pre">/drop</span></code> 上传到宿主机，并在仿真线程上触发 <code class="docutils literal notranslate"><span class="pre">LoadModelEvent</span></code> 。</p><div class="en-orig" data-for="bi-18" lang="en"><strong>Scene &amp; Model Streams (</strong> <code class="docutils literal notranslate"><span class="pre">/model</span></code> <strong>,</strong> <code class="docutils literal notranslate"><span class="pre">/state</span></code> <strong>,</strong> <code class="docutils literal notranslate"><span class="pre">/drop</span></code> <strong>)</strong>: When a model loads, the host serves the
+compiled <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> (<code class="docutils literal notranslate"><span class="pre">.mjb</span></code>) and bundled resources over <code class="docutils literal notranslate"><span class="pre">/model</span></code>, and streams per-frame integration state,
+camera transforms, <a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a> flags, <a class="reference internal" href="../APIreference/APItypes.html#mjvperturb"><span class="std std-ref">mjvPerturb</span></a> state, and <code class="docutils literal notranslate"><span class="pre">extra_geoms</span></code> over <code class="docutils literal notranslate"><span class="pre">/state</span></code> with
+latest-wins semantics so the browser’s WebAssembly client can run <a class="reference internal" href="../APIreference/APIfunctions.html#mj-forward"><span class="std std-ref">mj_forward</span></a> and render via Filament WebGL 2.0.
+Models that a simulation plugin announces ahead of time with <code class="docutils literal notranslate"><span class="pre">PreloadModelEvent</span></code> (for example the next scenes of a
+playlist) are also served by content hash, and browsers download them in the background so that switching to one of
+them later needs no download. Model files or folders dropped onto the browser canvas upload over <code class="docutils literal notranslate"><span class="pre">/drop</span></code> to the
+host and trigger <code class="docutils literal notranslate"><span class="pre">LoadModelEvent</span></code> on the simulation thread.</div></li>
+</ul>
+</section>
+<section id="id3">
+<h3 data-bi="bi-19">多查看器会话<a class="headerlink" href="#id3" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-19" lang="en">Multi-Viewer Sessions</div>
+<p data-bi="bi-20">多个浏览器可以同时连接到同一个 <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> URL，并由一个 <strong>角色（Role）</strong> 指示器 UI 协调：</p><div class="en-orig" data-for="bi-20" lang="en">Multiple browsers can connect to the same <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> URL simultaneously, coordinated by a <strong>Role</strong> indicator UI:</div>
+<ul class="simple">
+<li><p data-bi="bi-21"><strong>控制者与旁观者</strong>：同一时刻只有 <strong>一个</strong> 浏览器持有 <strong>控制者</strong> 角色（<code class="docutils literal notranslate"><span class="pre">CONTROLLING</span></code>），它拥有 <code class="docutils literal notranslate"><span class="pre">/ui</span></code> 流，可以看到并操作 Dear ImGui 面板、扰动刚体（body），并可以将模型拖放到页面上。其他浏览器作为 <strong>旁观者</strong> （<code class="docutils literal notranslate"><span class="pre">SPECTATING</span></code>）加入：它们只接收 <code class="docutils literal notranslate"><span class="pre">/model</span></code> 数据包和 <code class="docutils literal notranslate"><span class="pre">/state</span></code> 仿真流，没有 <code class="docutils literal notranslate"><span class="pre">/ui</span></code> 流量，并且可以在角色 UI 中把各自的本地相机切换为 <code class="docutils literal notranslate"><span class="pre">Free:</span> <span class="pre">tumble</span></code> 、<code class="docutils literal notranslate"><span class="pre">Free:</span> <span class="pre">wasd</span></code> 和 <code class="docutils literal notranslate"><span class="pre">Follow</span> <span class="pre">Controller</span></code> 之一。</p><div class="en-orig" data-for="bi-21" lang="en"><strong>Controller vs. Spectators</strong>: Only <strong>one</strong> browser at a time holds the <strong>Controller</strong> role (<code class="docutils literal notranslate"><span class="pre">CONTROLLING</span></code>), which
+owns the <code class="docutils literal notranslate"><span class="pre">/ui</span></code> stream, sees and interacts with the Dear ImGui panels, perturbs bodies, and can
+drag-and-drop models onto the page. Additional browsers join as <strong>Spectators</strong> (<code class="docutils literal notranslate"><span class="pre">SPECTATING</span></code>): they receive only the
+<code class="docutils literal notranslate"><span class="pre">/model</span></code> bundle and <code class="docutils literal notranslate"><span class="pre">/state</span></code> simulation stream with no <code class="docutils literal notranslate"><span class="pre">/ui</span></code> traffic, and can switch their local camera in the
+Role UI between <code class="docutils literal notranslate"><span class="pre">Free:</span> <span class="pre">tumble</span></code>, <code class="docutils literal notranslate"><span class="pre">Free:</span> <span class="pre">wasd</span></code>, and <code class="docutils literal notranslate"><span class="pre">Follow</span> <span class="pre">Controller</span></code>.</div></li>
+<li><p data-bi="bi-22"><strong>控制队列与抢占控制</strong>：旁观者可以在角色 UI 中点击 <strong>Request control</strong> 加入先进先出（FIFO）的控制队列，此时控制者的角色指示器会以橙色闪烁并显示等待人数；也可以点击 <strong>Leave Queue</strong> 取消。当控制者点击 <strong>Release control</strong> 或关闭其标签页时，服务器会把控制权授予队列首位。排队中的旁观者也可以点击 <strong>Steal Control</strong> 插队并立即获得控制权，同时把当前控制者降级为旁观者。</p><div class="en-orig" data-for="bi-22" lang="en"><strong>Control queue &amp; Steal Control</strong>: A spectator can click <strong>Request control</strong> in the Role UI to join the FIFO control
+queue, pulsing the controller’s Role indicator orange with the waiting count, or click <strong>Leave Queue</strong> to cancel.
+When the controller clicks <strong>Release control</strong> or closes their tab, the server grants control to the head of the
+queue. Queued spectators can also click <strong>Steal Control</strong> to jump the queue and take control immediately, demoting the
+current controller to a spectator.</div></li>
+<li><p data-bi="bi-23"><strong>最大旁观者数与出站带宽</strong>：由于服务器会向每个已连接的浏览器流式传输 60 Hz 的 <code class="docutils literal notranslate"><span class="pre">/state</span></code> 负载，因此总出站仿真带宽会随查看者数量增长，并在角色 UI 中以 <code class="docutils literal notranslate"><span class="pre">Sim</span> <span class="pre">Data</span>
+<span class="pre">Rate\</span> <span class="pre">``</span> <span class="pre">的形式报告。控制者可以在运行时将</span> <span class="pre">**Max</span> <span class="pre">Spectators**</span> <span class="pre">在</span> <span class="pre">``\</span> <span class="pre">0\</span> <span class="pre">``</span> <span class="pre">到</span> <span class="pre">``\</span> <span class="pre">32\</span> <span class="pre">``</span> <span class="pre">之间调整（默认</span> <span class="pre">``\</span> <span class="pre">8</span></code>），以限制出站仿真状态流量；超出的旁观者会按最新连接者优先的顺序被断开，并显示 <em>Session is full</em> 提示，然后自动重试，直到有空位释放。</p><div class="en-orig" data-for="bi-23" lang="en"><strong>Max spectators &amp; outgoing bandwidth</strong>: Because the server streams the 60 Hz <code class="docutils literal notranslate"><span class="pre">/state</span></code> payload to every connected
+browser, total outgoing simulation bandwidth scales with the viewer count and is reported in the Role UI as <code class="docutils literal notranslate"><span class="pre">Sim</span> <span class="pre">Data</span>
+<span class="pre">Rate</span></code>. The controller can adjust <strong>Max Spectators</strong> at runtime from <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">32</span></code> (default <code class="docutils literal notranslate"><span class="pre">8</span></code>) to cap outgoing
+simulation state traffic; excess spectators are disconnected newest-first with a <em>Session is full</em> notice and retry
+automatically until a slot frees up.</div></li>
+<li><p data-bi="bi-24"><strong>空闲断开与重连</strong>：隐藏或处于后台的浏览器标签页会暂停其渲染循环并停止发送流量。如果在控制队列中有人等待时，控制者标签页 <strong>90 秒</strong> 内没有发送任何输入，则控制权会被自动移交；如果旁观者标签页 <strong>5 分钟</strong> 内没有发送 30 秒一次的心跳，它就会被断开以释放其名额，并在标签页再次获得焦点时自动重连。每个客户端还会确认 <code class="docutils literal notranslate"><span class="pre">/state</span></code> 帧，因此在慢速链路上最多只有一个状态负载在传输中；如果 Python 进程停止或卡住，客户端会显示 <em>Viewer server is not reachable</em> 提示。</p><div class="en-orig" data-for="bi-24" lang="en"><strong>Idle disconnects &amp; reconnection</strong>: Hidden or backgrounded browser tabs pause their rendering loop and stop sending
+traffic. If a controller tab sends no input for <strong>90 seconds</strong> while someone is waiting in the control queue, control
+is automatically handed off; if a spectator tab sends no 30-second heartbeat for <strong>5 minutes</strong>, it is disconnected to
+free its slot and reconnects automatically when the tab is focused again. Each client also acknowledges <code class="docutils literal notranslate"><span class="pre">/state</span></code>
+frames so at most one state payload is in flight over slow links, and displays a <em>Viewer server is not reachable</em>
+notice if the Python process stops or stalls.</div></li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title" data-bi="bi-25">警告</p><div class="en-orig" data-for="bi-25" lang="en">Warning</div>
+<p data-bi="bi-26"><code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> 提供的是没有认证和加密的明文 HTTP 和 WebSocket 服务，并且目前监听所有网络接口——任何能够访问该端口的人都可以获取或抢占控制权、上传文件，并查看宿主机的日志、异常消息和文件路径。在易用性和访问控制方面的改进仍在进行期间，<code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> 是一个开发工具，<strong>不提供针对不可信网络的安全保证</strong>。请在 <code class="docutils literal notranslate"><span class="pre">localhost</span></code> 上、可信网络中，或通过经过认证的隧道（例如 <code class="docutils literal notranslate"><span class="pre">ssh</span> <span class="pre">-L</span> <span class="pre">8080:localhost:8080</span></code>）运行它。</p><div class="en-orig" data-for="bi-26" lang="en"><code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> serves plain HTTP and WebSockets without authentication or encryption and currently listens on all
+network interfaces—anyone who can reach the port can take or steal control, upload files, and view host logs,
+exception messages, and file paths. While usability and access-control improvements are in progress, <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> is
+a development tool and <strong>will not come with security guarantees</strong> against untrusted networks. Run it on <code class="docutils literal notranslate"><span class="pre">localhost</span></code>,
+on trusted networks, or through an authenticated tunnel such as <code class="docutils literal notranslate"><span class="pre">ssh</span> <span class="pre">-L</span> <span class="pre">8080:localhost:8080</span></code>.</div>
+</div>
+</section>
+</section>
+<section id="studiobrowsersandboxing">
+<span id="id4"></span><h2 data-bi="bi-27">浏览器沙箱<a class="headerlink" href="#studiobrowsersandboxing" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-27" lang="en">Browser Sandboxing</div>
+<p data-bi="bi-28">与原生桌面应用不同，Web 浏览器在安全沙箱中执行页面，该沙箱会限制多线程、网络请求、文件系统访问和内存，并且 WebAssembly 模块在页面存续期间会一直驻留，而不是每个会话都启动一个全新的操作系统进程。下面各点概述了这些浏览器行为如何影响
+<code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> 和 <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code> ：</p><div class="en-orig" data-for="bi-28" lang="en">Unlike native desktop applications, web browsers execute pages inside a security sandbox that restricts multithreading,
+network requests, filesystem access, and memory, and keep WebAssembly modules resident for the life of the page rather
+than running a fresh OS process per session. The points below summarize how these browser behaviors affect
+<code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> and <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code>:</div>
+<ul class="simple">
+<li><p data-bi="bi-29"><strong>COOP/COEP 头与 WebAssembly 多线程</strong> （<em>两者</em> <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> <em>和</em> <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code> ）：在 WebAssembly 中，C++
+线程（POSIX <code class="docutils literal notranslate"><span class="pre">pthreads</span></code> ）由通过 <code class="docutils literal notranslate"><span class="pre">SharedArrayBuffer</span></code> 共享内存的浏览器 Web Worker 支撑。为了缓解旁路计时攻击，浏览器会阻止 <code class="docutils literal notranslate"><span class="pre">SharedArrayBuffer</span></code> ，除非页面是 <em>跨源隔离的</em> ——也就是说 HTTP 服务器要发送 <code class="docutils literal notranslate"><span class="pre">Cross-Origin-Opener-Policy:</span> <span class="pre">same-origin</span></code> （COOP）和
+<code class="docutils literal notranslate"><span class="pre">Cross-Origin-Embedder-Policy:</span> <span class="pre">require-corp</span></code> （COEP）。</p><div class="en-orig" data-for="bi-29" lang="en"><strong>COOP/COEP headers and WebAssembly multithreading</strong> (<em>both</em> <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> <em>and</em> <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code>): In WebAssembly, C++
+threads (POSIX <code class="docutils literal notranslate"><span class="pre">pthreads</span></code>) are backed by browser Web Workers that share memory through <code class="docutils literal notranslate"><span class="pre">SharedArrayBuffer</span></code>. To
+mitigate side-channel timing attacks, browsers block <code class="docutils literal notranslate"><span class="pre">SharedArrayBuffer</span></code> unless the page is <em>cross-origin
+isolated</em>—meaning the HTTP server sends <code class="docutils literal notranslate"><span class="pre">Cross-Origin-Opener-Policy:</span> <span class="pre">same-origin</span></code> (COOP) and
+<code class="docutils literal notranslate"><span class="pre">Cross-Origin-Embedder-Policy:</span> <span class="pre">require-corp</span></code> (COEP).</div>
+<ul>
+<li><p data-bi="bi-30">在 <strong>WebViewer</strong> 中，浏览器的 WebAssembly 渲染客户端（<code class="docutils literal notranslate"><span class="pre">web_client</span></code>）是用 <code class="docutils literal notranslate"><span class="pre">pthreads</span></code> 编译的，因此
+<code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> 内置的 Python 服务器会自动在每个 HTTP 响应和 WebSocket 升级握手中附加 <code class="docutils literal notranslate"><span class="pre">COOP</span></code> 和 <code class="docutils literal notranslate"><span class="pre">COEP</span></code> 头。</p><div class="en-orig" data-for="bi-30" lang="en">In <strong>WebViewer</strong>, the browser’s WebAssembly rendering client (<code class="docutils literal notranslate"><span class="pre">web_client</span></code>) is compiled with <code class="docutils literal notranslate"><span class="pre">pthreads</span></code>, so
+<code class="docutils literal notranslate"><span class="pre">WebViewer</span></code>’s built-in Python server automatically attaches <code class="docutils literal notranslate"><span class="pre">COOP</span></code> and <code class="docutils literal notranslate"><span class="pre">COEP</span></code> headers to every HTTP response
+and WebSocket upgrade handshake.</div></li>
+<li><p data-bi="bi-31">在 <strong>MuJoCo Live</strong> 中，如果静态 Web 主机不提供 <code class="docutils literal notranslate"><span class="pre">COOP</span></code> 和 <code class="docutils literal notranslate"><span class="pre">COEP</span></code> 头——或者在 iOS WebKit 等移动浏览器上（<code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code> 会加载专用的单线程构建版本）——<code class="docutils literal notranslate"><span class="pre">SharedArrayBuffer</span></code> 不可用，仿真将在浏览器主线程上以单线程运行，并且 <em>Threads</em> 滑块被禁用。</p><div class="en-orig" data-for="bi-31" lang="en">In <strong>MuJoCo Live</strong>, if a static web host does not serve <code class="docutils literal notranslate"><span class="pre">COOP</span></code> and <code class="docutils literal notranslate"><span class="pre">COEP</span></code> headers—or on mobile browsers such as
+iOS WebKit where <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code> loads a dedicated single-threaded build—<code class="docutils literal notranslate"><span class="pre">SharedArrayBuffer</span></code> is unavailable, the
+simulation runs single-threaded on the browser’s main thread, and the <em>Threads</em> slider is disabled.</div></li>
+</ul>
+</li>
+<li><p data-bi="bi-32"><strong>安全上下文要求（</strong> <code class="docutils literal notranslate"><span class="pre">localhost</span></code> <strong>或 HTTPS）</strong> （ <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> <em>以及自托管的</em> <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code> ）：浏览器只在 <em>安全上下文</em> 中启用 <code class="docutils literal notranslate"><span class="pre">SharedArrayBuffer</span></code> ，即 <code class="docutils literal notranslate"><span class="pre">http://localhost</span></code> 、<code class="docutils literal notranslate"><span class="pre">127.0.0.1</span></code> 或
+<code class="docutils literal notranslate"><span class="pre">https://</span></code> 。通过纯 <code class="docutils literal notranslate"><span class="pre">http://&lt;remote-ip&gt;:&lt;port&gt;</span></code> 打开远程 <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> 会禁用 <code class="docutils literal notranslate"><span class="pre">SharedArrayBuffer</span></code> ，并导致 WebAssembly 客户端无法初始化。在远程工作站或无头服务器上运行 <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> 时，请通过 <code class="docutils literal notranslate"><span class="pre">ssh</span> <span class="pre">-L</span> <span class="pre">8080:localhost:8080</span></code> 将端口转发到本地机器并打开 <code class="docutils literal notranslate"><span class="pre">http://localhost:8080</span></code> ，或者把服务器放在一个 <code class="docutils literal notranslate"><span class="pre">https://</span></code> 反向代理之后，并确保该代理在 HTTP 和 WebSocket 响应上都转发 <code class="docutils literal notranslate"><span class="pre">COOP</span></code> 和 <code class="docutils literal notranslate"><span class="pre">COEP</span></code> 头。</p><div class="en-orig" data-for="bi-32" lang="en"><strong>Secure context requirement (</strong> <code class="docutils literal notranslate"><span class="pre">localhost</span></code> <strong>or HTTPS)</strong> (<code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> <em>and self-hosted</em> <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code>):
+Browsers only enable <code class="docutils literal notranslate"><span class="pre">SharedArrayBuffer</span></code> in <em>secure contexts</em>, meaning <code class="docutils literal notranslate"><span class="pre">http://localhost</span></code>, <code class="docutils literal notranslate"><span class="pre">127.0.0.1</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">https://</span></code>. Opening a remote <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> over plain <code class="docutils literal notranslate"><span class="pre">http://&lt;remote-ip&gt;:&lt;port&gt;</span></code> disables <code class="docutils literal notranslate"><span class="pre">SharedArrayBuffer</span></code>
+and prevents the WebAssembly client from initializing. When running <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> on a remote workstation or headless
+server, forward the port to your local machine via <code class="docutils literal notranslate"><span class="pre">ssh</span> <span class="pre">-L</span> <span class="pre">8080:localhost:8080</span></code> and open <code class="docutils literal notranslate"><span class="pre">http://localhost:8080</span></code>,
+or place the server behind an <code class="docutils literal notranslate"><span class="pre">https://</span></code> reverse proxy that forwards the <code class="docutils literal notranslate"><span class="pre">COOP</span></code> and <code class="docutils literal notranslate"><span class="pre">COEP</span></code> headers on both HTTP
+and WebSocket responses.</div></li>
+<li><p data-bi="bi-33"><strong>跨源模型 URL（CORS 与 CORP）</strong> （<code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code>）：当 <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code> 通过
+<code class="docutils literal notranslate"><span class="pre">?model=&lt;url&gt;</span></code> 加载外部模型时，浏览器会直接从远程服务器获取 XML 以及所有被引用的网格或纹理。远程服务器必须通过 <code class="docutils literal notranslate"><span class="pre">Access-Control-Allow-Origin</span></code> 允许跨源请求——<code class="docutils literal notranslate"><span class="pre">raw.githubusercontent.com</span></code> 上的 <code class="docutils literal notranslate"><span class="pre">github:</span></code> URL 就是这样——并且如果承载页面启用了 <code class="docutils literal notranslate"><span class="pre">COEP:</span> <span class="pre">require-corp</span></code> ，跨源资源还必须包含宽松的 <code class="docutils literal notranslate"><span class="pre">Cross-Origin-Resource-Policy</span></code> 头。</p><div class="en-orig" data-for="bi-33" lang="en"><strong>Cross-origin model URLs (CORS &amp; CORP)</strong> (<code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code>): When <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code> loads an external model via
+<code class="docutils literal notranslate"><span class="pre">?model=&lt;url&gt;</span></code>, the browser fetches the XML and any referenced meshes or textures directly from the remote server.
+The remote server must permit cross-origin requests via <code class="docutils literal notranslate"><span class="pre">Access-Control-Allow-Origin</span></code>—as <code class="docutils literal notranslate"><span class="pre">github:</span></code> URLs on
+<code class="docutils literal notranslate"><span class="pre">raw.githubusercontent.com</span></code> do—and if <code class="docutils literal notranslate"><span class="pre">COEP:</span> <span class="pre">require-corp</span></code> is enabled on the hosting page, cross-origin assets
+must also include a permissive <code class="docutils literal notranslate"><span class="pre">Cross-Origin-Resource-Policy</span></code> header.</div></li>
+<li><p data-bi="bi-34"><strong>物理仿真运行的位置与后台标签页</strong> （ <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> <em>对比</em> <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code> ）：在 <strong>WebViewer</strong> 中，Python 代码、物理步进和 C++ 线程池都在宿主机上原生运行；最小化浏览器或切换离开该标签页只会暂停该标签页中的 3D 渲染，而宿主机上的仿真继续运行。在 <strong>MuJoCo Live</strong> 中，物理仿真和渲染都在浏览器的 <code class="docutils literal notranslate"><span class="pre">requestAnimationFrame</span></code> 循环内步进，而不是在单独的后台线程上，因此把标签页切到后台会暂停仿真。</p><div class="en-orig" data-for="bi-34" lang="en"><strong>Where physics runs &amp; backgrounded tabs</strong> (<code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> <em>vs.</em> <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code>): In <strong>WebViewer</strong>, Python code,
+physics stepping, and C++ thread pools run natively on the host machine; minimizing or switching away from the browser
+tab only pauses 3D rendering in that tab while the host simulation continues running. In <strong>MuJoCo Live</strong>, physics and
+rendering both step inside the browser’s <code class="docutils literal notranslate"><span class="pre">requestAnimationFrame</span></code> loop rather than on a separate background thread,
+so backgrounding the tab pauses the simulation.</div></li>
+<li><p data-bi="bi-35"><strong>文件系统访问与内存限制</strong> （ <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> <em>对比</em> <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code> ）：浏览器标签页无法直接读取你本地磁盘上的文件路径。在 <strong>WebViewer</strong> 中，宿主机上的 Python 代码可以正常访问宿主机文件系统，拖放到浏览器画布上的文件或文件夹会通过 <code class="docutils literal notranslate"><span class="pre">/drop</span></code> 上传到宿主机上的临时目录。在 <strong>MuJoCo
+Live</strong> 中，拖放的文件和 <code class="docutils literal notranslate"><span class="pre">.zip</span></code> / <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> 压缩包会被解压到内存中的虚拟文件系统，该文件系统仅在标签页存续期间存在。同样，32 位 WebAssembly 将线性内存限制为：桌面浏览器 4 GiB，iOS 512 MiB；在 <strong>WebViewer</strong> 中，该限制只适用于浏览器的渲染场景，而仿真使用宿主机 RAM，而在 <strong>MuJoCo Live</strong> 中，整个仿真和历史缓冲区都位于浏览器的 WebAssembly
+堆内。</p><div class="en-orig" data-for="bi-35" lang="en"><strong>Filesystem access &amp; memory limits</strong> (<code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> <em>vs.</em> <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code>): A browser tab cannot read file paths on
+your local disk directly. In <strong>WebViewer</strong>, host Python code has normal access to the host filesystem, and files or
+folders dropped onto the browser canvas are uploaded over <code class="docutils literal notranslate"><span class="pre">/drop</span></code> to a temporary directory on the host. In <strong>MuJoCo
+Live</strong>, dropped files and <code class="docutils literal notranslate"><span class="pre">.zip</span></code> / <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> archives are unpacked into an in-memory virtual filesystem that exists
+only for the lifetime of the tab. Similarly, 32-bit WebAssembly caps linear memory at 4 GiB on desktop browsers and
+512 MiB on iOS; in <strong>WebViewer</strong> this limit applies only to the browser’s rendering scene while the simulation uses
+host RAM, whereas in <strong>MuJoCo Live</strong> the entire simulation and history buffer reside inside the browser’s WebAssembly
+heap.</div></li>
+<li><p data-bi="bi-36"><strong>WebAssembly 模块生命周期与持久的 C++ 状态</strong> （ <code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code> <em>以及连续的 Python 会话</em>）：独立的桌面可执行文件在进程退出时，其整个地址空间会被操作系统回收；与之不同，已编译的
+WebAssembly 模块及其线性内存会在页面保持该模块已加载的期间一直驻留。当嵌入页面通过 JavaScript 的 <code class="docutils literal notranslate"><span class="pre">deinit</span></code> 和 <code class="docutils literal notranslate"><span class="pre">init</span></code> 调用停止并重新启动查看器时，所有 C++ 全局变量和
+<code class="docutils literal notranslate"><span class="pre">static</span></code> 变量都会在多次运行之间保留：</p><div class="en-orig" data-for="bi-36" lang="en"><strong>WebAssembly module lifetime &amp; persistent C++ state</strong> (<code class="docutils literal notranslate"><span class="pre">MuJoCo</span> <span class="pre">Live</span></code> <em>and sequential Python sessions</em>): Unlike a
+standalone desktop executable whose entire address space is reclaimed by the OS when the process exits, a compiled
+WebAssembly module and its linear memory remain resident for as long as the page keeps the module loaded. When an
+embedding page stops and restarts the viewer across JavaScript <code class="docutils literal notranslate"><span class="pre">deinit</span></code> and <code class="docutils literal notranslate"><span class="pre">init</span></code> calls, all C++ global and
+<code class="docutils literal notranslate"><span class="pre">static</span></code> variables persist across runs:</div>
+<ul>
+<li><p data-bi="bi-37"><strong>全局 UI 上下文与单例</strong>：Dear ImGui 和 ImPlot 等库通过全局上下文指针来跟踪其活动状态，创建新的上下文并不会释放已有的上下文——如果清理时跳过了
+<code class="docutils literal notranslate"><span class="pre">DestroyContext</span></code> ，下一次 <code class="docutils literal notranslate"><span class="pre">CreateContext</span></code> 就会分配并泄漏一个新的上下文，同时让全局指针仍然绑定到过时的前一个上下文（或者在全局指针被重新赋值时泄漏旧上下文的缓冲区）。Studio
+会在窗口和应用清理期间销毁其 UI 上下文，使每次 <code class="docutils literal notranslate"><span class="pre">init</span></code> 都从干净状态开始，并把释放的内存块归还给 WebAssembly 堆内的分配器；自定义 C++ 插件和绑定必须以同样的方式重置任何全局或 <code class="docutils literal notranslate"><span class="pre">static</span></code>
+状态。请注意，虽然 C++ 析构函数使释放的内存可在模块内重用，但 <code class="docutils literal notranslate"><span class="pre">WebAssembly.Memory</span></code> 缓冲区只能增长到浏览器的上限，在标签页重新加载或放弃对该模块的所有引用之前，它永远不会缩小并归还给操作系统。</p><div class="en-orig" data-for="bi-37" lang="en"><strong>Global UI contexts and singletons</strong>: Libraries such as Dear ImGui and ImPlot track their active state through
+global context pointers, and creating a new context does not free an existing one—if teardown skips
+<code class="docutils literal notranslate"><span class="pre">DestroyContext</span></code>, the next <code class="docutils literal notranslate"><span class="pre">CreateContext</span></code> allocates and leaks a new context while leaving the global pointer
+bound to the stale previous one (or leaks the old context’s buffers if the global pointer is reassigned). Studio
+destroys its UI contexts during window and app teardown so each <code class="docutils literal notranslate"><span class="pre">init</span></code> starts cleanly and returns freed blocks
+to the allocator inside the WebAssembly heap; custom C++ plugins and bindings must reset any global or <code class="docutils literal notranslate"><span class="pre">static</span></code>
+state the same way. Note that while C++ destructors make freed memory reusable within the module, a
+<code class="docutils literal notranslate"><span class="pre">WebAssembly.Memory</span></code> buffer can grow up to the browser ceiling but never shrinks back to the OS until the tab
+reloads or drops all references to the module.</div></li>
+<li><p data-bi="bi-38"><strong>Python 中的相同行为</strong>：已编译的 C++ 扩展模块会一直加载在 Python 解释器进程中，而不会在查看器窗口或 <code class="docutils literal notranslate"><span class="pre">with</span></code> 块关闭时卸载，因此 C++ 全局和 <code class="docutils literal notranslate"><span class="pre">static</span></code> 状态会持续存在——如果没有清理就会泄漏——并且在单个进程中的连续查看器窗口、Notebook 单元和测试之间，其表现方式完全相同。</p><div class="en-orig" data-for="bi-38" lang="en"><strong>Same behavior in Python</strong>: Compiled C++ extension modules remain loaded in the Python interpreter process rather
+than unloading when a viewer window or <code class="docutils literal notranslate"><span class="pre">with</span></code> block closes, so C++ global and <code class="docutils literal notranslate"><span class="pre">static</span></code> state persists—and
+leaks if not torn down—across sequential viewer windows, notebook cells, and tests in a single process in the
+exact same way.</div></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+</article>
+</div>
+<footer>
+<div class="related-pages">
+<a class="next-page" href="native_viewers.html">
+<div class="page-info">
+<div class="context">
+<span>Next</span>
+</div>
+<div class="title">原生查看器</div>
+</div>
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+</a>
+<a class="prev-page" href="index.html">
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+<div class="page-info">
+<div class="context">
+<span>Previous</span>
+</div>
+<div class="title">MuJoCo Studio</div>
+</div>
+</a>
+</div>
+<div class="bottom-of-page">
+<div class="left-details">
+<div class="copyright">
+                Copyright © DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+</div>
+<div class="right-details">
+</div>
+</div>
+</footer>
+</div>
+<aside class="toc-drawer">
+<div class="toc-sticky toc-scroll">
+<div class="toc-title-container">
+<span class="toc-title">
+            On this page
+          </span>
+</div>
+<div class="toc-tree-container">
+<div class="toc-tree">
+<ul>
+<li><a class="reference internal" href="#">Web 查看器</a><ul>
+<li><a class="reference internal" href="#mujoco-live">MuJoCo Live</a></li>
+<li><a class="reference internal" href="#webviewer">WebViewer</a><ul>
+<li><a class="reference internal" href="#id1">启动</a></li>
+<li><a class="reference internal" href="#id2">流式传输架构</a></li>
+<li><a class="reference internal" href="#id3">多查看器会话</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#studiobrowsersandboxing">浏览器沙箱</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div><script src="../_static/documentation_options.js?v=7d86a446"></script>
+<script src="../_static/doctools.js?v=fd6eb6e6"></script>
+<script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+<script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+<script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="../_static/copybutton.js?v=f281be69"></script>
+<script src="../_static/translations.js?v=540d3cec"></script>
+<script src="../_static/katex.min.js?v=5cc8ed51"></script>
+<script src="../_static/auto-render.min.js?v=af98beb9"></script>
+<script src="../_static/katex_autorenderer.js?v=ae454eff"></script>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<script src="../_static/linenumbers.js?v=ebda5d35"></script>
+<script src="../_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+<script src="../_static/bilingual.js?v=25c2633d"></script></body></html>

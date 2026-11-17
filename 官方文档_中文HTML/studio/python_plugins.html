@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html class="no-js" data-content_root="../" lang="zh-CN">
+<head><meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="light dark" name="color-scheme"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="../_static/favicons/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+<link href="../_static/favicons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="apple-touch-icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-192x192.png" rel="icon" sizes="192x192" type="image/png"/><link href="../genindex.html" rel="index" title="索引"/><link href="../search.html" rel="search" title="搜索"/><link href="cpp.html" rel="next" title="C++"/><link href="architecture.html" rel="prev" title="架构"/>
+<link as="image" href="../_static/banner.svg" rel="prefetch"/>
+<!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+<title>Python 插件 - MuJoCo 文档（中文）</title>
+<link href="../_static/pygments.css?v=b86133f3" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo.css?v=7bdb33bb" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css?v=05624691" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo-extensions.css?v=8dab3a3b" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides.css?v=8d83ad8c" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides_mjwarp.css?v=e08d3b36" rel="stylesheet" type="text/css"/>
+<link href="../_static/zh_overrides.css?v=ee52c62c" rel="stylesheet" type="text/css"/>
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #16213a;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #2a4fd6;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #2a4fd6;
+  --color-brand-content: #2a4fd6;
+  --color-background-secondary: #f4f6f9;
+  --color-sidebar-background: #f4f6f9;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+      }
+    }
+  }
+</style></head>
+<body>
+<script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+<symbol id="svg-toc" viewbox="0 0 24 24">
+<title>Contents</title>
+<svg fill="currentColor" stroke="currentColor" stroke-width="0" viewbox="0 0 1024 1024">
+<path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"></path>
+</svg>
+</symbol>
+<symbol id="svg-menu" viewbox="0 0 24 24">
+<title>Menu</title>
+<svg class="feather-menu" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<line x1="3" x2="21" y1="12" y2="12"></line>
+<line x1="3" x2="21" y1="6" y2="6"></line>
+<line x1="3" x2="21" y1="18" y2="18"></line>
+</svg>
+</symbol>
+<symbol id="svg-arrow-right" viewbox="0 0 24 24">
+<title>Expand</title>
+<svg class="feather-chevron-right" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</symbol>
+<symbol id="svg-sun" viewbox="0 0 24 24">
+<title>Light mode</title>
+<svg class="feather-sun" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" x2="12" y1="1" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="23"></line>
+<line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+<line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+<line x1="1" x2="3" y1="12" y2="12"></line>
+<line x1="21" x2="23" y1="12" y2="12"></line>
+<line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+<line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
+</svg>
+</symbol>
+<symbol id="svg-moon" viewbox="0 0 24 24">
+<title>Dark mode</title>
+<svg class="icon-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+</svg>
+</symbol>
+<symbol id="svg-sun-with-moon" viewbox="0 0 24 24">
+<title>Auto light/dark, in light mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z" style="opacity: 50%"></path>
+<line x1="14.5" x2="14.5" y1="3.25" y2="1.25"></line>
+<line x1="14.5" x2="14.5" y1="15.85" y2="17.85"></line>
+<line x1="10.044" x2="8.63" y1="5.094" y2="3.68"></line>
+<line x1="19" x2="20.414" y1="14.05" y2="15.464"></line>
+<line x1="8.2" x2="6.2" y1="9.55" y2="9.55"></line>
+<line x1="20.8" x2="22.8" y1="9.55" y2="9.55"></line>
+<line x1="10.044" x2="8.63" y1="14.006" y2="15.42"></line>
+<line x1="19" x2="20.414" y1="5.05" y2="3.636"></line>
+<circle cx="14.5" cy="9.55" r="3.6"></circle>
+</svg>
+</symbol>
+<symbol id="svg-moon-with-sun" viewbox="0 0 24 24">
+<title>Auto light/dark, in dark mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"></path>
+<line style="opacity: 50%" x1="18" x2="18" y1="3.705" y2="2.5"></line>
+<line style="opacity: 50%" x1="18" x2="18" y1="11.295" y2="12.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="4.816" y2="3.964"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="10.212" y2="11.063"></line>
+<line style="opacity: 50%" x1="14.205" x2="13.001" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="21.795" x2="23" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="10.184" y2="11.036"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="4.789" y2="3.937"></line>
+<circle cx="18" cy="7.5" r="2.169" style="opacity: 50%"></circle>
+</svg>
+</symbol>
+<symbol id="svg-pencil" viewbox="0 0 24 24">
+<svg class="icon-tabler-pencil-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
+<path d="M13.5 6.5l4 4"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+<symbol id="svg-eye" viewbox="0 0 24 24">
+<svg class="icon-tabler-eye-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
+<path d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+</svg>
+<input aria-label="Toggle site navigation sidebar" class="sidebar-toggle" id="__navigation" name="__navigation" type="checkbox"/>
+<input aria-label="Toggle table of contents sidebar" class="sidebar-toggle" id="__toc" name="__toc" type="checkbox"/>
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+<div class="page">
+<header class="mobile-header">
+<div class="header-left">
+<label class="nav-overlay-icon" for="__navigation">
+<span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+</label>
+</div>
+<div class="header-center">
+<a href="../index.html"><div class="brand">MuJoCo 文档（中文）</div></a>
+</div>
+<div class="header-right">
+<div class="theme-toggle-container theme-toggle-header">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-header-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+</header>
+<aside class="sidebar-drawer">
+<div class="sidebar-container">
+<div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+<div class="sidebar-logo-container">
+<img alt="Logo" class="sidebar-logo" src="../_static/banner.svg"/>
+</div>
+<span class="sidebar-brand-text">MuJoCo 文档（中文）</span>
+</a><form action="../search.html" class="sidebar-search-container" method="get" role="search">
+<input aria-label="搜索" class="sidebar-search" name="q" placeholder="搜索"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">入门教程</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">概览</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../computation/index.html">计算</a><input aria-label="Toggle navigation of 计算" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../computation/fluid.html">流体力</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computation/speculative.html">推测接触</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">建模</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../XMLreference.html">XML 参考</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../programming/index.html">编程</a><input aria-label="Toggle navigation of 编程" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../programming/simulation.html">仿真</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/visualization.html">可视化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/rendering.html">渲染</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/ui.html">用户界面</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/modeledit.html">模型编辑</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/samples.html">代码示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/extension.html">扩展</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../APIreference/index.html">API 参考</a><input aria-label="Toggle navigation of API 参考" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APItypes.html">类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIfunctions.html">函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIglobals.html">全局变量</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Studio</a><input aria-label="Toggle navigation of Studio" checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="web_viewers.html">Web 查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="native_viewers.html">原生查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html">架构</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Python 插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python.html">Python</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjx.html">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../unity.html">Unity 插件</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/building.html">构建</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcf_file_format_plugin.html">文件格式插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/importing.html">导入</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/exporting.html">导出</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">模型库</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">更新日志</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<div class="main">
+<div class="content">
+<div class="article-container">
+<a class="back-to-top muted-link" href="#">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+</svg>
+<span>Back to top</span>
+</a>
+<div class="content-icon-container">
+<div class="view-this-page">
+<a class="muted-link" href="../_sources/studio/python_plugins.rst.txt" title="View this page">
+<svg><use href="#svg-eye"></use></svg>
+<span class="visually-hidden">View this page</span>
+</a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-content-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+<article id="furo-main-content" role="main">
+<section id="python">
+<span id="studiocomposition"></span><span id="studiopythonplugins"></span><h1 data-bi="bi-1">Python 插件<a class="headerlink" href="#python" title="链接到此标题。">#</a></h1><div class="en-orig en-h" data-for="bi-1" lang="en">Python Plugins</div>
+<div class="mt-notice admonition note">
+<p class="admonition-title">备注</p>
+<p>本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 <code class="docutils literal notranslate"><span class="pre">术语表.md</span></code> 。</p>
+</div>
+<p data-bi="bi-2">Python 插件（plugin，<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/plugin.py">plugin.py</a>）通过在两个基类之一上用 <code class="docutils literal notranslate"><span class="pre">@messages.handler</span></code> 装饰方法来扩展 Studio：</p><div class="en-orig" data-for="bi-2" lang="en">Python plugins (<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/plugin.py">plugin.py</a>)
+extend Studio by decorating methods with <code class="docutils literal notranslate"><span class="pre">@messages.handler</span></code> on one of two base classes:</div>
+<ul class="simple">
+<li><p data-bi="bi-3"><code class="docutils literal notranslate"><span class="pre">plugin.ViewerPlugin</span></code> ：运行在查看器线程（ <code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code> 或 <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> ）上，用于自定义 Dear ImGui 面板、输入处理和 3D 叠加层。它提供 <code class="docutils literal notranslate"><span class="pre">self.viewer</span></code> ，用于读取查看器本地的 <code class="docutils literal notranslate"><span class="pre">model</span></code> 和 <code class="docutils literal notranslate"><span class="pre">data</span></code> ，并通过 <code class="docutils literal notranslate"><span class="pre">self.viewer.send_to_sim(...)</span></code> 向仿真发送消息。</p><div class="en-orig" data-for="bi-3" lang="en"><code class="docutils literal notranslate"><span class="pre">plugin.ViewerPlugin</span></code>: Runs on the viewer thread (<code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code> or <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code>) for custom Dear ImGui panels,
+input handling, and 3D overlays. Provides <code class="docutils literal notranslate"><span class="pre">self.viewer</span></code> for reading the viewer’s local <code class="docutils literal notranslate"><span class="pre">model</span></code> and <code class="docutils literal notranslate"><span class="pre">data</span></code> and
+sending messages to the simulation via <code class="docutils literal notranslate"><span class="pre">self.viewer.send_to_sim(...)</span></code>.</div></li>
+<li><p data-bi="bi-4"><code class="docutils literal notranslate"><span class="pre">plugin.SimPlugin</span></code> ：运行在 <code class="docutils literal notranslate"><span class="pre">ViewerHandle</span></code> 内部的仿真线程上，用于物理步进、控制器以及模型或状态的修改。它提供 <code class="docutils literal notranslate"><span class="pre">self.handle</span></code> ，用于修改权威的 <code class="docutils literal notranslate"><span class="pre">model</span></code> 和 <code class="docutils literal notranslate"><span class="pre">data</span></code> ，通过 <code class="docutils literal notranslate"><span class="pre">self.handle.set_model(...)</span></code> 发布新模型，并通过 <code class="docutils literal notranslate"><span class="pre">self.handle.send_to_viewer(...)</span></code> 向查看器发送消息。</p><div class="en-orig" data-for="bi-4" lang="en"><code class="docutils literal notranslate"><span class="pre">plugin.SimPlugin</span></code>: Runs on the simulation thread inside <code class="docutils literal notranslate"><span class="pre">ViewerHandle</span></code> for physics stepping, controllers, and
+model or state mutations. Provides <code class="docutils literal notranslate"><span class="pre">self.handle</span></code> for mutating the authoritative <code class="docutils literal notranslate"><span class="pre">model</span></code> and <code class="docutils literal notranslate"><span class="pre">data</span></code>, publishing
+new models via <code class="docutils literal notranslate"><span class="pre">self.handle.set_model(...)</span></code>, and sending messages to the viewer via
+<code class="docutils literal notranslate"><span class="pre">self.handle.send_to_viewer(...)</span></code>.</div></li>
+</ul>
+<p data-bi="bi-5">在 Python 中通过 <code class="docutils literal notranslate"><span class="pre">launch_native</span></code> 或 <code class="docutils literal notranslate"><span class="pre">launch_web</span></code> 的 <code class="docutils literal notranslate"><span class="pre">plugins=[...]</span></code> 传入插件实例，或者在命令行中借助 <a class="reference internal" href="#studiohotreload"><span class="std std-ref">实时热重载</span></a> 直接加载 <code class="docutils literal notranslate"><span class="pre">.py</span></code> 文件：</p><div class="en-orig" data-for="bi-5" lang="en">Pass plugin instances via <code class="docutils literal notranslate"><span class="pre">plugins=[...]</span></code> in Python with <code class="docutils literal notranslate"><span class="pre">launch_native</span></code> or <code class="docutils literal notranslate"><span class="pre">launch_web</span></code>, or load <code class="docutils literal notranslate"><span class="pre">.py</span></code> files
+directly from the command line with <a class="reference internal" href="#studiohotreload"><span class="std std-ref">live hot reload</span></a>:</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>mujoco.studio.viewer<span class="w"> </span>--model<span class="o">=</span>humanoid.xml<span class="w"> </span>--plugins<span class="o">=</span>my_plugin.py<span class="w"> </span>--hot_reload<span class="o">=</span>all
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio.dear_imgui</span><span class="w"> </span><span class="kn">import</span> <span class="n">dear_imgui</span> <span class="k">as</span> <span class="n">imgui</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">messages</span><span class="p">,</span> <span class="n">plugin</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">StatusWindow</span><span class="p">(</span><span class="n">plugin</span><span class="o">.</span><span class="n">ViewerPlugin</span><span class="p">):</span>
+
+  <span class="nd">@messages</span><span class="o">.</span><span class="n">handler</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">on_build_gui</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="n">messages</span><span class="o">.</span><span class="n">BuildGuiEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">imgui</span><span class="o">.</span><span class="n">Begin</span><span class="p">(</span><span class="s1">'Simulation Time'</span><span class="p">):</span>
+      <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">imgui</span><span class="o">.</span><span class="n">TextUnformatted</span><span class="p">(</span><span class="sa">f</span><span class="s1">'t = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">time</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1"> s'</span><span class="p">)</span>
+    <span class="n">imgui</span><span class="o">.</span><span class="n">End</span><span class="p">()</span>
+</pre></div>
+</div>
+<p data-bi="bi-6">应用程序可以混合搭配内置插件和自定义插件，以适应不同的工作流程：</p><div class="en-orig" data-for="bi-6" lang="en">Applications can mix and match built-in and custom plugins to suit different workflows:</div>
+<ul class="simple">
+<li><p data-bi="bi-7"><strong>带自定义叠加层的完整 Studio UI：</strong> 加载查看器应用的默认插件 <code class="docutils literal notranslate"><span class="pre">studio_app.App()</span></code> 和 <code class="docutils literal notranslate"><span class="pre">*studio_app.SIM_PLUGINS</span></code>
+（<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/viewer.py">viewer.py</a>），同时加载自定义的查看器插件或仿真插件，即可添加可停靠的图表、控制面板或 3D 叠加层，并保留 <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> 的所有标准功能。</p><div class="en-orig" data-for="bi-7" lang="en"><strong>Full Studio UI with Custom Overlays</strong>: Load the viewer application’s default plugins—<code class="docutils literal notranslate"><span class="pre">studio_app.App()</span></code>
+and <code class="docutils literal notranslate"><span class="pre">*studio_app.SIM_PLUGINS</span></code> (<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/viewer.py">viewer.py</a>)—alongside custom viewer or
+simulation plugins to add dockable charts, control panels, or 3D overlays while retaining all standard
+<code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> features.</div></li>
+<li><p data-bi="bi-8"><strong>最小化视口：</strong> 省略 <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> ，只注册一个自定义的 <code class="docutils literal notranslate"><span class="pre">plugin.ViewerPlugin</span></code> ，即可得到带有自定义控制面板的简洁 3D 视口。</p><div class="en-orig" data-for="bi-8" lang="en"><strong>Minimal Viewport</strong>: Omit <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> and register only a custom <code class="docutils literal notranslate"><span class="pre">plugin.ViewerPlugin</span></code> to get an
+uncluttered 3D viewport with a custom control panel.</div></li>
+<li><p data-bi="bi-9"><strong>自定义步进后端：</strong> 用自定义的 <code class="docutils literal notranslate"><span class="pre">plugin.SimPlugin</span></code> 替换 <code class="docutils literal notranslate"><span class="pre">step_control.StepControl()</span></code> ，即可由 <a class="reference internal" href="../mjx.html#mjx"><span class="std std-ref">MuJoCo XLA</span></a> 或 <a class="reference internal" href="../mjwarp/index.html#mjw"><span class="std std-ref">MuJoCo Warp</span></a> 等 GPU 仿真、强化学习环境或录制的轨迹来驱动查看器，同时保留 <code class="docutils literal notranslate"><span class="pre">studio_app.App()</span></code> 和 <code class="docutils literal notranslate"><span class="pre">sim_history.SimHistory()</span></code> ，用于检查和时间轴拖动。</p><div class="en-orig" data-for="bi-9" lang="en"><strong>Custom Stepping Backends</strong>: Replace <code class="docutils literal notranslate"><span class="pre">step_control.StepControl()</span></code> with a custom <code class="docutils literal notranslate"><span class="pre">plugin.SimPlugin</span></code> to drive the
+viewer from GPU simulations such as <a class="reference internal" href="../mjx.html#mjx"><span class="std std-ref">MuJoCo XLA</span></a> or <a class="reference internal" href="../mjwarp/index.html#mjw"><span class="std std-ref">MuJoCo Warp</span></a>, reinforcement learning
+environments, or recorded trajectories while keeping <code class="docutils literal notranslate"><span class="pre">studio_app.App()</span></code> and <code class="docutils literal notranslate"><span class="pre">sim_history.SimHistory()</span></code> for
+inspection and timeline scrubbing.</div></li>
+</ul>
+<p data-bi="bi-10">演示这些模式的示例应用程序，请参见 <a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/python/mujoco/sample/studio">python/mujoco/sample/studio/</a>。</p><div class="en-orig" data-for="bi-10" lang="en">See <a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/python/mujoco/sample/studio">python/mujoco/sample/studio/</a> for sample applications
+illustrating these patterns.</div>
+<div class="admonition note">
+<p class="admonition-title" data-bi="bi-11">备注</p><div class="en-orig" data-for="bi-11" lang="en">Note</div>
+<p data-bi="bi-12">Python 插件使用的是消息处理器接口，有别于 <a class="reference internal" href="cpp.html#studiocppplugins"><span class="std std-ref">C++ 插件</span></a> 目前所用的回调结构体 API；未来的工作将统一这两套插件系统。</p><div class="en-orig" data-for="bi-12" lang="en">Python plugins use a message-handler interface distinct from the callback-struct API currently used by <a class="reference internal" href="cpp.html#studiocppplugins"><span class="std std-ref">C++
+plugins</span></a>; future work will unify the two plugin systems.</div>
+</div>
+<section id="studioviewerplugins">
+<span id="id1"></span><h2 data-bi="bi-13">查看器插件<a class="headerlink" href="#studioviewerplugins" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-13" lang="en">Viewer Plugins</div>
+<p data-bi="bi-14">查看器插件负责用户界面、键盘和鼠标交互、相机控制以及 3D 场景叠加层。</p><div class="en-orig" data-for="bi-14" lang="en">Viewer plugins own the user interface, keyboard and mouse interaction, camera control, and 3D scene overlays.</div>
+<section id="studio-app-app">
+<h3>studio_app.App<a class="headerlink" href="#studio-app-app" title="链接到此标题。">#</a></h3>
+<p data-bi="bi-15">Studio 插件框架独立于任何特定的用户界面，并且不赋予 <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code>
+（<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/app/plugins.py">app/plugins.py</a>）任何特权——它是一个普通的 <code class="docutils literal notranslate"><span class="pre">ViewerPlugin</span></code> ，你可以省略它，也可以完全替换为自己的 UI。
+<code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> 将 MuJoCo 经典的 <a class="reference internal" href="../programming/samples.html#sasimulate"><span class="std std-ref">simulate</span></a> 应用程序移植到了 Dear ImGui 上，通常与仿真端的 <code class="docutils literal notranslate"><span class="pre">*studio_app.SIM_PLUGINS</span></code> 搭配使用。当它被包含在 <code class="docutils literal notranslate"><span class="pre">plugins</span></code> 中时，会添加菜单栏、模型层级结构和属性检查器、可视化（visualization）选项面板、仿真性能分析器、时间轴拖动条、状态栏，以及一个集成的 Studio 控制台，该控制台会捕获 MuJoCo 日志消息、Python <code class="docutils literal notranslate"><span class="pre">logging</span></code> 记录、 <code class="docutils literal notranslate"><span class="pre">warnings.warn</span></code> 调用以及未捕获的线程异常。点击状态栏中的计数可切换控制台，也可以在控制台内右键单击来清除、复制或配置引擎日志。</p><div class="en-orig" data-for="bi-15" lang="en">The Studio plugin framework is independent of any particular user interface and gives <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code>
+(<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/app/plugins.py">app/plugins.py</a>) no special
+privileges—it is an ordinary <code class="docutils literal notranslate"><span class="pre">ViewerPlugin</span></code> that you can omit or replace entirely with your own UI.
+<code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> ports MuJoCo’s classic <a class="reference internal" href="../programming/samples.html#sasimulate"><span class="std std-ref">simulate</span></a> application to Dear ImGui and is
+typically paired with <code class="docutils literal notranslate"><span class="pre">*studio_app.SIM_PLUGINS</span></code> on the simulation side. When included in <code class="docutils literal notranslate"><span class="pre">plugins</span></code>, it adds the menu
+bar, model hierarchy
+and property inspector, visualization options panel, simulation profiler, timeline scrubber, status bar, and an
+integrated Studio Console that captures MuJoCo log messages, Python <code class="docutils literal notranslate"><span class="pre">logging</span></code> records, <code class="docutils literal notranslate"><span class="pre">warnings.warn</span></code> calls, and
+uncaught thread exceptions. Click the status bar counts to toggle the Console, or right-click inside it to clear, copy,
+or configure engine logging.</div>
+</section>
+<section id="d">
+<span id="studiosceneoverlays"></span><h3 data-bi="bi-16">3D 场景叠加层<a class="headerlink" href="#d" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-16" lang="en">3D Scene Overlays</div>
+<p data-bi="bi-17">查看器插件可以在不修改 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 的情况下，向渲染的场景中注入自定义的 3D 装饰几何体，例如命令箭头、力向量、轨迹标记或幽灵刚体。在 <code class="docutils literal notranslate"><span class="pre">UpdateEvent</span></code> 期间，清空 <code class="docutils literal notranslate"><span class="pre">self.viewer.extra_geoms</span></code> 并向其中填充通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-initgeom"><span class="std std-ref">mjv_initGeom</span></a> 和 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-connector"><span class="std std-ref">mjv_connector</span></a> 初始化的 <code class="docutils literal notranslate"><span class="pre">mujoco.MjvGeom</span></code> 实例。例如，在训练或调试运动策略时，查看器插件可以在机器人躯干上方绘制期望速度向量：</p><div class="en-orig" data-for="bi-17" lang="en">Viewer plugins can inject custom 3D decorative geometry—such as command arrows, force vectors, trajectory markers, or
+ghost bodies—into the rendered scene without modifying <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>. During <code class="docutils literal notranslate"><span class="pre">UpdateEvent</span></code>, clear and populate
+<code class="docutils literal notranslate"><span class="pre">self.viewer.extra_geoms</span></code> with <code class="docutils literal notranslate"><span class="pre">mujoco.MjvGeom</span></code> instances initialized via <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-initgeom"><span class="std std-ref">mjv_initGeom</span></a> and
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjv-connector"><span class="std std-ref">mjv_connector</span></a>. For example, when training or debugging a locomotion policy, a viewer plugin can draw the desired
+velocity vector above the robot’s torso:</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">mujoco</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">plugin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">VelocityCommandOverlay</span><span class="p">(</span><span class="n">plugin</span><span class="o">.</span><span class="n">ViewerPlugin</span><span class="p">):</span>
+<span class="w">  </span><span class="sd">"""Draws a 3D arrow above the torso showing the desired XY velocity."""</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd_vel</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">cmd_vel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">cmd_vel</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cmd_vel</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">0.0</span><span class="p">])</span>
+
+  <span class="nd">@messages</span><span class="o">.</span><span class="n">handler</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">on_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="n">messages</span><span class="o">.</span><span class="n">UpdateEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">extra_geoms</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nbody</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+      <span class="k">return</span>
+
+    <span class="n">origin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">xpos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">])</span>
+    <span class="n">geom</span> <span class="o">=</span> <span class="n">mujoco</span><span class="o">.</span><span class="n">MjvGeom</span><span class="p">()</span>
+    <span class="n">mujoco</span><span class="o">.</span><span class="n">mjv_initGeom</span><span class="p">(</span>
+        <span class="n">geom</span><span class="p">,</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">mujoco</span><span class="o">.</span><span class="n">mjtGeom</span><span class="o">.</span><span class="n">mjGEOM_ARROW</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">mujoco</span><span class="o">.</span><span class="n">mjv_connector</span><span class="p">(</span>
+        <span class="n">geom</span><span class="p">,</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">mujoco</span><span class="o">.</span><span class="n">mjtGeom</span><span class="o">.</span><span class="n">mjGEOM_ARROW</span><span class="p">),</span>
+        <span class="mf">0.02</span><span class="p">,</span>
+        <span class="n">origin</span><span class="p">,</span>
+        <span class="n">origin</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cmd_vel</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">extra_geoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<p data-bi="bi-18"><code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code> 和 <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> 都会在每一帧自动将 <code class="docutils literal notranslate"><span class="pre">viewer.extra_geoms</span></code> 转发给底层渲染器（rendering）。完整的带时间延迟的幽灵刚体示例，请参见 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/sample/studio/ghost.py">ghost.py</a>。</p><div class="en-orig" data-for="bi-18" lang="en">Both <code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code> and <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> automatically forward <code class="docutils literal notranslate"><span class="pre">viewer.extra_geoms</span></code> to the underlying renderer each
+frame. See <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/sample/studio/ghost.py">ghost.py</a> for a
+complete time-delayed ghost-body sample.</div>
+<div class="admonition note">
+<p class="admonition-title" data-bi="bi-19">备注</p><div class="en-orig" data-for="bi-19" lang="en">Note</div>
+<p data-bi="bi-20"><code class="docutils literal notranslate"><span class="pre">viewer.extra_geoms</span></code> 通过 <a class="reference internal" href="../APIreference/APItypes.html#mjvgeom"><span class="std std-ref">mjvGeom</span></a> 提供瞬态的、逐帧的装饰性叠加层；持久的场景对象则直接通过 <a class="reference internal" href="../programming/rendering.html#filamentrendering"><span class="std std-ref">mujoco.mjrf</span></a> 管理。</p><div class="en-orig" data-for="bi-20" lang="en"><code class="docutils literal notranslate"><span class="pre">viewer.extra_geoms</span></code> provides transient per-frame decorative overlays via <a class="reference internal" href="../APIreference/APItypes.html#mjvgeom"><span class="std std-ref">mjvGeom</span></a>; persistent scene objects
+are managed directly through <a class="reference internal" href="../programming/rendering.html#filamentrendering"><span class="std std-ref">mujoco.mjrf</span></a>.</div>
+</div>
+</section>
+<section id="ui">
+<span id="studiouiplugins"></span><h3 data-bi="bi-21">自定义 UI 面板<a class="headerlink" href="#ui" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-21" lang="en">Custom UI Panels</div>
+<p data-bi="bi-22">自定义查看器插件通过处理 <code class="docutils literal notranslate"><span class="pre">BuildGuiEvent</span></code> 并调用 MuJoCo 为 <a class="reference external" href="https://github.com/ocornut/imgui">Dear
+ImGui</a> 提供的 Python 绑定来构建用户界面。</p><div class="en-orig" data-for="bi-22" lang="en">Custom viewer plugins build user interfaces by handling <code class="docutils literal notranslate"><span class="pre">BuildGuiEvent</span></code> and calling MuJoCo’s Python bindings for <a class="reference external" href="https://github.com/ocornut/imgui">Dear
+ImGui</a>.</div>
+</section>
+<section id="studioimguitips">
+<span id="studioviewerbestpractices"></span><span id="id2"></span><h3 data-bi="bi-23">最佳实践<a class="headerlink" href="#studioimguitips" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-23" lang="en">Best Practices</div>
+<p data-bi="bi-24">编写 <a class="reference internal" href="#studioviewerplugins"><span class="std std-ref">查看器插件</span></a> 时：</p><div class="en-orig" data-for="bi-24" lang="en">When writing <a class="reference internal" href="#studioviewerplugins"><span class="std std-ref">viewer plugins</span></a>:</div>
+<ul class="simple">
+<li><p data-bi="bi-25"><strong>只读的查看器状态：</strong> 将 <code class="docutils literal notranslate"><span class="pre">self.viewer.model</span></code> 和 <code class="docutils literal notranslate"><span class="pre">self.viewer.data</span></code> 视为只读，并在 <code class="docutils literal notranslate"><span class="pre">PostModelEvent</span></code> 时重置依赖于模型的查看器缓冲区。</p><div class="en-orig" data-for="bi-25" lang="en"><strong>Read-only viewer state</strong>: Treat <code class="docutils literal notranslate"><span class="pre">self.viewer.model</span></code> and <code class="docutils literal notranslate"><span class="pre">self.viewer.data</span></code> as read-only, and reset
+model-dependent viewer buffers on <code class="docutils literal notranslate"><span class="pre">PostModelEvent</span></code>.</div></li>
+<li><p data-bi="bi-26"><strong>切勿在查看器线程上加载或编译模型：</strong> 权威的模型加载、<a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> 编译和状态修改都应放在仿真线程上。通过 <code class="docutils literal notranslate"><span class="pre">self.viewer.send_to_sim(...)</span></code> 派发 <code class="docutils literal notranslate"><span class="pre">LoadModelEvent</span></code> 或自定义的 <code class="docutils literal notranslate"><span class="pre">Event</span></code> ，让 <code class="docutils literal notranslate"><span class="pre">plugin.SimPlugin</span></code> 加载或编译模型，并通过 <code class="docutils literal notranslate"><span class="pre">self.handle.set_model(...)</span></code> 发布。</p><div class="en-orig" data-for="bi-26" lang="en"><strong>Never load or compile models on the viewer thread</strong>: Authoritative model loading, <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> compilation, and
+state mutations belong on the simulation thread. Dispatch <code class="docutils literal notranslate"><span class="pre">LoadModelEvent</span></code> or a custom <code class="docutils literal notranslate"><span class="pre">Event</span></code> via
+<code class="docutils literal notranslate"><span class="pre">self.viewer.send_to_sim(...)</span></code> so a <code class="docutils literal notranslate"><span class="pre">plugin.SimPlugin</span></code> loads or compiles the model and publishes it via
+<code class="docutils literal notranslate"><span class="pre">self.handle.set_model(...)</span></code>.</div></li>
+<li><p data-bi="bi-27"><strong>保持查看器线程以 60 Hz 运行：</strong> 将文件 I/O、网络请求或繁重的计算转移到后台工作线程或仿真线程。拖慢 <code class="docutils literal notranslate"><span class="pre">UpdateEvent</span></code> 或 <code class="docutils literal notranslate"><span class="pre">BuildGuiEvent</span></code> 会降低 <code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code> 的帧率，并使 <a class="reference internal" href="web_viewers.html#studiowebviewer"><span class="std std-ref">WebViewer</span></a> 中 <code class="docutils literal notranslate"><span class="pre">/ui</span></code> 和 <code class="docutils literal notranslate"><span class="pre">/state</span></code> WebSocket 的心跳停滞，导致浏览器客户端显示断开连接的横幅。</p><div class="en-orig" data-for="bi-27" lang="en"><strong>Keep the viewer thread running at 60 Hz</strong>: Offload file I/O, network requests, or heavy computation to background
+worker threads or the simulation thread. Slowing down <code class="docutils literal notranslate"><span class="pre">UpdateEvent</span></code> or <code class="docutils literal notranslate"><span class="pre">BuildGuiEvent</span></code> drops the frame rate in
+<code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code> and stalls the <code class="docutils literal notranslate"><span class="pre">/ui</span></code> and <code class="docutils literal notranslate"><span class="pre">/state</span></code> WebSocket heartbeats in <a class="reference internal" href="web_viewers.html#studiowebviewer"><span class="std std-ref">WebViewer</span></a>,
+causing the browser client to display a disconnected banner.</div></li>
+<li><p data-bi="bi-28"><strong>将 WebViewer 的主机到浏览器协议视为固定不变：</strong> 用户代码应严格编写为 <code class="docutils literal notranslate"><span class="pre">plugin.ViewerPlugin</span></code> 和 <code class="docutils literal notranslate"><span class="pre">plugin.SimPlugin</span></code> 类。使用 <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> 时，你不应需要修改 Python 查看器线程与 WebAssembly 浏览器客户端之间的线路协议。如果其中缺少某项功能，应将其设计为也适用于其他应用程序的通用功能，因此请考虑向上游提交 pull request。</p><div class="en-orig" data-for="bi-28" lang="en"><strong>Treat the WebViewer host-to-browser protocol as fixed</strong>: User code should be written strictly as
+<code class="docutils literal notranslate"><span class="pre">plugin.ViewerPlugin</span></code> and <code class="docutils literal notranslate"><span class="pre">plugin.SimPlugin</span></code> classes. You should not need to modify the wire protocol between the
+Python viewer thread and the WebAssembly browser client when using <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code>—if a capability is missing there, it
+should be designed as a general-purpose feature for other applications too, so consider opening a pull request
+upstream.</div></li>
+</ul>
+<p data-bi="bi-29">MuJoCo 提供了自己的 <a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/python/mujoco/studio/dear_imgui">Dear ImGui Python 绑定</a>，它与 C++ API 相对应，并共享查看器当前活动的 Dear ImGui 上下文。要了解 Dear ImGui 的能力并浏览可用的控件及其代码，可以试用交互式的 <a class="reference external" href="https://pthom.github.io/imgui_explorer/?lib=imgui">在线演示</a>，或在 <code class="docutils literal notranslate"><span class="pre">BuildGuiEvent</span></code> 处理器中调用 <code class="docutils literal notranslate"><span class="pre">imgui.ShowDemoWindow()</span></code> 。构建用户界面时，请参阅 <a class="reference external" href="https://github.com/ocornut/imgui/wiki/Getting-Started">入门指南</a>、上游的 <a class="reference external" href="https://github.com/ocornut/imgui/tree/master/docs">docs/ 文件夹</a> 和 <a class="reference external" href="https://github.com/ocornut/imgui/blob/master/docs/FAQ.md">FAQ</a>，以及 <a class="reference external" href="https://github.com/ocornut/imgui/blob/master/imgui.cpp">imgui.cpp</a> 顶部头部注释中的 <code class="docutils literal notranslate"><span class="pre">CONTROLS</span> <span class="pre">GUIDE</span></code> 和 <code class="docutils literal notranslate"><span class="pre">PROGRAMMER</span> <span class="pre">GUIDE</span></code> ：</p><div class="en-orig" data-for="bi-29" lang="en">MuJoCo provides its own <a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/python/mujoco/studio/dear_imgui">Python bindings for Dear ImGui</a> that mirror the C++ API
+and share the viewer’s active Dear ImGui context. To see what Dear ImGui is capable of and browse available widgets
+alongside their code, try the interactive <a class="reference external" href="https://pthom.github.io/imgui_explorer/?lib=imgui">online demo</a> or call
+<code class="docutils literal notranslate"><span class="pre">imgui.ShowDemoWindow()</span></code> from a <code class="docutils literal notranslate"><span class="pre">BuildGuiEvent</span></code> handler. When building user interfaces, consult the <a class="reference external" href="https://github.com/ocornut/imgui/wiki/Getting-Started">Getting
+Started guide</a>, the upstream <a class="reference external" href="https://github.com/ocornut/imgui/tree/master/docs">docs/ folder</a> and <a class="reference external" href="https://github.com/ocornut/imgui/blob/master/docs/FAQ.md">FAQ</a>, and the <code class="docutils literal notranslate"><span class="pre">CONTROLS</span> <span class="pre">GUIDE</span></code> and <code class="docutils literal notranslate"><span class="pre">PROGRAMMER</span> <span class="pre">GUIDE</span></code> in
+the header comments at the top of <a class="reference external" href="https://github.com/ocornut/imgui/blob/master/imgui.cpp">imgui.cpp</a>:</div>
+<ul class="simple">
+<li><p data-bi="bi-30"><strong>窗口粒度与停靠：</strong> 将每个查看器插件实现为一两个 <code class="docutils literal notranslate"><span class="pre">imgui.Begin(...)</span></code> 窗口，以便面板能够干净地停靠到 <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> 的停靠空间中，与内置工具并排。</p><div class="en-orig" data-for="bi-30" lang="en"><strong>Window granularity &amp; docking</strong>: Implement each viewer plugin as one or two <code class="docutils literal notranslate"><span class="pre">imgui.Begin(...)</span></code> windows so panels
+dock cleanly into <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code>’s dockspaces alongside built-in tools.</div></li>
+<li><p data-bi="bi-31"><strong>将数据准备与布局分离</strong> （ <code class="docutils literal notranslate"><span class="pre">UpdateEvent</span></code> 与 <code class="docutils literal notranslate"><span class="pre">BuildGuiEvent</span></code> ）：Dear ImGui 构建的是绘制命令列表，而不是直接光栅化像素。在 <code class="docutils literal notranslate"><span class="pre">UpdateEvent</span></code> 期间准备绘图缓冲区，或通过 <code class="docutils literal notranslate"><span class="pre">self.viewer.upload_image(...)</span></code> 上传 GUI 纹理，并让 <code class="docutils literal notranslate"><span class="pre">BuildGuiEvent</span></code> 严格专注于控件提交，布局方法应命名为 <code class="docutils literal notranslate"><span class="pre">build_gui</span></code> 或 <code class="docutils literal notranslate"><span class="pre">build_*_gui</span></code> ，而不是 <code class="docutils literal notranslate"><span class="pre">render</span></code> 或 <code class="docutils literal notranslate"><span class="pre">draw</span></code> 。切勿在 GUI 方法中运行仿真步进、文件 I/O 或阻塞调用。</p><div class="en-orig" data-for="bi-31" lang="en"><strong>Separate data preparation from layout</strong> (<code class="docutils literal notranslate"><span class="pre">UpdateEvent</span></code> <strong>vs.</strong> <code class="docutils literal notranslate"><span class="pre">BuildGuiEvent</span></code>): Dear ImGui builds draw command
+lists rather than rasterizing pixels directly. Prepare plot buffers or upload GUI textures via
+<code class="docutils literal notranslate"><span class="pre">self.viewer.upload_image(...)</span></code> during <code class="docutils literal notranslate"><span class="pre">UpdateEvent</span></code>, and keep <code class="docutils literal notranslate"><span class="pre">BuildGuiEvent</span></code> strictly focused on widget
+submission, naming layout methods <code class="docutils literal notranslate"><span class="pre">build_gui</span></code> or <code class="docutils literal notranslate"><span class="pre">build_*_gui</span></code> rather than <code class="docutils literal notranslate"><span class="pre">render</span></code> or <code class="docutils literal notranslate"><span class="pre">draw</span></code>. Never run
+simulation steps, file I/O, or blocking calls inside GUI methods.</div></li>
+<li><p data-bi="bi-32"><strong>运行时 ID</strong> （ <code class="docutils literal notranslate"><span class="pre">##</span></code> 与 <code class="docutils literal notranslate"><span class="pre">###</span></code> ）：Dear ImGui 会将每个窗口或控件的标签字符串与当前 ID 栈种子一起进行哈希； <code class="docutils literal notranslate"><span class="pre">##</span></code> 或 <code class="docutils literal notranslate"><span class="pre">###</span></code> 之后的任何文本都不会显示在屏幕上：</p><div class="en-orig" data-for="bi-32" lang="en"><strong>Runtime IDs</strong> (<code class="docutils literal notranslate"><span class="pre">##</span></code> <strong>vs.</strong> <code class="docutils literal notranslate"><span class="pre">###</span></code>): Dear ImGui hashes each window or widget’s label string against the current
+ID stack seed; any text after <code class="docutils literal notranslate"><span class="pre">##</span></code> or <code class="docutils literal notranslate"><span class="pre">###</span></code> is hidden on screen:</div>
+<ul>
+<li><p data-bi="bi-33"><strong>区分重复的标签</strong> （ <code class="docutils literal notranslate"><span class="pre">##</span></code> ）： <code class="docutils literal notranslate"><span class="pre">Label##Suffix</span></code> 对整个字符串进行哈希，而只显示 <code class="docutils literal notranslate"><span class="pre">Label</span></code> 。当重复的按钮或 <code class="docutils literal notranslate"><span class="pre">imgui.Selectable</span></code> 行具有相同的可见文本时，追加 <code class="docutils literal notranslate"><span class="pre">##{i}</span></code> ，或用 <code class="docutils literal notranslate"><span class="pre">imgui.PushID(i)</span></code> / <code class="docutils literal notranslate"><span class="pre">imgui.PopID()</span></code> 包裹循环迭代。</p><div class="en-orig" data-for="bi-33" lang="en"><strong>Disambiguating duplicate labels</strong> (<code class="docutils literal notranslate"><span class="pre">##</span></code>): <code class="docutils literal notranslate"><span class="pre">Label##Suffix</span></code> hashes the entire string while displaying only
+<code class="docutils literal notranslate"><span class="pre">Label</span></code>. Append <code class="docutils literal notranslate"><span class="pre">##{i}</span></code> or wrap loop iterations in <code class="docutils literal notranslate"><span class="pre">imgui.PushID(i)</span></code> / <code class="docutils literal notranslate"><span class="pre">imgui.PopID()</span></code> when repeating
+buttons or <code class="docutils literal notranslate"><span class="pre">imgui.Selectable</span></code> rows share the same visible text.</div></li>
+<li><p data-bi="bi-34"><strong>在动态标签间保持持久的 ID</strong> （ <code class="docutils literal notranslate"><span class="pre">###</span></code> ）： <code class="docutils literal notranslate"><span class="pre">Dynamic</span> <span class="pre">Text###ConstantId</span></code> 会重置哈希种子，并且 <em>只</em> 对 <code class="docutils literal notranslate"><span class="pre">ConstantId</span></code> 进行哈希。当窗口标题在各帧之间变化时（例如 <code class="docutils literal notranslate"><span class="pre">f'Bodies</span> <span class="pre">({n})###Bodies'</span></code> 会保留其停靠位置、焦点和折叠状态），或者要为仅有图标的按钮提供可读的 ID（例如用于 UI 测试自动化的 <code class="docutils literal notranslate"><span class="pre">f'{ICON_FA_PLAY}###Play'</span></code> ），请追加 <code class="docutils literal notranslate"><span class="pre">###ConstantId</span></code> 。</p><div class="en-orig" data-for="bi-34" lang="en"><strong>Persistent IDs across dynamic labels</strong> (<code class="docutils literal notranslate"><span class="pre">###</span></code>): <code class="docutils literal notranslate"><span class="pre">Dynamic</span> <span class="pre">Text###ConstantId</span></code> resets the hash seed and hashes
+<em>only</em> <code class="docutils literal notranslate"><span class="pre">ConstantId</span></code>. Append <code class="docutils literal notranslate"><span class="pre">###ConstantId</span></code> when a window title changes across frames—for example,
+<code class="docutils literal notranslate"><span class="pre">f'Bodies</span> <span class="pre">({n})###Bodies'</span></code> preserves its docked position, focus, and collapse state—or to give icon-only buttons a
+readable ID such as <code class="docutils literal notranslate"><span class="pre">f'{ICON_FA_PLAY}###Play'</span></code> for UI test automation.</div></li>
+</ul>
+</li>
+<li><p data-bi="bi-35"><strong>使用 Tables API 进行网格对齐：</strong> 对于键值检查器和多列布局，优先使用带有 <code class="docutils literal notranslate"><span class="pre">TableColumnFlags.WidthFixed</span></code> 和 <code class="docutils literal notranslate"><span class="pre">WidthStretch</span></code> 的 <code class="docutils literal notranslate"><span class="pre">imgui.BeginTable</span></code> ，而不是手动的 <code class="docutils literal notranslate"><span class="pre">SameLine()</span></code> 像素偏移或旧版的 <code class="docutils literal notranslate"><span class="pre">Columns()</span></code> 。</p><div class="en-orig" data-for="bi-35" lang="en"><strong>Grid alignment with the Tables API</strong>: Prefer <code class="docutils literal notranslate"><span class="pre">imgui.BeginTable</span></code> with <code class="docutils literal notranslate"><span class="pre">TableColumnFlags.WidthFixed</span></code> and
+<code class="docutils literal notranslate"><span class="pre">WidthStretch</span></code> for key-value inspectors and multi-column layouts instead of manual <code class="docutils literal notranslate"><span class="pre">SameLine()</span></code> pixel offsets or
+legacy <code class="docutils literal notranslate"><span class="pre">Columns()</span></code>.</div></li>
+<li><p data-bi="bi-36"><strong>使用</strong> <code class="docutils literal notranslate"><span class="pre">imgui.ListClipper</span></code> <strong>虚拟化大型列表：</strong> 将长列表、日志视图或表格包裹在 <code class="docutils literal notranslate"><span class="pre">clipper</span> <span class="pre">=</span> <span class="pre">imgui.ListClipper();</span> <span class="pre">clipper.Begin(len(items))</span></code> 中，这样 Dear ImGui 只会提交可见的行；未裁剪的表格会为每个屏幕外的条目生成顶点，并可能占满 <a class="reference internal" href="web_viewers.html#studiowebviewer"><span class="std std-ref">WebViewer</span></a> 的 WebSocket 带宽。对只读字符串使用 <code class="docutils literal notranslate"><span class="pre">imgui.TextUnformatted</span></code> ，以避免格式化和复制的开销。</p><div class="en-orig" data-for="bi-36" lang="en"><strong>Virtualize large lists with</strong> <code class="docutils literal notranslate"><span class="pre">imgui.ListClipper</span></code>: Wrap long lists, log views, or tables in
+<code class="docutils literal notranslate"><span class="pre">clipper</span> <span class="pre">=</span> <span class="pre">imgui.ListClipper();</span> <span class="pre">clipper.Begin(len(items))</span></code> so Dear ImGui only submits visible rows; unclipped tables
+generate vertices for every offscreen item and can saturate <a class="reference internal" href="web_viewers.html#studiowebviewer"><span class="std std-ref">WebViewer</span></a> WebSocket bandwidth.
+Use <code class="docutils literal notranslate"><span class="pre">imgui.TextUnformatted</span></code> for read-only strings to avoid formatting and copy overhead.</div></li>
+<li><p data-bi="bi-37"><strong>感知主题的颜色与键盘捕获：</strong> 通过 <code class="docutils literal notranslate"><span class="pre">imgui.GetStyleColorVec4(imgui.Col.Text)</span></code> 查询语义化的主题颜色，而不是在 <code class="docutils literal notranslate"><span class="pre">PushStyleColor</span></code> 中硬编码 RGB 值，使自定义控件在深色和浅色主题下都保持清晰可读。处理自定义键盘快捷键时，请检查 <code class="docutils literal notranslate"><span class="pre">not</span> <span class="pre">imgui.GetIO().WantCaptureKeyboard</span></code> ，这样在活动的 <code class="docutils literal notranslate"><span class="pre">InputText</span></code> 或过滤框中输入时就不会触发仿真操作。</p><div class="en-orig" data-for="bi-37" lang="en"><strong>Theme-aware colors &amp; keyboard capture</strong>: Query semantic theme colors via
+<code class="docutils literal notranslate"><span class="pre">imgui.GetStyleColorVec4(imgui.Col.Text)</span></code> rather than hardcoding RGB values in <code class="docutils literal notranslate"><span class="pre">PushStyleColor</span></code> so custom widgets
+remain legible across dark and light themes. When handling custom keyboard shortcuts, check
+<code class="docutils literal notranslate"><span class="pre">not</span> <span class="pre">imgui.GetIO().WantCaptureKeyboard</span></code> so typing into an active <code class="docutils literal notranslate"><span class="pre">InputText</span></code> or filter box does not trigger
+simulation actions.</div></li>
+<li><p data-bi="bi-38"><strong>Dear ImGui 技能指南：</strong> 有关 C++ 和 Python 的 Dear ImGui 详细约定以及 <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">Good:</span></code> 与 <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">Avoid:</span></code> 示例，请参阅 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/doc/skills/gui/SKILL.md">mujoco-gui skill 文件</a>。</p><div class="en-orig" data-for="bi-38" lang="en"><strong>Dear ImGui skill guide</strong>: Refer to the <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/doc/skills/gui/SKILL.md">mujoco-gui skill file</a> for detailed C++ and Python Dear
+ImGui conventions and <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">Good:</span></code> vs. <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">Avoid:</span></code> examples.</div></li>
+</ul>
+</section>
+</section>
+<section id="studiosplitplugins">
+<span id="studiosimplugins"></span><span id="id3"></span><h2 data-bi="bi-39">仿真插件<a class="headerlink" href="#studiosplitplugins" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-39" lang="en">Simulation Plugins</div>
+<p data-bi="bi-40">仿真插件负责物理步进、实时节奏控制、轨迹历史缓冲区，以及对 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>、<a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 和 <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> 的权威修改。当某项功能既需要交互式 UI 控件，又需要修改仿真或模型时，请在同一个 <code class="docutils literal notranslate"><span class="pre">.py</span></code> 文件中将 <code class="docutils literal notranslate"><span class="pre">plugin.ViewerPlugin</span></code> 与 <code class="docutils literal notranslate"><span class="pre">plugin.SimPlugin</span></code> 配对使用：查看器插件构建控件，并通过 <code class="docutils literal notranslate"><span class="pre">self.viewer.send_to_sim(...)</span></code> 发送自定义的 <code class="docutils literal notranslate"><span class="pre">*Snapshot</span></code> 或 <code class="docutils literal notranslate"><span class="pre">*Event</span></code> 消息；仿真插件处理这些消息，以修改状态，或重新编译并通过 <code class="docutils literal notranslate"><span class="pre">self.handle.set_model(...)</span></code> 发布新模型。</p><div class="en-orig" data-for="bi-40" lang="en">Simulation plugins own physics stepping, real-time pacing, trajectory history buffers, and authoritative mutations to
+<a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a>, and <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a>. When a feature needs both interactive UI controls and changes to the
+simulation or model, pair a <code class="docutils literal notranslate"><span class="pre">plugin.ViewerPlugin</span></code> with a <code class="docutils literal notranslate"><span class="pre">plugin.SimPlugin</span></code> in the same <code class="docutils literal notranslate"><span class="pre">.py</span></code> file: the viewer
+plugin builds the widgets and sends custom <code class="docutils literal notranslate"><span class="pre">*Snapshot</span></code> or <code class="docutils literal notranslate"><span class="pre">*Event</span></code> messages via <code class="docutils literal notranslate"><span class="pre">self.viewer.send_to_sim(...)</span></code>,
+and the simulation plugin handles those messages to mutate state or recompile and publish a new model via
+<code class="docutils literal notranslate"><span class="pre">self.handle.set_model(...)</span></code>.</div>
+<section id="studiopythonscenes">
+<span id="id4"></span><h3 data-bi="bi-41">Python 场景<a class="headerlink" href="#studiopythonscenes" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-41" lang="en">Python Scenes</div>
+<p data-bi="bi-42">用 <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> 在 Python 中构建的场景是一个 <code class="docutils literal notranslate"><span class="pre">plugin.SimPlugin</span></code> ，它处理 <code class="docutils literal notranslate"><span class="pre">LoadModelEvent</span></code> ，调用 <code class="docutils literal notranslate"><span class="pre">self.handle.set_model(spec)</span></code> ，并返回 <code class="docutils literal notranslate"><span class="pre">True</span></code> 以在 <code class="docutils literal notranslate"><span class="pre">ViewerHandle</span></code> 的文件加载器运行之前消费该事件；处理 <code class="docutils literal notranslate"><span class="pre">HotReloadEvent</span></code> 并调用 <code class="docutils literal notranslate"><span class="pre">self.handle.reload()</span></code> ，则会在插件模块或从同一目录导入的辅助模块被保存时就地重建场景，同时保留相机位姿、暂停状态和播放速度：</p><div class="en-orig" data-for="bi-42" lang="en">A scene built in Python with <a class="reference internal" href="../APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> is a <code class="docutils literal notranslate"><span class="pre">plugin.SimPlugin</span></code> that handles <code class="docutils literal notranslate"><span class="pre">LoadModelEvent</span></code>, calls
+<code class="docutils literal notranslate"><span class="pre">self.handle.set_model(spec)</span></code>, and returns <code class="docutils literal notranslate"><span class="pre">True</span></code> to consume the event before <code class="docutils literal notranslate"><span class="pre">ViewerHandle</span></code>’s file loader runs;
+handling <code class="docutils literal notranslate"><span class="pre">HotReloadEvent</span></code> and calling <code class="docutils literal notranslate"><span class="pre">self.handle.reload()</span></code> rebuilds the scene in place whenever the plugin module
+or a helper module imported from the same directory is saved, preserving camera pose, pause state, and playback speed:</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">mujoco</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">plugin</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyScene</span><span class="p">(</span><span class="n">plugin</span><span class="o">.</span><span class="n">SimPlugin</span><span class="p">):</span>
+  <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>
+
+  <span class="nd">@messages</span><span class="o">.</span><span class="n">handler</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">on_load_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">messages</span><span class="o">.</span><span class="n">LoadModelEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+      <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># Let ViewerHandle load --model or dropped files.</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">mujoco</span><span class="o">.</span><span class="n">MjSpec</span><span class="p">()</span>
+    <span class="o">...</span>  <span class="c1"># Populate spec from self.height.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">handle</span><span class="o">.</span><span class="n">set_model</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+  <span class="nd">@messages</span><span class="o">.</span><span class="n">handler</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">on_hot_reload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">messages</span><span class="o">.</span><span class="n">HotReloadEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="bp">self</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">plugins</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">handle</span><span class="o">.</span><span class="n">reload</span><span class="p">()</span>
+</pre></div>
+</div>
+<p data-bi="bi-43">当 Python 场景还读取基础 XML 文件时（例如通过 <code class="docutils literal notranslate"><span class="pre">mujoco.MjSpec.from_file('robot.xml')</span></code> ），请通过 <code class="docutils literal notranslate"><span class="pre">self.handle.set_model(spec,</span> <span class="pre">watch=['robot.xml'])</span></code> 传入这些文件，这样保存这些 XML 文件或它们的 <code class="docutils literal notranslate"><span class="pre">&lt;include&gt;</span></code> 和网格（mesh）资源时也会触发 <code class="docutils literal notranslate"><span class="pre">reload()</span></code> 。与 Dear ImGui 控制面板配对的完整参数化场景，请参见 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/sample/studio/python_scene.py">python_scene.py</a>。</p><div class="en-orig" data-for="bi-43" lang="en">When a Python scene also reads base XML files—for example via <code class="docutils literal notranslate"><span class="pre">mujoco.MjSpec.from_file('robot.xml')</span></code>—pass them via
+<code class="docutils literal notranslate"><span class="pre">self.handle.set_model(spec,</span> <span class="pre">watch=['robot.xml'])</span></code> so saving those XMLs or their <code class="docutils literal notranslate"><span class="pre">&lt;include&gt;</span></code> and mesh assets
+triggers <code class="docutils literal notranslate"><span class="pre">reload()</span></code> as well. See <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/sample/studio/python_scene.py">python_scene.py</a> for a complete
+parametric scene paired with a Dear ImGui control panel.</div>
+</section>
+<section id="id5">
+<h3 data-bi="bi-44">内置插件<a class="headerlink" href="#id5" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-44" lang="en">Built-in Plugins</div>
+<p data-bi="bi-45"><code class="docutils literal notranslate"><span class="pre">studio_app.SIM_PLUGINS</span></code> 打包了 Studio 的两个标准仿真插件，因此可以通过 <code class="docutils literal notranslate"><span class="pre">plugins=[studio_app.App(),</span> <span class="pre">*studio_app.SIM_PLUGINS]</span></code> 与 <code class="docutils literal notranslate"><span class="pre">studio_app.App()</span></code> 一起解包使用，也可以在替换其中之一时单独传入：</p><div class="en-orig" data-for="bi-45" lang="en"><code class="docutils literal notranslate"><span class="pre">studio_app.SIM_PLUGINS</span></code> bundles Studio’s two standard simulation plugins so they can be unpacked alongside
+<code class="docutils literal notranslate"><span class="pre">studio_app.App()</span></code> via <code class="docutils literal notranslate"><span class="pre">plugins=[studio_app.App(),</span> <span class="pre">*studio_app.SIM_PLUGINS]</span></code>, or passed
+individually when replacing one:</div>
+<ul class="simple">
+<li><p data-bi="bi-46"><code class="docutils literal notranslate"><span class="pre">step_control.StepControl</span></code> （<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/step_control.py">step_control.py</a>）：在 <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> 期间以实时的挂钟节奏对 CPU 物理（<a class="reference internal" href="../APIreference/APIfunctions.html#mj-step"><span class="std std-ref">mj_step</span></a>）进行步进，应用从 UI 配置的控制噪声（ <code class="docutils literal notranslate"><span class="pre">StepControlSnapshot</span></code> ），并处理暂停（ <code class="docutils literal notranslate"><span class="pre">RequestPauseEvent</span></code> ）和单步（ <code class="docutils literal notranslate"><span class="pre">SingleStepEvent</span></code> ）请求。每当设置发生变化时，它都会向查看器报告其设置；每当达到的速度变化超过死区量时，它会报告该速度。</p><div class="en-orig" data-for="bi-46" lang="en"><code class="docutils literal notranslate"><span class="pre">step_control.StepControl</span></code> (<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/step_control.py">step_control.py</a>): Steps CPU physics
+(<a class="reference internal" href="../APIreference/APIfunctions.html#mj-step"><span class="std std-ref">mj_step</span></a>) with real-time wall-clock pacing during <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code>, applies control noise configured from the UI
+(<code class="docutils literal notranslate"><span class="pre">StepControlSnapshot</span></code>), and handles pause (<code class="docutils literal notranslate"><span class="pre">RequestPauseEvent</span></code>) and single-step (<code class="docutils literal notranslate"><span class="pre">SingleStepEvent</span></code>) requests.
+It reports its settings to the viewer whenever they change, and the speed it achieves whenever it has moved by more
+than a deadband amount.</div></li>
+<li><p data-bi="bi-47"><code class="docutils literal notranslate"><span class="pre">sim_history.SimHistory</span></code> （<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/sim_history.py">sim_history.py</a>）：在每个物理步之后（ <code class="docutils literal notranslate"><span class="pre">PostStepEvent</span></code> ），将一帧记录到权威的环形缓冲区中，通过 <code class="docutils literal notranslate"><span class="pre">SimHistorySnapshot</span></code> 向查看器广播缓冲区元数据，并在用户于 <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> 中拖动时间轴时加载历史帧。 <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> 与 <code class="docutils literal notranslate"><span class="pre">sim_history.SimHistory</span></code> 是解耦的： <code class="docutils literal notranslate"><span class="pre">SimHistorySnapshot</span></code> 是二者之间唯一的契约。缓冲区容纳的帧数有限； <code class="docutils literal notranslate"><span class="pre">SimHistory(min_seconds=10.0)</span></code> 则改为每隔 N 步记录一次，其中 N 针对每个模型选取，使缓冲区至少跨越该长度的仿真时间。</p><div class="en-orig" data-for="bi-47" lang="en"><code class="docutils literal notranslate"><span class="pre">sim_history.SimHistory</span></code> (<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/sim_history.py">sim_history.py</a>): Records a frame into an
+authoritative ring buffer after every physics step (<code class="docutils literal notranslate"><span class="pre">PostStepEvent</span></code>), broadcasts buffer metadata to the viewer via
+<code class="docutils literal notranslate"><span class="pre">SimHistorySnapshot</span></code>, and loads historical frames when the user scrubs the timeline in <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code>.
+<code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> and <code class="docutils literal notranslate"><span class="pre">sim_history.SimHistory</span></code> are decoupled: <code class="docutils literal notranslate"><span class="pre">SimHistorySnapshot</span></code> is the sole contract
+between them. The buffer holds a bounded number of frames; <code class="docutils literal notranslate"><span class="pre">SimHistory(min_seconds=10.0)</span></code> records every Nth step
+instead, with N chosen per model so the buffer spans at least that much simulated time.</div></li>
+</ul>
+</section>
+<section id="id6">
+<h3 data-bi="bi-48">步进与控制<a class="headerlink" href="#id6" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-48" lang="en">Stepping &amp; Control</div>
+<p data-bi="bi-49">要在每个物理步之前注入自定义控制律，请处理 <code class="docutils literal notranslate"><span class="pre">PreStepEvent</span></code> 。要替换 CPU 物理步进（例如步进 <a class="reference internal" href="../mjx.html#mjx"><span class="std std-ref">MuJoCo XLA</span></a> 或 <a class="reference internal" href="../mjwarp/index.html#mjw"><span class="std std-ref">MuJoCo Warp</span></a> 的批量仿真，或强化学习环境），请省略 <code class="docutils literal notranslate"><span class="pre">step_control.StepControl()</span></code> ，或以更高的优先级消费 <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> ，并在你自己的 <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> 处理器中推进 <code class="docutils literal notranslate"><span class="pre">event.data</span></code> 并控制其节奏：</p><div class="en-orig" data-for="bi-49" lang="en">To inject custom control laws before each physics step, handle <code class="docutils literal notranslate"><span class="pre">PreStepEvent</span></code>. To replace CPU physics stepping—for
+example, to step a <a class="reference internal" href="../mjx.html#mjx"><span class="std std-ref">MuJoCo XLA</span></a> or <a class="reference internal" href="../mjwarp/index.html#mjw"><span class="std std-ref">MuJoCo Warp</span></a> batch simulation, or an RL environment—omit
+<code class="docutils literal notranslate"><span class="pre">step_control.StepControl()</span></code> or consume <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> at a higher priority, and advance and pace <code class="docutils literal notranslate"><span class="pre">event.data</span></code> inside
+your own <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> handler:</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">mujoco</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">plugin</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CustomStepperPlugin</span><span class="p">(</span><span class="n">plugin</span><span class="o">.</span><span class="n">SimPlugin</span><span class="p">):</span>
+<span class="w">  </span><span class="sd">"""Applies PD joint torques and replaces default StepControl stepping."""</span>
+
+  <span class="n">kp</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span>
+  <span class="n">kd</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span>
+
+  <span class="nd">@messages</span><span class="o">.</span><span class="n">handler</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">on_pre_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">messages</span><span class="o">.</span><span class="n">PreStepEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">qpos_err</span> <span class="o">=</span> <span class="o">-</span><span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">qpos</span><span class="p">[:</span> <span class="n">event</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nu</span><span class="p">]</span>
+    <span class="n">qvel_err</span> <span class="o">=</span> <span class="o">-</span><span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">qvel</span><span class="p">[:</span> <span class="n">event</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nu</span><span class="p">]</span>
+    <span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ctrl</span><span class="p">[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kp</span> <span class="o">*</span> <span class="n">qpos_err</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">kd</span> <span class="o">*</span> <span class="n">qvel_err</span>
+
+  <span class="nd">@messages</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="n">priority</span><span class="o">=</span><span class="n">messages</span><span class="o">.</span><span class="n">Priority</span><span class="o">.</span><span class="n">USER</span><span class="p">)</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">on_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">messages</span><span class="o">.</span><span class="n">StepEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="c1"># Runs before StepControl (Priority.INTERNAL); returning True consumes StepEvent.</span>
+    <span class="n">mujoco</span><span class="o">.</span><span class="n">mj_step</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">opt</span><span class="o">.</span><span class="n">timestep</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+</pre></div>
+</div>
+</section>
+<section id="studiobestpractices">
+<span id="id7"></span><h3 data-bi="bi-50">最佳实践<a class="headerlink" href="#studiobestpractices" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-50" lang="en">Best Practices</div>
+<p data-bi="bi-51">编写 <a class="reference internal" href="#studiosimplugins"><span class="std std-ref">仿真插件</span></a> 时：</p><div class="en-orig" data-for="bi-51" lang="en">When writing <a class="reference internal" href="#studiosimplugins"><span class="std std-ref">simulation plugins</span></a>:</div>
+<ul class="simple">
+<li><p data-bi="bi-52"><strong>掌管权威状态与模型重载：</strong> 仅在仿真线程上修改 <code class="docutils literal notranslate"><span class="pre">self.handle.model</span></code> 和 <code class="docutils literal notranslate"><span class="pre">self.handle.data</span></code> ，通过 <code class="docutils literal notranslate"><span class="pre">self.handle.set_model(new_model,</span> <span class="pre">path=self.handle.model_path)</span></code> 重新发布结构性的或非 <code class="docutils literal notranslate"><span class="pre">opt</span></code> 的模型更改，并在 <code class="docutils literal notranslate"><span class="pre">PostModelEvent</span></code> 时重置依赖于模型的缓冲区。</p><div class="en-orig" data-for="bi-52" lang="en"><strong>Own authoritative state &amp; model reloads</strong>: Mutate <code class="docutils literal notranslate"><span class="pre">self.handle.model</span></code> and <code class="docutils literal notranslate"><span class="pre">self.handle.data</span></code> only on the
+simulation thread, republish structural or non-<code class="docutils literal notranslate"><span class="pre">opt</span></code> model changes via
+<code class="docutils literal notranslate"><span class="pre">self.handle.set_model(new_model,</span> <span class="pre">path=self.handle.model_path)</span></code>, and reset model-dependent buffers on
+<code class="docutils literal notranslate"><span class="pre">PostModelEvent</span></code>.</div></li>
+<li><p data-bi="bi-53"><strong>在步进事件处理器内部编辑</strong> <code class="docutils literal notranslate"><span class="pre">model.opt</span></code> <strong>和</strong> <code class="docutils literal notranslate"><span class="pre">data</span></code> <strong>：</strong> <code class="docutils literal notranslate"><span class="pre">ViewerHandle.sync()</span></code> 通过 <code class="docutils literal notranslate"><span class="pre">send_if_changes</span></code> 在 <code class="docutils literal notranslate"><span class="pre">PreStepEvent</span></code> 、 <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> 和 <code class="docutils literal notranslate"><span class="pre">PostStepEvent</span></code> 期间跟踪 <code class="docutils literal notranslate"><span class="pre">model.opt</span></code> 的差异，并在 <code class="docutils literal notranslate"><span class="pre">PreStepEvent</span></code> <em>之前</em> 应用传入的查看器重置、 <code class="docutils literal notranslate"><span class="pre">StateEvent</span></code> 覆盖和 <code class="docutils literal notranslate"><span class="pre">PerturbSnapshot</span></code> 力。在这些处理器之外的编辑不会被同步，并可能在同一次调用中被覆盖。</p><div class="en-orig" data-for="bi-53" lang="en"><strong>Edit</strong> <code class="docutils literal notranslate"><span class="pre">model.opt</span></code> <strong>and</strong> <code class="docutils literal notranslate"><span class="pre">data</span></code> <strong>inside step-event handlers</strong>: <code class="docutils literal notranslate"><span class="pre">ViewerHandle.sync()</span></code> tracks <code class="docutils literal notranslate"><span class="pre">model.opt</span></code>
+diffs across <code class="docutils literal notranslate"><span class="pre">PreStepEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code>, and <code class="docutils literal notranslate"><span class="pre">PostStepEvent</span></code> via <code class="docutils literal notranslate"><span class="pre">send_if_changes</span></code>, and applies incoming
+viewer resets, <code class="docutils literal notranslate"><span class="pre">StateEvent</span></code> overrides, and <code class="docutils literal notranslate"><span class="pre">PerturbSnapshot</span></code> forces <em>before</em> <code class="docutils literal notranslate"><span class="pre">PreStepEvent</span></code>. Edits outside
+those handlers are not synced and may be overwritten in the same call.</div></li>
+<li><p data-bi="bi-54"><strong>仿真循环节奏与纯查看器：</strong> <code class="docutils literal notranslate"><span class="pre">handle.sync()</span></code> 从不休眠； <code class="docutils literal notranslate"><span class="pre">step_control.StepControl</span></code> 依据挂钟时间控制节奏，并在暂停时让出 <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">ms</span></code> ，使循环不会以 100% 的 CPU 占用空转。如果你为自定义物理步进器或不调用 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-step"><span class="std std-ref">mj_step</span></a> 的纯模型查看器而省略了 <code class="docutils literal notranslate"><span class="pre">step_control.StepControl</span></code> ，那么你的 <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> 插件或外层循环必须自行控制每次迭代的节奏。</p><div class="en-orig" data-for="bi-54" lang="en"><strong>Simulation loop pacing &amp; pure viewers</strong>: <code class="docutils literal notranslate"><span class="pre">handle.sync()</span></code> never sleeps; <code class="docutils literal notranslate"><span class="pre">step_control.StepControl</span></code> paces against
+wall-clock time and yields <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">ms</span></code> while paused so the loop does not spin at 100% CPU. If you omit
+<code class="docutils literal notranslate"><span class="pre">step_control.StepControl</span></code> for a custom physics stepper or a pure model viewer that does not call <a class="reference internal" href="../APIreference/APIfunctions.html#mj-step"><span class="std std-ref">mj_step</span></a>,
+your <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> plugin or outer loop must pace each iteration.</div></li>
+<li><p data-bi="bi-55"><strong>记录历史时复制 NumPy 视图：</strong> <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 数组的切片（如 <code class="docutils literal notranslate"><span class="pre">data.xpos[body_id]</span></code> 、 <code class="docutils literal notranslate"><span class="pre">data.geom_xpos</span></code> 或 <code class="docutils literal notranslate"><span class="pre">data.qpos</span></code> ）是由 MuJoCo 的 C 缓冲区支持的零拷贝 NumPy 视图，会在下一次步进或 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-forward"><span class="std std-ref">mj_forward</span></a> 调用时被就地覆盖。在跨帧存储切片之前，务必调用 <code class="docutils literal notranslate"><span class="pre">.copy()</span></code> 。</p><div class="en-orig" data-for="bi-55" lang="en"><strong>Copy NumPy views when recording history</strong>: Slices of <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> arrays such as <code class="docutils literal notranslate"><span class="pre">data.xpos[body_id]</span></code>,
+<code class="docutils literal notranslate"><span class="pre">data.geom_xpos</span></code>, or <code class="docutils literal notranslate"><span class="pre">data.qpos</span></code> are zero-copy NumPy views backed by MuJoCo’s C buffers and are overwritten in
+place on the next step or <a class="reference internal" href="../APIreference/APIfunctions.html#mj-forward"><span class="std std-ref">mj_forward</span></a> call. Always call <code class="docutils literal notranslate"><span class="pre">.copy()</span></code> before storing slices across frames.</div></li>
+<li><p data-bi="bi-56"><strong>处理器返回值：</strong> 从 <code class="docutils literal notranslate"><span class="pre">@messages.handler</span></code> 方法返回 <code class="docutils literal notranslate"><span class="pre">True</span></code> 会消费该消息并跳过较低优先级的处理器。除非有意覆盖某条消息，否则请返回 <code class="docutils literal notranslate"><span class="pre">None</span></code> 或 <code class="docutils literal notranslate"><span class="pre">False</span></code> ，并且切勿从 <code class="docutils literal notranslate"><span class="pre">ExitEvent</span></code> 返回 <code class="docutils literal notranslate"><span class="pre">True</span></code> 。</p><div class="en-orig" data-for="bi-56" lang="en"><strong>Handler return values</strong>: Returning <code class="docutils literal notranslate"><span class="pre">True</span></code> from an <code class="docutils literal notranslate"><span class="pre">@messages.handler</span></code> method consumes the message and skips
+lower-priority handlers. Return <code class="docutils literal notranslate"><span class="pre">None</span></code> or <code class="docutils literal notranslate"><span class="pre">False</span></code> unless intentionally overriding a message, and never return
+<code class="docutils literal notranslate"><span class="pre">True</span></code> from <code class="docutils literal notranslate"><span class="pre">ExitEvent</span></code>.</div></li>
+</ul>
+</section>
+</section>
+<section id="studiolifecycle">
+<span id="id8"></span><h2 data-bi="bi-57">生命周期事件<a class="headerlink" href="#studiolifecycle" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-57" lang="en">Lifecycle Events</div>
+<section id="id9">
+<h3 data-bi="bi-58">查看器线程<a class="headerlink" href="#id9" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-58" lang="en">Viewer Thread</div>
+<p data-bi="bi-59"><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/viewer_protocol.py">viewer_protocol.py</a> 中的查看器循环按时间顺序向 <code class="docutils literal notranslate"><span class="pre">ViewerPlugin</span></code> 实例派发生命周期事件：</p><div class="en-orig" data-for="bi-59" lang="en">The viewer loop in <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/viewer_protocol.py">viewer_protocol.py</a> dispatches lifecycle
+events to <code class="docutils literal notranslate"><span class="pre">ViewerPlugin</span></code> instances in chronological order:</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 34.0%"/>
+<col style="width: 66.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-60">事件类型</p><div class="en-orig" data-for="bi-60" lang="en">Event Type</div></th>
+<th class="head"><p data-bi="bi-61">描述</p><div class="en-orig" data-for="bi-61" lang="en">Description</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ViewerInitEvent(viewer)</span></code></p></td>
+<td><p data-bi="bi-62">在启动时派发一次。 <code class="docutils literal notranslate"><span class="pre">ViewerPlugin</span></code> 会在子类处理器运行之前，于 <code class="docutils literal notranslate"><span class="pre">Priority.CRITICAL</span></code> 之上自动缓存 <code class="docutils literal notranslate"><span class="pre">self.viewer</span></code> 。</p><div class="en-orig" data-for="bi-62" lang="en">Dispatched once on startup. <code class="docutils literal notranslate"><span class="pre">ViewerPlugin</span></code> caches <code class="docutils literal notranslate"><span class="pre">self.viewer</span></code> automatically above <code class="docutils literal notranslate"><span class="pre">Priority.CRITICAL</span></code>
+before subclass handlers run.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ModelEvent(model,</span> <span class="pre">path)</span></code></p></td>
+<td><p data-bi="bi-63">在仿真发布模型时接收； <code class="docutils literal notranslate"><span class="pre">Viewer</span></code> 会深拷贝 <code class="docutils literal notranslate"><span class="pre">viewer.model</span></code> ，创建 <code class="docutils literal notranslate"><span class="pre">viewer.data</span></code> ，记录 <code class="docutils literal notranslate"><span class="pre">viewer.model_path</span></code> ，运行 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-forward"><span class="std std-ref">mj_forward</span></a>，清空 <code class="docutils literal notranslate"><span class="pre">viewer.extra_geoms</span></code> ，并派发 <code class="docutils literal notranslate"><span class="pre">PostModelEvent</span></code> 。</p><div class="en-orig" data-for="bi-63" lang="en">Received when the simulation publishes a model; <code class="docutils literal notranslate"><span class="pre">Viewer</span></code> deep-copies <code class="docutils literal notranslate"><span class="pre">viewer.model</span></code>, creates <code class="docutils literal notranslate"><span class="pre">viewer.data</span></code>,
+records <code class="docutils literal notranslate"><span class="pre">viewer.model_path</span></code>, runs <a class="reference internal" href="../APIreference/APIfunctions.html#mj-forward"><span class="std std-ref">mj_forward</span></a>, clears <code class="docutils literal notranslate"><span class="pre">viewer.extra_geoms</span></code>, and dispatches
+<code class="docutils literal notranslate"><span class="pre">PostModelEvent</span></code>.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">PostModelEvent(model,</span> <span class="pre">data,</span> <span class="pre">path)</span></code></p></td>
+<td><p data-bi="bi-64">在 <code class="docutils literal notranslate"><span class="pre">viewer.model</span></code> 和 <code class="docutils literal notranslate"><span class="pre">viewer.data</span></code> 初始化完成后于本地派发。要重置查看器插件的状态，请订阅此事件而不是 <code class="docutils literal notranslate"><span class="pre">ModelEvent</span></code> ；重新加载相同的 <code class="docutils literal notranslate"><span class="pre">path</span></code> 会保留 <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> 中的相机、暂停和播放速度。</p><div class="en-orig" data-for="bi-64" lang="en">Dispatched locally once <code class="docutils literal notranslate"><span class="pre">viewer.model</span></code> and <code class="docutils literal notranslate"><span class="pre">viewer.data</span></code> are initialized. Subscribe here rather than
+<code class="docutils literal notranslate"><span class="pre">ModelEvent</span></code> to reset viewer-plugin state; reloading the same <code class="docutils literal notranslate"><span class="pre">path</span></code> preserves camera, pause, and playback
+speed in <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code>.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">PreloadModelEvent(model)</span></code></p></td>
+<td><p data-bi="bi-65">来自仿真插件的提示，表示 <code class="docutils literal notranslate"><span class="pre">model</span></code> 可能很快成为当前模型，例如播放列表中的下一个场景。查看器可以忽略它；<a class="reference internal" href="web_viewers.html#studiowebviewers"><span class="std std-ref">Web 查看器</span></a> 会序列化该模型，并让已连接的浏览器在后台下载它，这样之后的 <code class="docutils literal notranslate"><span class="pre">ModelEvent</span></code> 切换时就无需下载。</p><div class="en-orig" data-for="bi-65" lang="en">A hint from a simulation plugin that <code class="docutils literal notranslate"><span class="pre">model</span></code> may become the current model soon, for example the next scene
+of a playlist. Viewers may ignore it; the <a class="reference internal" href="web_viewers.html#studiowebviewers"><span class="std std-ref">web viewer</span></a> serializes the model and has
+connected browsers download it in the background, so the later <code class="docutils literal notranslate"><span class="pre">ModelEvent</span></code> switches without a download.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">HotReloadEvent(plugins)</span></code></p></td>
+<td><p data-bi="bi-66">当 <a class="reference internal" href="#studiohotreload"><span class="std std-ref">热重载</span></a> 替换已修改的插件类时，在帧与帧之间派发。</p><div class="en-orig" data-for="bi-66" lang="en">Dispatched between frames when <a class="reference internal" href="#studiohotreload"><span class="std std-ref">hot reload</span></a> swaps modified plugin classes.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">UpdateEvent()</span></code></p></td>
+<td><p data-bi="bi-67">在应用传入的仿真事件和快照之后，于每个活动帧派发，用于更新视觉效果、填充 <code class="docutils literal notranslate"><span class="pre">viewer.extra_geoms</span></code> 、准备 GUI 数据，或通过 <code class="docutils literal notranslate"><span class="pre">viewer.upload_image</span></code> 上传纹理。</p><div class="en-orig" data-for="bi-67" lang="en">Dispatched every active frame after incoming simulation events and snapshots are applied, to update visuals,
+populate <code class="docutils literal notranslate"><span class="pre">viewer.extra_geoms</span></code>, prepare GUI data, or upload textures via <code class="docutils literal notranslate"><span class="pre">viewer.upload_image</span></code>.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">BuildGuiEvent()</span></code></p></td>
+<td><p data-bi="bi-68">在每个活动帧中紧接 <code class="docutils literal notranslate"><span class="pre">UpdateEvent</span></code> 之后派发，用于提交 Dear ImGui 控件。</p><div class="en-orig" data-for="bi-68" lang="en">Dispatched every active frame immediately after <code class="docutils literal notranslate"><span class="pre">UpdateEvent</span></code> to submit Dear ImGui widgets.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ExitEvent(reason)</span></code></p></td>
+<td><p data-bi="bi-69">在查看器关闭时派发一次。请在此处释放资源；切勿返回 <code class="docutils literal notranslate"><span class="pre">True</span></code> ，以便清理操作能够到达每个插件。</p><div class="en-orig" data-for="bi-69" lang="en">Dispatched once when the viewer shuts down. Release resources here; never return <code class="docutils literal notranslate"><span class="pre">True</span></code> so teardown reaches
+every plugin.</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p data-bi="bi-70">当 <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> 被包含在 <code class="docutils literal notranslate"><span class="pre">plugins</span></code> 中时，它还会在启动期间派发一次 <code class="docutils literal notranslate"><span class="pre">studio_app.InitEvent(app)</span></code> ，以便配套的查看器插件缓存 <code class="docutils literal notranslate"><span class="pre">event.app</span></code> 。</p><div class="en-orig" data-for="bi-70" lang="en">When <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> is included in <code class="docutils literal notranslate"><span class="pre">plugins</span></code>, it also dispatches
+<code class="docutils literal notranslate"><span class="pre">studio_app.InitEvent(app)</span></code> once during startup so companion viewer plugins can cache
+<code class="docutils literal notranslate"><span class="pre">event.app</span></code>.</div>
+</section>
+<section id="id10">
+<h3 data-bi="bi-71">仿真线程<a class="headerlink" href="#id10" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-71" lang="en">Simulation Thread</div>
+<p data-bi="bi-72"><code class="docutils literal notranslate"><span class="pre">ViewerHandle</span></code> （<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/viewer_handle.py">viewer_handle.py</a>）按时间顺序向 <code class="docutils literal notranslate"><span class="pre">SimPlugin</span></code> 实例派发生命周期事件：</p><div class="en-orig" data-for="bi-72" lang="en"><code class="docutils literal notranslate"><span class="pre">ViewerHandle</span></code> (<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/viewer_handle.py">viewer_handle.py</a>) dispatches lifecycle
+events to <code class="docutils literal notranslate"><span class="pre">SimPlugin</span></code> instances in chronological order:</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 34.0%"/>
+<col style="width: 66.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-73">事件类型</p><div class="en-orig" data-for="bi-73" lang="en">Event Type</div></th>
+<th class="head"><p data-bi="bi-74">描述</p><div class="en-orig" data-for="bi-74" lang="en">Description</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">SimInitEvent(handle)</span></code></p></td>
+<td><p data-bi="bi-75">由 <code class="docutils literal notranslate"><span class="pre">ViewerHandle.__init__</span></code> 派发一次。 <code class="docutils literal notranslate"><span class="pre">SimPlugin</span></code> 会在子类处理器运行之前，于 <code class="docutils literal notranslate"><span class="pre">Priority.CRITICAL</span></code> 之上自动缓存 <code class="docutils literal notranslate"><span class="pre">self.handle</span></code> 。</p><div class="en-orig" data-for="bi-75" lang="en">Dispatched once by <code class="docutils literal notranslate"><span class="pre">ViewerHandle.__init__</span></code>. <code class="docutils literal notranslate"><span class="pre">SimPlugin</span></code> caches <code class="docutils literal notranslate"><span class="pre">self.handle</span></code> automatically above
+<code class="docutils literal notranslate"><span class="pre">Priority.CRITICAL</span></code> before subclass handlers run.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">LoadModelEvent(path)</span></code></p></td>
+<td><p data-bi="bi-76">在启动、UI 重新加载、模型文件热重载或文件拖放时派发。 <code class="docutils literal notranslate"><span class="pre">SimPlugin</span></code> 可以构建 <a class="reference internal" href="#studiopythonscenes"><span class="std std-ref">Python 场景</span></a>，调用 <code class="docutils literal notranslate"><span class="pre">handle.set_model(spec)</span></code> ，并返回 <code class="docutils literal notranslate"><span class="pre">True</span></code> 以消费该事件；否则，当 <code class="docutils literal notranslate"><span class="pre">path</span></code> 非空时 <code class="docutils literal notranslate"><span class="pre">ViewerHandle</span></code> 会加载 <code class="docutils literal notranslate"><span class="pre">path</span></code> ，如果加载失败则保留之前的模型。</p><div class="en-orig" data-for="bi-76" lang="en">Dispatched on startup, UI Reload, model file hot-reload, or file drag-and-drop. A <code class="docutils literal notranslate"><span class="pre">SimPlugin</span></code> can build a
+<a class="reference internal" href="#studiopythonscenes"><span class="std std-ref">Python scene</span></a>, call <code class="docutils literal notranslate"><span class="pre">handle.set_model(spec)</span></code>, and return <code class="docutils literal notranslate"><span class="pre">True</span></code> to consume the
+event; otherwise <code class="docutils literal notranslate"><span class="pre">ViewerHandle</span></code> loads <code class="docutils literal notranslate"><span class="pre">path</span></code> when non-empty, keeping the previous model if loading fails.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ModelEvent(model,</span> <span class="pre">path)</span></code></p></td>
+<td><p data-bi="bi-77">在 <code class="docutils literal notranslate"><span class="pre">handle.set_model(...)</span></code> 发布模型，或 <code class="docutils literal notranslate"><span class="pre">handle.sync(model,</span> <span class="pre">data)</span></code> 发现新的模型对象时派发，随后紧接着派发 <code class="docutils literal notranslate"><span class="pre">PostModelEvent</span></code> 。</p><div class="en-orig" data-for="bi-77" lang="en">Dispatched when <code class="docutils literal notranslate"><span class="pre">handle.set_model(...)</span></code> publishes a model or <code class="docutils literal notranslate"><span class="pre">handle.sync(model,</span> <span class="pre">data)</span></code> sees a new model
+object, followed immediately by <code class="docutils literal notranslate"><span class="pre">PostModelEvent</span></code>.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">PostModelEvent(model,</span> <span class="pre">data,</span> <span class="pre">path)</span></code></p></td>
+<td><p data-bi="bi-78">在 <code class="docutils literal notranslate"><span class="pre">handle.model</span></code> 和 <code class="docutils literal notranslate"><span class="pre">handle.data</span></code> 安装并转发完成后于本地派发。要重置仿真插件的状态，请订阅此事件而不是 <code class="docutils literal notranslate"><span class="pre">ModelEvent</span></code> ；重新加载相同的 <code class="docutils literal notranslate"><span class="pre">path</span></code> 会保留 <code class="docutils literal notranslate"><span class="pre">StepControl</span></code> 的暂停、速度和噪声设置。</p><div class="en-orig" data-for="bi-78" lang="en">Dispatched locally once <code class="docutils literal notranslate"><span class="pre">handle.model</span></code> and <code class="docutils literal notranslate"><span class="pre">handle.data</span></code> are installed and forwarded. Subscribe here rather
+than <code class="docutils literal notranslate"><span class="pre">ModelEvent</span></code> to reset simulation-plugin state; reloading the same <code class="docutils literal notranslate"><span class="pre">path</span></code> preserves <code class="docutils literal notranslate"><span class="pre">StepControl</span></code>
+pause, speed, and noise settings.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">HotReloadEvent(plugins)</span></code></p></td>
+<td><p data-bi="bi-79">当 <a class="reference internal" href="#studiohotreload"><span class="std std-ref">热重载</span></a> 替换已修改的仿真插件类时，在 <code class="docutils literal notranslate"><span class="pre">handle.sync()</span></code> 内部派发。</p><div class="en-orig" data-for="bi-79" lang="en">Dispatched inside <code class="docutils literal notranslate"><span class="pre">handle.sync()</span></code> when <a class="reference internal" href="#studiohotreload"><span class="std std-ref">hot reload</span></a> swaps modified simulation plugin
+classes.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">PreStepEvent(model,</span> <span class="pre">data)</span></code></p></td>
+<td><p data-bi="bi-80">在每次 <code class="docutils literal notranslate"><span class="pre">handle.sync()</span></code> 中，于应用传入的查看器重置、状态覆盖和扰动之后、物理推进之前派发。请在此处写入控制、外力或 <code class="docutils literal notranslate"><span class="pre">model.opt</span></code> 的修改，或调用 <code class="docutils literal notranslate"><span class="pre">handle.set_model</span></code> 。</p><div class="en-orig" data-for="bi-80" lang="en">Dispatched on each <code class="docutils literal notranslate"><span class="pre">handle.sync()</span></code> after incoming viewer resets, state overrides, and perturbations are applied
+and before physics advances. Write controls, external forces, or <code class="docutils literal notranslate"><span class="pre">model.opt</span></code> edits, or call
+<code class="docutils literal notranslate"><span class="pre">handle.set_model</span></code>, here.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">StepEvent(model,</span> <span class="pre">data)</span></code></p></td>
+<td><p data-bi="bi-81">紧接 <code class="docutils literal notranslate"><span class="pre">PreStepEvent</span></code> 之后派发，用于推进物理； <code class="docutils literal notranslate"><span class="pre">StepControl</span></code> 在此处以实时节奏步进 CPU 物理。</p><div class="en-orig" data-for="bi-81" lang="en">Dispatched immediately after <code class="docutils literal notranslate"><span class="pre">PreStepEvent</span></code> to advance physics; <code class="docutils literal notranslate"><span class="pre">StepControl</span></code> steps CPU physics with
+real-time pacing here.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">PostStepEvent(model,</span> <span class="pre">data)</span></code></p></td>
+<td><p data-bi="bi-82">紧接 <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> 之后、向查看器发送 <code class="docutils literal notranslate"><span class="pre">StateSnapshot</span></code> 之前派发； <code class="docutils literal notranslate"><span class="pre">SimHistory</span></code> 在此处记录步进后的状态。</p><div class="en-orig" data-for="bi-82" lang="en">Dispatched immediately after <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> and before <code class="docutils literal notranslate"><span class="pre">StateSnapshot</span></code> is sent to the viewer; <code class="docutils literal notranslate"><span class="pre">SimHistory</span></code>
+records the stepped state here.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ExitEvent(reason)</span></code></p></td>
+<td><p data-bi="bi-83">由 <code class="docutils literal notranslate"><span class="pre">ViewerHandle.close()</span></code> 在每条退出路径上派发一次。请在此处释放资源；切勿返回 <code class="docutils literal notranslate"><span class="pre">True</span></code> 。</p><div class="en-orig" data-for="bi-83" lang="en">Dispatched once by <code class="docutils literal notranslate"><span class="pre">ViewerHandle.close()</span></code> on every exit path. Release resources here; never return <code class="docutils literal notranslate"><span class="pre">True</span></code>.</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="studiodiffsync">
+<span id="id11"></span><h3 data-bi="bi-84">基于差异的同步<a class="headerlink" href="#studiodiffsync" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-84" lang="en">Diff-Based Sync</div>
+<p data-bi="bi-85">诸如 <code class="docutils literal notranslate"><span class="pre">MjOptionSnapshot</span></code> 和 <code class="docutils literal notranslate"><span class="pre">StepControlSnapshot</span></code> 之类的双向 <a class="reference internal" href="architecture.html#studiomessaging"><span class="std std-ref">快照</span></a> 只能由修改了该值的一方发送，这样任何一方都不会把传入的快照回显回去而覆盖另一方的编辑。 <code class="docutils literal notranslate"><span class="pre">Viewer</span></code> 和 <code class="docutils literal notranslate"><span class="pre">ViewerHandle</span></code> 都提供 <code class="docutils literal notranslate"><span class="pre">send_if_changes(*make_messages)</span></code> 上下文管理器，它会在 <code class="docutils literal notranslate"><span class="pre">with</span></code> 代码块之前和之后调用每个无参数 lambda，并且只发送值发生了变化的消息：</p><div class="en-orig" data-for="bi-85" lang="en">Bidirectional <a class="reference internal" href="architecture.html#studiomessaging"><span class="std std-ref">snapshots</span></a> such as <code class="docutils literal notranslate"><span class="pre">MjOptionSnapshot</span></code> and <code class="docutils literal notranslate"><span class="pre">StepControlSnapshot</span></code> must only be
+sent by the side that changed the value so neither side echoes incoming snapshots back over the other side’s edits. Both
+<code class="docutils literal notranslate"><span class="pre">Viewer</span></code> and <code class="docutils literal notranslate"><span class="pre">ViewerHandle</span></code> provide a <code class="docutils literal notranslate"><span class="pre">send_if_changes(*make_messages)</span></code> context manager that calls each
+zero-argument lambda before and after the <code class="docutils literal notranslate"><span class="pre">with</span></code> block and sends only the messages whose value changed:</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">send_if_changes</span><span class="p">(</span>
+    <span class="k">lambda</span><span class="p">:</span> <span class="n">messages</span><span class="o">.</span><span class="n">StepControlSnapshot</span><span class="o">.</span><span class="n">from_step_control</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step_control_state</span><span class="p">),</span>
+    <span class="k">lambda</span><span class="p">:</span> <span class="n">messages</span><span class="o">.</span><span class="n">MjOptionSnapshot</span><span class="p">(</span><span class="n">opt</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">opt</span><span class="p">)),</span>
+<span class="p">):</span>
+  <span class="n">ux</span><span class="o">.</span><span class="n">build_options_gui</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">vis_options</span><span class="p">)</span>
+</pre></div>
+</div>
+<p data-bi="bi-86">传入的快照在 <code class="docutils literal notranslate"><span class="pre">send_if_changes</span></code> 代码块之外应用，因此它们永远不会被回显。在仿真端， <code class="docutils literal notranslate"><span class="pre">ViewerHandle.sync()</span></code> 会为 <code class="docutils literal notranslate"><span class="pre">model.opt</span></code> 将 <code class="docutils literal notranslate"><span class="pre">PreStepEvent</span></code> 、 <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> 和 <code class="docutils literal notranslate"><span class="pre">PostStepEvent</span></code> 包裹在 <code class="docutils literal notranslate"><span class="pre">send_if_changes</span></code> 中。因此，请在步进事件处理器内部修改 <code class="docutils literal notranslate"><span class="pre">model.opt</span></code> ，而不是在 <code class="docutils literal notranslate"><span class="pre">sync()</span></code> 调用之间的外层循环中修改；并且要通过派发其所处理的事件（例如 <code class="docutils literal notranslate"><span class="pre">RequestPauseEvent</span></code> ）来改变另一个插件的状态，而不是直接修改它。</p><div class="en-orig" data-for="bi-86" lang="en">Incoming snapshots are applied outside <code class="docutils literal notranslate"><span class="pre">send_if_changes</span></code> blocks so they never echo back. On the simulation side,
+<code class="docutils literal notranslate"><span class="pre">ViewerHandle.sync()</span></code> wraps <code class="docutils literal notranslate"><span class="pre">PreStepEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code>, and <code class="docutils literal notranslate"><span class="pre">PostStepEvent</span></code> in <code class="docutils literal notranslate"><span class="pre">send_if_changes</span></code> for
+<code class="docutils literal notranslate"><span class="pre">model.opt</span></code>—so mutate <code class="docutils literal notranslate"><span class="pre">model.opt</span></code> inside step-event handlers rather than in an outer loop between <code class="docutils literal notranslate"><span class="pre">sync()</span></code> calls,
+and change another plugin’s state by dispatching an event it handles, such as <code class="docutils literal notranslate"><span class="pre">RequestPauseEvent</span></code>, rather than
+mutating it directly.</div>
+</section>
+</section>
+<section id="studiopriorities">
+<span id="id12"></span><h2 data-bi="bi-87">处理器优先级<a class="headerlink" href="#studiopriorities" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-87" lang="en">Handler Priorities</div>
+<div class="admonition note">
+<p class="admonition-title" data-bi="bi-88">备注</p><div class="en-orig" data-for="bi-88" lang="en">Note</div>
+<p data-bi="bi-89">处理器优先级是一项高级功能。大多数插件（plugin）只需要在默认的 <code class="docutils literal notranslate"><span class="pre">Priority.USER</span></code> 级别使用普通的 <code class="docutils literal notranslate"><span class="pre">@messages.handler</span></code> ，并配合显式的生命周期钩子，例如 <code class="docutils literal notranslate"><span class="pre">PostModelEvent</span></code> 、 <code class="docutils literal notranslate"><span class="pre">PreStepEvent</span></code> 、
+<code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> 和 <code class="docutils literal notranslate"><span class="pre">PostStepEvent</span></code> 。</p><div class="en-orig" data-for="bi-89" lang="en">Handler priorities are an advanced feature. Most plugins only need plain <code class="docutils literal notranslate"><span class="pre">@messages.handler</span></code> at the default
+<code class="docutils literal notranslate"><span class="pre">Priority.USER</span></code> level together with explicit lifecycle hooks such as <code class="docutils literal notranslate"><span class="pre">PostModelEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">PreStepEvent</span></code>,
+<code class="docutils literal notranslate"><span class="pre">StepEvent</span></code>, and <code class="docutils literal notranslate"><span class="pre">PostStepEvent</span></code>.</div>
+</div>
+<p data-bi="bi-90">插件方法使用 <code class="docutils literal notranslate"><span class="pre">@messages.handler</span></code> 或 <code class="docutils literal notranslate"><span class="pre">@messages.handler(priority=...)</span></code> 进行装饰。 <code class="docutils literal notranslate"><span class="pre">PluginRegistry</span></code> 会检查每个被装饰方法的类型注解，以确定它处理哪个 <code class="docutils literal notranslate"><span class="pre">Event</span></code> 或 <code class="docutils literal notranslate"><span class="pre">Snapshot</span></code> 子类：</p><div class="en-orig" data-for="bi-90" lang="en">Plugin methods are decorated with <code class="docutils literal notranslate"><span class="pre">@messages.handler</span></code> or <code class="docutils literal notranslate"><span class="pre">@messages.handler(priority=...)</span></code>. <code class="docutils literal notranslate"><span class="pre">PluginRegistry</span></code>
+inspects each decorated method’s type annotation to determine which <code class="docutils literal notranslate"><span class="pre">Event</span></code> or <code class="docutils literal notranslate"><span class="pre">Snapshot</span></code> subclass it handles:</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">plugin</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CustomSimPlugin</span><span class="p">(</span><span class="n">plugin</span><span class="o">.</span><span class="n">SimPlugin</span><span class="p">):</span>
+
+  <span class="nd">@messages</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="n">priority</span><span class="o">=</span><span class="n">messages</span><span class="o">.</span><span class="n">Priority</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">)</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">on_pre_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">messages</span><span class="o">.</span><span class="n">PreStepEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># Run before standard Priority.USER PreStepEvent handlers.</span>
+    <span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ctrl</span><span class="p">[:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+</pre></div>
+</div>
+<p data-bi="bi-91">针对同一消息类型的处理器，按 <code class="docutils literal notranslate"><span class="pre">Priority</span></code> 数值从 <strong>最高</strong> 到最低的顺序执行：</p><div class="en-orig" data-for="bi-91" lang="en">Handlers for the same message type execute from <strong>highest</strong> numerical <code class="docutils literal notranslate"><span class="pre">Priority</span></code> value to lowest:</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 28.0%"/>
+<col style="width: 14.0%"/>
+<col style="width: 58.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-92">优先级常量</p><div class="en-orig" data-for="bi-92" lang="en">Priority Constant</div></th>
+<th class="head"><p data-bi="bi-93">值</p><div class="en-orig" data-for="bi-93" lang="en">Value</div></th>
+<th class="head"><p data-bi="bi-94">预期用途</p><div class="en-orig" data-for="bi-94" lang="en">Intended Use</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Priority.CRITICAL</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1000</span></code></p></td>
+<td><p data-bi="bi-95">必须先于其他一切运行的处理器，例如核心查看器状态更新和 <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> 布局。</p><div class="en-orig" data-for="bi-95" lang="en">Handlers that must run before everything else, such as core viewer state updates and <code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code> layout.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Priority.USER</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">100</span></code></p></td>
+<td><p data-bi="bi-96">使用不带参数的 <code class="docutils literal notranslate"><span class="pre">@messages.handler</span></code> 时，用户插件的默认优先级。</p><div class="en-orig" data-for="bi-96" lang="en">Default priority for user plugins when <code class="docutils literal notranslate"><span class="pre">@messages.handler</span></code> is used without arguments.</div></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Priority.LIBRARY</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">10</span></code></p></td>
+<td><p data-bi="bi-97">可复用的库扩展，默认在用户插件之后运行。</p><div class="en-orig" data-for="bi-97" lang="en">Reusable library extensions that run after user plugins by default.</div></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Priority.INTERNAL</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
+<td><p data-bi="bi-98">内置框架处理器： <code class="docutils literal notranslate"><span class="pre">StepControl</span></code> 、 <code class="docutils literal notranslate"><span class="pre">SimHistory</span></code> 、 <code class="docutils literal notranslate"><span class="pre">Viewer</span></code> 和 <code class="docutils literal notranslate"><span class="pre">ViewerHandle</span></code> 。</p><div class="en-orig" data-for="bi-98" lang="en">Built-in framework handlers: <code class="docutils literal notranslate"><span class="pre">StepControl</span></code>, <code class="docutils literal notranslate"><span class="pre">SimHistory</span></code>, <code class="docutils literal notranslate"><span class="pre">Viewer</span></code>, and <code class="docutils literal notranslate"><span class="pre">ViewerHandle</span></code>.</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p data-bi="bi-99">停止传播：如果某个处理器返回 <code class="docutils literal notranslate"><span class="pre">True</span></code> ，则该消息的分发会立即停止，优先级更低的处理器将被跳过。由于内置处理器以 <code class="docutils literal notranslate"><span class="pre">Priority.INTERNAL</span></code> （ <code class="docutils literal notranslate"><span class="pre">1</span></code> ）运行，处于 <code class="docutils literal notranslate"><span class="pre">Priority.USER</span></code> （ <code class="docutils literal notranslate"><span class="pre">100</span></code> ）的用户插件可以通过返回 <code class="docutils literal notranslate"><span class="pre">True</span></code> 来覆盖某条消息的内置行为，也可以通过返回 <code class="docutils literal notranslate"><span class="pre">None</span></code> 或 <code class="docutils literal notranslate"><span class="pre">False</span></code> 来对其进行扩充。切勿从 <code class="docutils literal notranslate"><span class="pre">ExitEvent</span></code> 处理器返回 <code class="docutils literal notranslate"><span class="pre">True</span></code> 。</p><div class="en-orig" data-for="bi-99" lang="en">Stopping propagation: If a handler returns <code class="docutils literal notranslate"><span class="pre">True</span></code>, dispatching of that message stops immediately and lower-priority
+handlers are skipped. Because built-in handlers run at <code class="docutils literal notranslate"><span class="pre">Priority.INTERNAL</span></code> (<code class="docutils literal notranslate"><span class="pre">1</span></code>), a user plugin at
+<code class="docutils literal notranslate"><span class="pre">Priority.USER</span></code> (<code class="docutils literal notranslate"><span class="pre">100</span></code>) can override built-in behavior for a specific message by returning <code class="docutils literal notranslate"><span class="pre">True</span></code>, or augment it
+by returning <code class="docutils literal notranslate"><span class="pre">None</span></code> or <code class="docutils literal notranslate"><span class="pre">False</span></code>. Never return <code class="docutils literal notranslate"><span class="pre">True</span></code> from an <code class="docutils literal notranslate"><span class="pre">ExitEvent</span></code> handler.</div>
+<section id="id13">
+<h3 data-bi="bi-100">事件与优先级<a class="headerlink" href="#id13" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-100" lang="en">Events vs. Priority</div>
+<p data-bi="bi-101">Studio 同时提供显式的 <code class="docutils literal notranslate"><span class="pre">Pre*</span></code> / <code class="docutils literal notranslate"><span class="pre">Post*</span></code> 生命周期事件和处理器优先级：</p><div class="en-orig" data-for="bi-101" lang="en">Studio provides both explicit <code class="docutils literal notranslate"><span class="pre">Pre*</span></code> / <code class="docutils literal notranslate"><span class="pre">Post*</span></code> lifecycle events and handler priorities:</div>
+<ul class="simple">
+<li><p data-bi="bi-102"><strong>优先使用生命周期阶段事件</strong>，例如 <code class="docutils literal notranslate"><span class="pre">PostModelEvent</span></code> 、 <code class="docutils literal notranslate"><span class="pre">PreStepEvent</span></code> 、 <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> 、 <code class="docutils literal notranslate"><span class="pre">PostStepEvent</span></code> 、
+<code class="docutils literal notranslate"><span class="pre">UpdateEvent</span></code> 和 <code class="docutils literal notranslate"><span class="pre">BuildGuiEvent</span></code> ，并配合普通的 <code class="docutils literal notranslate"><span class="pre">@messages.handler</span></code> 装饰器。通过 <code class="docutils literal notranslate"><span class="pre">ModelEvent</span></code> 或 <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> 上的 <code class="docutils literal notranslate"><span class="pre">Priority</span></code> 来为不同的生命周期阶段排序，可能会在 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-forward"><span class="std std-ref">mj_forward</span></a> 运行之前暴露未初始化的 <code class="docutils literal notranslate"><span class="pre">MjData</span></code> ，或者在 <code class="docutils literal notranslate"><span class="pre">handle.set_model()</span></code> 之后让正在处理中的 <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> 持有过时的 <code class="docutils literal notranslate"><span class="pre">model</span></code> / <code class="docutils literal notranslate"><span class="pre">data</span></code> 引用。</p><div class="en-orig" data-for="bi-102" lang="en"><strong>Prefer lifecycle phase events</strong> such as <code class="docutils literal notranslate"><span class="pre">PostModelEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">PreStepEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">PostStepEvent</span></code>,
+<code class="docutils literal notranslate"><span class="pre">UpdateEvent</span></code>, and <code class="docutils literal notranslate"><span class="pre">BuildGuiEvent</span></code> with a bare <code class="docutils literal notranslate"><span class="pre">@messages.handler</span></code> decorator. Ordering distinct lifecycle phases
+via <code class="docutils literal notranslate"><span class="pre">Priority</span></code> on <code class="docutils literal notranslate"><span class="pre">ModelEvent</span></code> or <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> can expose uninitialized <code class="docutils literal notranslate"><span class="pre">MjData</span></code> before <a class="reference internal" href="../APIreference/APIfunctions.html#mj-forward"><span class="std std-ref">mj_forward</span></a> runs
+or leave an in-flight <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> holding stale <code class="docutils literal notranslate"><span class="pre">model</span></code>/<code class="docutils literal notranslate"><span class="pre">data</span></code> references after <code class="docutils literal notranslate"><span class="pre">handle.set_model()</span></code>.</div></li>
+<li><p data-bi="bi-103"><strong>仅在</strong> 多个处理器针对 <em>完全相同的</em> 事件阶段，并且其中一个处理器必须在后备处理器运行之前通过返回 <code class="docutils literal notranslate"><span class="pre">True</span></code> 来覆盖或消费该消息时，才使用 <code class="docutils literal notranslate"><span class="pre">Priority</span></code> 。</p><div class="en-orig" data-for="bi-103" lang="en"><strong>Reserve</strong> <code class="docutils literal notranslate"><span class="pre">Priority</span></code> strictly for cases where multiple handlers target the <em>exact same</em> event phase and one
+handler must override or consume the message by returning <code class="docutils literal notranslate"><span class="pre">True</span></code> before a fallback handler runs.</div></li>
+</ul>
+</section>
+</section>
+<section id="studiohotreload">
+<span id="id14"></span><h2 data-bi="bi-104">热重载<a class="headerlink" href="#studiohotreload" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-104" lang="en">Hot Reload</div>
+<div class="admonition tip">
+<p class="admonition-title" data-bi="bi-105">小技巧</p><div class="en-orig" data-for="bi-105" lang="en">Tip</div>
+<p data-bi="bi-106">使用 <code class="docutils literal notranslate"><span class="pre">--hot_reload=all</span></code> 开发 Dear ImGui 面板和三维叠加层时，每次保存文件都会更新正在运行的查看器，同时保持正在运行的仿真、相机位姿和停靠的窗口布局不变。已编译的 C++ 插件和 <code class="docutils literal notranslate"><span class="pre">pybind11</span></code> 扩展无法在不重新构建并重启进程的情况下热重载，而 MuJoCo 的 Python <code class="docutils literal notranslate"><span class="pre">dear_imgui</span></code> 绑定则直接镜像了 C++ 的 <code class="docutils literal notranslate"><span class="pre">ImGui::</span></code> API。因此，先用 Python 配合热重载进行 UI 原型开发，待布局稳定后再移植到 C++，也是构建 C++ Studio 组件的最快方式。</p><div class="en-orig" data-for="bi-106" lang="en">Developing Dear ImGui panels and 3D overlays with <code class="docutils literal notranslate"><span class="pre">--hot_reload=all</span></code> updates the live viewer on every file save
+while keeping the running simulation, camera pose, and docked window layout intact. Compiled C++ plugins and
+<code class="docutils literal notranslate"><span class="pre">pybind11</span></code> extensions cannot be hot-reloaded without rebuilding and restarting the process, whereas MuJoCo’s Python
+<code class="docutils literal notranslate"><span class="pre">dear_imgui</span></code> bindings mirror the C++ <code class="docutils literal notranslate"><span class="pre">ImGui::</span></code> API directly. Prototyping a UI in Python with hot reload and
+porting it to C++ once the layout settles is therefore the fastest way to build C++ Studio components too.</div>
+</div>
+<p data-bi="bi-107">向 <code class="docutils literal notranslate"><span class="pre">viewer.py</span></code> 传入 <code class="docutils literal notranslate"><span class="pre">--hot_reload=all</span></code> ，或设置 <code class="docutils literal notranslate"><span class="pre">ViewerConfig(hot_reload='all')</span></code> ，即可在不重启进程的情况下启用实时重载（<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/hot_reload.py">hot_reload.py</a>）：</p><div class="en-orig" data-for="bi-107" lang="en">Passing <code class="docutils literal notranslate"><span class="pre">--hot_reload=all</span></code> to <code class="docutils literal notranslate"><span class="pre">viewer.py</span></code> or setting <code class="docutils literal notranslate"><span class="pre">ViewerConfig(hot_reload='all')</span></code> enables live reloading
+(<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/hot_reload.py">hot_reload.py</a>) without
+restarting the process:</div>
+<ul class="simple">
+<li><p data-bi="bi-108"><strong>范围</strong>：接受 <code class="docutils literal notranslate"><span class="pre">'all'</span></code> （插件模块和当前模型文件）、 <code class="docutils literal notranslate"><span class="pre">'plugins'</span></code> 、 <code class="docutils literal notranslate"><span class="pre">'model'</span></code> ，或以逗号分隔的插件类名，例如 <code class="docutils literal notranslate"><span class="pre">'VelocityCommandOverlay'</span></code> 或 <code class="docutils literal notranslate"><span class="pre">'model,App'</span></code> 。</p><div class="en-orig" data-for="bi-108" lang="en"><strong>Scope</strong>: Accepts <code class="docutils literal notranslate"><span class="pre">'all'</span></code> for plugin modules and the active model file, <code class="docutils literal notranslate"><span class="pre">'plugins'</span></code>, <code class="docutils literal notranslate"><span class="pre">'model'</span></code>, or
+comma-separated plugin class names such as <code class="docutils literal notranslate"><span class="pre">'VelocityCommandOverlay'</span></code> or <code class="docutils literal notranslate"><span class="pre">'model,App'</span></code>.</div></li>
+<li><p data-bi="bi-109"><strong>实时类替换</strong>：保存已注册插件的 <code class="docutils literal notranslate"><span class="pre">.py</span></code> 文件，或从同一目录导入的辅助模块，会重新加载该模块，并就地替换 <code class="docutils literal notranslate"><span class="pre">plugin.__class__</span></code> ，同时保留已有的实例属性、相机位姿、UI 停靠布局和 <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> 浏览器连接，并分发 <code class="docutils literal notranslate"><span class="pre">HotReloadEvent(plugins=...)</span></code> ，这样被替换的插件可以协调状态或调用 <code class="docutils literal notranslate"><span class="pre">self.handle.reload()</span></code> 。保存当前的 XML/URDF 模型文件、传给 <code class="docutils literal notranslate"><span class="pre">handle.set_model(...,</span> <span class="pre">watch=[...])</span></code> 的文件，或它们的 <code class="docutils literal notranslate"><span class="pre">&lt;include&gt;</span></code> 和网格（mesh）资源，会自动触发 <code class="docutils literal notranslate"><span class="pre">handle.reload()</span></code> 。</p><div class="en-orig" data-for="bi-109" lang="en"><strong>Live class swapping</strong>: Saving a registered plugin’s <code class="docutils literal notranslate"><span class="pre">.py</span></code> file or a helper module imported from the same
+directory reloads the module, swaps <code class="docutils literal notranslate"><span class="pre">plugin.__class__</span></code> in place—preserving existing instance attributes, camera
+pose, UI docking layout, and <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> browser connections—and dispatches <code class="docutils literal notranslate"><span class="pre">HotReloadEvent(plugins=...)</span></code> so
+swapped plugins can reconcile state or call <code class="docutils literal notranslate"><span class="pre">self.handle.reload()</span></code>. Saving the active XML/URDF model file, files
+passed to <code class="docutils literal notranslate"><span class="pre">handle.set_model(...,</span> <span class="pre">watch=[...])</span></code>, or their <code class="docutils literal notranslate"><span class="pre">&lt;include&gt;</span></code> and mesh assets automatically triggers
+<code class="docutils literal notranslate"><span class="pre">handle.reload()</span></code>.</div></li>
+<li><p data-bi="bi-110"><strong>固定边界与错误恢复</strong>：框架模块、 <code class="docutils literal notranslate"><span class="pre">__main__</span></code> 、C++ 二进制文件以及已注册插件实例的集合，在重载前后保持固定。语法错误、导入错误或模型编译错误会使之前的代码和模型继续运行，并在下一次保存时重试；被替换的插件的处理器所抛出的异常只会向 Studio 控制台记录一次，而不会终止循环。</p><div class="en-orig" data-for="bi-110" lang="en"><strong>Fixed boundary &amp; error recovery</strong>: Framework modules, <code class="docutils literal notranslate"><span class="pre">__main__</span></code>, the C++ binary, and the set of registered plugin
+instances are fixed across reloads. Syntax, import, or model compilation errors leave the previous code and model
+running and retry on the next save; exceptions raised by a swapped plugin’s handlers are logged once to the Studio
+Console rather than terminating the loop.</div></li>
+</ul>
+</section>
+</section>
+</article>
+</div>
+<footer>
+<div class="related-pages">
+<a class="next-page" href="cpp.html">
+<div class="page-info">
+<div class="context">
+<span>Next</span>
+</div>
+<div class="title">C++</div>
+</div>
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+</a>
+<a class="prev-page" href="architecture.html">
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+<div class="page-info">
+<div class="context">
+<span>Previous</span>
+</div>
+<div class="title">架构</div>
+</div>
+</a>
+</div>
+<div class="bottom-of-page">
+<div class="left-details">
+<div class="copyright">
+                Copyright © DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+</div>
+<div class="right-details">
+</div>
+</div>
+</footer>
+</div>
+<aside class="toc-drawer">
+<div class="toc-sticky toc-scroll">
+<div class="toc-title-container">
+<span class="toc-title">
+            On this page
+          </span>
+</div>
+<div class="toc-tree-container">
+<div class="toc-tree">
+<ul>
+<li><a class="reference internal" href="#">Python 插件</a><ul>
+<li><a class="reference internal" href="#studioviewerplugins">查看器插件</a><ul>
+<li><a class="reference internal" href="#studio-app-app">studio_app.App</a></li>
+<li><a class="reference internal" href="#d">3D 场景叠加层</a></li>
+<li><a class="reference internal" href="#ui">自定义 UI 面板</a></li>
+<li><a class="reference internal" href="#studioimguitips">最佳实践</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#studiosplitplugins">仿真插件</a><ul>
+<li><a class="reference internal" href="#studiopythonscenes">Python 场景</a></li>
+<li><a class="reference internal" href="#id5">内置插件</a></li>
+<li><a class="reference internal" href="#id6">步进与控制</a></li>
+<li><a class="reference internal" href="#studiobestpractices">最佳实践</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#studiolifecycle">生命周期事件</a><ul>
+<li><a class="reference internal" href="#id9">查看器线程</a></li>
+<li><a class="reference internal" href="#id10">仿真线程</a></li>
+<li><a class="reference internal" href="#studiodiffsync">基于差异的同步</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#studiopriorities">处理器优先级</a><ul>
+<li><a class="reference internal" href="#id13">事件与优先级</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#studiohotreload">热重载</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div><script src="../_static/documentation_options.js?v=7d86a446"></script>
+<script src="../_static/doctools.js?v=fd6eb6e6"></script>
+<script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+<script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+<script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="../_static/copybutton.js?v=f281be69"></script>
+<script src="../_static/translations.js?v=540d3cec"></script>
+<script src="../_static/katex.min.js?v=5cc8ed51"></script>
+<script src="../_static/auto-render.min.js?v=af98beb9"></script>
+<script src="../_static/katex_autorenderer.js?v=ae454eff"></script>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<script src="../_static/linenumbers.js?v=ebda5d35"></script>
+<script src="../_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+<script src="../_static/bilingual.js?v=25c2633d"></script></body></html>

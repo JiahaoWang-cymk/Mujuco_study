@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html class="no-js" data-content_root="../" lang="zh-CN">
+<head><meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="light dark" name="color-scheme"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="../_static/favicons/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+<link href="../_static/favicons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="apple-touch-icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-192x192.png" rel="icon" sizes="192x192" type="image/png"/><link href="../genindex.html" rel="index" title="索引"/><link href="../search.html" rel="search" title="搜索"/><link href="modeledit.html" rel="next" title="模型编辑"/><link href="rendering.html" rel="prev" title="渲染"/>
+<link as="image" href="../_static/banner.svg" rel="prefetch"/>
+<!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+<title>用户界面 - MuJoCo 文档（中文）</title>
+<link href="../_static/pygments.css?v=b86133f3" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo.css?v=7bdb33bb" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css?v=05624691" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo-extensions.css?v=8dab3a3b" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides.css?v=8d83ad8c" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides_mjwarp.css?v=e08d3b36" rel="stylesheet" type="text/css"/>
+<link href="../_static/zh_overrides.css?v=ee52c62c" rel="stylesheet" type="text/css"/>
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #16213a;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #2a4fd6;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #2a4fd6;
+  --color-brand-content: #2a4fd6;
+  --color-background-secondary: #f4f6f9;
+  --color-sidebar-background: #f4f6f9;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+      }
+    }
+  }
+</style></head>
+<body>
+<script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+<symbol id="svg-toc" viewbox="0 0 24 24">
+<title>Contents</title>
+<svg fill="currentColor" stroke="currentColor" stroke-width="0" viewbox="0 0 1024 1024">
+<path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"></path>
+</svg>
+</symbol>
+<symbol id="svg-menu" viewbox="0 0 24 24">
+<title>Menu</title>
+<svg class="feather-menu" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<line x1="3" x2="21" y1="12" y2="12"></line>
+<line x1="3" x2="21" y1="6" y2="6"></line>
+<line x1="3" x2="21" y1="18" y2="18"></line>
+</svg>
+</symbol>
+<symbol id="svg-arrow-right" viewbox="0 0 24 24">
+<title>Expand</title>
+<svg class="feather-chevron-right" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</symbol>
+<symbol id="svg-sun" viewbox="0 0 24 24">
+<title>Light mode</title>
+<svg class="feather-sun" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" x2="12" y1="1" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="23"></line>
+<line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+<line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+<line x1="1" x2="3" y1="12" y2="12"></line>
+<line x1="21" x2="23" y1="12" y2="12"></line>
+<line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+<line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
+</svg>
+</symbol>
+<symbol id="svg-moon" viewbox="0 0 24 24">
+<title>Dark mode</title>
+<svg class="icon-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+</svg>
+</symbol>
+<symbol id="svg-sun-with-moon" viewbox="0 0 24 24">
+<title>Auto light/dark, in light mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z" style="opacity: 50%"></path>
+<line x1="14.5" x2="14.5" y1="3.25" y2="1.25"></line>
+<line x1="14.5" x2="14.5" y1="15.85" y2="17.85"></line>
+<line x1="10.044" x2="8.63" y1="5.094" y2="3.68"></line>
+<line x1="19" x2="20.414" y1="14.05" y2="15.464"></line>
+<line x1="8.2" x2="6.2" y1="9.55" y2="9.55"></line>
+<line x1="20.8" x2="22.8" y1="9.55" y2="9.55"></line>
+<line x1="10.044" x2="8.63" y1="14.006" y2="15.42"></line>
+<line x1="19" x2="20.414" y1="5.05" y2="3.636"></line>
+<circle cx="14.5" cy="9.55" r="3.6"></circle>
+</svg>
+</symbol>
+<symbol id="svg-moon-with-sun" viewbox="0 0 24 24">
+<title>Auto light/dark, in dark mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"></path>
+<line style="opacity: 50%" x1="18" x2="18" y1="3.705" y2="2.5"></line>
+<line style="opacity: 50%" x1="18" x2="18" y1="11.295" y2="12.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="4.816" y2="3.964"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="10.212" y2="11.063"></line>
+<line style="opacity: 50%" x1="14.205" x2="13.001" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="21.795" x2="23" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="10.184" y2="11.036"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="4.789" y2="3.937"></line>
+<circle cx="18" cy="7.5" r="2.169" style="opacity: 50%"></circle>
+</svg>
+</symbol>
+<symbol id="svg-pencil" viewbox="0 0 24 24">
+<svg class="icon-tabler-pencil-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
+<path d="M13.5 6.5l4 4"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+<symbol id="svg-eye" viewbox="0 0 24 24">
+<svg class="icon-tabler-eye-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
+<path d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+</svg>
+<input aria-label="Toggle site navigation sidebar" class="sidebar-toggle" id="__navigation" name="__navigation" type="checkbox"/>
+<input aria-label="Toggle table of contents sidebar" class="sidebar-toggle" id="__toc" name="__toc" type="checkbox"/>
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+<div class="page">
+<header class="mobile-header">
+<div class="header-left">
+<label class="nav-overlay-icon" for="__navigation">
+<span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+</label>
+</div>
+<div class="header-center">
+<a href="../index.html"><div class="brand">MuJoCo 文档（中文）</div></a>
+</div>
+<div class="header-right">
+<div class="theme-toggle-container theme-toggle-header">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-header-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+</header>
+<aside class="sidebar-drawer">
+<div class="sidebar-container">
+<div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+<div class="sidebar-logo-container">
+<img alt="Logo" class="sidebar-logo" src="../_static/banner.svg"/>
+</div>
+<span class="sidebar-brand-text">MuJoCo 文档（中文）</span>
+</a><form action="../search.html" class="sidebar-search-container" method="get" role="search">
+<input aria-label="搜索" class="sidebar-search" name="q" placeholder="搜索"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">入门教程</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">概览</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../computation/index.html">计算</a><input aria-label="Toggle navigation of 计算" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../computation/fluid.html">流体力</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computation/speculative.html">推测接触</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">建模</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../XMLreference.html">XML 参考</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">编程</a><input aria-label="Toggle navigation of 编程" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="simulation.html">仿真</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html">可视化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rendering.html">渲染</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">用户界面</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modeledit.html">模型编辑</a></li>
+<li class="toctree-l2"><a class="reference internal" href="samples.html">代码示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension.html">扩展</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../APIreference/index.html">API 参考</a><input aria-label="Toggle navigation of API 参考" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APItypes.html">类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIfunctions.html">函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIglobals.html">全局变量</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../studio/index.html">Studio</a><input aria-label="Toggle navigation of Studio" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../studio/web_viewers.html">Web 查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/native_viewers.html">原生查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/architecture.html">架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/python_plugins.html">Python 插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python.html">Python</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjx.html">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../unity.html">Unity 插件</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/building.html">构建</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcf_file_format_plugin.html">文件格式插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/importing.html">导入</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/exporting.html">导出</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">模型库</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">更新日志</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<div class="main">
+<div class="content">
+<div class="article-container">
+<a class="back-to-top muted-link" href="#">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+</svg>
+<span>Back to top</span>
+</a>
+<div class="content-icon-container">
+<div class="view-this-page">
+<a class="muted-link" href="../_sources/programming/ui.rst.txt" title="View this page">
+<svg><use href="#svg-eye"></use></svg>
+<span class="visually-hidden">View this page</span>
+</a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-content-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+<article id="furo-main-content" role="main">
+<section id="ui">
+<span id="id1"></span><h1 data-bi="bi-1">用户界面<a class="headerlink" href="#ui" title="链接到此标题。">#</a></h1><div class="en-orig en-h" data-for="bi-1" lang="en">User Interface</div>
+<div class="mt-notice admonition note">
+<p class="admonition-title">备注</p>
+<p>本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 <code class="docutils literal notranslate"><span class="pre">术语表.md</span></code> 。</p>
+</div>
+<p data-bi="bi-2">MuJoCo 拥有原生的 UI 框架，其用法在 <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> 查看器中有所演示。该框架被设计为在更新和渲染方面速度快，对开发者和用户都易于使用，跨平台，并且与 MuJoCo 原生渲染器集成。为了实现这些设计目标，我们省略了其他 UI 框架中提供的许多功能和自定义选项，转而专注于效率和自动化。</p><div class="en-orig" data-for="bi-2" lang="en">MuJoCo has a native UI framework. Its use is illustrated in the <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> viewer. It is
+designed to be fast in terms of updating and rendering, easy to use both for the developer and for the user,
+cross-platform, and integrated with the native MuJoCo renderer. In order to achieve these design goals, we have omitted
+many features and customization options that are available in other UI frameworks, and instead focused on efficiency and
+automation.</div>
+<section id="uidesign">
+<span id="id2"></span><h2 data-bi="bi-3">设计概览<a class="headerlink" href="#uidesign" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-3" lang="en">Design overview</div>
+<dl class="simple">
+<dt data-bi="bi-4">原生 OpenGL 渲染<div class="en-orig" data-for="bi-4" lang="en">Native OpenGL rendering</div></dt><dd><p data-bi="bi-5">我们不使用任何辅助工具或库，而是提供 C 代码，直接用 OpenGL 渲染所有 UI 元素。我们支持多个 UI，每个 UI 都是一个虚拟矩形，其高度可以超过可见窗口。每个 UI 的元素通过最小化更新、仅在必要时被渲染（rendering）到离屏的辅助 OpenGL 缓冲区中。在每次屏幕刷新时，我们再把这些辅助缓冲区中的像素复制到窗口帧缓冲区，并且当窗口小于 UI 时还实现了垂直滚动条。该复制操作在 GPU 上完成，速度非常快。</p><div class="en-orig" data-for="bi-5" lang="en">We do not use any helper tools or libraries. Instead we provide C code for rendering all UI elements directly in
+OpenGL. We support multiple UIs, each of which is a virtual rectangle that can be taller than the visible window. The
+elements of each UI are rendered offscreen in auxiliary OpenGL buffers, via minimal updates, only when changes are
+necessary. At each screen refresh we then copy the pixels from these auxiliary buffers to the window framebuffer, and
+also implement vertical scroll bars when the window is smaller than the UI. This copy operation is done on the GPU and
+is very fast.</div>
+</dd>
+<dt data-bi="bi-6">平台抽象<div class="en-orig" data-for="bi-6" lang="en">Platform abstraction</div></dt><dd><p data-bi="bi-7">软件设计分为 3 层：与 MuJoCo 渲染器（完全跨平台）协同工作的 UI 元素 OpenGL 渲染；用于访问窗口、键盘和鼠标的抽象函数，它们在 <code class="docutils literal notranslate"><span class="pre">PlatformUIAdapter</span></code>
+类中被定义为纯虚函数；以及这些函数在派生类 <code class="docutils literal notranslate"><span class="pre">GlfwAdapter</span></code> 中的实现。<a class="reference external" href="https://www.glfw.org/">GLFW</a> 本身是跨平台的。尽管如此，我们仍选择这种分层设计，以便将通用功能与平台相关功能分离。如果出于某种原因需要用另一个类似的框架替换 GLFW，则只需重写 <code class="docutils literal notranslate"><span class="pre">GlfwAdapter</span></code>。</p><div class="en-orig" data-for="bi-7" lang="en">The software design has 3 layers: OpenGL rendering of UI elements working in conjunction with the MuJoCo renderer
+(which is fully cross-platform); abstract functions for access to windows, keyboard and mouse, defined as pure virtual
+functions in the <code class="docutils literal notranslate"><span class="pre">PlatformUIAdapter</span></code> class; and an implementation of those functions in the derived class
+<code class="docutils literal notranslate"><span class="pre">GlfwAdapter</span></code>. <a class="reference external" href="https://www.glfw.org/">GLFW</a> itself is cross-platform. Nevertheless, we have opted for this
+layered design in order to separate generic from platform-specific functionality. If GLFW needs to be replaced with
+another similar framework for some reason, only <code class="docutils literal notranslate"><span class="pre">GlfwAdapter</span></code> will need to be rewritten.</div>
+</dd>
+<dt data-bi="bi-8">主题与外观<div class="en-orig" data-for="bi-8" lang="en">Themes and appearance</div></dt><dd><p data-bi="bi-9">单个 UI 元素不允许在外观或布局方面进行自定义。相反，我们使用主题来设定颜色和间距，并自动排列所有 UI 元素。系统提供了若干内置主题，用户也可以设计自定义主题，不过整个 UI 的所有元素使用同一个主题。外观极简：主要是带文字的彩色矩形。不支持位图和其他自定义装饰。UI 元素的类型有复选框、单选按钮组、选择列表、滑块、文本编辑框、静态文本、按钮、分隔符。这些元素被组织成可以展开和折叠的分区。</p><div class="en-orig" data-for="bi-9" lang="en">Individual UI elements do not allow customization in terms of appearance or layout. Instead, we use themes for colors
+and spacing, and arrange all UI elements automatically. Several built-in themes are provided and the user can design
+custom themes, however the entire UI uses a single theme for all elements. Appearance is minimalist: mostly colored
+rectangles with text. Bitmaps and other custom decorations are not supported. The UI element types are check boxes,
+radio button groups, selection lists, sliders, text edit boxes, static text, buttons, separators. These elements are
+grouped into sections which can be expanded and collapsed.</div>
+</dd>
+<dt data-bi="bi-10">布局与矩形<div class="en-orig" data-for="bi-10" lang="en">Layout and rectangles</div></dt><dd><p data-bi="bi-11">每个 UI 都是一个虚拟矩形，其宽度由主题决定，高度则由各分区、每个分区内的条目以及各分区的展开/折叠状态决定。这些虚拟矩形的尺寸和辅助缓冲区在 UI 更新时自动处理。每个 UI 在屏幕上有一个可见矩形，此外还有其他矩形——用于 3D 渲染、2D 图形，以及可能的自定义 OpenGL
+渲染。所有这些可见矩形都保存在 <a class="reference internal" href="../APIreference/APItypes.html#mjuistate"><span class="std std-ref">mjuiState</span></a> 中，并用于确定鼠标事件应被分派到何处。矩形布局由用户提供的回调函数更新。</p><div class="en-orig" data-for="bi-11" lang="en">Each UI is one virtual rectangle, whose width is determined by the theme and whose height is determined by the
+sections, items within each section, and also the expand/collapse state of each section. The sizes and auxiliary
+buffers for these virtual rectangles are handled automatically when the UI is updated. Each UI has a visible rectangle
+on the screen, and in addition there are other rectangles – for 3D rendering, 2D figures, and possibly custom OpenGL
+rendering. All these visible rectangles are saved (in <a class="reference internal" href="../APIreference/APItypes.html#mjuistate"><span class="std std-ref">mjuiState</span></a>) and are used to determine where mouse events
+should be directed. The rectangle layout is updated by a callback provided by the user.</div>
+</dd>
+<dt data-bi="bi-12">静态分配与创建<div class="en-orig" data-for="bi-12" lang="en">Static allocation and creation</div></dt><dd><p data-bi="bi-13">我们并不分配和释放大量与 UI 元素对应的对象并将它们相互链接，而是创建单个 C 结构体（类型为 <a class="reference internal" href="../APIreference/APItypes.html#mjui"><span class="std std-ref">mjUI</span></a>），以静态分配的方式支持一定数量上限的分区和元素，然后记录当前使用了多少个。UI 的创建借助辅助函数得以简化，这些函数的输入是一个 C 结构体（类型为 <a class="reference internal" href="../APIreference/APItypes.html#mjuidef"><span class="std std-ref">mjuiDef</span></a>），它本质上是一张表，其中每一行描述一个 UI 元素（见下文）。这使得只需出人意料地少量 C 代码就能构建复杂的用户界面。也可以通过编程方式创建 UI，例如用与 MuJoCo 模型（model）关节（joint）对应的滑块来填充 UI。</p><div class="en-orig" data-for="bi-13" lang="en">Rather than allocating and deallocating a large number of objects corresponding to UI elements and linking them
+together, we create a single C struct (type <a class="reference internal" href="../APIreference/APItypes.html#mjui"><span class="std std-ref">mjUI</span></a>) with static allocation supporting some maximum number of
+sections and elements; and then keep a record of how many are in use. UI creation is simplified by helper functions
+whose input is a C struct (type <a class="reference internal" href="../APIreference/APItypes.html#mjuidef"><span class="std std-ref">mjuiDef</span></a>) that is essentially a table where each row describes one UI element
+(see below). This makes it possible to construct elaborate user interfaces with surprisingly little C code.
+Programmatic UI creation is also possible, for example when populating a UI with sliders corresponding to MuJoCo model
+joints.</div>
+</dd>
+<dt data-bi="bi-14">最小状态<div class="en-orig" data-for="bi-14" lang="en">Minimal state</div></dt><dd><p data-bi="bi-15">UI 被设计为尽可能无状态，以简化开发。这有两个方面。首先，我们不在 UI 元素内部复制用户数据，而是存储指向用户数据的指针。例如，我们可以创建一个 UI
+滑块，并将其数据指针设为 <code class="docutils literal notranslate"><span class="pre">mjData*</span> <span class="pre">d-&gt;qpos+7</span></code>。该滑块将可视化并控制 MuJoCo 模型 qpos 向量的第 7 个标量分量。因此，当仿真更新时，我们必须记得同时更新 UI。此外，在仿真更新期间我们还必须禁用 UI 编辑。但其优点是
+UI 更易于构建，并且不会出现用户数据与 UI 不一致的风险。其次，UI 元素本身大多是无状态的。我们转而跟踪一组最小的全局状态，特别是鼠标和键盘状态、分区的展开/折叠状态，以及正在编辑的文本框的内容（如果有的话）。</p><div class="en-orig" data-for="bi-15" lang="en">The UI is designed to be as stateless as possible, so as to simplify development. This has two aspects. First, instead
+of replicating user data within the UI elements, we store pointers to user data. For example, we might create a UI
+slider and set its data pointer to <code class="docutils literal notranslate"><span class="pre">mjData*</span> <span class="pre">d-&gt;qpos+7</span></code>. This slider will visualize as well as control the 7th scalar
+component of the qpos vector of a MuJoCo model. Thus, when the simulation is updated, we have to remember to update
+the UI as well. And furthermore we have to disable UI editing when the simulation is being updated. But the advantage
+is that the UI becomes easier to construct, and there is no danger of discrepancies between user data and the UI.
+Second, the UI elements themselves are mostly stateless. Instead we keep track of a minimal set of global states, in
+particular mouse and keyboard state, section expand/collapse, contents of the text box being edited if any.</div>
+</dd>
+<dt data-bi="bi-16">自动启用与禁用<div class="en-orig" data-for="bi-16" lang="en">Automated enable and disable</div></dt><dd><p data-bi="bi-17">虽然每个 UI 条目都可以直接设置为启用或禁用状态，但我们也提供如下自动化机制。每个 UI
+条目可以被分配一个整数类别。然后由 <a class="reference internal" href="../APIreference/APItypes.html#mjfitemenable"><span class="std std-ref">mjfItemEnable</span></a> 回调函数根据某些程序特定的条件决定每个类别应被启用还是禁用。例如，可以改变 MuJoCo 模型关节取值的滑块，在仿真状态更新期间应被禁用。</p><div class="en-orig" data-for="bi-17" lang="en">While each UI item can be set in enabled or disabled state directly, we also provide automation as follows. Each UI
+item can be assigned an integer category. Then a <a class="reference internal" href="../APIreference/APItypes.html#mjfitemenable"><span class="std std-ref">mjfItemEnable</span></a> callback determines whether each category should
+be enabled or disabled, based on some program-specific conditions. For example, sliders that can change the values of
+MuJoCo model joints should be disabled when the simulation state is being updated.</div>
+</dd>
+</dl>
+</section>
+<section id="api">
+<span id="uiapi"></span><h2 data-bi="bi-18">主要 API<a class="headerlink" href="#api" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-18" lang="en">Main API</div>
+<p data-bi="bi-19">点击下面的链接可查看主要 UI 数据结构和函数的详细 API 参考。</p><div class="en-orig" data-for="bi-19" lang="en">Click on the links below for detailed API reference of the main UI data structures and functions.</div>
+<p data-bi="bi-20"><strong>主要数据结构：</strong></p><div class="en-orig" data-for="bi-20" lang="en"><strong>Main data structures:</strong></div>
+<ul class="simple">
+<li><p data-bi="bi-21"><a class="reference internal" href="../APIreference/APItypes.html#mjui"><span class="std std-ref">mjUI</span></a>：整个 UI。</p><div class="en-orig" data-for="bi-21" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjui"><span class="std std-ref">mjUI</span></a>: An entire UI.</div></li>
+<li><p data-bi="bi-22"><a class="reference internal" href="../APIreference/APItypes.html#mjuistate"><span class="std std-ref">mjuiState</span></a>：全局 UI 状态。</p><div class="en-orig" data-for="bi-22" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjuistate"><span class="std std-ref">mjuiState</span></a>: Global UI state.</div></li>
+<li><p data-bi="bi-23"><a class="reference internal" href="../APIreference/APItypes.html#mjuidef"><span class="std std-ref">mjuiDef</span></a>：用于构建 UI 的定义表中的一个条目。</p><div class="en-orig" data-for="bi-23" lang="en"><a class="reference internal" href="../APIreference/APItypes.html#mjuidef"><span class="std std-ref">mjuiDef</span></a>: One entry in the definition table used for UI construction.</div></li>
+</ul>
+<p data-bi="bi-24"><strong>主要函数：</strong></p><div class="en-orig" data-for="bi-24" lang="en"><strong>Main functions:</strong></div>
+<ul class="simple">
+<li><p data-bi="bi-25"><a class="reference internal" href="../APIreference/APIfunctions.html#mjui-update"><span class="std std-ref">mjui_update</span></a>：主 UI 更新函数。</p><div class="en-orig" data-for="bi-25" lang="en"><a class="reference internal" href="../APIreference/APIfunctions.html#mjui-update"><span class="std std-ref">mjui_update</span></a>: Main UI update function.</div></li>
+<li><p data-bi="bi-26"><a class="reference internal" href="../APIreference/APIfunctions.html#mjui-render"><span class="std std-ref">mjui_render</span></a>：渲染 UI。</p><div class="en-orig" data-for="bi-26" lang="en"><a class="reference internal" href="../APIreference/APIfunctions.html#mjui-render"><span class="std std-ref">mjui_render</span></a>: Renders the UI.</div></li>
+<li><p data-bi="bi-27"><a class="reference internal" href="../APIreference/APIfunctions.html#mjui-event"><span class="std std-ref">mjui_event</span></a>：底层事件处理器。</p><div class="en-orig" data-for="bi-27" lang="en"><a class="reference internal" href="../APIreference/APIfunctions.html#mjui-event"><span class="std std-ref">mjui_event</span></a>: Low-level event handler.</div></li>
+<li><p data-bi="bi-28"><a class="reference internal" href="../APIreference/APIfunctions.html#mjui-add"><span class="std std-ref">mjui_add</span></a>：用于构建 UI 的辅助函数。</p><div class="en-orig" data-for="bi-28" lang="en"><a class="reference internal" href="../APIreference/APIfunctions.html#mjui-add"><span class="std std-ref">mjui_add</span></a>: Helper function used to construct a UI.</div></li>
+</ul>
+</section>
+</section>
+</article>
+</div>
+<footer>
+<div class="related-pages">
+<a class="next-page" href="modeledit.html">
+<div class="page-info">
+<div class="context">
+<span>Next</span>
+</div>
+<div class="title">模型编辑</div>
+</div>
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+</a>
+<a class="prev-page" href="rendering.html">
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+<div class="page-info">
+<div class="context">
+<span>Previous</span>
+</div>
+<div class="title">渲染</div>
+</div>
+</a>
+</div>
+<div class="bottom-of-page">
+<div class="left-details">
+<div class="copyright">
+                Copyright © DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+</div>
+<div class="right-details">
+</div>
+</div>
+</footer>
+</div>
+<aside class="toc-drawer">
+<div class="toc-sticky toc-scroll">
+<div class="toc-title-container">
+<span class="toc-title">
+            On this page
+          </span>
+</div>
+<div class="toc-tree-container">
+<div class="toc-tree">
+<ul>
+<li><a class="reference internal" href="#">用户界面</a><ul>
+<li><a class="reference internal" href="#uidesign">设计概览</a></li>
+<li><a class="reference internal" href="#api">主要 API</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div><script src="../_static/documentation_options.js?v=7d86a446"></script>
+<script src="../_static/doctools.js?v=fd6eb6e6"></script>
+<script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+<script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+<script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="../_static/copybutton.js?v=f281be69"></script>
+<script src="../_static/translations.js?v=540d3cec"></script>
+<script src="../_static/katex.min.js?v=5cc8ed51"></script>
+<script src="../_static/auto-render.min.js?v=af98beb9"></script>
+<script src="../_static/katex_autorenderer.js?v=ae454eff"></script>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<script src="../_static/linenumbers.js?v=ebda5d35"></script>
+<script src="../_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+<script src="../_static/bilingual.js?v=25c2633d"></script></body></html>

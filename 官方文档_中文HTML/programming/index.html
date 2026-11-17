@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html class="no-js" data-content_root="../" lang="zh-CN">
+<head><meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="light dark" name="color-scheme"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="../_static/favicons/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+<link href="../_static/favicons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="apple-touch-icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-192x192.png" rel="icon" sizes="192x192" type="image/png"/><link href="../genindex.html" rel="index" title="索引"/><link href="../search.html" rel="search" title="搜索"/><link href="simulation.html" rel="next" title="仿真"/><link href="../XMLreference.html" rel="prev" title="XML 参考"/>
+<link as="image" href="../_static/banner.svg" rel="prefetch"/>
+<!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+<title>编程 - MuJoCo 文档（中文）</title>
+<link href="../_static/pygments.css?v=b86133f3" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo.css?v=7bdb33bb" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css?v=05624691" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo-extensions.css?v=8dab3a3b" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides.css?v=8d83ad8c" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides_mjwarp.css?v=e08d3b36" rel="stylesheet" type="text/css"/>
+<link href="../_static/zh_overrides.css?v=ee52c62c" rel="stylesheet" type="text/css"/>
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #16213a;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #2a4fd6;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #2a4fd6;
+  --color-brand-content: #2a4fd6;
+  --color-background-secondary: #f4f6f9;
+  --color-sidebar-background: #f4f6f9;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+      }
+    }
+  }
+</style></head>
+<body>
+<script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+<symbol id="svg-toc" viewbox="0 0 24 24">
+<title>Contents</title>
+<svg fill="currentColor" stroke="currentColor" stroke-width="0" viewbox="0 0 1024 1024">
+<path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"></path>
+</svg>
+</symbol>
+<symbol id="svg-menu" viewbox="0 0 24 24">
+<title>Menu</title>
+<svg class="feather-menu" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<line x1="3" x2="21" y1="12" y2="12"></line>
+<line x1="3" x2="21" y1="6" y2="6"></line>
+<line x1="3" x2="21" y1="18" y2="18"></line>
+</svg>
+</symbol>
+<symbol id="svg-arrow-right" viewbox="0 0 24 24">
+<title>Expand</title>
+<svg class="feather-chevron-right" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</symbol>
+<symbol id="svg-sun" viewbox="0 0 24 24">
+<title>Light mode</title>
+<svg class="feather-sun" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" x2="12" y1="1" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="23"></line>
+<line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+<line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+<line x1="1" x2="3" y1="12" y2="12"></line>
+<line x1="21" x2="23" y1="12" y2="12"></line>
+<line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+<line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
+</svg>
+</symbol>
+<symbol id="svg-moon" viewbox="0 0 24 24">
+<title>Dark mode</title>
+<svg class="icon-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+</svg>
+</symbol>
+<symbol id="svg-sun-with-moon" viewbox="0 0 24 24">
+<title>Auto light/dark, in light mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z" style="opacity: 50%"></path>
+<line x1="14.5" x2="14.5" y1="3.25" y2="1.25"></line>
+<line x1="14.5" x2="14.5" y1="15.85" y2="17.85"></line>
+<line x1="10.044" x2="8.63" y1="5.094" y2="3.68"></line>
+<line x1="19" x2="20.414" y1="14.05" y2="15.464"></line>
+<line x1="8.2" x2="6.2" y1="9.55" y2="9.55"></line>
+<line x1="20.8" x2="22.8" y1="9.55" y2="9.55"></line>
+<line x1="10.044" x2="8.63" y1="14.006" y2="15.42"></line>
+<line x1="19" x2="20.414" y1="5.05" y2="3.636"></line>
+<circle cx="14.5" cy="9.55" r="3.6"></circle>
+</svg>
+</symbol>
+<symbol id="svg-moon-with-sun" viewbox="0 0 24 24">
+<title>Auto light/dark, in dark mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"></path>
+<line style="opacity: 50%" x1="18" x2="18" y1="3.705" y2="2.5"></line>
+<line style="opacity: 50%" x1="18" x2="18" y1="11.295" y2="12.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="4.816" y2="3.964"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="10.212" y2="11.063"></line>
+<line style="opacity: 50%" x1="14.205" x2="13.001" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="21.795" x2="23" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="10.184" y2="11.036"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="4.789" y2="3.937"></line>
+<circle cx="18" cy="7.5" r="2.169" style="opacity: 50%"></circle>
+</svg>
+</symbol>
+<symbol id="svg-pencil" viewbox="0 0 24 24">
+<svg class="icon-tabler-pencil-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
+<path d="M13.5 6.5l4 4"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+<symbol id="svg-eye" viewbox="0 0 24 24">
+<svg class="icon-tabler-eye-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
+<path d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+</svg>
+<input aria-label="Toggle site navigation sidebar" class="sidebar-toggle" id="__navigation" name="__navigation" type="checkbox"/>
+<input aria-label="Toggle table of contents sidebar" class="sidebar-toggle" id="__toc" name="__toc" type="checkbox"/>
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+<div class="page">
+<header class="mobile-header">
+<div class="header-left">
+<label class="nav-overlay-icon" for="__navigation">
+<span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+</label>
+</div>
+<div class="header-center">
+<a href="../index.html"><div class="brand">MuJoCo 文档（中文）</div></a>
+</div>
+<div class="header-right">
+<div class="theme-toggle-container theme-toggle-header">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-header-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+</header>
+<aside class="sidebar-drawer">
+<div class="sidebar-container">
+<div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+<div class="sidebar-logo-container">
+<img alt="Logo" class="sidebar-logo" src="../_static/banner.svg"/>
+</div>
+<span class="sidebar-brand-text">MuJoCo 文档（中文）</span>
+</a><form action="../search.html" class="sidebar-search-container" method="get" role="search">
+<input aria-label="搜索" class="sidebar-search" name="q" placeholder="搜索"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">入门教程</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">概览</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../computation/index.html">计算</a><input aria-label="Toggle navigation of 计算" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../computation/fluid.html">流体力</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computation/speculative.html">推测接触</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">建模</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../XMLreference.html">XML 参考</a></li>
+<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">编程</a><input aria-label="Toggle navigation of 编程" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="simulation.html">仿真</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html">可视化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rendering.html">渲染</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui.html">用户界面</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modeledit.html">模型编辑</a></li>
+<li class="toctree-l2"><a class="reference internal" href="samples.html">代码示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension.html">扩展</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../APIreference/index.html">API 参考</a><input aria-label="Toggle navigation of API 参考" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APItypes.html">类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIfunctions.html">函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIglobals.html">全局变量</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../studio/index.html">Studio</a><input aria-label="Toggle navigation of Studio" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../studio/web_viewers.html">Web 查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/native_viewers.html">原生查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/architecture.html">架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/python_plugins.html">Python 插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python.html">Python</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjx.html">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../unity.html">Unity 插件</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/building.html">构建</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcf_file_format_plugin.html">文件格式插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/importing.html">导入</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/exporting.html">导出</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">模型库</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">更新日志</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<div class="main">
+<div class="content">
+<div class="article-container">
+<a class="back-to-top muted-link" href="#">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+</svg>
+<span>Back to top</span>
+</a>
+<div class="content-icon-container">
+<div class="view-this-page">
+<a class="muted-link" href="../_sources/programming/index.rst.txt" title="View this page">
+<svg><use href="#svg-eye"></use></svg>
+<span class="visually-hidden">View this page</span>
+</a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-content-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+<article id="furo-main-content" role="main">
+<section id="id1">
+<h1 data-bi="bi-1">编程<a class="headerlink" href="#id1" title="链接到此标题。">#</a></h1><div class="en-orig en-h" data-for="bi-1" lang="en">Programming</div>
+<div class="mt-notice admonition note">
+<p class="admonition-title">备注</p>
+<p>本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 <code class="docutils literal notranslate"><span class="pre">术语表.md</span></code> 。</p>
+</div>
+<section id="inintro">
+<span id="id2"></span><h2 data-bi="bi-2">简介<a class="headerlink" href="#inintro" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-2" lang="en">Introduction</div>
+<p data-bi="bi-3">本章是 MuJoCo 编程指南。独立的一章包含 <a class="reference internal" href="../APIreference/index.html"><span class="doc">API 参考</span></a> 文档。MuJoCo 是兼容 Windows、Linux 和 macOS 的动态库，需要支持 AVX
+指令的处理器。该库通过与编译器无关的共享内存 C API 公开模拟器的全部功能，也可以在 C++ 程序中使用。</p><div class="en-orig" data-for="bi-3" lang="en">This chapter is the MuJoCo programming guide. A separate chapter contains the <a class="reference internal" href="../APIreference/index.html"><span class="doc">API Reference</span></a>
+documentation. MuJoCo is a dynamic library compatible with Windows, Linux and macOS, which requires a processor with AVX
+instructions. The library exposes the full functionality of the simulator through a compiler-independent shared-memory C
+API. It can also be used in C++ programs.</div>
+<p data-bi="bi-4">MuJoCo 代码库按照不同的主要功能领域组织为若干子目录：</p><div class="en-orig" data-for="bi-4" lang="en">The MuJoCo codebase is organized into subdirectories corresponding to different major areas of functionality:</div>
+<dl class="simple">
+<dt data-bi="bi-5">引擎（Engine）<div class="en-orig" data-for="bi-5" lang="en">Engine</div></dt><dd><p data-bi="bi-6">模拟器（或物理引擎）用 C 语言编写，负责所有运行时计算。</p><div class="en-orig" data-for="bi-6" lang="en">The simulator (or physics engine) is written in C. It is responsible for all runtime computations.</div>
+</dd>
+<dt data-bi="bi-7">解析器（Parser）<div class="en-orig" data-for="bi-7" lang="en">Parser</div></dt><dd><p data-bi="bi-8">XML 解析器用 C++ 编写，可以解析 MJCF 模型和 URDF 模型，并将其转换为内部的 mjCModel
+C++ 对象，该对象通过 mjSpec 向用户公开。</p><div class="en-orig" data-for="bi-8" lang="en">The XML parser is written in C++. It can parse MJCF models and URDF models, converting them into an internal mjCModel
+C++ object which is exposed to the user via mjSpec.</div>
+</dd>
+<dt data-bi="bi-9">编译器（Compiler）<div class="en-orig" data-for="bi-9" lang="en">Compiler</div></dt><dd><p data-bi="bi-10">编译器用 C++ 编写，它接收由解析器构建的 mjCModel C++ 对象，并将其转换为运行时使用的 mjModel C 结构体。</p><div class="en-orig" data-for="bi-10" lang="en">The compiler is written in C++. It takes an mjCModel C++ object constructed by the parser, and converts it into an
+mjModel C structure used at runtime.</div>
+</dd>
+<dt data-bi="bi-11">线程（Thread）<div class="en-orig" data-for="bi-11" lang="en">Thread</div></dt><dd><p data-bi="bi-12">线程框架用 C++ 编写并以 C 接口公开，提供用于异步处理任务的线程池接口。要在 MuJoCo 中启用，请调用 <code class="docutils literal notranslate"><span class="pre">mju_threadpool</span></code>。</p><div class="en-orig" data-for="bi-12" lang="en">The threading framework is written in C++ and exposed in C. It provides a thread pool interface
+to process tasks asynchronously. To enable use in MuJoCo, call <code class="docutils literal notranslate"><span class="pre">mju_threadpool</span></code>.</div>
+</dd>
+<dt data-bi="bi-13">抽象可视化器（Abstract visualizer）<div class="en-orig" data-for="bi-13" lang="en">Abstract visualizer</div></dt><dd><p data-bi="bi-14">抽象可视化器用 C 编写，与任何图形库无关。它提供用于相机和扰动控制、对象选择以及可视化（visualization）选项的抽象鼠标钩子，并生成一个抽象几何实体列表，用于表示仿真状态及其装饰。两个渲染器都会共用它。</p><div class="en-orig" data-for="bi-14" lang="en">The abstract visualizer is written in C and is independent of any graphics library. It provides abstract mouse
+hooks for camera and perturbation control, object selection, visualization options, and generates a list of
+abstract geometric entities representing the simulation state and its decorations. It is shared by both renderers.</div>
+</dd>
+<dt data-bi="bi-15">渲染（Rendering）<div class="en-orig" data-for="bi-15" lang="en">Rendering</div></dt><dd><p data-bi="bi-16">MuJoCo 提供了两个渲染（rendering）库。<a class="reference internal" href="rendering.html#classicrendering"><span class="std std-ref">经典渲染</span></a> 库用 C 编写，使用 OpenGL 1.5，提供了一种简单高效的方式来可视化 MuJoCo 模型。<a class="reference internal" href="rendering.html#filamentrendering"><span class="std std-ref">filament 渲染</span></a> 库用 C++ 编写，使用外部开发的 Filament
+渲染引擎，提供更现代、功能更丰富的实时渲染能力。</p><div class="en-orig" data-for="bi-16" lang="en">There are two rendering libraries provided by MuJoCo. The <a class="reference internal" href="rendering.html#classicrendering"><span class="std std-ref">classic rendering</span></a> library is
+written in C and uses OpenGL 1.5. It provides a simple and efficient way to visualize MuJoCo models. The
+<a class="reference internal" href="rendering.html#filamentrendering"><span class="std std-ref">filament rendering</span></a> library is written in C++ and uses the externally-developed Filament
+rendering engine. It provides more modern and feature-rich real-time rendering capabilities.</div>
+</dd>
+<dt data-bi="bi-17">UI 框架（UI framework）<div class="en-orig" data-for="bi-17" lang="en">UI framework</div></dt><dd><p data-bi="bi-18">UI 框架用 C 编写，设计用于配合 <a class="reference internal" href="../APIreference/APIfunctions.html#openglrendering"><span class="std std-ref">经典 OpenGL 渲染器</span></a> 工作。UI 元素通过 OpenGL 渲染。它有自己的事件机制，以及用于键盘和鼠标输入的抽象钩子。代码示例将其与 GLFW 一起使用，但它也可以与其他窗口库配合使用。</p><div class="en-orig" data-for="bi-18" lang="en">The UI framework is written in C and is designed to work with the <a class="reference internal" href="../APIreference/APIfunctions.html#openglrendering"><span class="std std-ref">classic OpenGL renderer</span></a>.
+UI elements are rendered in OpenGL. It has its own event mechanism and abstract hooks for keyboard and mouse input.
+The code samples use it with GLFW, but it can also be used with other window libraries.</div>
+</dd>
+</dl>
+</section>
+<section id="instart">
+<span id="id3"></span><h2 data-bi="bi-19">快速入门<a class="headerlink" href="#instart" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-19" lang="en">Getting started</div>
+<p data-bi="bi-20">无需安装任何东西即可在浏览器中试用 MuJoCo，请访问 <a class="reference external" href="https://mujoco.org">mujoco.org</a>，或在 <a class="reference external" href="https://live.mujoco.org">live.mujoco.org</a>
+打开并拖放你自己的模型，该网站运行的是 <a class="reference internal" href="../studio/index.html#studio"><span class="std std-ref">MuJoCo Studio</span></a> 应用的 WebAssembly 版本。</p><div class="en-orig" data-for="bi-20" lang="en">To try MuJoCo in your browser with nothing to install, visit <a class="reference external" href="https://mujoco.org">mujoco.org</a>, or open and drag and
+drop your own models at <a class="reference external" href="https://live.mujoco.org">live.mujoco.org</a>, which runs the WebAssembly version of the
+<a class="reference internal" href="../studio/index.html#studio"><span class="std std-ref">MuJoCo Studio</span></a> app.</div>
+<p data-bi="bi-21">MuJoCo 是一个开源项目。适用于运行 Windows、Linux 和 macOS 的 x86_64 和 arm64 机器的预编译动态库均已提供。这些库可以从 <a class="reference external" href="https://github.com/google-deepmind/mujoco/releases">GitHub Releases 页面</a> 下载。不打算开发或修改 MuJoCo
+核心代码的用户，建议使用我们的预编译库，因为它们捆绑了我们定期测试所用的相同版本的依赖项，并受益于为性能而调优的构建标志。我们的预编译库几乎完全自包含，除标准 C 运行时之外，不需要存在任何其他库。我们还隐藏了构成 MuJoCo 公共 API 的符号之外的所有符号，从而确保它能与进程中可能加载的任何其他库（包括 MuJoCo 所依赖的库的其他版本）共存。</p><div class="en-orig" data-for="bi-21" lang="en">MuJoCo is an open-source project. Pre-built dynamic libraries are available for x86_64 and arm64 machines running
+Windows, Linux, and macOS. These can be downloaded from the <a class="reference external" href="https://github.com/google-deepmind/mujoco/releases">GitHub Releases page</a>. Users who do not intend to develop or modify core MuJoCo code
+are encouraged to use our pre-built libraries, as these come bundled with the same versions of dependencies that we
+regularly test against, and benefit from build flags that have been tuned for performance. Our pre-built libraries are
+almost entirely self-contained and do not require any other library to be present, outside the standard C runtime. We
+also hide all symbols apart from those that form MuJoCo’s public API, thus ensuring that it can coexist with any other
+libraries that may be loaded into the process (including other versions of libraries that MuJoCo depends on).</div>
+<p data-bi="bi-22">预编译发行版在 macOS 上是单个 <code class="docutils literal notranslate"><span class="pre">.dmg</span></code>，在 Windows 上是 <code class="docutils literal notranslate"><span class="pre">.zip</span></code>，在 Linux 上是 <code class="docutils literal notranslate"><span class="pre">.tar.gz</span></code>；没有安装程序。在 macOS 和 Windows 上，<a class="reference internal" href="../studio/native_viewers.html#studioapp"><span class="std std-ref">MuJoCo Studio</span></a> 和 <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate</span></a> 都被打包为独立的桌面应用程序
+(macOS <code class="docutils literal notranslate"><span class="pre">.dmg</span></code> 中的 <code class="docutils literal notranslate"><span class="pre">MuJoCoStudio.app</span></code> 和 <code class="docutils literal notranslate"><span class="pre">MuJoCo.app</span></code>；Windows <code class="docutils literal notranslate"><span class="pre">.zip</span></code> 中的 <code class="docutils literal notranslate"><span class="pre">bin\mujoco_studio.exe</span></code> 和 <code class="docutils literal notranslate"><span class="pre">bin\simulate.exe</span></code>)，可以双击启动，并将模型文件拖放到其上。</p><div class="en-orig" data-for="bi-22" lang="en">The pre-built distribution is a single <code class="docutils literal notranslate"><span class="pre">.dmg</span></code> on macOS, <code class="docutils literal notranslate"><span class="pre">.zip</span></code> on Windows, and <code class="docutils literal notranslate"><span class="pre">.tar.gz</span></code> on Linux; there is no
+installer. On macOS and Windows, both <a class="reference internal" href="../studio/native_viewers.html#studioapp"><span class="std std-ref">MuJoCo Studio</span></a> and <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate</span></a> are packaged as
+standalone desktop applications (<code class="docutils literal notranslate"><span class="pre">MuJoCoStudio.app</span></code> and <code class="docutils literal notranslate"><span class="pre">MuJoCo.app</span></code> in the macOS <code class="docutils literal notranslate"><span class="pre">.dmg</span></code>;
+<code class="docutils literal notranslate"><span class="pre">bin\mujoco_studio.exe</span></code> and <code class="docutils literal notranslate"><span class="pre">bin\simulate.exe</span></code> in the Windows <code class="docutils literal notranslate"><span class="pre">.zip</span></code>) that you can double-click to launch and
+drop model files onto.</div>
+<p data-bi="bi-23">在 Windows 和 Linux 上，将压缩包解压到你选择的目录。在 <code class="docutils literal notranslate"><span class="pre">bin</span></code> 子目录的终端中，也可以运行 <a class="reference internal" href="../studio/native_viewers.html#studioapp"><span class="std std-ref">MuJoCo Studio</span></a>
+或 <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate</span></a> 等预编译的代码示例：</p><div class="en-orig" data-for="bi-23" lang="en">On Windows and Linux, extract the archive in a directory of your choice. From a terminal in the <code class="docutils literal notranslate"><span class="pre">bin</span></code> subdirectory,
+you can also run <a class="reference internal" href="../studio/native_viewers.html#studioapp"><span class="std std-ref">MuJoCo Studio</span></a> or the precompiled code samples such as <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate</span></a>:</div>
+<div class="highlight-Text notranslate"><div class="highlight"><pre><span></span>Windows:   mujoco_studio ..\model\humanoid\humanoid.xml
+Linux:     ./mujoco_studio ../model/humanoid/humanoid.xml
+</pre></div>
+</div>
+<p data-bi="bi-24">Windows 和 Linux 压缩包的目录结构如下所示。用户可以根据需要重新组织，也可以将动态库安装到其他目录并相应地设置路径。唯一自动创建的文件是可执行文件目录中的 MUJOCO_LOG.TXT；它包含错误和警告消息，可以随时删除。</p><div class="en-orig" data-for="bi-24" lang="en">The directory structure of the Windows and Linux archives is shown below. Users can re-organize it if needed, as well as
+install the dynamic libraries in other directories and set the path accordingly. The only file created automatically is
+MUJOCO_LOG.TXT in the executable directory; it contains error and warning messages, and can be deleted at any time.</div>
+<div class="highlight-Text notranslate"><div class="highlight"><pre><span></span>bin     - dynamic libraries, executables, MUJOCO_LOG.TXT
+doc     - README.txt and REFERENCE.txt
+include - header files needed to develop with MuJoCo
+model   - model collection
+sample  - code samples and CMakeLists.txt needed to build them
+</pre></div>
+</div>
+<p data-bi="bi-25">确认模拟器可以运行之后，你可能还想重新编译代码示例，以确保拥有可用的开发环境。我们提供了跨平台的 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/sample/CMakeLists.txt">CMake</a> 配置，可用于独立于 MuJoCo 库本身构建示例应用程序。</p><div class="en-orig" data-for="bi-25" lang="en">After verifying that the simulator works, you may also want to re-compile the code samples to ensure that you have a
+working development environment. We provide a cross-platform <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/sample/CMakeLists.txt">CMake</a> setup that can be used to build sample
+applications independently of the MuJoCo library itself.</div>
+<p data-bi="bi-26">在 macOS 上，可以将 <code class="docutils literal notranslate"><span class="pre">MuJoCoStudio.app</span></code> 和 <code class="docutils literal notranslate"><span class="pre">MuJoCo.app</span></code> 从 <code class="docutils literal notranslate"><span class="pre">.dmg</span></code> 拖入 <code class="docutils literal notranslate"><span class="pre">/Applications</span></code> 进行安装，与任何其他 <a class="reference external" href="https://developer.apple.com/go/?id=bundle-structure">应用程序包</a> 一样
+(其 <code class="docutils literal notranslate"><span class="pre">Contents/MacOS/</span></code> 中的可执行文件也可以从终端运行)。除应用程序包之外，DMG 还包含 <code class="docutils literal notranslate"><span class="pre">mujoco.framework</span></code>
+子目录，其中有 MuJoCo 动态库及其所有公共头文件。如果你使用 Xcode，可以将其作为框架依赖项导入到你的项目中
+(这对 Swift 项目同样适用，无需任何修改)。如果手动构建，可以分别使用 <code class="docutils literal notranslate"><span class="pre">-F</span></code> 和
+<code class="docutils literal notranslate"><span class="pre">-framework</span> <span class="pre">mujoco</span></code> 来指定头文件搜索路径和库搜索路径。</p><div class="en-orig" data-for="bi-26" lang="en">On macOS, you can drag <code class="docutils literal notranslate"><span class="pre">MuJoCoStudio.app</span></code> and <code class="docutils literal notranslate"><span class="pre">MuJoCo.app</span></code> from the <code class="docutils literal notranslate"><span class="pre">.dmg</span></code> into <code class="docutils literal notranslate"><span class="pre">/Applications</span></code> to install them
+like any other <a class="reference external" href="https://developer.apple.com/go/?id=bundle-structure">application bundle</a> (their executables inside
+<code class="docutils literal notranslate"><span class="pre">Contents/MacOS/</span></code> can also be run from a terminal). Alongside the app bundles, the DMG includes the
+<code class="docutils literal notranslate"><span class="pre">mujoco.framework</span></code> subdirectory containing the MuJoCo dynamic library and all of
+its public headers. If you are using Xcode, you can import it as a framework dependency on your project. (This also
+works for Swift projects without any modification). If you are building manually, you can use <code class="docutils literal notranslate"><span class="pre">-F</span></code> and
+<code class="docutils literal notranslate"><span class="pre">-framework</span> <span class="pre">mujoco</span></code> to specify the header search path and the library search path respectively.</div>
+</section>
+<section id="inbuild">
+<span id="id4"></span><h2 data-bi="bi-27">从源码构建<a class="headerlink" href="#inbuild" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-27" lang="en">Building from source</div>
+<p data-bi="bi-28">从源码构建 MuJoCo 需要安装 CMake 和可用的 C++17 编译器。步骤如下：</p><div class="en-orig" data-for="bi-28" lang="en">To build MuJoCo from source, you will need CMake and a working C++17 compiler installed. The steps are:</div>
+<ol class="arabic simple">
+<li><p data-bi="bi-29">克隆 <code class="docutils literal notranslate"><span class="pre">mujoco</span></code> 仓库：<code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/google-deepmind/mujoco.git</span></code></p><div class="en-orig" data-for="bi-29" lang="en">Clone the <code class="docutils literal notranslate"><span class="pre">mujoco</span></code> repository: <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/google-deepmind/mujoco.git</span></code></div></li>
+<li><p data-bi="bi-30">创建一个新的构建目录并 <code class="docutils literal notranslate"><span class="pre">cd</span></code> 进入该目录。</p><div class="en-orig" data-for="bi-30" lang="en">Create a new build directory and <code class="docutils literal notranslate"><span class="pre">cd</span></code> into it.</div></li>
+<li><p data-bi="bi-31">运行 <code class="code highlight shell bash docutils literal highlight-bash">cmake<span class="w"> </span><span class="nv">$PATH_TO_CLONED_REPO</span></code> 来配置构建。</p><div class="en-orig" data-for="bi-31" lang="en">Run <code class="code highlight shell bash docutils literal highlight-bash">cmake<span class="w"> </span><span class="nv">$PATH_TO_CLONED_REPO</span></code> to configure the build.</div></li>
+<li><p data-bi="bi-32">运行 <code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">--build</span> <span class="pre">.</span></code> 进行构建。</p><div class="en-orig" data-for="bi-32" lang="en">Run <code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">--build</span> <span class="pre">.</span></code> to build.</div></li>
+</ol>
+<p data-bi="bi-33">MuJoCo 的构建系统使用 CMake 的
+<a class="reference external" href="https://cmake.org/cmake/help/latest/module/FetchContent.html">FetchContent</a> 模块，通过互联网自动从上游仓库获取依赖项。</p><div class="en-orig" data-for="bi-33" lang="en">MuJoCo’s build system automatically fetches dependencies from upstream repositories over the Internet using CMake’s
+<a class="reference external" href="https://cmake.org/cmake/help/latest/module/FetchContent.html">FetchContent</a> module.</div>
+<p data-bi="bi-34">主 CMake 配置会构建 MuJoCo 库本身以及所有示例应用程序，但不会构建 Python
+绑定。Python 绑定有自己的构建说明，可在文档的 <a class="reference internal" href="../python.html"><span class="doc">Python</span></a> 一节中找到。</p><div class="en-orig" data-for="bi-34" lang="en">The main CMake setup will build the MuJoCo library itself along with all sample applications, but the Python
+bindings are not built. Those come with their own build instructions, which can be found in the <a class="reference internal" href="../python.html"><span class="doc">Python</span></a>
+section of the documentation.</div>
+<p data-bi="bi-35">此外，CMake 配置还实现了一个安装阶段，会将输出文件复制并整理到目标目录。</p><div class="en-orig" data-for="bi-35" lang="en">Additionally, the CMake setup also implements an installation phase which will copy and organize the output files to a
+target directory.</div>
+<ol class="arabic simple">
+<li><p data-bi="bi-36">选择目录：<code class="code highlight shell bash docutils literal highlight-bash">cmake<span class="w"> </span><span class="nv">$PATH_TO_CLONED_REPO</span><span class="w"> </span>-DCMAKE_INSTALL_PREFIX<span class="o">=</span>&lt;my_install_dir&gt;</code></p><div class="en-orig" data-for="bi-36" lang="en">Select the directory: <code class="code highlight shell bash docutils literal highlight-bash">cmake<span class="w"> </span><span class="nv">$PATH_TO_CLONED_REPO</span><span class="w"> </span>-DCMAKE_INSTALL_PREFIX<span class="o">=</span>&lt;my_install_dir&gt;</code></div></li>
+<li><p data-bi="bi-37">构建完成后，使用 <code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">--install</span> <span class="pre">.</span></code> 进行安装</p><div class="en-orig" data-for="bi-37" lang="en">After building, install with <code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">--install</span> <span class="pre">.</span></code></div></li>
+<li><p data-bi="bi-38">如有需要，可继续构建 Python 绑定，参见
+<a class="reference internal" href="../python.html#pybuild"><span class="std std-ref">从源码构建</span></a>。</p><div class="en-orig" data-for="bi-38" lang="en">If desired, proceed to building the Python bindings - see
+<a class="reference internal" href="../python.html#pybuild"><span class="std std-ref">Building from source</span></a>.</div></li>
+</ol>
+<p data-bi="bi-39"><strong>注意：</strong></p><div class="en-orig" data-for="bi-39" lang="en"><strong>Notes:</strong></div>
+<ul class="simple">
+<li><p data-bi="bi-40">若要优化运行时性能，请使用 <code class="docutils literal notranslate"><span class="pre">-DCMAKE_BUILD_TYPE=Release</span></code> 构建。</p><div class="en-orig" data-for="bi-40" lang="en">To optimize runtime performance build with <code class="docutils literal notranslate"><span class="pre">-DCMAKE_BUILD_TYPE=Release</span></code>.</div></li>
+<li><p data-bi="bi-41">在 Windows 上使用 MSVC 构建时，请使用 Visual Studio 2019 或更高版本，并确保已安装 Windows SDK 10.0.22000 或更高版本
+(详见 <a class="extlink-issue reference external" href="https://github.com/google-deepmind/mujoco/issues/862">issue #862</a>)。</p><div class="en-orig" data-for="bi-41" lang="en">When building on Windows with MSVC, use Visual Studio 2019 or later and make sure Windows SDK version 10.0.22000 or
+later is installed (see <a class="extlink-issue reference external" href="https://github.com/google-deepmind/mujoco/issues/862">issue #862</a> for more details).</div></li>
+<li><p data-bi="bi-42">我们发现，在 Windows 上使用 Clang 而非 MSVC 构建时性能最佳。</p><div class="en-orig" data-for="bi-42" lang="en">We’ve found that performance on Windows is best when building with Clang, rather than MSVC.</div></li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title" data-bi="bi-43">小技巧</p><div class="en-orig" data-for="bi-43" lang="en">Tip</div>
+<p data-bi="bi-44">作为参考，可以在 GitHub 上 MuJoCo 的
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/.github/workflows/build.yml">持续集成配置</a> 中找到一个可用的构建配置。</p><div class="en-orig" data-for="bi-44" lang="en">As a reference, a working build configuration can be found in MuJoCo’s
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/.github/workflows/build.yml">continuous integration setup</a> on
+GitHub.</div>
+</div>
+</section>
+<section id="bazel">
+<span id="inbuildbazel"></span><h2 data-bi="bi-45">使用 Bazel 构建<a class="headerlink" href="#bazel" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-45" lang="en">Building with Bazel</div>
+<p data-bi="bi-46">MuJoCo 也可以使用 <a class="reference external" href="https://bazel.build/">Bazel</a> 8.0 或更高版本构建。其所测试的 Bazel 版本固定在 <code class="docutils literal notranslate"><span class="pre">.bazelversion</span></code> 中，<a class="reference external" href="https://github.com/bazelbuild/bazelisk">Bazelisk</a> 会自动使用该版本。要在克隆仓库的根目录构建并测试 MuJoCo：</p><div class="en-orig" data-for="bi-46" lang="en">MuJoCo can also be built with <a class="reference external" href="https://bazel.build/">Bazel</a> 8.0 or later. The Bazel version it is tested with is
+pinned in <code class="docutils literal notranslate"><span class="pre">.bazelversion</span></code>, which <a class="reference external" href="https://github.com/bazelbuild/bazelisk">Bazelisk</a> uses automatically. To build
+and test MuJoCo from the root of the cloned repository:</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>bazel<span class="w"> </span>build<span class="w"> </span>//...
+bazel<span class="w"> </span><span class="nb">test</span><span class="w"> </span>//...
+</pre></div>
+</div>
+<p data-bi="bi-47">要在你自己的 Bazel 模块中使用 MuJoCo，请将其添加到你的 <code class="docutils literal notranslate"><span class="pre">MODULE.bazel</span></code> 中。MuJoCo 尚未收录在
+<a class="reference external" href="https://registry.bazel.build/">Bazel Central Registry</a> 中，因此请使用 override，例如：</p><div class="en-orig" data-for="bi-47" lang="en">To use MuJoCo from your own Bazel module, add it to your <code class="docutils literal notranslate"><span class="pre">MODULE.bazel</span></code>. MuJoCo isn’t in the
+<a class="reference external" href="https://registry.bazel.build/">Bazel Central Registry</a> yet, so use an override, for example:</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">bazel_dep</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"mujoco"</span><span class="p">)</span>
+<span class="n">git_override</span><span class="p">(</span>
+    <span class="n">module_name</span> <span class="o">=</span> <span class="s2">"mujoco"</span><span class="p">,</span>
+    <span class="n">remote</span> <span class="o">=</span> <span class="s2">"https://github.com/google-deepmind/mujoco.git"</span><span class="p">,</span>
+    <span class="n">commit</span> <span class="o">=</span> <span class="s2">"&lt;commit&gt;"</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p data-bi="bi-48">主要目标有：</p><div class="en-orig" data-for="bi-48" lang="en">The main targets are:</div>
+<ul class="simple">
+<li><p data-bi="bi-49"><code class="docutils literal notranslate"><span class="pre">@mujoco</span></code>：MuJoCo 库。其头文件以 <code class="docutils literal notranslate"><span class="pre">#include</span> <span class="pre">&lt;mujoco/mujoco.h&gt;</span></code> 的方式包含。</p><div class="en-orig" data-for="bi-49" lang="en"><code class="docutils literal notranslate"><span class="pre">@mujoco</span></code>: the MuJoCo library. Its headers are included as <code class="docutils literal notranslate"><span class="pre">#include</span> <span class="pre">&lt;mujoco/mujoco.h&gt;</span></code>.</div></li>
+<li><p data-bi="bi-50"><code class="docutils literal notranslate"><span class="pre">@mujoco//:mujoco_shared</span></code>：作为共享库的 MuJoCo (<code class="docutils literal notranslate"><span class="pre">libmujoco.so</span></code>，在 macOS 上为 <code class="docutils literal notranslate"><span class="pre">libmujoco.dylib</span></code>)，与用 CMake 构建的共享库一样，它只导出 MuJoCo API。将其添加到依赖 <code class="docutils literal notranslate"><span class="pre">@mujoco</span></code> 的 <code class="docutils literal notranslate"><span class="pre">cc_binary</span></code> 或
+<code class="docutils literal notranslate"><span class="pre">cc_shared_library</span></code> 的 <code class="docutils literal notranslate"><span class="pre">dynamic_deps</span></code> 中，即可动态链接 MuJoCo，例如与 Python 绑定共享同一份 MuJoCo 副本。</p><div class="en-orig" data-for="bi-50" lang="en"><code class="docutils literal notranslate"><span class="pre">@mujoco//:mujoco_shared</span></code>: MuJoCo as a shared library (<code class="docutils literal notranslate"><span class="pre">libmujoco.so</span></code>, or <code class="docutils literal notranslate"><span class="pre">libmujoco.dylib</span></code> on macOS) which,
+like the one built with CMake, exports only the MuJoCo API. Add it to the <code class="docutils literal notranslate"><span class="pre">dynamic_deps</span></code> of a <code class="docutils literal notranslate"><span class="pre">cc_binary</span></code> or
+<code class="docutils literal notranslate"><span class="pre">cc_shared_library</span></code> that depends on <code class="docutils literal notranslate"><span class="pre">@mujoco</span></code> to link MuJoCo dynamically, for example to share one copy of MuJoCo
+with the Python bindings.</div></li>
+<li><p data-bi="bi-51"><code class="docutils literal notranslate"><span class="pre">@mujoco//plugin/&lt;name&gt;:register</span></code>，其中 <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;</span></code> 为 <code class="docutils literal notranslate"><span class="pre">actuator</span></code>、<code class="docutils literal notranslate"><span class="pre">elasticity</span></code>、<code class="docutils literal notranslate"><span class="pre">sdf</span></code> 或 <code class="docutils literal notranslate"><span class="pre">sensor</span></code>：随库提供的插件（plugin），在链接时会自动注册自身。</p><div class="en-orig" data-for="bi-51" lang="en"><code class="docutils literal notranslate"><span class="pre">@mujoco//plugin/&lt;name&gt;:register</span></code>, where <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;</span></code> is <code class="docutils literal notranslate"><span class="pre">actuator</span></code>, <code class="docutils literal notranslate"><span class="pre">elasticity</span></code>, <code class="docutils literal notranslate"><span class="pre">sdf</span></code> or <code class="docutils literal notranslate"><span class="pre">sensor</span></code>: the
+bundled plugins, which register themselves when linked in.</div></li>
+<li><p data-bi="bi-52"><code class="docutils literal notranslate"><span class="pre">@mujoco//python/mujoco</span></code>：Python 绑定，参见 <a class="reference internal" href="../python.html#pybuildbazel"><span class="std std-ref">使用 Bazel 构建</span></a>。</p><div class="en-orig" data-for="bi-52" lang="en"><code class="docutils literal notranslate"><span class="pre">@mujoco//python/mujoco</span></code>: the Python bindings, see <a class="reference internal" href="../python.html#pybuildbazel"><span class="std std-ref">Building with Bazel</span></a>.</div></li>
+</ul>
+<p data-bi="bi-53">要像随库提供的插件那样，将你自己的 <a class="reference internal" href="extension.html#explugin"><span class="std std-ref">插件</span></a> 构建为共享库，请使用 <code class="docutils literal notranslate"><span class="pre">mujoco_plugin</span></code> 宏。该库链接到 <code class="docutils literal notranslate"><span class="pre">@mujoco//:mujoco_shared</span></code> 且不导出任何符号；在运行时用
+<a class="reference internal" href="../APIreference/APIfunctions.html#mj-loadpluginlibrary"><span class="std std-ref">mj_loadPluginLibrary</span></a> 加载它，该函数会运行其 <a class="reference internal" href="extension.html#exregistration"><span class="std std-ref">注册</span></a> 代码：</p><div class="en-orig" data-for="bi-53" lang="en">To build your own <a class="reference internal" href="extension.html#explugin"><span class="std std-ref">plugin</span></a> as a shared library, like the bundled ones, use the <code class="docutils literal notranslate"><span class="pre">mujoco_plugin</span></code> macro.
+The library links against <code class="docutils literal notranslate"><span class="pre">@mujoco//:mujoco_shared</span></code> and exports no symbols; load it at run time with
+<a class="reference internal" href="../APIreference/APIfunctions.html#mj-loadpluginlibrary"><span class="std std-ref">mj_loadPluginLibrary</span></a>, which runs its <a class="reference internal" href="extension.html#exregistration"><span class="std std-ref">registration</span></a> code:</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">load</span><span class="p">(</span><span class="s2">"@mujoco//plugin:mujoco_plugin.bzl"</span><span class="p">,</span> <span class="s2">"mujoco_plugin"</span><span class="p">)</span>
+
+<span class="n">cc_library</span><span class="p">(</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">"my_plugin_lib"</span><span class="p">,</span>
+    <span class="n">srcs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"my_plugin.cc"</span><span class="p">],</span>
+    <span class="n">deps</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"@mujoco"</span><span class="p">],</span>
+    <span class="n">alwayslink</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Builds libmy_plugin.so (libmy_plugin.dylib on macOS).</span>
+<span class="n">mujoco_plugin</span><span class="p">(</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">"my_plugin"</span><span class="p">,</span>
+    <span class="n">deps</span> <span class="o">=</span> <span class="p">[</span><span class="s2">":my_plugin_lib"</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p data-bi="bi-54">若要使用单精度浮点数 (<code class="docutils literal notranslate"><span class="pre">mjUSESINGLE</span></code>)，请使用 <code class="docutils literal notranslate"><span class="pre">--@mujoco//:single_precision</span></code> 构建。</p><div class="en-orig" data-for="bi-54" lang="en">To use single-precision floating point (<code class="docutils literal notranslate"><span class="pre">mjUSESINGLE</span></code>), build with <code class="docutils literal notranslate"><span class="pre">--@mujoco//:single_precision</span></code>.</div>
+<p data-bi="bi-55">Bazel 构建在 Linux 和 macOS 上经过测试，涵盖 MuJoCo 库、<code class="docutils literal notranslate"><span class="pre">simulate</span></code>、插件、示例以及核心 Python 绑定。</p><div class="en-orig" data-for="bi-55" lang="en">The Bazel build is tested on Linux and macOS, and covers the MuJoCo library, <code class="docutils literal notranslate"><span class="pre">simulate</span></code>, the plugins, the samples and
+the core Python bindings.</div>
+<div class="admonition tip">
+<p class="admonition-title" data-bi="bi-56">小技巧</p><div class="en-orig" data-for="bi-56" lang="en">Tip</div>
+<p data-bi="bi-57"><code class="docutils literal notranslate"><span class="pre">sample</span></code> 目录是一个独立的 Bazel 模块，它以这种方式依赖 MuJoCo。</p><div class="en-orig" data-for="bi-57" lang="en">The <code class="docutils literal notranslate"><span class="pre">sample</span></code> directory is a standalone Bazel module that depends on MuJoCo this way.</div>
+</div>
+</section>
+<section id="inbuilddocs">
+<span id="id6"></span><h2 data-bi="bi-58">构建文档<a class="headerlink" href="#inbuilddocs" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-58" lang="en">Building the docs</div>
+<p data-bi="bi-59">如果你想在本地构建文档，例如为了测试改进文档的 pull request，请执行：</p><div class="en-orig" data-for="bi-59" lang="en">If you wish to build the documentation locally, for example to test pull-requests that improve it, do:</div>
+<ol class="arabic simple">
+<li><p data-bi="bi-60">克隆 <code class="docutils literal notranslate"><span class="pre">mujoco</span></code> 仓库：<code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/google-deepmind/mujoco.git</span></code></p><div class="en-orig" data-for="bi-60" lang="en">Clone the <code class="docutils literal notranslate"><span class="pre">mujoco</span></code> repository: <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/google-deepmind/mujoco.git</span></code></div></li>
+<li><p data-bi="bi-61">进入 <code class="docutils literal notranslate"><span class="pre">doc/</span></code> 目录：<code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">mujoco/doc</span></code></p><div class="en-orig" data-for="bi-61" lang="en">Go to the <code class="docutils literal notranslate"><span class="pre">doc/</span></code> directory: <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">mujoco/doc</span></code></div></li>
+<li><p data-bi="bi-62">安装依赖项：<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span></code>
+<br/> 请注意，MuJoCo Warp API 文档是自动生成的，需要额外的依赖项。详情请参见 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/.readthedocs.yml">.readthedocs.yml</a>。</p><div class="en-orig" data-for="bi-62" lang="en">Install the dependencies: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span></code>
+<br/> Note that the MuJoCo Warp API documentation is autogenerated and requires additional dependencies.
+See <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/.readthedocs.yml">.readthedocs.yml</a> for details.</div></li>
+<li><p data-bi="bi-63">构建 HTML：<code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">html</span></code></p><div class="en-orig" data-for="bi-63" lang="en">Build the HTML: <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">html</span></code></div></li>
+<li><p data-bi="bi-64">在你选择的浏览器中打开 <code class="docutils literal notranslate"><span class="pre">_build/html/index.html</span></code>。</p><div class="en-orig" data-for="bi-64" lang="en">Open <code class="docutils literal notranslate"><span class="pre">_build/html/index.html</span></code> in your browser of choice.</div></li>
+</ol>
+</section>
+<section id="inheader">
+<span id="id7"></span><h2 data-bi="bi-65">头文件<a class="headerlink" href="#inheader" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-65" lang="en">Header files</div>
+<p data-bi="bi-66">发行版包含若干在所有平台上完全相同的头文件。为使本文档自包含，也可以通过下面的链接获取这些头文件。</p><div class="en-orig" data-for="bi-66" lang="en">The distribution contains several header files which are identical on all platforms. They are also available from the
+links below, to make this documentation self-contained.</div>
+<dl class="simple">
+<dt><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mujoco.h">mujoco.h</a></dt><dd><p data-bi="bi-67">这是主头文件，所有使用 MuJoCo 的程序都必须包含它。它定义了所有 API 函数和全局变量，并包含除 mjxmacro.h 和 mjspecmacro.h
+之外的所有其他头文件。</p><div class="en-orig" data-for="bi-67" lang="en">This is the main header file and must be included in all programs using MuJoCo. It defines all API functions and
+global variables, and includes all other header files except mjxmacro.h and mjspecmacro.h.</div>
+</dd>
+<dt><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjmodel.h">mjmodel.h</a></dt><dd><p data-bi="bi-68">定义 C 结构体 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>，它是被仿真模型的运行时表示。</p><div class="en-orig" data-for="bi-68" lang="en">Defines the C structure <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> which is the runtime representation of the
+model being simulated.</div>
+</dd>
+<dt><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjdata.h">mjdata.h</a></dt><dd><p data-bi="bi-69">定义 C 结构体 <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a>，它是所有计算读取输入并写入输出的工作区。</p><div class="en-orig" data-for="bi-69" lang="en">Defines the C structure <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> which is the workspace where all computations
+read their inputs and write their outputs.</div>
+</dd>
+<dt><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjvisualize.h">mjvisualize.h</a></dt><dd><p data-bi="bi-70">定义抽象可视化器所需的基本类型和结构体。</p><div class="en-orig" data-for="bi-70" lang="en">Defines the primitive types and structures needed by the abstract visualizer.</div>
+</dd>
+<dt><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjrender.h">mjrender.h</a></dt><dd><p data-bi="bi-71">定义 OpenGL 渲染器所需的基本类型和结构体。</p><div class="en-orig" data-for="bi-71" lang="en">Defines the primitive types and structures needed by the OpenGL renderer.</div>
+</dd>
+<dt><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjrfilament.h">mjrfilament.h</a></dt><dd><p data-bi="bi-72">定义 filament 渲染器所需的基本类型和结构体。</p><div class="en-orig" data-for="bi-72" lang="en">Defines the primitive types and structures needed by the filament renderer.</div>
+</dd>
+<dt><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjui.h">mjui.h</a></dt><dd><p data-bi="bi-73">定义 UI 框架所需的基本类型和结构体。</p><div class="en-orig" data-for="bi-73" lang="en">Defines the primitive types and structures needed by the UI framework.</div>
+</dd>
+<dt><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjtype.h">mjtype.h</a></dt><dd><p data-bi="bi-74">定义基本类型和枚举，包括可以是 <code class="docutils literal notranslate"><span class="pre">double</span></code> 或 <code class="docutils literal notranslate"><span class="pre">float</span></code> 的 <code class="docutils literal notranslate"><span class="pre">mjtNum</span></code> 浮点类型
+(参见 <a class="reference internal" href="../APIreference/APItypes.html#mjtnum"><span class="std std-ref">mjtNum</span></a>)。</p><div class="en-orig" data-for="bi-74" lang="en">Defines primitive types and enums, including the <code class="docutils literal notranslate"><span class="pre">mjtNum</span></code> floating-point type to be either <code class="docutils literal notranslate"><span class="pre">double</span></code> or <code class="docutils literal notranslate"><span class="pre">float</span></code>
+(see <a class="reference internal" href="../APIreference/APItypes.html#mjtnum"><span class="std std-ref">mjtNum</span></a>).</div>
+</dd>
+<dt><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjspec.h">mjspec.h</a></dt><dd><p data-bi="bi-75">定义用于 <a class="reference internal" href="modeledit.html"><span class="doc">程序化模型编辑</span></a> 的枚举和结构体。</p><div class="en-orig" data-for="bi-75" lang="en">Defines enums and structs used for <a class="reference internal" href="modeledit.html"><span class="doc">procedural model editing</span></a>.</div>
+</dd>
+<dt><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjplugin.h">mjplugin.h</a></dt><dd><p data-bi="bi-76">定义 <a class="reference internal" href="extension.html#explugin"><span class="std std-ref">引擎插件</span></a> 所需的数据结构。</p><div class="en-orig" data-for="bi-76" lang="en">Defines data structures required by <a class="reference internal" href="extension.html#explugin"><span class="std std-ref">engine plugins</span></a>.</div>
+</dd>
+<dt><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjmacro.h">mjmacro.h</a></dt><dd><p data-bi="bi-77">定义在用户代码中有用的 C 宏。</p><div class="en-orig" data-for="bi-77" lang="en">Defines C macros that are useful in user code.</div>
+</dd>
+<dt><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjxmacro.h">mjxmacro.h</a></dt><dd><p data-bi="bi-78">该文件是可选的，不被 mujoco.h 包含。它定义了 <a class="reference internal" href="../APIreference/APIglobals.html#tyxmacro"><span class="std std-ref">X 宏</span></a>，可用于自动将 mjModel 和 mjData
+映射到脚本语言，以及执行其他需要访问 mjModel 和 mjData 所有字段的操作。</p><div class="en-orig" data-for="bi-78" lang="en">This file is optional and is not included by mujoco.h. It defines <a class="reference internal" href="../APIreference/APIglobals.html#tyxmacro"><span class="std std-ref">X Macros</span></a> that can
+automate the mapping of mjModel and mjData into scripting languages, as well as other operations that require
+accessing all fields of mjModel and mjData.</div>
+</dd>
+<dt><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjspecmacro.h">mjspecmacro.h</a></dt><dd><p data-bi="bi-79">该文件是可选的，不被 mujoco.h 包含。它定义了 <a class="reference internal" href="../APIreference/APIglobals.html#tyxmacro"><span class="std std-ref">X 宏</span></a>，可用于自动将 mjSpec 及其元素结构体映射到脚本语言，以及在程序化模型编辑期间执行其他需要访问 mjSpec 所有字段的操作。</p><div class="en-orig" data-for="bi-79" lang="en">This file is optional and is not included by mujoco.h. It defines <a class="reference internal" href="../APIreference/APIglobals.html#tyxmacro"><span class="std std-ref">X Macros</span></a> that can
+automate the mapping of mjSpec and its element structs into scripting languages, as well as other operations that require
+accessing all fields of mjSpec during procedural model editing.</div>
+</dd>
+<dt><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjexport.h">mjexport.h</a></dt><dd><p data-bi="bi-80">用于从 MuJoCo 库导出公共符号的宏。客户端代码不应直接使用此头文件。</p><div class="en-orig" data-for="bi-80" lang="en">Macros used for exporting public symbols from the MuJoCo library. This header should not be used directly by client
+code.</div>
+</dd>
+<dt><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjsan.h">mjsan.h</a></dt><dd><p data-bi="bi-81">使用 sanitizer 插桩构建时所需的定义。</p><div class="en-orig" data-for="bi-81" lang="en">Definitions required when building with sanitizer instrumentation.</div>
+</dd>
+<dt><a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjassert.h">mjassert.h</a></dt><dd><p data-bi="bi-82">编译期尺寸断言，用于验证 MuJoCo ABI 在 C 和 C++ 编译器之间的稳定性。</p><div class="en-orig" data-for="bi-82" lang="en">Compile-time size assertions verifying MuJoCo ABI stability across C and C++ compilers.</div>
+</dd>
+</dl>
+</section>
+<section id="inversion">
+<span id="id8"></span><h2 data-bi="bi-83">版本与兼容性<a class="headerlink" href="#inversion" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-83" lang="en">Versions and compatibility</div>
+<p data-bi="bi-84">MuJoCo 自 2010 年起被广泛使用，已相当成熟（尽管我们的版本编号方案相当保守）。尽管如此，它仍在积极开发中，我们有许多令人兴奋的新功能构想，也会根据用户反馈进行修改。这导致建模语言和
+API 都不可避免地发生变化。虽然我们鼓励用户升级到最新版本，但我们也认识到这并不总是可行，尤其是当其他开发者发布依赖于 MuJoCo 的软件时。因此，我们引入了一些简单的机制来帮助避免版本冲突，如下所述。</p><div class="en-orig" data-for="bi-84" lang="en">MuJoCo has been used extensively since 2010 and is quite mature (even though our version numbering scheme is quite
+conservative). Nevertheless it remains under active development, and we have many exciting ideas for new features and
+are also making changes based on user feedback. This leads to unavoidable changes in both the modeling language and the
+API. While we encourage users to upgrade to the latest version, we recognize that this is not always feasible,
+especially when other developers release software that relies on MuJoCo. Therefore we have introduced simple
+mechanisms to help avoid version conflicts, as follows.</div>
+<p data-bi="bi-85">如果现有代码是用某个版本的 MuJoCo 开发的，现在却要与另一个版本一起编译和链接，情况就更为微妙。如果该代码所用 API 函数的定义已经改变，编译器或链接器会产生错误。但即使函数定义没有改变，断言软件版本相同仍然是个好主意。为此，主头文件 (mujoco.h) 定义了符号
+<a class="reference internal" href="../APIreference/APIglobals.html#glnumericversion"><span class="std std-ref">mjVERSION_HEADER</span></a>，库则提供了函数
+<a class="reference internal" href="../APIreference/APIfunctions.html#mj-version"><span class="std std-ref">mj_version</span></a>。因此，可以这样比较头文件和库的版本：</p><div class="en-orig" data-for="bi-85" lang="en">The situation is more subtle if existing code was developed with a certain version of MuJoCo, and is now being
+compiled and linked with a different version. If the definitions of the API functions used in that code have changed,
+either the compiler or the linker will generate errors. But even if the function definitions have not changed, it may
+still be a good idea to assert that the software version is the same. To this end, the main header (mujoco.h) defines
+the symbol <a class="reference internal" href="../APIreference/APIglobals.html#glnumericversion"><span class="std std-ref">mjVERSION_HEADER</span></a> and the library provides the function
+<a class="reference internal" href="../APIreference/APIfunctions.html#mj-version"><span class="std std-ref">mj_version</span></a>. Thus the header and library versions can be compared with:</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="c1">// recommended version check</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mjVERSION_HEADER</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">mj_version</span><span class="p">())</span>
+<span class="w">  </span><span class="n">complain</span><span class="p">();</span>
+</pre></div>
+</div>
+<p data-bi="bi-86">请注意，只有主头文件定义了该符号。我们假定每个软件版本发布的头文件集合会保持在一起，不会在不同版本之间混用。为避免浮点数比较带来的复杂性，上述符号和函数使用整数而非浮点数。编码公式和版本语义请参见
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/VERSIONING.md">VERSIONING.md</a>。</p><div class="en-orig" data-for="bi-86" lang="en">Note that only the main header defines this symbol. We assume that the collection of headers released with each software
+version will stay together and will not be mixed between versions. To avoid complications with floating-point
+comparisons, the above symbol and function use integers rather than floating-point numbers. See
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/VERSIONING.md">VERSIONING.md</a> for the encoding formula and
+version semantics.</div>
+</section>
+<section id="innaming">
+<span id="id9"></span><h2 data-bi="bi-87">命名约定<a class="headerlink" href="#innaming" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-87" lang="en">Naming convention</div>
+<p data-bi="bi-88">API 中定义的所有符号都以前缀“mj”开头。前缀中“mj”之后的字符决定该符号所属的族。首先列出与类型定义对应的前缀。</p><div class="en-orig" data-for="bi-88" lang="en">All symbols defined in the API start with the prefix “mj”. The character after “mj” in the prefix determines the family
+to which the symbol belongs. First we list the prefixes corresponding to type definitions.</div>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">mj</span></code></dt><dd><p data-bi="bi-89">核心仿真数据结构（C 结构体），例如 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>。如果前缀之后的所有字符都是大写，例如 <a class="reference internal" href="../APIreference/APIglobals.html#mjmin"><span class="std std-ref">mjMIN</span></a>，则这是一个宏或符号（#define）。</p><div class="en-orig" data-for="bi-89" lang="en">Core simulation data structure (C struct), for example <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>. If all characters
+after the prefix are capital, for example <a class="reference internal" href="../APIreference/APIglobals.html#mjmin"><span class="std std-ref">mjMIN</span></a>, this is a macro or a symbol (#define).</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mjt</span></code></dt><dd><p data-bi="bi-90">基本类型，例如 <a class="reference internal" href="../APIreference/APItypes.html#mjtnum"><span class="std std-ref">mjtNum</span></a> 和 <a class="reference internal" href="../APIreference/APItypes.html#mjtgeom"><span class="std std-ref">mjtGeom</span></a>。此族中的大多数类型是枚举。</p><div class="en-orig" data-for="bi-90" lang="en">Primitive type, for example <a class="reference internal" href="../APIreference/APItypes.html#mjtnum"><span class="std std-ref">mjtNum</span></a> and <a class="reference internal" href="../APIreference/APItypes.html#mjtgeom"><span class="std std-ref">mjtGeom</span></a>. Most types in this family are enums.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mjf</span></code></dt><dd><p data-bi="bi-91">回调函数类型，例如 <a class="reference internal" href="../APIreference/APItypes.html#mjfgeneric"><span class="std std-ref">mjfGeneric</span></a>。</p><div class="en-orig" data-for="bi-91" lang="en">Callback function type, for example <a class="reference internal" href="../APIreference/APItypes.html#mjfgeneric"><span class="std std-ref">mjfGeneric</span></a>.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mjs</span></code></dt><dd><p data-bi="bi-92">与 <a class="reference internal" href="modeledit.html"><span class="doc">程序化模型编辑</span></a> 相关的数据结构，例如 <a class="reference internal" href="../APIreference/APItypes.html#mjsjoint"><span class="std std-ref">mjsJoint</span></a>。</p><div class="en-orig" data-for="bi-92" lang="en">Data structure related to <a class="reference internal" href="modeledit.html"><span class="doc">procedural model editing</span></a>, for example <a class="reference internal" href="../APIreference/APItypes.html#mjsjoint"><span class="std std-ref">mjsJoint</span></a>.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mjv</span></code></dt><dd><p data-bi="bi-93">与抽象可视化相关的数据结构，例如 <a class="reference internal" href="../APIreference/APItypes.html#mjvcamera"><span class="std std-ref">mjvCamera</span></a>。</p><div class="en-orig" data-for="bi-93" lang="en">Data structure related to abstract visualization, for example <a class="reference internal" href="../APIreference/APItypes.html#mjvcamera"><span class="std std-ref">mjvCamera</span></a>.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mjrf</span></code></dt><dd><p data-bi="bi-94">与 filament 渲染相关的数据结构，例如 <a class="reference internal" href="../APIreference/APItypes.html#mjrfcontext"><span class="std std-ref">mjrfContext</span></a>。</p><div class="en-orig" data-for="bi-94" lang="en">Data structure related to filament rendering, for example <a class="reference internal" href="../APIreference/APItypes.html#mjrfcontext"><span class="std std-ref">mjrfContext</span></a>.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mjr</span></code></dt><dd><p data-bi="bi-95">与 OpenGL 渲染相关的数据结构，例如 <a class="reference internal" href="../APIreference/APItypes.html#mjrcontext"><span class="std std-ref">mjrContext</span></a>。</p><div class="en-orig" data-for="bi-95" lang="en">Data structure related to OpenGL rendering, for example <a class="reference internal" href="../APIreference/APItypes.html#mjrcontext"><span class="std std-ref">mjrContext</span></a>.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mjui</span></code></dt><dd><p data-bi="bi-96">与 UI 框架相关的数据结构，例如 <a class="reference internal" href="../APIreference/APItypes.html#mjuisection"><span class="std std-ref">mjuiSection</span></a>。</p><div class="en-orig" data-for="bi-96" lang="en">Data structure related to UI framework, for example <a class="reference internal" href="../APIreference/APItypes.html#mjuisection"><span class="std std-ref">mjuiSection</span></a>.</div>
+</dd>
+</dl>
+<p data-bi="bi-97">接下来列出与函数定义对应的前缀。请注意，函数前缀总是以下划线结尾。</p><div class="en-orig" data-for="bi-97" lang="en">Next we list the prefixes corresponding to function definitions. Note that function prefixes always end with underscore.</div>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">mj_</span></code></dt><dd><p data-bi="bi-98">核心仿真函数，例如 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-step"><span class="std std-ref">mj_step</span></a>。几乎所有此类函数的前两个参数都是指向 mjModel 和 mjData 的指针，其后可能还有其他参数。它们通常将输出写入 mjData。</p><div class="en-orig" data-for="bi-98" lang="en">Core simulation function, for example <a class="reference internal" href="../APIreference/APIfunctions.html#mj-step"><span class="std std-ref">mj_step</span></a>. Almost all such functions have
+pointers to mjModel and mjData as their first two arguments, possibly followed by other arguments. They usually write
+their outputs to mjData.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mju_</span></code></dt><dd><p data-bi="bi-99">实用函数，例如 <a class="reference internal" href="../APIreference/APIfunctions.html#mju-mulmatvec"><span class="std std-ref">mju_mulMatVec</span></a>。这些函数是自包含的，即它们的参数中没有 mjModel 和 mjData 指针。</p><div class="en-orig" data-for="bi-99" lang="en">Utility function, for example <a class="reference internal" href="../APIreference/APIfunctions.html#mju-mulmatvec"><span class="std std-ref">mju_mulMatVec</span></a>. These functions are self-contained
+in the sense that they do not have mjModel and mjData pointers as their arguments.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mjv_</span></code></dt><dd><p data-bi="bi-100">与抽象可视化相关的函数，例如 <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-updatescene"><span class="std std-ref">mjv_updateScene</span></a>。</p><div class="en-orig" data-for="bi-100" lang="en">Function related to abstract visualization, for example <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-updatescene"><span class="std std-ref">mjv_updateScene</span></a>.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mjrf_</span></code></dt><dd><p data-bi="bi-101">与 filament 渲染相关的函数，例如 <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-render"><span class="std std-ref">mjrf_render</span></a>。</p><div class="en-orig" data-for="bi-101" lang="en">Function related to filament rendering, for example <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-render"><span class="std std-ref">mjrf_render</span></a>.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mjr_</span></code></dt><dd><p data-bi="bi-102">与 OpenGL 渲染相关的函数，例如 <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-render"><span class="std std-ref">mjr_render</span></a>。</p><div class="en-orig" data-for="bi-102" lang="en">Function related to OpenGL rendering, for example <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-render"><span class="std std-ref">mjr_render</span></a>.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mjui_</span></code></dt><dd><p data-bi="bi-103">与 UI 框架相关的函数，例如 <a class="reference internal" href="../APIreference/APIfunctions.html#mjui-update"><span class="std std-ref">mjui_update</span></a>。</p><div class="en-orig" data-for="bi-103" lang="en">Function related to UI framework, for example <a class="reference internal" href="../APIreference/APIfunctions.html#mjui-update"><span class="std std-ref">mjui_update</span></a>.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mjcb_</span></code></dt><dd><p data-bi="bi-104">全局回调函数指针，例如 <a class="reference internal" href="../APIreference/APIglobals.html#mjcb-control"><span class="std std-ref">mjcb_control</span></a>。用户可以通过将这些全局指针设置为用户定义的函数来安装自定义回调。</p><div class="en-orig" data-for="bi-104" lang="en">Global callback function pointer, for example <a class="reference internal" href="../APIreference/APIglobals.html#mjcb-control"><span class="std std-ref">mjcb_control</span></a>. The user can install
+custom callbacks by setting these global pointers to user-defined functions.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mjd_</span></code></dt><dd><p data-bi="bi-105">用于计算导数的函数，例如 <a class="reference internal" href="../APIreference/APIfunctions.html#mjd-transitionfd"><span class="std std-ref">mjd_transitionFD</span></a>。</p><div class="en-orig" data-for="bi-105" lang="en">Functions for computing derivatives, for example <a class="reference internal" href="../APIreference/APIfunctions.html#mjd-transitionfd"><span class="std std-ref">mjd_transitionFD</span></a>.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mjs_</span></code></dt><dd><p data-bi="bi-106">用于 <a class="reference internal" href="modeledit.html"><span class="doc">程序化模型编辑</span></a> 的函数，例如 <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-addjoint"><span class="std std-ref">mjs_addJoint</span></a>。</p><div class="en-orig" data-for="bi-106" lang="en">Functions for <a class="reference internal" href="modeledit.html"><span class="doc">procedural model editing</span></a>, for example <a class="reference internal" href="../APIreference/APIfunctions.html#mjs-addjoint"><span class="std std-ref">mjs_addJoint</span></a>.</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mjb_</span></code></dt><dd><p data-bi="bi-107">用于 <a class="reference internal" href="simulation.html#sibatch"><span class="std std-ref">批量仿真</span></a> 的函数，声明于 <code class="docutils literal notranslate"><span class="pre">mujoco/mjbatch.h</span></code> 中，例如 <a class="reference internal" href="../APIreference/APIfunctions.html#mjb-step"><span class="std std-ref">mjb_step</span></a>。</p><div class="en-orig" data-for="bi-107" lang="en">Functions for <a class="reference internal" href="simulation.html#sibatch"><span class="std std-ref">batched simulation</span></a>, declared in <code class="docutils literal notranslate"><span class="pre">mujoco/mjbatch.h</span></code>, for example <a class="reference internal" href="../APIreference/APIfunctions.html#mjb-step"><span class="std std-ref">mjb_step</span></a>.</div>
+</dd>
+</dl>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+</article>
+</div>
+<footer>
+<div class="related-pages">
+<a class="next-page" href="simulation.html">
+<div class="page-info">
+<div class="context">
+<span>Next</span>
+</div>
+<div class="title">仿真</div>
+</div>
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+</a>
+<a class="prev-page" href="../XMLreference.html">
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+<div class="page-info">
+<div class="context">
+<span>Previous</span>
+</div>
+<div class="title">XML 参考</div>
+</div>
+</a>
+</div>
+<div class="bottom-of-page">
+<div class="left-details">
+<div class="copyright">
+                Copyright © DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+</div>
+<div class="right-details">
+</div>
+</div>
+</footer>
+</div>
+<aside class="toc-drawer">
+<div class="toc-sticky toc-scroll">
+<div class="toc-title-container">
+<span class="toc-title">
+            On this page
+          </span>
+</div>
+<div class="toc-tree-container">
+<div class="toc-tree">
+<ul>
+<li><a class="reference internal" href="#">编程</a><ul>
+<li><a class="reference internal" href="#inintro">简介</a></li>
+<li><a class="reference internal" href="#instart">快速入门</a></li>
+<li><a class="reference internal" href="#inbuild">从源码构建</a></li>
+<li><a class="reference internal" href="#bazel">使用 Bazel 构建</a></li>
+<li><a class="reference internal" href="#inbuilddocs">构建文档</a></li>
+<li><a class="reference internal" href="#inheader">头文件</a></li>
+<li><a class="reference internal" href="#inversion">版本与兼容性</a></li>
+<li><a class="reference internal" href="#innaming">命名约定</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div><script src="../_static/documentation_options.js?v=7d86a446"></script>
+<script src="../_static/doctools.js?v=fd6eb6e6"></script>
+<script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+<script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+<script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="../_static/copybutton.js?v=f281be69"></script>
+<script src="../_static/translations.js?v=540d3cec"></script>
+<script src="../_static/katex.min.js?v=5cc8ed51"></script>
+<script src="../_static/auto-render.min.js?v=af98beb9"></script>
+<script src="../_static/katex_autorenderer.js?v=ae454eff"></script>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<script src="../_static/linenumbers.js?v=ebda5d35"></script>
+<script src="../_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+<script src="../_static/bilingual.js?v=25c2633d"></script></body></html>

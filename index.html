@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MuJoCo 离线资料包</title>
+<style>
+  :root {
+    --paper: #eef1f5;
+    --panel: #ffffff;
+    --ink: #142038;
+    --muted: #5a6880;
+    --line: #d5dbe4;
+    --joint: #2a4fd6;
+    --contact: #e8962e;
+    --link-geom: #c9b48f;
+    --display: "Bahnschrift", "DIN Alternate", "Segoe UI", "Microsoft YaHei", sans-serif;
+    --text: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #121a29;
+      --panel: #1a2438;
+      --ink: #e6ebf3;
+      --muted: #97a3b8;
+      --line: #2c3a53;
+      --joint: #7d9bff;
+      --contact: #f2ab4f;
+      --link-geom: #8f7f63;
+    }
+  }
+  * { box-sizing: border-box; }
+  .hero > *, .primary > *, .path > *, .res li > * { min-width: 0; }
+  .res span, .entry p { overflow-wrap: anywhere; }
+  html { background: var(--paper); color: var(--ink); font-family: var(--text); }
+  body { margin: 0; line-height: 1.7; }
+  a { color: inherit; }
+  a:focus-visible { outline: 3px solid var(--joint); outline-offset: 3px; border-radius: 4px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+
+  /* hero */
+  .hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 32px; align-items: center; padding: 56px 0 24px; }
+  .hero h1 { font-family: var(--display); font-weight: 600; font-size: clamp(40px, 6vw, 68px); line-height: 1.05; margin: 0 0 18px; letter-spacing: -0.5px; }
+  .hero h1 .sub { display: block; font-family: var(--text); font-weight: 700; font-size: 0.5em; letter-spacing: 1px; margin-top: 10px; }
+  .hero p { color: var(--muted); font-size: 16px; max-width: 34em; margin: 0 0 22px; }
+  .facts { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 0; padding: 0; list-style: none; font-size: 14px; color: var(--muted); }
+  .facts b { font-family: var(--display); font-weight: 600; color: var(--ink); font-size: 18px; margin-right: 4px; }
+  .stage { position: relative; aspect-ratio: 1 / 0.86; }
+  .stage canvas { width: 100%; height: 100%; display: block; }
+  .stage figcaption { position: absolute; right: 0; bottom: 0; font-size: 12px; color: var(--muted); }
+
+  /* primary entries */
+  .primary { display: grid; grid-template-columns: 1.35fr 1fr; gap: 20px; margin: 18px 0 44px; }
+  .entry { display: block; text-decoration: none; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 26px 28px 24px; position: relative; overflow: hidden; }
+  .entry:hover { border-color: var(--joint); }
+  .entry h2 { font-size: 24px; margin: 0 0 6px; }
+  .entry p { margin: 0 0 16px; color: var(--muted); font-size: 15px; }
+  .entry .go { display: inline-block; font-weight: 700; color: var(--joint); font-size: 15px; }
+  .entry.docs { border-left: 6px solid var(--joint); }
+  .entry.docs h2 { font-size: 28px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 18px; padding: 0; list-style: none; }
+  .chips li { font-size: 13px; padding: 2px 10px; border-radius: 999px; background: color-mix(in srgb, var(--joint) 10%, transparent); color: var(--ink); }
+  .formats { display: flex; gap: 14px; flex-wrap: wrap; font-size: 15px; align-items: baseline; }
+  .formats span { color: var(--muted); font-size: 14px; }
+  .entry.tut { display: flex; flex-direction: column; }
+  .entry .go.big { align-self: flex-start; text-decoration: none; background: var(--joint); color: var(--panel); padding: 8px 18px; border-radius: 8px; margin: 0 0 16px; }
+  .entry .go.big:hover { filter: brightness(1.08); }
+  .formats a { font-weight: 700; color: var(--joint); text-decoration: none; }
+  .formats a:hover, .entry:hover .go { text-decoration: underline; }
+
+  /* path */
+  h3.sec { font-size: 18px; margin: 0 0 14px; }
+  .path { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin: 0 0 48px; padding: 0; list-style: none; counter-reset: step; }
+  .path li { counter-increment: step; padding: 0 22px 0 0; position: relative; }
+  .path li::before { content: counter(step); display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--joint); color: var(--joint); font-family: var(--display); font-weight: 600; margin-bottom: 10px; background: var(--paper); position: relative; z-index: 1; }
+  .path li:not(:last-child)::after { content: ""; position: absolute; top: 15px; left: 30px; right: 0; height: 2px; background: var(--line); }
+  .path strong { display: block; font-size: 16px; }
+  .path span { color: var(--muted); font-size: 14px; }
+
+  /* resources list */
+  .res { margin: 0 0 48px; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+  .res li { display: grid; grid-template-columns: 220px 1fr; gap: 18px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .res a { font-weight: 700; text-decoration: none; color: var(--joint); }
+  .res a:hover { text-decoration: underline; }
+  .res span { color: var(--muted); font-size: 15px; }
+  code { font-family: Consolas, monospace; font-size: 0.92em; background: color-mix(in srgb, var(--ink) 7%, transparent); padding: 1px 5px; border-radius: 4px; }
+
+  footer { color: var(--muted); font-size: 13px; padding: 0 0 40px; }
+  footer p { margin: 4px 0; max-width: 60em; }
+
+  @media (max-width: 820px) {
+    .hero, .primary { grid-template-columns: 1fr; }
+    .hero { padding-top: 32px; }
+    .stage { max-width: 420px; }
+    .path { grid-template-columns: 1fr; gap: 18px; }
+    .path li::after { display: none; }
+    .res li { grid-template-columns: 1fr; gap: 2px; }
+    .wrap { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <section class="hero">
+    <div>
+      <h1>MuJoCo<span class="sub">离线学习资料包</span></h1>
+      <p>为内网环境整理的 MuJoCo 资料：中文入门教程、完整官方文档（中英两版）、示例模型和官方 notebook。全部内容在本地，断网也能用。</p>
+      <ul class="facts">
+        <li><b>4.0.1</b>对应版本</li>
+        <li><b>32 万字</b>中文官方文档</li>
+        <li><b>2026-11-16</b>文档源码日期</li>
+      </ul>
+    </div>
+    <figure class="stage" style="margin:0">
+      <canvas id="sim" aria-label="双摆仿真动画：两节连杆在重力下摆动" role="img"></canvas>
+      <figcaption>双摆，教程第 4 章的示例模型</figcaption>
+    </figure>
+  </section>
+
+  <section class="primary">
+    <a class="entry docs" href="官方文档_中文HTML/index.html">
+      <h2>官方文档 · 中文版</h2>
+      <p>mujoco.readthedocs.io 全站的中文翻译，带全文搜索和公式渲染。每段都能展开英文原文对照，拿不准的地方随时核对。</p>
+      <ul class="chips">
+        <li>概览</li><li>计算原理</li><li>建模</li><li>XML 参考</li><li>编程</li><li>API 参考</li><li>Python</li><li>MJX</li><li>MuJoCo Warp</li><li>Studio</li>
+      </ul>
+      <span class="go">打开中文文档</span>
+    </a>
+    <div class="entry tut">
+      <h2>中文入门教程</h2>
+      <p>14 章，从安装、MJCF 建模到控制、接触调参和 GPU 并行，示例代码都在 MuJoCo 4.0.1 上跑通过。每个小节都能一键跳到官方文档的对应部分。</p>
+      <a class="go big" href="官方文档_中文HTML/tutorial/index.html">在线阅读</a>
+      <div class="formats">
+        <span>下载：</span>
+        <a href="MuJoCo入门教程.pdf">PDF</a>
+        <a href="MuJoCo入门教程.docx">Word</a>
+        <a href="MuJoCo入门教程.md">Markdown</a>
+      </div>
+    </div>
+  </section>
+
+  <h3 class="sec">建议的上手顺序</h3>
+  <ol class="path">
+    <li><strong><a href="官方文档_中文HTML/tutorial/index.html" style="text-decoration:none">读入门教程前 7 章</a></strong><span>装好环境，跑通第一个模型，搞清 MjModel / MjData / mj_step。</span></li>
+    <li><strong>对照中文文档查细节</strong><span>遇到 XML 属性或函数，查“XML 参考”和“API 参考”。</span></li>
+    <li><strong>改示例模型和 notebook</strong><span>从 <code>model\</code> 里的现成模型开始改，比从零写快。</span></li>
+  </ol>
+
+  <h3 class="sec">其他资料</h3>
+  <ul class="res">
+    <li><a href="官方文档_HTML/index.html">官方文档 · 英文原版</a><span>中文版有疑问时以它为准。</span></li>
+    <li><a href="官方仓库_模型与教程/model/">示例模型</a><span>humanoid、car、flex 等官方 MJCF 模型，可直接拖进查看器。</span></li>
+    <li><a href="官方仓库_模型与教程/python/">Python 教程 notebook</a><span>tutorial、LQR、least_squares、rollout、mjspec；MJX 的在 <code>官方仓库_模型与教程\mjx\</code>。</span></li>
+    <li><a href="术语表.md">术语对照表</a><span>中文版用到的约 60 个译名，例如 actuator 译作执行器。</span></li>
+    <li><a href="README.txt">README</a><span>资料包里每个文件夹的说明。</span></li>
+  </ul>
+
+  <footer>
+    <p>中文官方文档由 Claude Sonnet 根据英文版翻译，每页顶部有提示；表述有出入时以英文版为准。</p>
+    <p>如果文档页面打开是空白或搜索不能用，运行同目录的 <code>启动官方文档.bat</code>，它会在本机起一个服务再打开本页。</p>
+  </footer>
+</main>
+
+<script>
+(function () {
+  const canvas = document.getElementById('sim');
+  const ctx = canvas.getContext('2d');
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // double pendulum, equal masses and lengths, RK4
+  const g = 9.81, L = 1, m = 1, damping = 0.02;
+  let s = [2.2, 2.9, 0, 0]; // th1, th2, w1, w2
+  function deriv([t1, t2, w1, w2]) {
+    const d = t1 - t2, den = 2 * m + m - m * Math.cos(2 * d);
+    const a1 = (-g * (2 * m + m) * Math.sin(t1) - m * g * Math.sin(t1 - 2 * t2)
+      - 2 * Math.sin(d) * m * (w2 * w2 * L + w1 * w1 * L * Math.cos(d))) / (L * den);
+    const a2 = (2 * Math.sin(d) * (w1 * w1 * L * (m + m) + g * (m + m) * Math.cos(t1)
+      + w2 * w2 * L * m * Math.cos(d))) / (L * den);
+    return [w1, w2, a1 - damping * w1, a2 - damping * w2];
+  }
+  function step(h) {
+    const k1 = deriv(s);
+    const k2 = deriv(s.map((v, i) => v + h / 2 * k1[i]));
+    const k3 = deriv(s.map((v, i) => v + h / 2 * k2[i]));
+    const k4 = deriv(s.map((v, i) => v + h * k3[i]));
+    s = s.map((v, i) => v + h / 6 * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]));
+  }
+
+  const trail = [];
+  let W, H, scale, ox, oy;
+  function resize() {
+    const r = canvas.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    canvas.width = r.width * dpr; canvas.height = r.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    W = r.width; H = r.height; scale = Math.min(W, H) * 0.23; ox = W / 2; oy = H * 0.44;
+  }
+  function capsule(x1, y1, x2, y2, r, color) {
+    ctx.strokeStyle = color; ctx.lineWidth = r * 2; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  }
+  function joint(x, y, color, paper) {
+    ctx.fillStyle = paper; ctx.beginPath(); ctx.arc(x, y, 7, 0, 7); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 7, 0, 7); ctx.stroke();
+  }
+  function draw() {
+    const ink = css('--ink'), line = css('--line'), jc = css('--joint'), cc = css('--contact'), geom = css('--link-geom'), paper = css('--paper');
+    ctx.clearRect(0, 0, W, H);
+    // mount bar and reach circle
+    ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.setLineDash([4, 6]);
+    ctx.beginPath(); ctx.arc(ox, oy, 2 * scale, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = ink; ctx.fillRect(ox - 46, oy - 16, 92, 6);
+    const [t1, t2] = s;
+    const x1 = ox + scale * Math.sin(t1), y1 = oy + scale * Math.cos(t1);
+    const x2 = x1 + scale * Math.sin(t2), y2 = y1 + scale * Math.cos(t2);
+    trail.push([x2, y2]); if (trail.length > 140) trail.shift();
+    for (let i = 1; i < trail.length; i++) {
+      ctx.strokeStyle = cc; ctx.globalAlpha = i / trail.length * 0.7; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(...trail[i - 1]); ctx.lineTo(...trail[i]); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    capsule(ox, oy, x1, y1, 9, geom);
+    capsule(x1, y1, x2, y2, 9, geom);
+    joint(ox, oy, jc, paper); joint(x1, y1, jc, paper);
+    ctx.fillStyle = cc; ctx.beginPath(); ctx.arc(x2, y2, 6, 0, 7); ctx.fill();
+  }
+
+  resize(); window.addEventListener('resize', resize);
+  if (reduce) {
+    s = [0.6, 1.4, 0, 0]; trail.length = 0; draw();
+    window.addEventListener('resize', draw);
+    return;
+  }
+  let last = null;
+  function frame(t) {
+    if (last !== null) {
+      let dt = Math.min(0.033, (t - last) / 1000);
+      while (dt > 0) { const h = Math.min(0.004, dt); step(h); dt -= h; }
+    }
+    last = t;
+    if (s[2] * s[2] + s[3] * s[3] < 0.05 && Math.abs(Math.sin(s[0])) < 0.1) { s = [2.2, 2.9, 0, 0]; trail.length = 0; }
+    draw(); requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

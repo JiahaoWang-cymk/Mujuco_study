@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html class="no-js" data-content_root="./" lang="zh-CN">
+<head><meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="light dark" name="color-scheme"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="_static/favicons/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+<link href="_static/favicons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="_static/favicons/favicon-180x180.png" rel="apple-touch-icon" sizes="180x180" type="image/png"/>
+<link href="_static/favicons/favicon-180x180.png" rel="icon" sizes="180x180" type="image/png"/>
+<link href="_static/favicons/favicon-192x192.png" rel="icon" sizes="192x192" type="image/png"/><link href="genindex.html" rel="index" title="索引"/><link href="search.html" rel="search" title="搜索"/><link href="computation/index.html" rel="next" title="计算"/><link href="tutorial/index.html" rel="prev" title="入门教程"/>
+<link as="image" href="_static/banner.svg" rel="prefetch"/>
+<!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+<title>概览 - MuJoCo 文档（中文）</title>
+<link href="_static/pygments.css?v=b86133f3" rel="stylesheet" type="text/css"/>
+<link href="_static/styles/furo.css?v=7bdb33bb" rel="stylesheet" type="text/css"/>
+<link href="_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
+<link href="_static/katex/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="_static/katex-math.css?v=05624691" rel="stylesheet" type="text/css"/>
+<link href="_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="_static/styles/furo-extensions.css?v=8dab3a3b" rel="stylesheet" type="text/css"/>
+<link href="_static/theme_overrides.css?v=8d83ad8c" rel="stylesheet" type="text/css"/>
+<link href="_static/theme_overrides_mjwarp.css?v=e08d3b36" rel="stylesheet" type="text/css"/>
+<link href="_static/zh_overrides.css?v=ee52c62c" rel="stylesheet" type="text/css"/>
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #16213a;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #2a4fd6;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #2a4fd6;
+  --color-brand-content: #2a4fd6;
+  --color-background-secondary: #f4f6f9;
+  --color-sidebar-background: #f4f6f9;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+      }
+    }
+  }
+</style></head>
+<body>
+<script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+<symbol id="svg-toc" viewbox="0 0 24 24">
+<title>Contents</title>
+<svg fill="currentColor" stroke="currentColor" stroke-width="0" viewbox="0 0 1024 1024">
+<path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"></path>
+</svg>
+</symbol>
+<symbol id="svg-menu" viewbox="0 0 24 24">
+<title>Menu</title>
+<svg class="feather-menu" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<line x1="3" x2="21" y1="12" y2="12"></line>
+<line x1="3" x2="21" y1="6" y2="6"></line>
+<line x1="3" x2="21" y1="18" y2="18"></line>
+</svg>
+</symbol>
+<symbol id="svg-arrow-right" viewbox="0 0 24 24">
+<title>Expand</title>
+<svg class="feather-chevron-right" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</symbol>
+<symbol id="svg-sun" viewbox="0 0 24 24">
+<title>Light mode</title>
+<svg class="feather-sun" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" x2="12" y1="1" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="23"></line>
+<line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+<line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+<line x1="1" x2="3" y1="12" y2="12"></line>
+<line x1="21" x2="23" y1="12" y2="12"></line>
+<line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+<line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
+</svg>
+</symbol>
+<symbol id="svg-moon" viewbox="0 0 24 24">
+<title>Dark mode</title>
+<svg class="icon-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+</svg>
+</symbol>
+<symbol id="svg-sun-with-moon" viewbox="0 0 24 24">
+<title>Auto light/dark, in light mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z" style="opacity: 50%"></path>
+<line x1="14.5" x2="14.5" y1="3.25" y2="1.25"></line>
+<line x1="14.5" x2="14.5" y1="15.85" y2="17.85"></line>
+<line x1="10.044" x2="8.63" y1="5.094" y2="3.68"></line>
+<line x1="19" x2="20.414" y1="14.05" y2="15.464"></line>
+<line x1="8.2" x2="6.2" y1="9.55" y2="9.55"></line>
+<line x1="20.8" x2="22.8" y1="9.55" y2="9.55"></line>
+<line x1="10.044" x2="8.63" y1="14.006" y2="15.42"></line>
+<line x1="19" x2="20.414" y1="5.05" y2="3.636"></line>
+<circle cx="14.5" cy="9.55" r="3.6"></circle>
+</svg>
+</symbol>
+<symbol id="svg-moon-with-sun" viewbox="0 0 24 24">
+<title>Auto light/dark, in dark mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"></path>
+<line style="opacity: 50%" x1="18" x2="18" y1="3.705" y2="2.5"></line>
+<line style="opacity: 50%" x1="18" x2="18" y1="11.295" y2="12.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="4.816" y2="3.964"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="10.212" y2="11.063"></line>
+<line style="opacity: 50%" x1="14.205" x2="13.001" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="21.795" x2="23" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="10.184" y2="11.036"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="4.789" y2="3.937"></line>
+<circle cx="18" cy="7.5" r="2.169" style="opacity: 50%"></circle>
+</svg>
+</symbol>
+<symbol id="svg-pencil" viewbox="0 0 24 24">
+<svg class="icon-tabler-pencil-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
+<path d="M13.5 6.5l4 4"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+<symbol id="svg-eye" viewbox="0 0 24 24">
+<svg class="icon-tabler-eye-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
+<path d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+</svg>
+<input aria-label="Toggle site navigation sidebar" class="sidebar-toggle" id="__navigation" name="__navigation" type="checkbox"/>
+<input aria-label="Toggle table of contents sidebar" class="sidebar-toggle" id="__toc" name="__toc" type="checkbox"/>
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+<div class="page">
+<header class="mobile-header">
+<div class="header-left">
+<label class="nav-overlay-icon" for="__navigation">
+<span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+</label>
+</div>
+<div class="header-center">
+<a href="index.html"><div class="brand">MuJoCo 文档（中文）</div></a>
+</div>
+<div class="header-right">
+<div class="theme-toggle-container theme-toggle-header">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-header-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+</header>
+<aside class="sidebar-drawer">
+<div class="sidebar-container">
+<div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+<div class="sidebar-logo-container">
+<img alt="Logo" class="sidebar-logo" src="_static/banner.svg"/>
+</div>
+<span class="sidebar-brand-text">MuJoCo 文档（中文）</span>
+</a><form action="search.html" class="sidebar-search-container" method="get" role="search">
+<input aria-label="搜索" class="sidebar-search" name="q" placeholder="搜索"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/index.html">入门教程</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">概览</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="computation/index.html">计算</a><input aria-label="Toggle navigation of 计算" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="computation/fluid.html">流体力</a></li>
+<li class="toctree-l2"><a class="reference internal" href="computation/speculative.html">推测接触</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modeling.html">建模</a></li>
+<li class="toctree-l1"><a class="reference internal" href="XMLreference.html">XML 参考</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="programming/index.html">编程</a><input aria-label="Toggle navigation of 编程" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="programming/simulation.html">仿真</a></li>
+<li class="toctree-l2"><a class="reference internal" href="programming/visualization.html">可视化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="programming/rendering.html">渲染</a></li>
+<li class="toctree-l2"><a class="reference internal" href="programming/ui.html">用户界面</a></li>
+<li class="toctree-l2"><a class="reference internal" href="programming/modeledit.html">模型编辑</a></li>
+<li class="toctree-l2"><a class="reference internal" href="programming/samples.html">代码示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="programming/extension.html">扩展</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="APIreference/index.html">API 参考</a><input aria-label="Toggle navigation of API 参考" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="APIreference/APItypes.html">类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="APIreference/APIfunctions.html">函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="APIreference/APIglobals.html">全局变量</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="studio/index.html">Studio</a><input aria-label="Toggle navigation of Studio" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="studio/web_viewers.html">Web 查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="studio/native_viewers.html">原生查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="studio/architecture.html">架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="studio/python_plugins.html">Python 插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="studio/cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="python.html">Python</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="mjx.html">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="unity.html">Unity 插件</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="OpenUSD/building.html">构建</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OpenUSD/mjcf_file_format_plugin.html">文件格式插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OpenUSD/importing.html">导入</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OpenUSD/exporting.html">导出</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="models.html">模型库</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">更新日志</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<div class="main">
+<div class="content">
+<div class="article-container">
+<a class="back-to-top muted-link" href="#">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+</svg>
+<span>Back to top</span>
+</a>
+<div class="content-icon-container">
+<div class="view-this-page">
+<a class="muted-link" href="_sources/overview.rst.txt" title="View this page">
+<svg><use href="#svg-eye"></use></svg>
+<span class="visually-hidden">View this page</span>
+</a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-content-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+<article id="furo-main-content" role="main">
+<section id="id1">
+<h1 data-bi="bi-1">概览<a class="headerlink" href="#id1" title="链接到此标题。">#</a></h1><div class="en-orig en-h" data-for="bi-1" lang="en">Overview</div>
+<div class="mt-notice admonition note">
+<p class="admonition-title">备注</p>
+<p>本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 <code class="docutils literal notranslate"><span class="pre">术语表.md</span></code> 。</p>
+</div>
+<section id="id2">
+<h2 data-bi="bi-2">简介<a class="headerlink" href="#id2" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-2" lang="en">Introduction</div>
+<p data-bi="bi-3"><strong>MuJoCo</strong> 是 <strong>Mu</strong>lti-<strong>Jo</strong>int dynamics with <strong>Co</strong>ntact（带接触的多关节动力学）的缩写。它是一款通用物理引擎，旨在促进机器人学、生物力学、图形学与动画、机器学习等领域的研究与开发，这些领域都需要对与环境相互作用的关节式结构进行快速而精确的仿真。MuJoCo 最初由 Roboti LLC 开发，2021 年 10 月被 Google DeepMind 收购，并 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/LICENSE">免费开放</a> 使用，于 2022 年 5 月开源。MuJoCo 代码库位于 GitHub 的 <a class="reference external" href="https://github.com/google-deepmind/mujoco">google-deepmind/mujoco</a> 仓库。</p><div class="en-orig" data-for="bi-3" lang="en"><strong>MuJoCo</strong> stands for <strong>Mu</strong>lti-<strong>Jo</strong>int dynamics with <strong>Co</strong>ntact. It is a general purpose physics engine that
+aims to facilitate research and development in robotics, biomechanics, graphics and animation, machine learning, and
+other areas that demand fast and accurate simulation of articulated structures interacting with their environment.
+Initially developed by Roboti LLC, it was acquired and made <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/LICENSE">freely available</a> by Google DeepMind in October 2021, and open sourced in
+May 2022. The MuJoCo codebase is available at the <a class="reference external" href="https://github.com/google-deepmind/mujoco">google-deepmind/mujoco</a> repository on GitHub.</div>
+<p data-bi="bi-4">若要在浏览器中直接体验 MuJoCo 而无需安装任何东西，请访问 <a class="reference external" href="https://mujoco.org">mujoco.org</a> 网站。若要在浏览器中查看或拖放你自己的模型，请打开 <a class="reference external" href="https://live.mujoco.org">live.mujoco.org</a> 站点，该站点运行的是 <a class="reference internal" href="studio/index.html#studio"><span class="std std-ref">MuJoCo Studio</span></a> 应用的 WebAssembly 版本（无需安装即可查看，但比原生 C 慢）。</p><div class="en-orig" data-for="bi-4" lang="en">To explore MuJoCo in your browser with nothing to install, visit <a class="reference external" href="https://mujoco.org">mujoco.org</a>. To inspect or
+drag and drop your own models in the browser, open <a class="reference external" href="https://live.mujoco.org">live.mujoco.org</a>, which runs the
+WebAssembly version of the <a class="reference internal" href="studio/index.html#studio"><span class="std std-ref">MuJoCo Studio</span></a> app (convenient for zero-install inspection, though slower
+than native C).</div>
+<p data-bi="bi-5">MuJoCo 是一个带有 C API 的 C/C++ 库，面向研究人员和开发者。运行时仿真模块经过调优以最大化性能，并在由内置 XML 解析器和编译器预先分配的底层数据结构上运行。用户使用原生的 MJCF 场景描述语言来定义模型——这是一种被设计得尽可能便于人类阅读和编辑的 XML 文件格式。也可以加载 URDF 模型文件。该库提供 <a class="reference internal" href="studio/index.html#studio"><span class="std std-ref">交互式可视化（interactive visualization）</span></a> 功能，可在原生桌面窗口和网页浏览器中使用。MuJoCo 还提供大量用于计算物理相关量的实用函数。</p><div class="en-orig" data-for="bi-5" lang="en">MuJoCo is a C/C++ library with a C API, intended for researchers and developers. The runtime simulation module is tuned
+to maximize performance and operates on low-level data structures which are preallocated by the built-in XML parser and
+compiler. The user defines models in the native MJCF scene description language – an XML file format designed to be as
+human readable and editable as possible. URDF model files can also be loaded. The library includes <a class="reference internal" href="studio/index.html#studio"><span class="std std-ref">interactive
+visualization</span></a> in native desktop windows and web browsers. MuJoCo further exposes a large number of utility
+functions for computing physics-related quantities.</div>
+<p data-bi="bi-6">MuJoCo 可用于实现基于模型的计算，例如控制综合、状态估计、系统辨识、机构设计、通过逆动力学（inverse dynamics）进行数据分析，以及面向机器学习应用的并行采样。它也可以用作更传统的仿真器，包括用于游戏和交互式虚拟环境。</p><div class="en-orig" data-for="bi-6" lang="en">MuJoCo can be used to implement model-based computations such as control synthesis, state estimation, system
+identification, mechanism design, data analysis through inverse dynamics, and parallel sampling for machine learning
+applications. It can also be used as a more traditional simulator, including for gaming and interactive virtual
+environments.</div>
+<section id="features">
+<span id="id3"></span><h3 data-bi="bi-7">主要特性<a class="headerlink" href="#features" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-7" lang="en">Key features</div>
+<p data-bi="bi-8">MuJoCo 拥有一长串特性，这里概述其中最值得注意的几项。</p><div class="en-orig" data-for="bi-8" lang="en">MuJoCo has a long list of features. Here we outline the most notable ones.</div>
+<dl class="simple">
+<dt data-bi="bi-9">广义坐标与现代接触动力学相结合<div class="en-orig" data-for="bi-9" lang="en">Generalized coordinates combined with modern contact dynamics</div></dt><dd><p data-bi="bi-10">物理引擎传统上分为两类。机器人学和生物力学引擎在广义坐标（generalized coordinates，即关节坐标）下使用高效而精确的递归算法，但它们要么不处理接触动力学，要么依赖较早的弹簧-阻尼方法，而这种方法需要非常小的时间步长（time step）。游戏引擎则采用更现代的方法，通过求解优化问题来得到接触力。然而它们往往采用过度描述的笛卡尔表示，通过数值方式施加关节约束（constraint），当涉及复杂的运动学结构时会造成不精确和不稳定。MuJoCo 率先将广义坐标下的仿真与基于优化的接触动力学结合起来，此后这一方法已被其他仿真器采用。习惯了游戏引擎的用户起初可能会觉得广义坐标不够直观，参见下文 <a class="reference internal" href="#clarifications"><span class="std std-ref">补充说明</span></a> 一节。</p><div class="en-orig" data-for="bi-10" lang="en">Physics engines have traditionally separated in two categories. Robotics and biomechanics engines use efficient and
+accurate recursive algorithms in generalized or joint coordinates. However they either leave out contact dynamics, or
+rely on the earlier spring-damper approach which requires very small time-steps. Gaming engines use a more modern
+approach where contact forces are found by solving an optimization problem. However, they often resort to the
+over-specified Cartesian representation where joint constraints are imposed numerically, causing inaccuracies and
+instabilities when elaborate kinematic structures are involved. MuJoCo pioneered the combination of simulation in
+generalized coordinates with optimization-based contact dynamics. This approach has since been adopted by other
+simulators. Users accustomed to gaming engines may find the generalized coordinates counterintuitive at first; see
+<a class="reference internal" href="#clarifications"><span class="std std-ref">Clarifications</span></a> section below.</div>
+</dd>
+<dt data-bi="bi-11">软、凸且可解析求逆的接触动力学<div class="en-orig" data-for="bi-11" lang="en">Soft, convex and analytically-invertible contact dynamics</div></dt><dd><p data-bi="bi-12">在现代接触动力学方法中，摩擦接触（contact）产生的力或冲量通常被定义为线性或非线性互补问题（complementarity problem，LCP 或 NCP）的解，这两者都是 NP 难的。MuJoCo 基于对接触物理的另一种表述，该表述可归结为凸优化（convex optimization）问题，详见 <a class="reference internal" href="computation/index.html"><span class="doc">计算</span></a> 一章。我们的模型允许软接触（soft contact）和其他约束，并具有唯一定义的逆，便于数据分析和控制应用。默认的牛顿求解器（solver）提供二次收敛；备选算法包括共轭梯度法和能够处理椭圆型摩擦锥的广义投影高斯-赛德尔（Projected Gauss-Seidel）方法。求解器对摩擦接触进行统一处理，包括扭转摩擦和滚动摩擦、无摩擦接触、关节与肌腱限位、关节与肌腱中的干摩擦，以及多种等式约束。</p><div class="en-orig" data-for="bi-12" lang="en">In the modern approach to contact dynamics, the forces or impulses caused by frictional contacts are usually defined
+as the solution to a linear or non-linear complementarity problem (LCP or NCP), both of which are NP-hard. MuJoCo is
+based on a different formulation of the physics of contact which reduces to a convex optimization problem, as
+explained in detail in the <a class="reference internal" href="computation/index.html"><span class="doc">Computation</span></a> chapter. Our model allows soft contacts and other constraints,
+and has a uniquely-defined inverse facilitating data analysis and control applications. The default Newton solver
+provides quadratic convergence; alternative algorithms include a conjugate gradient method and a generalized
+Projected Gauss-Seidel method that can handle elliptic friction cones. The solver provides unified treatment of
+frictional contacts including torsional and rolling friction, frictionless contacts, joint and tendon limits, dry
+friction in joints and tendons, as well as a variety of equality constraints.</div>
+</dd>
+<dt data-bi="bi-13">肌腱几何<div class="en-orig" data-for="bi-13" lang="en">Tendon geometry</div></dt><dd><p data-bi="bi-14">MuJoCo 可以对肌腱（tendon）的三维几何建模——肌腱是服从包绕和经过点约束的最短路径弦。其机制与 OpenSim 中的类似，但实现了一组更受限的闭式包绕选项以加快计算。它还提供机器人学专用的结构，例如滑轮和耦合自由度（degree of freedom，DoF）。肌腱既可以用于驱动，也可以对肌腱长度施加不等式或等式约束。</p><div class="en-orig" data-for="bi-14" lang="en">MuJoCo can model the 3D geometry of tendons – which are minimum-path-length strings obeying wrapping and via-point
+constraints. The mechanism is similar to the one in OpenSim but implements a more restricted, closed-form set of
+wrapping options to speed up computation. It also offers robotics-specific structures such as pulleys and coupled
+degrees of freedom. Tendons can be used for actuation as well as to impose inequality or equality constraints on the
+tendon length.</div>
+</dd>
+<dt data-bi="bi-15">通用驱动模型<div class="en-orig" data-for="bi-15" lang="en">General actuation model</div></dt><dd><p data-bi="bi-16">在使用与模型无关的 API 的同时设计足够丰富的驱动模型是具有挑战性的。MuJoCo 通过采用抽象的执行器（actuator）模型来实现这一目标，该模型可以具有不同类型的传动（transmission）、力的生成和内部动力学（即让整体动力学成为三阶的状态变量）。这些组件可以被实例化，从而以统一的方式对电机、气动和液压缸、PD 控制器、生物肌肉以及许多其他执行器建模。</p><div class="en-orig" data-for="bi-16" lang="en">Designing a sufficiently rich actuation model while using a model-agnostic API is challenging. MuJoCo achieves this
+goal by adopting an abstract actuation model that can have different types of transmission, force generation, and
+internal dynamics (i.e., state variables which make the overall dynamics 3rd order). These components can be
+instantiated so as to model motors, pneumatic and hydraulic cylinders, PD controllers, biological muscles and many
+other actuators in a unified way.</div>
+</dd>
+<dt data-bi="bi-17">可重构的计算流水线<div class="en-orig" data-for="bi-17" lang="en">Reconfigurable computation pipeline</div></dt><dd><p data-bi="bi-18">MuJoCo 的顶层步进函数 <a class="reference internal" href="APIreference/APIfunctions.html#mj-step"><span class="std std-ref">mj_step</span></a> 会运行完整的正动力学（forward dynamics）并推进仿真状态。然而在仿真之外的许多应用中，能够只运行计算流水线的选定部分是有益的。为此，MuJoCo 提供了大量 <a class="reference internal" href="XMLreference.html#option-flag"><span class="std std-ref">标志</span></a> 可供任意组合设置，使用户除了通过 <a class="reference internal" href="XMLreference.html#option"><span class="std std-ref">选项</span></a> 选择算法和算法参数之外，还能按需重新配置流水线。此外，许多较底层的函数可以被直接调用。用户定义的回调函数可以实现自定义力场、执行器、碰撞例程和反馈控制器。</p><div class="en-orig" data-for="bi-18" lang="en">MuJoCo has a top-level stepper function <a class="reference internal" href="APIreference/APIfunctions.html#mj-step"><span class="std std-ref">mj_step</span></a> which runs the entire forward dynamics and advances the state
+of the simulation. In many applications beyond simulation, however, it is beneficial to be able to run selected parts
+of the computation pipeline. To this end MuJoCo provides a large number of <a class="reference internal" href="XMLreference.html#option-flag"><span class="std std-ref">flags</span></a> which can be
+set in any combination, allowing the user to reconfigure the pipeline as needed, beyond the selection of algorithms
+and algorithm parameters via <a class="reference internal" href="XMLreference.html#option"><span class="std std-ref">options</span></a>. Furthermore many lower-level functions can be called directly.
+User-defined callbacks can implement custom force fields, actuators, collision routines, and feedback controllers.</div>
+</dd>
+<dt data-bi="bi-19">模型编译<div class="en-orig" data-for="bi-19" lang="en">Model compilation</div></dt><dd><p data-bi="bi-20">如上所述，用户用称为 MJCF 的 XML 文件格式定义 MuJoCo 模型（model）。该模型随后由内置编译器编译成 <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 这一底层数据结构，它是交叉索引的，并针对运行时计算做了优化。编译后的模型也可以保存为二进制 MJB 文件。</p><div class="en-orig" data-for="bi-20" lang="en">As mentioned above, the user defines a MuJoCo model in an XML file format called MJCF. This model is then compiled by
+the built-in compiler into the low-level data structure <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>, which is cross-indexed and optimized for
+runtime computation. The compiled model can also be saved in a binary MJB file.</div>
+</dd>
+</dl>
+<dl id="modelanddata">
+<dt data-bi="bi-21">模型与数据的分离<div class="en-orig" data-for="bi-21" lang="en">Separation of model and data</div></dt><dd><p data-bi="bi-22">MuJoCo 在运行时将仿真参数分为两个数据结构（C 结构体）：</p><div class="en-orig" data-for="bi-22" lang="en">MuJoCo separates simulation parameters into two data structures (C structs) at runtime:</div>
+<ul class="simple">
+<li><p data-bi="bi-23"><a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 包含模型描述，预期保持不变。其中嵌入了其他包含仿真和可视化选项的结构，这些选项偶尔需要修改，但这是由用户完成的。</p><div class="en-orig" data-for="bi-23" lang="en"><a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> contains the model description and is expected to remain constant. There are other structures
+embedded in it that contain simulation and visualization options, and those options need to be changed
+occasionally, but this is done by the user.</div></li>
+<li><p data-bi="bi-24"><a class="reference internal" href="APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 包含所有动态变量和中间结果。它被用作一块暂存区，所有函数从中读取输入并向其写入输出——这些输出随后成为仿真流水线后续阶段的输入。它还包含一个预先分配并由内部管理的栈，因此运行时模块在模型初始化之后无需调用内存分配函数。</p><div class="en-orig" data-for="bi-24" lang="en"><a class="reference internal" href="APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> contains all dynamic variables and intermediate results. It is used as a scratch pad where all
+functions read their inputs and write their outputs – which then become the inputs to subsequent stages in the
+simulation pipeline. It also contains a preallocated and internally managed stack, so that the runtime module
+does not need to call memory allocation functions after the model is initialized.</div></li>
+</ul>
+<p data-bi="bi-25">其中 <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 由编译器构建，而 <a class="reference internal" href="APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 在运行时根据 <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 构建。这种分离使得模拟多个模型、以及针对每个模型模拟多个状态和控制变得容易，进而便于采样所需的 <a class="reference internal" href="programming/simulation.html#simultithread"><span class="std std-ref">多线程</span></a> 与 <a class="reference internal" href="APIreference/APIfunctions.html#mjd-transitionfd"><span class="std std-ref">有限差分</span></a> 计算。顶层 API 函数体现了这一基本分离，格式如下：</p><div class="en-orig" data-for="bi-25" lang="en"><a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> is constructed by the compiler. <a class="reference internal" href="APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> is constructed at runtime, given
+<a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>. This separation makes it easy to simulate multiple models as well as multiple states and controls for
+each model, in turn facilitating <a class="reference internal" href="programming/simulation.html#simultithread"><span class="std std-ref">multi-threading</span></a> for sampling and <a class="reference internal" href="APIreference/APIfunctions.html#mjd-transitionfd"><span class="std std-ref">finite
+differences</span></a>. The top-level API functions reflect this basic separation, and have
+the format:</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">mj_step</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">mjModel</span><span class="o">*</span><span class="w"> </span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">mjData</span><span class="o">*</span><span class="w"> </span><span class="n">d</span><span class="p">);</span>
+</pre></div>
+</div>
+</dd>
+<dt data-bi="bi-26">性能<div class="en-orig" data-for="bi-26" lang="en">Performance</div></dt><dd><p data-bi="bi-27">MuJoCo 的运行时在初始化之后不执行任何内存分配——所有工作内存都预先分配在 <code class="docutils literal notranslate"><span class="pre">mjData</span></code> 中。单个仿真步默认是单线程的，但 <a class="reference internal" href="computation/index.html#soisland"><span class="std std-ref">约束岛</span></a> 使得在单步内按岛并行成为可能。通过创建多个共享同一个 <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> 的 <code class="docutils literal notranslate"><span class="pre">mjData</span></code> 实例并在不同线程上运行它们，可以实现大规模数据并行采样；详见 <a class="reference internal" href="programming/simulation.html#simultithread"><span class="std std-ref">多线程</span></a> 一节。</p><div class="en-orig" data-for="bi-27" lang="en">MuJoCo’s runtime performs zero memory allocations after initialization – all working memory is preallocated in
+<code class="docutils literal notranslate"><span class="pre">mjData</span></code>. A single simulation step is single-threaded by default, but <a class="reference internal" href="computation/index.html#soisland"><span class="std std-ref">constraint islands</span></a> enable
+per-island parallelism within a step. Large-scale data-parallel sampling is achieved by creating multiple <code class="docutils literal notranslate"><span class="pre">mjData</span></code>
+instances that share the same <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> and running them on separate threads; see <a class="reference internal" href="programming/simulation.html#simultithread"><span class="std std-ref">multi-threading</span></a>.</div>
+</dd>
+<dt data-bi="bi-28">交互式仿真与可视化<div class="en-orig" data-for="bi-28" lang="en">Interactive simulation and visualization</div></dt><dd><p data-bi="bi-29"><a class="reference internal" href="studio/index.html#studio"><span class="std std-ref">MuJoCo Studio</span></a> 是 MuJoCo 面向 C++ 和 Python 的现代可视化 SDK，结合了基于物理的 <a class="reference internal" href="programming/rendering.html#filamentrendering"><span class="std std-ref">Filament 渲染（rendering）</span></a>、<a class="reference external" href="https://github.com/ocornut/imgui">Dear ImGui</a> 面板和模块化插件。Studio 应用既可以在桌面端原生运行 (<a class="reference internal" href="studio/native_viewers.html#studioapp"><span class="std std-ref">独立应用</span></a>)，也可以通过 WebAssembly 在浏览器中运行，地址为 <a class="reference external" href="https://live.mujoco.org">live.mujoco.org</a> (<a class="reference internal" href="studio/web_viewers.html#studiolive"><span class="std std-ref">浏览器版本</span></a>)，Python 仿真则可以挂接 <a class="reference internal" href="studio/native_viewers.html#studiopythonnative"><span class="std std-ref">原生窗口</span></a> 或无头的 <a class="reference internal" href="studio/web_viewers.html#studiowebviewer"><span class="std std-ref">网页查看器</span></a>。</p><div class="en-orig" data-for="bi-29" lang="en"><a class="reference internal" href="studio/index.html#studio"><span class="std std-ref">MuJoCo Studio</span></a> is MuJoCo’s modern visualization SDK for C++ and Python, combining physically based
+<a class="reference internal" href="programming/rendering.html#filamentrendering"><span class="std std-ref">Filament rendering</span></a>, <a class="reference external" href="https://github.com/ocornut/imgui">Dear ImGui</a> panels, and
+modular plugins. The Studio app runs natively on desktop (<a class="reference internal" href="studio/native_viewers.html#studioapp"><span class="std std-ref">standalone app</span></a>) and in the browser via
+WebAssembly at <a class="reference external" href="https://live.mujoco.org">live.mujoco.org</a> (<a class="reference internal" href="studio/web_viewers.html#studiolive"><span class="std std-ref">browser build</span></a>), and Python
+simulations can attach either a <a class="reference internal" href="studio/native_viewers.html#studiopythonnative"><span class="std std-ref">native window</span></a> or a headless <a class="reference internal" href="studio/web_viewers.html#studiowebviewer"><span class="std std-ref">web viewer</span></a>.</div>
+<p data-bi="bi-30">MuJoCo 还包含一个经典的 <a class="reference internal" href="programming/rendering.html#classicrendering"><span class="std std-ref">OpenGL 渲染器</span></a> (由 <a class="reference internal" href="programming/samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> 示例使用)，可渲染网格（mesh）和几何基元、纹理、反射、阴影、雾、透明度、线框、天空盒，以及立体可视化（需要显卡支持四缓冲 OpenGL）。Studio 和 <code class="docutils literal notranslate"><span class="pre">simulate</span></code> 都构建在 <a class="reference internal" href="programming/visualization.html#visualization"><span class="std std-ref">抽象三维可视化器</span></a> 之上，通过各种视觉辅助帮助用户深入理解物理仿真，例如自动生成的模型骨架、等效惯性盒、接触位置和法线、分解为法向和切向分量的接触力、外部扰动力、局部坐标系、关节与执行器轴线以及文字标签。一个相关的易用性特性是能够“伸手进入”仿真，推动物体并观察物理如何响应：用户选择要施加外力和力矩的刚体（body），并看到扰动及其动力学后果的实时渲染。这可用于直观地调试模型、测试反馈控制器的响应，或将模型配置到期望的姿态。</p><div class="en-orig" data-for="bi-30" lang="en">MuJoCo also includes a classic <a class="reference internal" href="programming/rendering.html#classicrendering"><span class="std std-ref">OpenGL renderer</span></a> (used by the <a class="reference internal" href="programming/samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a>
+sample) that renders meshes and geometric primitives, textures, reflections, shadows, fog, transparency, wireframes,
+skyboxes, and stereoscopic visualization (on video cards supporting quad-buffered OpenGL). Both Studio and
+<code class="docutils literal notranslate"><span class="pre">simulate</span></code> build on the <a class="reference internal" href="programming/visualization.html#visualization"><span class="std std-ref">abstract 3D visualizer</span></a> to help users gain insight into the physics
+simulation through visual aids such as automatically generated model skeletons, equivalent inertia boxes, contact
+positions and normals, contact forces separated into normal and tangential components, external perturbation forces,
+local frames, joint and actuator axes, and text labels. A related usability feature is the ability to “reach into”
+the simulation, push objects around, and see how the physics respond: the user selects the body to which external
+forces and torques will be applied, and sees a real-time rendering of the perturbations together with their dynamic
+consequences. This can be used to debug the model visually, test the response of a feedback controller, or configure
+the model into a desired pose.</div>
+</dd>
+<dt data-bi="bi-31">强大而直观的建模语言<div class="en-orig" data-for="bi-31" lang="en">Powerful yet intuitive modeling language</div></dt><dd><p data-bi="bi-32">MuJoCo 有自己的建模语言，称为 MJCF。MJCF 的目标是让用户能够访问 MuJoCo 的全部计算能力，同时使用户能够快速开发新模型并对其进行实验。这一目标在很大程度上得益于一套完善的 <a class="reference internal" href="modeling.html#cdefault"><span class="std std-ref">默认设置</span></a> 机制，它类似于内联在 HTML 中的层叠样式表（CSS）。虽然 MJCF 有许多元素和属性，但在任何给定的模型中，用户需要设置的却出奇地少。这使得 MJCF 文件比许多其他格式更短、更易读。</p><div class="en-orig" data-for="bi-32" lang="en">MuJoCo has its own modeling language called MJCF. The goal of MJCF is to provide access to all of MuJoCo’s compute
+capabilities, and at the same time enable users to develop new models quickly and experiment with them. This goal is
+achieved in large part due to an extensive <a class="reference internal" href="modeling.html#cdefault"><span class="std std-ref">default setting</span></a> mechanism that resembles Cascading Style
+Sheets (CSS) inlined in HTML. While MJCF has many elements and attributes, the user needs to set surprisingly few of
+them in any given model. This makes MJCF files shorter and more readable than many other formats.</div>
+</dd>
+<dt data-bi="bi-33">可变形物体与自动生成<div class="en-orig" data-for="bi-33" lang="en">Deformable objects and automated generation</div></dt><dd><p data-bi="bi-34">MuJoCo 通过 <a class="reference internal" href="XMLreference.html#deformable-flex"><span class="std std-ref">flex</span></a> 元素原生地对可变形的一维杆和缆绳、二维布料和壳体以及三维软体建模，该元素结合了运动的顶点与可拉伸的几何元素、连续体和离散杆弹性，以及可变形碰撞检测（collision detection）。高层的 <a class="reference internal" href="XMLreference.html#body-flexcomp"><span class="std std-ref">flexcomp</span></a> 宏会自动将网格、栅格和参数化形状展开为底层的刚体、关节（joint）、约束和 flex 元素，它们与仿真的其余部分完全交互。</p><div class="en-orig" data-for="bi-34" lang="en">MuJoCo natively models deformable 1D rods and cables, 2D cloths and shells, and 3D soft bodies via the
+<a class="reference internal" href="XMLreference.html#deformable-flex"><span class="std std-ref">flex</span></a> element, which combines moving vertices with stretchable geometric elements,
+continuum and discrete-rod elasticity, and deformable collision detection. The high-level
+<a class="reference internal" href="XMLreference.html#body-flexcomp"><span class="std std-ref">flexcomp</span></a> macro automatically expands meshes, grids, and parametric shapes into the
+underlying bodies, joints, constraints, and flex elements, which fully interact with the rest of the simulation.</div>
+</dd>
+<dt data-bi="bi-35">约束岛与休眠<div class="en-orig" data-for="bi-35" lang="en">Constraint islands and sleeping</div></dt><dd><p data-bi="bi-36">约束求解器会自动发现相互独立的 <a class="reference internal" href="computation/index.html#soisland"><span class="std std-ref">约束岛</span></a> (即由约束耦合、可独立求解的刚体组)。这使得按岛并行成为可能，并避免过度求解：每个岛按其所需的迭代次数收敛，而不受约束的自由度会被完全跳过。此外，通过 <a class="reference internal" href="computation/index.html#sleeping"><span class="std std-ref">岛休眠</span></a> 可以冻结静止的岛，当场景的部分处于静止时可大幅减少计算量。</p><div class="en-orig" data-for="bi-36" lang="en">The constraint solver automatically discovers independent <a class="reference internal" href="computation/index.html#soisland"><span class="std std-ref">constraint islands</span></a> – groups of bodies
+coupled by constraints that can be solved independently. This enables per-island parallelism and avoids over-solving:
+each island converges with the number of iterations it needs, and unconstrained degrees of freedom are skipped
+entirely. Additionally, <a class="reference internal" href="computation/index.html#sleeping"><span class="std std-ref">island sleeping</span></a> can freeze stationary islands, substantially reducing
+computation when parts of the scene are at rest.</div>
+</dd>
+<dt data-bi="bi-37">插件系统<div class="en-orig" data-for="bi-37" lang="en">Plugin system</div></dt><dd><p data-bi="bi-38">MuJoCo 支持 <a class="reference internal" href="programming/extension.html"><span class="doc">引擎插件</span></a> 这一机制，用于以自定义元素扩展物理引擎：传感器（sensor）、执行器和被动力。插件是动态加载的共享库，向引擎注册自身，并按模型元素实例化。这使得无需修改核心引擎即可扩展 MuJoCo。</p><div class="en-orig" data-for="bi-38" lang="en">MuJoCo supports <a class="reference internal" href="programming/extension.html"><span class="doc">engine plugins</span></a> that extend the physics engine with custom
+elements: sensors, actuators, and passive forces. Plugins are dynamically loaded shared libraries that register
+themselves with the engine and are instantiated per model element. This allows extending MuJoCo without modifying
+the core engine.</div>
+</dd>
+<dt data-bi="bi-39">GPU 加速后端<div class="en-orig" data-for="bi-39" lang="en">GPU-accelerated backends</div></dt><dd><p data-bi="bi-40">除 C 引擎之外，MuJoCo 还有用于大规模并行仿真的 GPU 加速后端，即 <a class="reference internal" href="mjx.html"><span class="doc">MJX</span></a> (JAX) 和 <a class="reference internal" href="mjwarp/index.html"><span class="doc">MuJoCo Warp</span></a> (NVIDIA Warp)。两个后端使用相同的 <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> 和 <code class="docutils literal notranslate"><span class="pre">mjData</span></code> 结构，因此可以在 CPU 与 GPU 之间无缝传输。一流的 <a class="reference internal" href="python.html"><span class="doc">Python 绑定</span></a> 提供对完整 C API 的访问。</p><div class="en-orig" data-for="bi-40" lang="en">In addition to the C engine, MuJoCo has GPU-accelerated backends for large-scale parallel simulation:
+<a class="reference internal" href="mjx.html"><span class="doc">MJX</span></a> (JAX) and <a class="reference internal" href="mjwarp/index.html"><span class="doc">MuJoCo Warp</span></a> (NVIDIA Warp). Both backends consume the same
+<code class="docutils literal notranslate"><span class="pre">mjModel</span></code> and <code class="docutils literal notranslate"><span class="pre">mjData</span></code> structures, allowing seamless transfer between CPU and GPU. First-class
+<a class="reference internal" href="python.html"><span class="doc">Python bindings</span></a> provide access to the full C API.</div>
+</dd>
+</dl>
+</section>
+<section id="instance">
+<span id="id4"></span><h3 data-bi="bi-41">模型实例<a class="headerlink" href="#instance" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-41" lang="en">Model instances</div>
+<p data-bi="bi-42">MuJoCo 中有几个实体都被称为“模型”。用户在以 MJCF 或 URDF 编写的 XML 文件中定义模型。软件随后可以在不同的介质（文件或内存）和不同的描述层级（高层或低层）上创建同一模型的多个实例。所有组合都是可能的，如下表所示：</p><div class="en-orig" data-for="bi-42" lang="en">There are several entities called “model” in MuJoCo. The user defines the model in an XML file written in MJCF or URDF.
+The software can then create multiple instances of the same model in different media (file or memory) and on different
+levels of description (high or low). All combinations are possible as shown in the following table:</div>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15.6%"/>
+<col style="width: 48.1%"/>
+<col style="width: 36.4%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p data-bi="bi-43">高层</p><div class="en-orig" data-for="bi-43" lang="en">High level</div></th>
+<th class="head"><p data-bi="bi-44">低层</p><div class="en-orig" data-for="bi-44" lang="en">Low level</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p data-bi="bi-45"><strong>文件</strong></p><div class="en-orig" data-for="bi-45" lang="en"><strong>File</strong></div></td>
+<td><p data-bi="bi-46">MJCF/URDF (XML), MJZ (Zip 压缩包)</p><div class="en-orig" data-for="bi-46" lang="en">MJCF/URDF (XML), MJZ (Zip archive)</div></td>
+<td><p data-bi="bi-47">MJB (二进制)</p><div class="en-orig" data-for="bi-47" lang="en">MJB (binary)</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-48"><strong>内存</strong></p><div class="en-orig" data-for="bi-48" lang="en"><strong>Memory</strong></div></td>
+<td><p data-bi="bi-49"><a class="reference internal" href="APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> (C 结构体)</p><div class="en-orig" data-for="bi-49" lang="en"><a class="reference internal" href="APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> (C struct)</div></td>
+<td><p data-bi="bi-50"><a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> (C 结构体)</p><div class="en-orig" data-for="bi-50" lang="en"><a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> (C struct)</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p data-bi="bi-51">所有运行时计算都用 <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 完成，而它过于复杂，无法手动创建。这就是我们设置两个建模层级的原因。高层存在的目的是方便用户：其唯一用途就是被编译成低层模型，计算在低层模型上进行。得到的 <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 可以加载并保存为二进制文件 (MJB)，但这类文件与版本相关且无法反编译，因此模型应始终以 XML 文件形式维护，或打包成 MJZ 归档。</p><div class="en-orig" data-for="bi-51" lang="en">All runtime computations are performed with <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> which is too complex to create manually. This is why we have
+two levels of modeling. The high level exists for user convenience: its sole purpose is to be compiled into a low level
+model on which computations can be performed. The resulting <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> can be loaded and saved into a binary file
+(MJB), however those are version-specific and cannot be decompiled, thus models should always be maintained as XML
+files or packaged into MJZ archives.</div>
+<p data-bi="bi-52"><a class="reference internal" href="APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> C 结构体与 MJCF 文件格式一一对应。XML 加载器解释 MJCF 或 URDF 文件，创建相应的 <a class="reference internal" href="APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> 并将其编译为 <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>。用户可以通过编程方式创建 <a class="reference internal" href="APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a>，然后将其保存为 MJCF/MJZ 或进行编译。程序化的模型创建与编辑在 <a class="reference internal" href="programming/modeledit.html"><span class="doc">模型编辑</span></a> 一章中描述。</p><div class="en-orig" data-for="bi-52" lang="en">The <a class="reference internal" href="APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> C struct is in one-to-one correspondence with the MJCF file format. The XML loader interprets the MJCF
+or URDF file, creates the corresponding <a class="reference internal" href="APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> and compiles it to <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>. The user can create
+<a class="reference internal" href="APIreference/APItypes.html#mjspec"><span class="std std-ref">mjSpec</span></a> programmatically and then save it to MJCF/MJZ or compile it. Procedural model creation and editing is
+described in the <a class="reference internal" href="programming/modeledit.html"><span class="doc">Model Editing</span></a> chapter.</div>
+<p data-bi="bi-53">下图展示了通往 <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 的不同路径：</p><div class="en-orig" data-for="bi-53" lang="en">The following diagram shows the different paths to obtaining an <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>:</div>
+<ul class="simple">
+<li><p data-bi="bi-54">(文本编辑器) → MJCF/URDF 文件 → (MuJoCo 解析器 → mjSpec → 编译器) → mjModel</p><div class="en-orig" data-for="bi-54" lang="en">(text editor) → MJCF/URDF file → (MuJoCo parser → mjSpec → compiler) → mjModel</div></li>
+<li><p data-bi="bi-55">MJZ 归档 → (MJZ 解码器 → mjSpec → 编译器) → mjModel</p><div class="en-orig" data-for="bi-55" lang="en">MJZ archive → (MJZ decoder → mjSpec → compiler) → mjModel</div></li>
+<li><p data-bi="bi-56">(用户代码) → mjSpec → (MuJoCo 编译器) → mjModel</p><div class="en-orig" data-for="bi-56" lang="en">(user code) → mjSpec → (MuJoCo compiler) → mjModel</div></li>
+<li><p data-bi="bi-57">MJB 文件 → (模型加载器) → mjModel</p><div class="en-orig" data-for="bi-57" lang="en">MJB file → (model loader) → mjModel</div></li>
+</ul>
+<p data-bi="bi-58">也可以使用 <a class="reference internal" href="APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a> 将模型和规格序列化或打包回磁盘。</p><div class="en-orig" data-for="bi-58" lang="en">Models and specs can also be serialized or packaged back to disk using <a class="reference internal" href="APIreference/APIfunctions.html#mj-encode"><span class="std std-ref">mj_encode</span></a>.</div>
+</section>
+<section id="examples">
+<span id="id5"></span><h3 data-bi="bi-59">示例<a class="headerlink" href="#examples" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-59" lang="en">Examples</div>
+<p data-bi="bi-60">下面是一个用 MuJoCo 的 MJCF 格式编写的简单模型。它定义了一个固定在世界上的平面、一盏用于更好地照亮物体并投射阴影的灯光，以及一个具有 6 个自由度的浮动方块（这就是“free”关节的作用）。</p><div class="en-orig" data-for="bi-60" lang="en">Here is a simple model in MuJoCo’s MJCF format. It defines a plane fixed to the world, a light to better illuminate
+objects and cast shadows, and a floating box with 6 DOFs (this is what the “free” joint does).</div>
+<p><a class="reference external" href="_static/hello.xml">hello.xml</a>:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;mujoco&gt;</span>
+<span class="w">  </span><span class="nt">&lt;worldbody&gt;</span>
+<span class="w">    </span><span class="nt">&lt;light</span><span class="w"> </span><span class="na">diffuse=</span><span class="s">".5 .5 .5"</span><span class="w"> </span><span class="na">pos=</span><span class="s">"0 0 3"</span><span class="w"> </span><span class="na">dir=</span><span class="s">"0 0 -1"</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;geom</span><span class="w"> </span><span class="na">type=</span><span class="s">"plane"</span><span class="w"> </span><span class="na">size=</span><span class="s">"1 1 0.1"</span><span class="w"> </span><span class="na">rgba=</span><span class="s">".9 0 0 1"</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;body</span><span class="w"> </span><span class="na">pos=</span><span class="s">"0 0 1"</span><span class="nt">&gt;</span>
+<span class="w">      </span><span class="nt">&lt;joint</span><span class="w"> </span><span class="na">type=</span><span class="s">"free"</span><span class="nt">/&gt;</span>
+<span class="w">      </span><span class="nt">&lt;geom</span><span class="w"> </span><span class="na">type=</span><span class="s">"box"</span><span class="w"> </span><span class="na">size=</span><span class="s">".1 .2 .3"</span><span class="w"> </span><span class="na">rgba=</span><span class="s">"0 .9 0 1"</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/body&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/worldbody&gt;</span>
+<span class="nt">&lt;/mujoco&gt;</span>
+</pre></div>
+</div>
+<p data-bi="bi-61">内置的 OpenGL 可视化器将该模型渲染为：</p><div class="en-orig" data-for="bi-61" lang="en">The built-in OpenGL visualizer renders this model as:</div>
+<a class="reference internal image-reference" href="_images/hello.png"><img alt="_images/hello.png" class="align-center" src="_images/hello.png" style="width: 300px;"/>
+</a>
+<p data-bi="bi-62">如果对该模型进行仿真，方块将落到地面上。下面给出了不带渲染的被动动力学基本仿真代码。</p><div class="en-orig" data-for="bi-62" lang="en">If this model is simulated, the box will fall on the ground. Basic simulation code for the passive dynamics, without
+rendering, is given below.</div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">"mujoco.h"</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"stdio.h"</span>
+
+<span class="kt">char</span><span class="w"> </span><span class="n">error</span><span class="p">[</span><span class="mi">1000</span><span class="p">];</span>
+<span class="n">mjModel</span><span class="o">*</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<span class="n">mjData</span><span class="o">*</span><span class="w"> </span><span class="n">d</span><span class="p">;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// load model from file and check for errors</span>
+<span class="w">  </span><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_loadXML</span><span class="p">(</span><span class="s">"hello.xml"</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">"%s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="c1">// make data corresponding to model</span>
+<span class="w">  </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_makeData</span><span class="p">(</span><span class="n">m</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// run simulation for 10 seconds</span>
+<span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">d</span><span class="o">-&gt;</span><span class="n">time</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span>
+<span class="w">    </span><span class="n">mj_step</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// free model and data</span>
+<span class="w">  </span><span class="n">mj_deleteData</span><span class="p">(</span><span class="n">d</span><span class="p">);</span>
+<span class="w">  </span><span class="n">mj_deleteModel</span><span class="p">(</span><span class="n">m</span><span class="p">);</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p data-bi="bi-63">这在技术上是一个 C 文件，但它同时也是合法的 C++ 文件。事实上 MuJoCo API 同时兼容 C 和 C++。通常用户代码会用 C++ 编写，因为这样更方便，而且不会牺牲效率，因为计算瓶颈位于已经高度优化的仿真器中。</p><div class="en-orig" data-for="bi-63" lang="en">This is technically a C file, but it is also a legitimate C++ file. Indeed the MuJoCo API is compatible with both C and
+C++. Normally user code would be written in C++ because it adds convenience, and does not sacrifice efficiency because
+the computational bottlenecks are in the simulator which is already highly optimized.</div>
+<p data-bi="bi-64">函数 <a class="reference internal" href="APIreference/APIfunctions.html#mj-step"><span class="std std-ref">mj_step</span></a> 是将仿真状态推进一个时间步长的顶层函数。当然，这个例子只是一个被动动力系统。当用户指定控制或施加力并开始与系统交互时，事情会变得更有趣。</p><div class="en-orig" data-for="bi-64" lang="en">The function <a class="reference internal" href="APIreference/APIfunctions.html#mj-step"><span class="std std-ref">mj_step</span></a> is the top-level function which advances the simulation state by one time step. This example
+of course is just a passive dynamical system. Things get more interesting when the user specifies controls or applies
+forces and starts interacting with the system.</div>
+<p data-bi="bi-65">接下来我们提供一个更复杂的例子，展示 MJCF 的若干特性。考虑下面这个 <a class="reference external" href="_static/example.xml">example.xml</a> 文件：</p><div class="en-orig" data-for="bi-65" lang="en">Next we provide a more elaborate example illustrating several features of MJCF. Consider the following
+<a class="reference external" href="_static/example.xml">example.xml</a>:</div>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;mujoco</span><span class="w"> </span><span class="na">model=</span><span class="s">"example"</span><span class="nt">&gt;</span>
+<span class="w">  </span><span class="nt">&lt;default&gt;</span>
+<span class="w">    </span><span class="nt">&lt;geom</span><span class="w"> </span><span class="na">rgba=</span><span class="s">".8 .6 .4 1"</span><span class="nt">/&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/default&gt;</span>
+
+<span class="w">  </span><span class="nt">&lt;asset&gt;</span>
+<span class="w">    </span><span class="nt">&lt;texture</span><span class="w"> </span><span class="na">type=</span><span class="s">"skybox"</span><span class="w"> </span><span class="na">builtin=</span><span class="s">"gradient"</span><span class="w"> </span><span class="na">rgb1=</span><span class="s">"1 1 1"</span><span class="w"> </span><span class="na">rgb2=</span><span class="s">".6 .8 1"</span><span class="w"> </span><span class="na">width=</span><span class="s">"256"</span><span class="w"> </span><span class="na">height=</span><span class="s">"256"</span><span class="nt">/&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/asset&gt;</span>
+
+<span class="w">  </span><span class="nt">&lt;worldbody&gt;</span>
+<span class="w">    </span><span class="nt">&lt;light</span><span class="w"> </span><span class="na">pos=</span><span class="s">"0 1 1"</span><span class="w"> </span><span class="na">dir=</span><span class="s">"0 -1 -1"</span><span class="w"> </span><span class="na">diffuse=</span><span class="s">"1 1 1"</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;body</span><span class="w"> </span><span class="na">pos=</span><span class="s">"0 0 1"</span><span class="nt">&gt;</span>
+<span class="w">      </span><span class="nt">&lt;joint</span><span class="w"> </span><span class="na">type=</span><span class="s">"ball"</span><span class="nt">/&gt;</span>
+<span class="w">      </span><span class="nt">&lt;geom</span><span class="w"> </span><span class="na">type=</span><span class="s">"capsule"</span><span class="w"> </span><span class="na">size=</span><span class="s">"0.06"</span><span class="w"> </span><span class="na">fromto=</span><span class="s">"0 0 0  0 0 -.4"</span><span class="nt">/&gt;</span>
+<span class="w">      </span><span class="nt">&lt;body</span><span class="w"> </span><span class="na">pos=</span><span class="s">"0 0 -0.4"</span><span class="nt">&gt;</span>
+<span class="w">        </span><span class="nt">&lt;joint</span><span class="w"> </span><span class="na">axis=</span><span class="s">"0 1 0"</span><span class="nt">/&gt;</span>
+<span class="w">        </span><span class="nt">&lt;joint</span><span class="w"> </span><span class="na">axis=</span><span class="s">"1 0 0"</span><span class="nt">/&gt;</span>
+<span class="w">        </span><span class="nt">&lt;geom</span><span class="w"> </span><span class="na">type=</span><span class="s">"capsule"</span><span class="w"> </span><span class="na">size=</span><span class="s">"0.04"</span><span class="w"> </span><span class="na">fromto=</span><span class="s">"0 0 0  .3 0 0"</span><span class="nt">/&gt;</span>
+<span class="w">        </span><span class="nt">&lt;body</span><span class="w"> </span><span class="na">pos=</span><span class="s">".3 0 0"</span><span class="nt">&gt;</span>
+<span class="w">          </span><span class="nt">&lt;joint</span><span class="w"> </span><span class="na">axis=</span><span class="s">"0 1 0"</span><span class="nt">/&gt;</span>
+<span class="w">          </span><span class="nt">&lt;joint</span><span class="w"> </span><span class="na">axis=</span><span class="s">"0 0 1"</span><span class="nt">/&gt;</span>
+<span class="w">          </span><span class="nt">&lt;geom</span><span class="w"> </span><span class="na">pos=</span><span class="s">".1 0 0"</span><span class="w"> </span><span class="na">size=</span><span class="s">"0.1 0.08 0.02"</span><span class="w"> </span><span class="na">type=</span><span class="s">"ellipsoid"</span><span class="nt">/&gt;</span>
+<span class="w">          </span><span class="nt">&lt;site</span><span class="w"> </span><span class="na">name=</span><span class="s">"end1"</span><span class="w"> </span><span class="na">pos=</span><span class="s">"0.2 0 0"</span><span class="w"> </span><span class="na">size=</span><span class="s">"0.01"</span><span class="nt">/&gt;</span>
+<span class="w">        </span><span class="nt">&lt;/body&gt;</span>
+<span class="w">      </span><span class="nt">&lt;/body&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/body&gt;</span>
+
+<span class="w">    </span><span class="nt">&lt;body</span><span class="w"> </span><span class="na">pos=</span><span class="s">"0.3 0 0.1"</span><span class="nt">&gt;</span>
+<span class="w">      </span><span class="nt">&lt;joint</span><span class="w"> </span><span class="na">type=</span><span class="s">"free"</span><span class="nt">/&gt;</span>
+<span class="w">      </span><span class="nt">&lt;geom</span><span class="w"> </span><span class="na">size=</span><span class="s">"0.07 0.1"</span><span class="w"> </span><span class="na">type=</span><span class="s">"cylinder"</span><span class="nt">/&gt;</span>
+<span class="w">      </span><span class="nt">&lt;site</span><span class="w"> </span><span class="na">name=</span><span class="s">"end2"</span><span class="w"> </span><span class="na">pos=</span><span class="s">"0 0 0.1"</span><span class="w"> </span><span class="na">size=</span><span class="s">"0.01"</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/body&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/worldbody&gt;</span>
+
+<span class="w">  </span><span class="nt">&lt;tendon&gt;</span>
+<span class="w">    </span><span class="nt">&lt;spatial</span><span class="w"> </span><span class="na">limited=</span><span class="s">"true"</span><span class="w"> </span><span class="na">range=</span><span class="s">"0 0.6"</span><span class="w"> </span><span class="na">width=</span><span class="s">"0.005"</span><span class="nt">&gt;</span>
+<span class="w">      </span><span class="nt">&lt;site</span><span class="w"> </span><span class="na">site=</span><span class="s">"end1"</span><span class="nt">/&gt;</span>
+<span class="w">      </span><span class="nt">&lt;site</span><span class="w"> </span><span class="na">site=</span><span class="s">"end2"</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/spatial&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/tendon&gt;</span>
+<span class="nt">&lt;/mujoco&gt;</span>
+</pre></div>
+</div>
+<figure class="align-right">
+<video autoplay="" height="295" loop="" muted="" width="200">
+<source src="_static/example.mp4" type="video/mp4">
+</source></video>
+</figure><p data-bi="bi-66">该模型是一条 7 自由度的机械臂“握着”一根弦，弦的另一端系着一个圆柱体。弦被实现为带长度限位的肌腱。肩部有一个球关节，肘部和腕部各有一对铰链关节。圆柱体内部的方框表示一个自由“关节”。XML 中最外层的 body 元素就是必需的 <span class="el">worldbody</span> 元素。请注意，在两个刚体之间使用多个关节并不需要创建虚拟刚体。</p><div class="en-orig" data-for="bi-66" lang="en">This model is a 7 degree-of-freedom arm “holding” a string with a cylinder attached at the other end. The string is
+implemented as a tendon with length limits. There is ball joint at the shoulder and pairs of hinge joints at the elbow
+and wrist. The box inside the cylinder indicates a free “joint”. The outer body element in the XML is the required
+<span class="el">worldbody</span>. Note that using multiple joints between two bodies does not require creating dummy bodies.</div>
+<p data-bi="bi-67">MJCF 文件只包含指定模型所需的最少信息。胶囊体由空间中的线段定义——这时只需要胶囊体的半径。刚体坐标系的位置和朝向由属于它们的 geom 推断。惯性属性在均匀密度假设下由 geom 形状推断。两个 site 之所以有名字，是因为肌腱定义需要引用它们，除此之外没有任何东西被命名。关节轴只为铰链关节定义，球关节则没有。碰撞规则是自动定义的。摩擦属性、重力、仿真时间步长等都设为默认值。顶部指定的默认 geom 颜色适用于所有 geom。</p><div class="en-orig" data-for="bi-67" lang="en">The MJCF file contains the minimum information needed to specify the model. Capsules are defined by line-segments in
+space – in which case only the radius of the capsule is needed. The positions and orientations of body frames are
+inferred from the geoms belonging to them. Inertial properties are inferred from the geom shape under a uniform density
+assumption. The two sites are named because the tendon definition needs to reference them, but nothing else is named.
+Joint axes are defined only for the hinge joints but not the ball joint. Collision rules are defined automatically.
+Friction properties, gravity, simulation time step etc. are set to their defaults. The default geom color specified at
+the top applies to all geoms.</div>
+<p data-bi="bi-68">除了把编译后的模型保存为二进制 MJB 格式外，我们还可以将其保存为 MJCF 或人类可读的文本，分别是 <a class="reference external" href="_static/example_saved.xml">example_saved.xml</a> 和 <a class="reference external" href="_static/example_saved.txt">example_saved.txt</a> 这两个文件。XML 版本与原始文件相似，而文本版本包含 <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> 中的全部信息。将文本版本与 XML 版本比较，就能看出模型编译器替我们做了多少工作。</p><div class="en-orig" data-for="bi-68" lang="en">Apart from saving the compiled model in the binary MJB format, we can save it as MJCF or as human-readable text; see
+<a class="reference external" href="_static/example_saved.xml">example_saved.xml</a> and <a class="reference external" href="_static/example_saved.txt">example_saved.txt</a>
+respectively. The XML version is similar to the original, while the text version contains all information from
+<code class="docutils literal notranslate"><span class="pre">mjModel</span></code>. Comparing the text version to the XML version reveals how much work the model compiler did for us.</div>
+</section>
+</section>
+<section id="elements">
+<span id="id6"></span><h2 data-bi="bi-69">模型元素<a class="headerlink" href="#elements" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-69" lang="en">Model elements</div>
+<p data-bi="bi-70">本节简要描述 MuJoCo 模型中可以包含的所有元素。后文将更详细地解释其背后的计算、元素在 MJCF 中的指定方式，以及它们在 <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> 中的表示。</p><div class="en-orig" data-for="bi-70" lang="en">This section provides brief descriptions of all elements that can be included in a MuJoCo model. Later we explain in
+more detail the underlying computations, the way elements are specified in MJCF, and their representation in
+<code class="docutils literal notranslate"><span class="pre">mjModel</span></code>.</div>
+<section id="options">
+<span id="id7"></span><h3 data-bi="bi-71">选项<a class="headerlink" href="#options" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-71" lang="en">Options</div>
+<p data-bi="bi-72">每个模型都有下面列出的三组选项，它们始终存在。如果 XML 文件中没有指定其值，则使用默认值。这些选项的设计使得用户可以在每个仿真时间步长之前更改它们的值。不过在一个时间步长内，不应更改任何选项。</p><div class="en-orig" data-for="bi-72" lang="en">Each model has three sets of options listed below. They are always included. If their values are not specified in the
+XML file, default values are used. The options are designed such that the user can change their values before each
+simulation time step. Within a time step however none of the options should be changed.</div>
+<section id="mjoption">
+<h4><code class="docutils literal notranslate"><span class="pre">mjOption</span></code><a class="headerlink" href="#mjoption" title="链接到此标题。">#</a></h4>
+<p data-bi="bi-73">该结构包含所有影响物理仿真的选项。它用于选择算法并设置其参数，启用和禁用仿真流水线的不同部分，以及调整重力等系统级物理属性。</p><div class="en-orig" data-for="bi-73" lang="en">This structure contains all options that affect the physics simulation. It is used to select algorithms and set their
+parameters, enable and disable different portions of the simulation pipeline, and adjust system-level physical
+properties such as gravity.</div>
+</section>
+<section id="mjvisual">
+<h4><code class="docutils literal notranslate"><span class="pre">mjVisual</span></code><a class="headerlink" href="#mjvisual" title="链接到此标题。">#</a></h4>
+<p data-bi="bi-74">该结构包含所有可视化选项。另外还有一些 OpenGL 渲染选项，但它们依赖于会话，不属于模型的一部分。</p><div class="en-orig" data-for="bi-74" lang="en">This structure contains all visualization options. There are additional OpenGL rendering options, but these are
+session-dependent and are not part of the model.</div>
+</section>
+<section id="mjstatistic">
+<h4><code class="docutils literal notranslate"><span class="pre">mjStatistic</span></code><a class="headerlink" href="#mjstatistic" title="链接到此标题。">#</a></h4>
+<p data-bi="bi-75">该结构包含由编译器计算的模型统计信息：平均刚体质量、模型的空间范围等。它的存在是出于信息目的，同时也因为可视化器用它进行自动缩放。</p><div class="en-orig" data-for="bi-75" lang="en">This structure contains statistics about the model which are computed by the compiler: average body mass, spatial
+extent of the model etc. It is included for information purposes, and also because the visualizer uses it for
+automatic scaling.</div>
+</section>
+</section>
+<section id="assets">
+<span id="id8"></span><h3 data-bi="bi-76">资源<a class="headerlink" href="#assets" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-76" lang="en">Assets</div>
+<p data-bi="bi-77">资源本身并不是模型元素。模型元素可以引用资源，此时资源会以某种方式改变引用它的元素的属性。一个资源可以被多个模型元素引用。由于包含资源的唯一目的就是被引用，而引用只能通过名称进行，因此每个资源都有名称（适用时可以从文件名推断）。相比之下，普通元素的名称可以不定义。</p><div class="en-orig" data-for="bi-77" lang="en">Assets are not in themselves model elements. Model elements can reference them, in which case the asset somehow changes
+the properties of the referencing element. One asset can be referenced by multiple model elements. Since the sole
+purpose of including an asset is to reference it, and referencing can only be done by name, every asset has a name
+(which may be inferred from a file name when applicable). In contrast, the names of regular elements can be left
+undefined.</div>
+<section id="id9">
+<h4 data-bi="bi-78">网格<a class="headerlink" href="#id9" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-78" lang="en">Mesh</div>
+<p data-bi="bi-79">MuJoCo 可以从 OBJ 文件和二进制 STL 加载三角网格。可以使用 <a class="reference external" href="https://www.meshlab.net/">MeshLab</a> 等软件从其他格式转换。虽然任何三角形集合都可以作为网格加载和可视化，但碰撞检测器使用的是凸包。有一些编译时选项可用于缩放网格，以及为其拟合基本几何形状。网格还可以用来自动推断惯性属性——将其视为三棱锥的并集，并合并它们的质量和惯性。注意网格没有颜色，网格的颜色由引用它的 geom 的材质属性决定。相比之下，所有空间属性都由网格数据决定。MuJoCo 同时支持 OBJ 和用于法线和纹理坐标的自定义二进制文件格式。网格也可以直接嵌入 XML 中。</p><div class="en-orig" data-for="bi-79" lang="en">MuJoCo can load triangulated meshes from OBJ files and binary STL. Software such as <a class="reference external" href="https://www.meshlab.net/">MeshLab</a> can be used to convert from other formats. While any collection of triangles can be
+loaded and visualized as a mesh, the collision detector works with the convex hull. There are compile-time options
+for scaling the mesh, as well as fitting a primitive geometric shape to it. The mesh can also be used to
+automatically infer inertial properties – by treating it as a union of triangular pyramids and combining their
+masses and inertias. Note that meshes have no color, instead the mesh is colored using the material properties of the
+referencing geom. In contrast, all spatial properties are determined by the mesh data. MuJoCo supports both OBJ and a
+custom binary file format for normals and texture coordinates. Meshes can also be embedded directly in the XML.</div>
+</section>
+<section id="id10">
+<h4 data-bi="bi-80">蒙皮<a class="headerlink" href="#id10" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-80" lang="en">Skin</div>
+<p data-bi="bi-81">蒙皮网格（或称蒙皮）是形状可以在运行时变形的网格。它们的顶点附着在刚体（在此语境下称为骨骼）上，每个顶点可以属于多个骨骼，从而使蒙皮平滑变形。蒙皮纯粹是可视化对象，不影响物理，但仍能显著增强视觉真实感。与网格类似，蒙皮可以从自定义二进制文件加载，或直接嵌入 XML 中。</p><div class="en-orig" data-for="bi-81" lang="en">Skinned meshes (or skins) are meshes whose shape can deform at runtime. Their vertices are attached to rigid bodies
+(called bones in this context) and each vertex can belong to multiple bones, resulting in smooth deformations of the
+skin. Skins are purely visualization objects and do not affect the physics, but nevertheless they can enhance visual
+realism significantly. Skins can be loaded from custom binary files, or embedded directly in the XML, similar to
+meshes.</div>
+</section>
+<section id="id11">
+<h4 data-bi="bi-82">高度场<a class="headerlink" href="#id11" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-82" lang="en">Height field</div>
+<p data-bi="bi-83">高度场可以从 PNG 文件（内部转换为灰度）或后文描述的自定义二进制格式文件加载。高度场是一个由高程数据构成的矩形网格。编译器将数据归一化到范围 [0-1]。高度场的实际空间范围随后由引用它的 geom 的尺寸参数决定。高度场只能被附着在世界刚体上的 geom 引用。出于渲染和碰撞检测的目的，网格的矩形会被自动三角化，因此高度场被视为三棱柱的并集。与这种复合物体的碰撞检测原则上可能为单个 geom 对生成大量接触点。如果发生这种情况，只保留前 64 个接触点。其理由是，高度场应当用来为地形图建模，其空间特征相对于仿真中的其他物体较大，所以对于设计良好的模型，接触数量会很少。</p><div class="en-orig" data-for="bi-83" lang="en">Height fields can be loaded from PNG files (converted to gray-scale internally) or from files in a custom binary
+format described later. A height field is a rectangular grid of elevation data. The compiler normalizes the data to
+the range [0-1]. The actual spatial extent of the height field is then determined by the size parameters of the
+referencing geom. Height fields can only be referenced from geoms that are attached to the world body. For rendering
+and collision detection purposes, the grid rectangles are automatically triangulated, thus the height field is
+treated as a union of triangular prisms. Collision detection with such a composite object can in principle generate a
+large number of contact points for a single geom pair. If that happens, only the first 64 contact points are kept.
+The rationale is that height fields should be used to model terrain maps whose spatial features are large compared to
+the other objects in the simulation, so the number of contacts will be small for well-designed models.</div>
+</section>
+<section id="id12">
+<h4 data-bi="bi-84">纹理<a class="headerlink" href="#id12" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-84" lang="en">Texture</div>
+<p data-bi="bi-85">纹理可以从 PNG 或 KTX 文件加载，也可以由编译器根据用户定义的程序化参数合成。还可以在创建模型时将纹理留空，之后在运行时更改——以便在 MuJoCo 仿真中渲染视频，或创造其他动态效果。可视化器支持两种纹理映射：二维和立方体。二维映射适用于平面和高度场。立方体映射适用于将纹理“收缩包裹”在三维物体周围而无需指定纹理坐标，它也用于创建天空盒。立方体贴图的六个面可以从单独的图像文件加载，也可以从一个合成图像文件加载，或通过重复同一幅图像生成。与所有其他直接从模型元素引用的资源不同，纹理只能被另一种资源（即材质）引用，再由模型元素引用该材质。</p><div class="en-orig" data-for="bi-85" lang="en">Textures can be loaded from PNG or KTX files or synthesized by the compiler based on user-defined procedural parameters.
+There is also the option to leave the texture empty at model creation time and change it later at runtime – so as to
+render video in a MuJoCo simulation, or create other dynamic effects. The visualizer supports two types of texture
+mapping: 2D and cube. 2D mapping is useful for planes and height fields. Cube mapping is useful for “shrink-wrapping”
+textures around 3D objects without having to specify texture coordinates. It is also used to create a skybox. The six
+sides of a cube maps can be loaded from separate image files, or from one composite image file, or generated by
+repeating the same image. Unlike all other assets which are referenced directly from model elements, textures can
+only be referenced from another asset (namely material) which is then referenced from model elements.</div>
+</section>
+<section id="id13">
+<h4 data-bi="bi-86">材质<a class="headerlink" href="#id13" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-86" lang="en">Material</div>
+<p data-bi="bi-87">材质用于控制 geom、site 和肌腱的外观。做法是从相应的模型元素引用材质。外观包括纹理映射，以及与下述 OpenGL 光源相互作用的其他属性：RGBA、镜面反射、光泽度、自发光。材质还可以用来让物体具有反射效果。目前反射只在平面和方块的 Z+ 面上渲染。注意模型元素也可以有自己的局部 RGBA 参数来设置颜色。如果同时指定了材质和局部 RGBA，则局部定义优先。</p><div class="en-orig" data-for="bi-87" lang="en">Materials are used to control the appearance of geoms, sites and tendons. This is done by referencing the material
+from the corresponding model element. Appearance includes texture mapping as well as other properties that interact
+with OpenGL lights below: RGBA, specularity, shininess, emission. Materials can also be used to make objects
+reflective. Currently reflections are rendered only on planes and on the Z+ faces of boxes. Note that model elements
+can also have their local RGBA parameter for setting color. If both material and local RGBA are specified, the local
+definition has precedence.</div>
+</section>
+</section>
+<section id="kinematic">
+<span id="id14"></span><h3 data-bi="bi-88">运动学树<a class="headerlink" href="#kinematic" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-88" lang="en">Kinematic tree</div>
+<p data-bi="bi-89">MuJoCo 仿真由刚体组成的集合的动力学，这些刚体的运动通常受到约束。系统状态以关节坐标表示，刚体被显式地组织成运动学树（kinematic tree）。树结构由 <code class="docutils literal notranslate"><span class="pre">mjModel.body_parentid</span></code> 给出，它是长度为 <code class="docutils literal notranslate"><span class="pre">nbody</span> <span class="pre">&gt;=</span> <span class="pre">1</span></code> 的整数数组。顶层的“世界”刚体（world body）始终存在（id 为 <code class="docutils literal notranslate"><span class="pre">0</span></code> ），并且它是自己的父节点，因此 <code class="docutils literal notranslate"><span class="pre">body_parentid[0]</span> <span class="pre">==</span> <span class="pre">0</span></code> ，且对所有其他 <code class="docutils literal notranslate"><span class="pre">i</span></code> 都有 <code class="docutils literal notranslate"><span class="pre">body_parentid[i]</span> <span class="pre">&lt;</span> <span class="pre">i</span></code> 。注意，世界刚体与其他静态（无关节）的子刚体构成一棵唯一的“静态树”，没有关联的自由度。在这棵顶层静态树之下可以挂接多棵运动学树，参见下文的 <a class="reference internal" href="#elemtree"><span class="std std-ref">树</span></a> 一节。</p><div class="en-orig" data-for="bi-89" lang="en">MuJoCo simulates the dynamics of a collection of rigid bodies whose motion is usually constrained. The system state is
+represented in joint coordinates and the bodies are explicitly organized into kinematic trees. The tree structure is
+given by <code class="docutils literal notranslate"><span class="pre">mjModel.body_parentid</span></code>, an integer array of length <code class="docutils literal notranslate"><span class="pre">nbody</span> <span class="pre">&gt;=</span> <span class="pre">1</span></code>. The top-level “world” body always exists
+(with id <code class="docutils literal notranslate"><span class="pre">0</span></code>) and is its own parent, thus <code class="docutils literal notranslate"><span class="pre">body_parentid[0]</span> <span class="pre">==</span> <span class="pre">0</span></code> and <code class="docutils literal notranslate"><span class="pre">body_parentid[i]</span> <span class="pre">&lt;</span> <span class="pre">i</span></code> for all other <code class="docutils literal notranslate"><span class="pre">i</span></code>.
+Note that the world body and other static (joint-less) child bodies form a unique “static tree” with no associated
+degrees of freedom. Below this top-level static tree, multiple kinematic trees can be attached, see <a class="reference internal" href="#elemtree"><span class="std std-ref">Tree</span></a> below.</div>
+<p data-bi="bi-90">运动学闭环是不允许的；如果需要闭环关节，应当用等式约束（equality constraint）对其建模。因此，MuJoCo 模型的主干是由嵌套的刚体定义所构成的一棵或多棵运动学树；一个孤立的浮动刚体也算一棵树。下面列出的其他几种元素定义在刚体内部，并属于该刚体。这与后文列出的、无法与单个刚体关联的独立元素形成对比。</p><div class="en-orig" data-for="bi-90" lang="en">Kinematic loops are not allowed; if loop joints are needed they should be modeled with equality constraints. Thus the
+backbone of a MuJoCo model is one or several kinematic trees formed by nested body definitions; an isolated floating
+body counts as a tree. Several other elements listed below are defined within a body and belong to that body. This is in
+contrast with the stand-alone elements listed later which cannot be associated with a single body.</div>
+<section id="body">
+<span id="elembody"></span><h4 data-bi="bi-91">刚体（Body）<a class="headerlink" href="#body" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-91" lang="en">Body</div>
+<p data-bi="bi-92">刚体具有质量和惯性属性，但没有几何属性。几何形状（即 geom）是附着在刚体上的。每个刚体有两个坐标系：一个用于定义它以及相对于它定位其他元素，另一个是惯性坐标系，以刚体质心为中心并与其惯性主轴对齐。因此刚体的惯性矩阵在该坐标系中是对角的。在每个时间步长，MuJoCo 递归地计算正运动学（forward kinematics），得到所有刚体在全局笛卡尔坐标中的位置和朝向。这为后续所有计算奠定了基础。刚体的数量由 <code class="docutils literal notranslate"><span class="pre">mjModel.nbody</span></code> 给出。</p><div class="en-orig" data-for="bi-92" lang="en">Bodies have mass and inertial properties but do not have any geometric properties. Instead geometric shapes (or
+geoms) are attached to the bodies. Each body has two coordinate frames: the frame used to define it as well as to
+position other elements relative to it, and an inertial frame centered at the body’s center of mass and aligned with
+its principal axes of inertia. The body inertia matrix is therefore diagonal in this frame. At each time step MuJoCo
+computes the forward kinematics recursively, yielding all body positions and orientations in global Cartesian
+coordinates. This provides the basis for all subsequent computations.
+The number of bodies is given by <code class="docutils literal notranslate"><span class="pre">mjModel.nbody</span></code>.</div>
+</section>
+<section id="joint">
+<span id="elemjoint"></span><h4 data-bi="bi-93">关节（Joint）<a class="headerlink" href="#joint" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-93" lang="en">Joint</div>
+<p data-bi="bi-94">关节定义在刚体内部。它们在刚体与其父刚体之间创建运动自由度（DoF）。在没有关节的情况下，刚体与其父刚体焊接在一起。这与使用过完备笛卡尔坐标的游戏引擎相反，在游戏引擎中关节是移除自由度而不是增加自由度。关节有四种类型：球关节（ball）、滑动关节（slide）、铰链关节（hinge），以及用于创建浮动刚体的“自由关节”（free joint）。单个刚体可以有多个关节。这样复合关节会被自动创建，而无需定义虚拟刚体。球关节和自由关节的姿态分量表示为单位四元数（quaternion），MuJoCo 中的所有计算都遵守四元数的性质。关节的数量由 <code class="docutils literal notranslate"><span class="pre">mjModel.njnt</span></code> 给出。</p><div class="en-orig" data-for="bi-94" lang="en">Joints are defined within bodies. They create motion degrees of freedom (DOFs) between the body and its parent. In
+the absence of joints the body is welded to its parent. This is the opposite of gaming engines which use
+over-complete Cartesian coordinates, where joints remove DOFs instead of adding them. There are four types of joints:
+ball, slide, hinge, and a “free joint” which creates floating bodies. A single body can have multiple joints. In this
+way composite joints are created automatically, without having to define dummy bodies. The orientation components of
+ball and free joints are represented as unit quaternions, and all computations in MuJoCo respect the properties of
+quaternions. The number of joints is given by <code class="docutils literal notranslate"><span class="pre">mjModel.njnt</span></code>.</div>
+<section id="id15">
+<h5 data-bi="bi-95">关节参考位姿<a class="headerlink" href="#id15" title="链接到此标题。">#</a></h5><div class="en-orig en-h" data-for="bi-95" lang="en">Joint reference</div>
+<p data-bi="bi-96">参考位姿是存储在 <code class="docutils literal notranslate"><span class="pre">mjModel.qpos0</span></code> 中的关节位置向量。它对应于模型处于初始构型时关节的数值。在我们前面的例子中，肘部是以 90° 弯曲的构型创建的。但 MuJoCo 并不知道肘部是什么，因此默认把这一关节构型视为数值 0。我们可以覆盖默认行为，使用 <a class="reference internal" href="XMLreference.html#body-joint"><span class="std std-ref">joint</span></a> 的 ref 属性指定初始构型对应 90°。所有关节的参考值被汇集成向量 <code class="docutils literal notranslate"><span class="pre">mjModel.qpos0</span></code> 。每当仿真被重置时，关节构型 <code class="docutils literal notranslate"><span class="pre">mjData.qpos</span></code> 被设置为 <code class="docutils literal notranslate"><span class="pre">mjModel.qpos0</span></code> 。在运行时，关节位置向量是相对于参考位姿解释的。具体来说，关节施加的空间变换量是 <code class="docutils literal notranslate"><span class="pre">mjData.qpos</span> <span class="pre">-</span> <span class="pre">mjModel.qpos0</span></code> 。该变换是在 <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> 的刚体元素中存储的父子平移和旋转偏移之外额外施加的。ref 属性只适用于标量关节（滑动和铰链）。对于球关节，保存在 <code class="docutils literal notranslate"><span class="pre">mjModel.qpos0</span></code> 中的四元数始终是 (1,0,0,0)，对应于零旋转。对于自由关节，浮动刚体的全局三维位置和四元数保存在 <code class="docutils literal notranslate"><span class="pre">mjModel.qpos0</span></code> 中。</p><div class="en-orig" data-for="bi-96" lang="en">The reference pose is a vector of joint positions stored in <code class="docutils literal notranslate"><span class="pre">mjModel.qpos0</span></code>. It corresponds to the numeric values
+of the joints when the model is in its initial configuration. In our earlier example the elbow was created in a bent
+configuration at 90° angle. But MuJoCo does not know what an elbow is, and so by default it treats this joint
+configuration as having numeric value of 0. We can override the default behavior and specify that the initial
+configuration corresponds to 90°, using the ref attribute of <a class="reference internal" href="XMLreference.html#body-joint"><span class="std std-ref">joint</span></a>. The reference values of all
+joints are assembled into the vector <code class="docutils literal notranslate"><span class="pre">mjModel.qpos0</span></code>. Whenever the simulation is reset, the joint configuration
+<code class="docutils literal notranslate"><span class="pre">mjData.qpos</span></code> is set to <code class="docutils literal notranslate"><span class="pre">mjModel.qpos0</span></code>. At runtime the joint position vector is interpreted relative to the
+reference pose. In particular, the amount of spatial transformation applied by the joints is <code class="docutils literal notranslate"><span class="pre">mjData.qpos</span> <span class="pre">-</span>
+<span class="pre">mjModel.qpos0</span></code>. This transformation is in addition to the parent-child translation and rotation offsets stored in
+the body elements of <code class="docutils literal notranslate"><span class="pre">mjModel</span></code>. The ref attribute only applies to scalar joints (slide and hinge). For ball joints,
+the quaternion saved in <code class="docutils literal notranslate"><span class="pre">mjModel.qpos0</span></code> is always (1,0,0,0) which corresponds to the null rotation. For free
+joints, the global 3D position and quaternion of the floating body are saved in <code class="docutils literal notranslate"><span class="pre">mjModel.qpos0</span></code>.</div>
+</section>
+<section id="id16">
+<h5 data-bi="bi-97">弹簧参考位姿<a class="headerlink" href="#id16" title="链接到此标题。">#</a></h5><div class="en-orig en-h" data-for="bi-97" lang="en">Spring reference</div>
+<p data-bi="bi-98">这是所有关节和肌腱弹簧达到其静息长度的位姿。当关节构型偏离弹簧参考位姿时会产生弹簧力，并且弹簧力与偏离量成线性关系。弹簧参考位姿保存在 <code class="docutils literal notranslate"><span class="pre">mjModel.qpos_spring</span></code> 中。对于滑动和铰链关节，弹簧参考通过属性 springref 指定。对于球关节和自由关节，弹簧参考对应于初始模型构型。</p><div class="en-orig" data-for="bi-98" lang="en">This is the pose in which all joint and tendon springs achieve their resting length. Spring forces are generated
+when the joint configuration deviates from the spring reference pose, and are linear in the amount of deviation. The
+spring reference pose is saved in <code class="docutils literal notranslate"><span class="pre">mjModel.qpos_spring</span></code>. For slide and hinge joints, the spring reference is
+specified with the attribute springref. For ball and free joints, the spring reference corresponds to the initial
+model configuration.</div>
+</section>
+</section>
+<section id="dof">
+<span id="elemdof"></span><h4 data-bi="bi-99">自由度（DoF）<a class="headerlink" href="#dof" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-99" lang="en">DOF</div>
+<p data-bi="bi-100">自由度与关节密切相关，但并非一一对应，因为球关节和自由关节有多个自由度。可以认为关节指定位置信息，而自由度指定速度和力信息。更正式地说，关节位置是系统构型流形上的坐标，而关节速度是该流形在当前位置处切空间上的坐标。自由度具有与速度相关的属性，如摩擦损耗、阻尼、电枢惯量。作用在系统上的所有广义力都在自由度空间中表示。相比之下，关节具有与位置相关的属性，如限位和弹簧刚度。自由度不是由用户直接指定的，而是由编译器根据关节创建的。自由度的数量由 <code class="docutils literal notranslate"><span class="pre">mjModel.nv</span></code> 给出。</p><div class="en-orig" data-for="bi-100" lang="en">Degrees of freedom are closely related to joints, but are not in one-to-one correspondence because ball and free
+joints have multiple DOFs. Think of joints as specifying positional information, and of DOFs as specifying velocity
+and force information. More formally, the joint positions are coordinates over the configuration manifold of the
+system, while the joint velocities are coordinates over the tangent space to this manifold at the current position.
+DOFs have velocity-related properties such as friction loss, damping, armature inertia. All generalized forces acting
+on the system are expressed in the space of DOFs. In contrast, joints have position-related properties such as limits
+and spring stiffness. DOFs are not specified directly by the user. Instead they are created by the compiler given the
+joints. The number of DOFs is given by <code class="docutils literal notranslate"><span class="pre">mjModel.nv</span></code>.</div>
+</section>
+<section id="tree">
+<span id="elemtree"></span><h4 data-bi="bi-101">树（Tree）<a class="headerlink" href="#tree" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-101" lang="en">Tree</div>
+<p data-bi="bi-102">如 <a class="reference internal" href="#kinematic"><span class="std std-ref">上文</span></a> 所述，运动的刚体被组织成运动学树。运动学树或称“树”是 <em>一个可运动的刚体及其所有后代</em>。因此，世界和其他静态刚体位于全局树结构中，但不与任何 <em>树</em> 关联。由于全局树结构采用深度优先的组织方式，属于同一棵树的所有刚体、关节和自由度总是连续的。注意，与（静态时）不与任何树关联的刚体不同，关节和自由度总是与某棵树关联。无论 <a class="reference internal" href="computation/index.html#soisland"><span class="std std-ref">岛发现</span></a> 还是 <a class="reference internal" href="computation/index.html#sleeping"><span class="std std-ref">岛休眠</span></a> 都在树的层级上运作。</p><div class="en-orig" data-for="bi-102" lang="en">As explained <a class="reference internal" href="#kinematic"><span class="std std-ref">above</span></a>, moving bodies are organized into kinematic trees. A kinematic tree or “tree” is
+<em>a movable body and all of its descendants</em>. Thus the world and other static bodies are in the global tree structure but
+not associated with any <em>tree</em>. Because the global tree structure uses a depth-first organization, all bodies, joints
+and DOFs belonging to a single tree are always sequential. Note that unlike bodies which (if static) are not associated
+with any tree, joints and DOFs are always associated with a tree. Both <a class="reference internal" href="computation/index.html#soisland"><span class="std std-ref">island discovery</span></a> and
+<a class="reference internal" href="computation/index.html#sleeping"><span class="std std-ref">island sleeping</span></a> operate on the level of trees.</div>
+<p data-bi="bi-103">树的数量由 <code class="docutils literal notranslate"><span class="pre">mjModel.ntree</span></code> 给出。例如，同时包含三个自由刚体和 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/model/humanoid/humanoid.xml">标准人形模型</a> 的模型，其 <code class="docutils literal notranslate"><span class="pre">ntree</span> <span class="pre">=</span> <span class="pre">4</span></code> 。注意，虽然树确实是全局树（其根是世界）的子树，但不应将其与特定术语 <code class="docutils literal notranslate"><span class="pre">subtree</span></code> 混淆，后者专指每个刚体的部分树，因此 <code class="docutils literal notranslate"><span class="pre">mjModel.body_subtreemass</span></code> 给出所有刚体各自之下部分树的总质量。</p><div class="en-orig" data-for="bi-103" lang="en">The number of trees is given by <code class="docutils literal notranslate"><span class="pre">mjModel.ntree</span></code>. For example, a model containing three free bodies and the <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/model/humanoid/humanoid.xml">standard
+humanoid</a> has <code class="docutils literal notranslate"><span class="pre">ntree</span> <span class="pre">=</span> <span class="pre">4</span></code>. Note
+that while trees are indeed subtrees of the global tree (whose root is the world), this should not be confused with the
+specific term <code class="docutils literal notranslate"><span class="pre">subtree</span></code>, which is reserved for per-body partial trees, thus <code class="docutils literal notranslate"><span class="pre">mjModel.body_subtreemass</span></code> gives the
+total mass of the partial tree under each body, for all bodies.</div>
+</section>
+<section id="geom">
+<span id="elemgeom"></span><h4 data-bi="bi-104">Geom（几何体）<a class="headerlink" href="#geom" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-104" lang="en">Geom</div>
+<p data-bi="bi-105">Geom 是刚性附着在刚体上的三维形状。同一个刚体上可以附着多个 geom。鉴于 MuJoCo 只支持凸 geom 之间的碰撞，而创建非凸物体的唯一方法是将其表示为凸 geom 的并集，这一点尤其有用。除了碰撞检测及随后的接触力计算之外，geom 还用于渲染，并在省略刚体质量和惯性时用于自动推断它们。MuJoCo 支持几种基本几何形状：平面（plane）、球体（sphere）、胶囊体（capsule）、椭球体（ellipsoid）、圆柱体（cylinder）、长方体（box）。geom 也可以是网格或高度场，这通过引用相应的资源来实现。Geom 具有若干影响仿真和可视化的材质属性。geom 的数量由 <code class="docutils literal notranslate"><span class="pre">mjModel.ngeom</span></code> 给出。</p><div class="en-orig" data-for="bi-105" lang="en">Geoms are 3D shapes rigidly attached to the bodies. Multiple geoms can be attached to the same body. This is
+particularly useful in light of the fact that MuJoCo only supports convex geom-geom collisions, and the only way to
+create non-convex objects is to represent them as a union of convex geoms. Apart from collision detection and
+subsequent computation of contact forces, geoms are used for rendering, as well as automatic inference of body masses
+and inertias when the latter are omitted. MuJoCo supports several primitive geometric shapes: plane, sphere, capsule,
+ellipsoid, cylinder, box. A geom can also be a mesh or a height field; this is done by referencing the corresponding
+asset. Geoms have a number of material properties that affect the simulation and visualization.
+The number of geoms is given by <code class="docutils literal notranslate"><span class="pre">mjModel.ngeom</span></code>.</div>
+</section>
+<section id="site">
+<span id="elemsite"></span><h4 data-bi="bi-106">Site（标记点）<a class="headerlink" href="#site" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-106" lang="en">Site</div>
+<p data-bi="bi-107">Site 本质上是轻量的 geom。它们表示刚体坐标系内值得关注的位置。site 不参与碰撞检测或惯性属性的自动计算，但可用于指定传感器、肌腱走线和曲柄滑块端点等其他对象的空间属性。site 的数量由 <code class="docutils literal notranslate"><span class="pre">mjModel.nsite</span></code> 给出。</p><div class="en-orig" data-for="bi-107" lang="en">Sites are essentially light geoms. They represent locations of interest within the body frame. Sites do not
+participate in collision detection or automated computation of inertial properties, however they can be used to
+specify the spatial properties of other objects like sensors, tendon routing, and slider-crank endpoints.
+The number of sites is given by <code class="docutils literal notranslate"><span class="pre">mjModel.nsite</span></code>.</div>
+</section>
+<section id="camera">
+<span id="elemcamera"></span><h4 data-bi="bi-108">相机（Camera）<a class="headerlink" href="#camera" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-108" lang="en">Camera</div>
+<p data-bi="bi-109">模型中可以定义多个相机。始终存在一个默认相机，用户可以在交互式可视化器中用鼠标自由移动它。然而，定义额外的相机往往很方便，这些相机要么固定在世界上，要么附着在某个刚体上并随其运动。除了相机的位置和朝向外，用户还可以调整垂直视场角和用于立体渲染的瞳距，并创建立体虚拟环境所需的斜投影。在对具有不完美光学系统的真实相机建模时，可以分别指定水平和垂直方向的焦距以及非居中的主点。相机的数量由 <code class="docutils literal notranslate"><span class="pre">mjModel.ncam</span></code> 给出。</p><div class="en-orig" data-for="bi-109" lang="en">Multiple cameras can be defined in a model. There is always a default camera which the user can freely move with the
+mouse in the interactive visualizer. However it is often convenient to define additional cameras that are either
+fixed to the world, or are attached to one of the bodies and move with it. In addition to the camera position and
+orientation, the user can adjust the vertical field of view and the inter-pupilary distance for stereoscopic rendering,
+as well as create oblique projections needed for stereoscopic virtual environments. When modeling real cameras with
+imperfect optics, it is possible to specify separate focal lengths for the horizontal and vertical directions and a
+non-centered principal point.
+The number of cameras is given by <code class="docutils literal notranslate"><span class="pre">mjModel.ncam</span></code>.</div>
+</section>
+<section id="light">
+<span id="elemlight"></span><h4 data-bi="bi-110">灯光（Light）<a class="headerlink" href="#light" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-110" lang="en">Light</div>
+<p data-bi="bi-111">灯光可以固定在世界刚体上，也可以附着在运动的刚体上。可视化器提供对 OpenGL（固定功能管线）完整光照模型的访问，包括环境光、漫反射和镜面反射分量、衰减和截止、位置光和方向光、雾。灯光（更准确地说是被其照亮的物体）还可以投射阴影。然而，与材质反射类似，每个投射阴影的灯光都会增加一次渲染遍历，因此应谨慎使用此功能。详细说明光照模型超出本章范围，请参阅 <a class="reference external" href="http://www.glprogramming.com/red/chapter05.html">OpenGL 文档</a> 的相应部分。注意，除了用户在运动学树中定义的灯光外，还有一个随相机移动的内置头灯，在光线不足的条件下检查模型时很有用。其属性通过 mjVisual 选项调整，默认为 "auto"，由运行时决定是否启用。（出于向后兼容，旧版渲染器假定 "auto" 头灯是开启的。）灯光的数量由 <code class="docutils literal notranslate"><span class="pre">mjModel.nlight</span></code> 给出。</p><div class="en-orig" data-for="bi-111" lang="en">Lights can be fixed to the world body or attached to moving bodies. The visualizer provides access to the full
+lighting model in OpenGL (fixed function) including ambient, diffuse and specular components, attenuation and cutoff,
+positional and directional lighting, fog. Lights, or rather the objects illuminated by them, can also cast shadows.
+However, similar to material reflections, each shadow-casting light adds one rendering pass so this feature should be
+used with caution. Documenting the lighting model in detail is beyond the scope of this chapter; see <a class="reference external" href="http://www.glprogramming.com/red/chapter05.html">OpenGL
+documentation</a> instead. Note that in addition to lights defined
+by the user in the kinematic tree, there is a built-in headlight that moves with the camera which can be useful for
+inspecting the model in poorly lit conditions. Its properties are adjusted through the mjVisual options, and it is
+“auto” by default to allow the runtime to decide whether or not it should be enabled. (For backwards compatibility,
+legacy renderers assume an “auto” headlight is on.)
+The number of lights is given by <code class="docutils literal notranslate"><span class="pre">mjModel.nlight</span></code>.</div>
+</section>
+</section>
+<section id="standalone">
+<span id="id17"></span><h3 data-bi="bi-112">独立元素<a class="headerlink" href="#standalone" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-112" lang="en">Stand-alone</div>
+<p data-bi="bi-113">这里描述不属于单个刚体的模型元素，因此它们在运动学树之外描述。</p><div class="en-orig" data-for="bi-113" lang="en">Here we describe the model elements which do not belong to an individual body, and therefore are described outside the
+kinematic tree.</div>
+<section id="tendon">
+<span id="elemtendon"></span><h4 data-bi="bi-114">肌腱（Tendon）<a class="headerlink" href="#tendon" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-114" lang="en">Tendon</div>
+<p data-bi="bi-115">肌腱是标量长度元素，可用于驱动、施加限位和等式约束，或创建弹簧阻尼器和摩擦损耗。肌腱有两种类型：固定型和空间型。固定肌腱是（标量）关节位置的线性组合，适合对机械耦合建模。空间肌腱定义为通过一系列指定 site（或经过点）或绕过指定 geom 的最短路径。只支持球体和圆柱体作为包绕 geom，且圆柱体在包绕时被视为无限长。为避免肌腱从包绕 geom 的一侧突然跳到另一侧，用户还可以指定偏好的一侧。如果肌腱路径中有多个包绕 geom，它们之间必须用 site 隔开，以避免需要迭代求解器。空间肌腱还可以用滑轮分成多个分支。</p><div class="en-orig" data-for="bi-115" lang="en">Tendons are scalar length elements that can be used for actuation, imposing limits and equality constraints, or
+creating spring-dampers and friction loss. There are two types of tendons: fixed and spatial. Fixed tendons are
+linear combinations of (scalar) joint positions. They are useful for modeling mechanical coupling. Spatial tendons
+are defined as the shortest path that passes through a sequence of specified sites (or via-points) or wraps around
+specified geoms. Only spheres and cylinders are supported as wrapping geoms, and cylinders are treated as having
+infinite length for wrapping purposes. To avoid abrupt jumps of the tendon from one side of the wrapping geom to the
+other, the user can also specify the preferred side. If there are multiple wrapping geoms in the tendon path they
+must be separated by sites, so as to avoid the need for an iterative solver. Spatial tendons can also be split into
+multiple branches using pulleys.</div>
+</section>
+<section id="actuator">
+<span id="elemactuator"></span><h4 data-bi="bi-116">执行器（Actuator）<a class="headerlink" href="#actuator" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-116" lang="en">Actuator</div>
+<p data-bi="bi-117">MuJoCo 提供灵活的执行器模型，含有三个可独立指定的组成部分，它们共同决定执行器的工作方式。通过协调地指定这些组成部分，可以得到常见的执行器类型。这三个组成部分是传动、激活动力学和力的生成。传动指定执行器如何连接到系统的其余部分；可用类型有关节、肌腱、曲柄滑块、site 和刚体。激活动力学可用于对气动或液压缸以及生物肌肉的内部激活状态建模；使用此类执行器会使整个系统动力学成为三阶。力生成机制决定作为执行器输入提供的标量控制信号如何映射为标量力，该标量力再通过由传动推断出的力臂映射为广义力。</p><div class="en-orig" data-for="bi-117" lang="en">MuJoCo provides a flexible actuator model, with three components that can be specified independently. Together they
+determine how the actuator works. Common actuator types are obtained by specifying these components in a coordinated
+way. The three components are transmission, activation dynamics, and force generation. The transmission specifies how
+the actuator is attached to the rest of the system; available types are joint, tendon, slider-crank, site and body. The
+activation dynamics can be used to model internal activation states of pneumatic or hydraulic cylinders as well as
+biological muscles; using such actuators makes the overall system dynamics 3rd-order. The force generation mechanism
+determines how the scalar control signal provided as input to the actuator is mapped into a scalar force, which is in
+turn mapped into a generalized force by the moment arms inferred from the transmission.</div>
+</section>
+<section id="sensor">
+<span id="elemsensor"></span><h4 data-bi="bi-118">传感器（Sensor）<a class="headerlink" href="#sensor" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-118" lang="en">Sensor</div>
+<p data-bi="bi-119">MuJoCo 可以生成仿真的传感器数据，保存在全局数组 <code class="docutils literal notranslate"><span class="pre">mjData.sensordata</span></code> 中。该结果不用于任何内部计算；提供它是因为用户大概需要它进行自定义计算或数据分析。可用的传感器类型包括触摸传感器、惯性测量单元（IMU）、力-力矩传感器、关节和肌腱位置与速度传感器、执行器传感器、刚体坐标系传感器、测距仪等等；完整列表参见 XML 参考中的 <a class="reference internal" href="XMLreference.html#sensor"><span class="std std-ref">传感器</span></a> 部分。还有用户传感器类型，允许用户代码向传感器数据数组中插入任何其他感兴趣的量。MuJoCo 还具有离屏渲染能力，使得仿真彩色和深度相机传感器变得简单直接。这不包含在标准传感器模型中，而必须通过编程完成，如代码示例 <a class="reference internal" href="programming/samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> 所示。</p><div class="en-orig" data-for="bi-119" lang="en">MuJoCo can generate simulated sensor data which is saved in the global array <code class="docutils literal notranslate"><span class="pre">mjData.sensordata</span></code>. The result is not
+used in any internal computations; instead it is provided because the user presumably needs it for custom computation
+or data analysis. Available sensor types include touch sensors, inertial measurement units (IMUs), force-torque
+sensors, joint and tendon position and velocity sensors, actuator sensors, body frame sensors, rangefinders, and
+many others; see the <a class="reference internal" href="XMLreference.html#sensor"><span class="std std-ref">Sensor</span></a> section of the XML reference for the complete list. There is also a user
+sensor type, allowing user code to insert any other quantity of interest in the sensor data array. MuJoCo also has
+off-screen rendering capabilities, making it straightforward to simulate both color and depth camera sensors. This is
+not included in the standard sensor model and instead has to be done programmatically, as illustrated in the code
+sample <a class="reference internal" href="programming/samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a>.</div>
+</section>
+<section id="equality">
+<span id="elemequality"></span><h4 data-bi="bi-120">等式约束（Equality）<a class="headerlink" href="#equality" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-120" lang="en">Equality</div>
+<p data-bi="bi-121">等式约束可以在运动学树结构及其中定义的关节/自由度所施加的约束之外施加额外约束。它们可用于创建闭环关节，或一般地对机械耦合建模。强制这些约束的内力与所有其他约束力一起计算。可用的等式约束类型有：在一点连接两个刚体（在运动学树之外创建球关节）；将两个刚体焊接在一起；固定关节或肌腱的位置；通过三次多项式耦合两个关节或两个肌腱的位置；将柔性体（即可变形网格）的边约束为其初始长度。</p><div class="en-orig" data-for="bi-121" lang="en">Equality constraints can impose additional constraints beyond those already imposed by the kinematic tree structure
+and the joints/DOFs defined in it. They can be used to create loop joints, or in general model mechanical coupling.
+The internal forces that enforce these constraints are computed together with all other constraint forces. The
+available equality constraint types are: connect two bodies at a point (creating a ball joint outside the kinematic
+tree); weld two bodies together; fix the position of a joint or tendon; couple the positions of two joints or two
+tendons via a cubic polynomial; constrain the edges of a flex (i.e. deformable mesh) to their initial lengths.</div>
+</section>
+<section id="flex">
+<span id="elemflex"></span><h4 data-bi="bi-122">柔性体（Flex）<a class="headerlink" href="#flex" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-122" lang="en">Flex</div>
+<p data-bi="bi-123">柔性体表示可变形网格，可以是一维、二维或三维的（因此其元素分别是胶囊体、三角形或四面体）。与刚性附着在单个刚体上的静态形状 geom 不同，柔性体的元素是可变形的：它们由多个刚体连接而成，因此刚体的位置和朝向在运行时决定柔性体元素的形状。这些可变形元素支持碰撞和接触力，并产生被动力和约束力，以柔和地保持可变形实体的形状。系统提供了自动化功能，用于从文件加载网格、构造对应于网格顶点的刚体、构造对应于网格面（或线、四面体，取决于维数）的柔性体元素，并得到相应的可变形网格。</p><div class="en-orig" data-for="bi-123" lang="en">Flexes represent deformable meshes that can be 1, 2 or 3 dimensional (thus their elements
+are capsules, triangles or tetrahedra). Unlike geoms which are static shapes attached rigidly to a single body, the
+elements of a flex are deformable: they are constructed by connecting multiple bodies, thus the body positions and
+orientations determine the shape of the flex elements at runtime. These deformable elements support collisions and
+contact forces, as well as generate passive and constraint forces which softly preserve the shape of the deformable
+entity. Automation is provided to load a mesh from a file, construct bodies corresponding to the mesh vertices,
+construct flex elements corresponding to the mesh faces (or lines or tetrahedra, depending on dimensionality), and
+obtain a corresponding deformable mesh.</div>
+</section>
+<section id="contact-pair">
+<h4 data-bi="bi-124">接触对（Contact pair）<a class="headerlink" href="#contact-pair" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-124" lang="en">Contact pair</div>
+<p data-bi="bi-125">MuJoCo 中的接触生成是一个复杂的过程。被检查接触的 geom 对可以有两个来源：自动的邻近测试及其他统称为“动态”的过滤器，以及模型中提供的显式 geom 对列表。后者是一种单独类型的模型元素。由于接触涉及两个 geom 的组合，显式指定使用户能够以动态机制无法做到的方式定义接触参数。它对于微调接触模型也很有用，特别是添加被激进的过滤方案移除的接触对。接触机制现已扩展到柔性体元素，它可以在两个以上的刚体之间产生接触相互作用。然而，这类碰撞是自动的，无法用接触对进行微调。</p><div class="en-orig" data-for="bi-125" lang="en">Contact generation in MuJoCo is an elaborate process. Geom pairs that are checked for contact can come from two
+sources: automated proximity tests and other filters collectively called “dynamic”, as well as an explicit list of
+geom pairs provided in the model. The latter is a separate type of model element. Because a contact involves a
+combination of two geoms, the explicit specification allows the user to define contact parameters in ways that cannot
+be done with the dynamic mechanism. It is also useful for fine-tuning the contact model, in particular adding contact
+pairs that were removed by an aggressive filtering scheme. The contact machinery is now extended to flex elements,
+which can create contact interactions between more than two bodies. However such collisions are automated and cannot
+be finetuned using contact pairs.</div>
+</section>
+<section id="contact-exclude">
+<h4 data-bi="bi-126">接触排除（Contact exclude）<a class="headerlink" href="#contact-exclude" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-126" lang="en">Contact exclude</div>
+<p data-bi="bi-127">这与接触对相反：它指定应从候选接触对生成中排除的刚体对（而非 geom 对）。它对于禁用几何形状造成不期望的永久接触的刚体之间的接触很有用。注意 MuJoCo 还有其他处理这种情况的机制（特别是属于同一刚体或属于父子刚体的 geom 不会碰撞），但有时这些自动机制并不足够，就需要显式排除。</p><div class="en-orig" data-for="bi-127" lang="en">This is the opposite of contact pairs: it specifies pairs of bodies (rather than geoms) which should be excluded from
+the generation of candidate contact pairs. It is useful for disabling contacts between bodies whose geometry causes
+an undesirable permanent contact. Note that MuJoCo has other mechanisms for dealing with this situation (in
+particular geoms cannot collide if they belong to the same body or to a parent and a child body), but sometimes these
+automated mechanisms are not sufficient and explicit exclusion becomes necessary.</div>
+</section>
+<section id="custom-numeric">
+<h4 data-bi="bi-128">自定义数值（Custom numeric）<a class="headerlink" href="#custom-numeric" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-128" lang="en">Custom numeric</div>
+<p data-bi="bi-129">在 MuJoCo 仿真中输入自定义数值有三种方式。第一，可以在 XML 中定义全局数值字段，它们有名称和一个实数数组。第二，某些模型元素的定义可以用元素专属的自定义数组扩展。这通过在 XML 元素 <code class="docutils literal notranslate"><span class="pre">size</span></code> 中设置属性 <code class="docutils literal notranslate"><span class="pre">nuser_XXX</span></code> 来完成。第三，有数组 <code class="docutils literal notranslate"><span class="pre">mjData.userdata</span></code> ，它不被任何 MuJoCo 计算使用。用户可以把自定义计算的结果存储在其中；请记住，所有随时间变化的内容都应存储在 <code class="docutils literal notranslate"><span class="pre">mjData</span></code> 中，而不是 <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> 中。</p><div class="en-orig" data-for="bi-129" lang="en">There are three ways to enter custom numbers in a MuJoCo simulation. First, global numeric fields can be defined in
+the XML. They have a name and an array of real values. Second, the definition of certain model elements can be
+extended with element-specific custom arrays. This is done by setting the attributes <code class="docutils literal notranslate"><span class="pre">nuser_XXX</span></code> in the XML element
+<code class="docutils literal notranslate"><span class="pre">size</span></code>. Third, there is the array <code class="docutils literal notranslate"><span class="pre">mjData.userdata</span></code> which is not used by any MuJoCo computations. The user can
+store results from custom computations there; recall that everything that changes over time should be stored in
+<code class="docutils literal notranslate"><span class="pre">mjData</span></code> and not in <code class="docutils literal notranslate"><span class="pre">mjModel</span></code>.</div>
+</section>
+<section id="custom-text">
+<h4 data-bi="bi-130">自定义文本（Custom text）<a class="headerlink" href="#custom-text" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-130" lang="en">Custom text</div>
+<p data-bi="bi-131">自定义文本字段可以保存在模型中。它们可用于自定义计算——用来指定关键字命令，或提供其他文本信息。不过不要用它们写注释；把注释保存在编译后的模型中没有任何好处。XML 有自己的注释机制（会被 MuJoCo 的解析器和编译器忽略），更适合用于注释。</p><div class="en-orig" data-for="bi-131" lang="en">Custom text fields can be saved in the model. They can be used in custom computations – either to specify keyword
+commands, or to provide some other textual information. Do not use them for comments though; there is no benefit to
+saving comments in a compiled model. XML has its own commenting mechanism (ignored by MuJoCo’s parser and compiler)
+which is more suitable.</div>
+</section>
+<section id="custom-tuple">
+<h4 data-bi="bi-132">自定义元组（Custom tuple）<a class="headerlink" href="#custom-tuple" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-132" lang="en">Custom tuple</div>
+<p data-bi="bi-133">自定义元组是 MuJoCo 模型元素的列表，可以包含其他元组。仿真器不使用它们，但它们可用于指定用户代码所需的元素组。例如，可以用元组定义用于自定义接触处理的刚体对。</p><div class="en-orig" data-for="bi-133" lang="en">Custom tuples are lists of MuJoCo model elements, possibly including other tuples. They are not used by the
+simulator, but are available for specifying groups of elements that are needed for user code. For example, one can
+use tuples to define pairs of bodies for custom contact processing.</div>
+</section>
+<section id="keyframe">
+<h4 data-bi="bi-134">关键帧（Keyframe）<a class="headerlink" href="#keyframe" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-134" lang="en">Keyframe</div>
+<p data-bi="bi-135">关键帧是仿真状态变量的快照。它包含关节位置、关节速度、执行器激活（状态）、控制、mocap 刚体位姿以及仿真时间。模型中可以包含关键帧库。它们对于将系统状态重置到感兴趣的点很有用。注意，关键帧并非用于在模型中存储轨迹数据；为此应使用外部文件。</p><div class="en-orig" data-for="bi-135" lang="en">A keyframe is a snapshot of the simulation state variables. It contains joint positions, joint velocities, actuator
+activations, controls, mocap body poses, and the simulation time. The model can contain a library of keyframes.
+They are useful for resetting the state of the system to a point of interest. Note that keyframes are not intended
+for storing trajectory data in the model; external files should be used for this purpose.</div>
+</section>
+</section>
+</section>
+<section id="clarifications">
+<span id="id18"></span><h2 data-bi="bi-136">补充说明<a class="headerlink" href="#clarifications" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-136" lang="en">Clarifications</div>
+<p data-bi="bi-137">读者很可能有使用其他物理仿真器及相关约定的经验，以及与 MuJoCo 不一致的一般编程习惯。这有可能造成困惑。本节的目标是预先澄清最可能令人困惑的方面；它介于常见问题解答（FAQ）和针对若干主题的教程之间。我们需要引用文档后文涵盖的内容，但下面的文字仍尽可能做到自成一体并具有入门性质。</p><div class="en-orig" data-for="bi-137" lang="en">The reader is likely to have experience with other physics simulators and related conventions, as well as general
+programming practices that are not aligned with MuJoCo. This has the potential to cause confusion. The goal of this
+section is to preemptively clarify the aspects that are most likely to be confusing; it is somewhere in-between a FAQ
+and a tutorial on selected topics. We will need to refer to material covered later in the documentation, but
+nevertheless the text below is as self-contained and introductory as possible.</div>
+<section id="divergence">
+<span id="id19"></span><h3 data-bi="bi-138">发散<a class="headerlink" href="#divergence" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-138" lang="en">Divergence</div>
+<p data-bi="bi-139">仿真发散指状态的元素迅速趋向无穷大。在 MuJoCo 中，这通常表现为 <a class="reference internal" href="APIreference/APItypes.html#mjtwarning"><span class="std std-ref">mjWARN_BADQACC</span></a> 警告。发散是所有物理仿真中普遍存在的现象，并不一定表明模型不好或仿真器有 bug，而是提示对于所选的积分器（integrator），时间步长过大。在物理仿真中，速度（大时间步长）和稳定性（小时间步长）之间总是存在张力。一个为速度调优良好的模型具有不发散的最大可能时间步长，这通常意味着在极端条件下它 <em>可以</em> 被弄发散。从这个意义上说，<em>罕见</em> 的发散情形实际上可能表明模型调优良好。在所有情况下，都应该可以通过减小时间步长和/或切换到更稳定的 <a class="reference internal" href="computation/index.html#geintegration"><span class="std std-ref">积分器</span></a> 来防止发散。如果这样仍不奏效，则问题出在别处。例如，在刚体被初始化为相互穿透（penetration）的模型中，巨大的排斥力可能把它们推开并导致发散。</p><div class="en-orig" data-for="bi-139" lang="en">Divergence of a simulation happens when elements of the state tend quickly to infinity. In MuJoCo this is usually
+manifested as an <a class="reference internal" href="APIreference/APItypes.html#mjtwarning"><span class="std std-ref">mjWARN_BADQACC</span></a> warning. Divergence is endemic to all physics simulation and is not
+necessarily indicative of a bad model or bug in the simulator, but is rather a hint that the timestep  is too large for
+the given choice of integrator. In physics simulation there is always a tension between speed (large time steps) and
+stability (small timesteps). A model which is well-tuned for speed has the largest possible timestep that does not
+diverge, which usually means that it <em>can</em> be made to diverge under extreme conditions. In that sense <em>rare</em> cases of
+divergence can actually be indicative of a well-tuned model. In all cases it should be possible to prevent divergence by
+reducing the timestep and/or switching to a more stable <a class="reference internal" href="computation/index.html#geintegration"><span class="std std-ref">integrator</span></a>. If that fails, the culprit is
+different. For example in models where bodies are initialized in penetration, large repulsive forces could push them
+away and cause divergence.</div>
+</section>
+<section id="units">
+<span id="id20"></span><h3 data-bi="bi-140">单位未指定<a class="headerlink" href="#units" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-140" lang="en">Units are unspecified</div>
+<p data-bi="bi-141">MuJoCo 不指定基本物理单位。用户可以按自己的选择解释单位制，只要它是自洽的即可。为理解这一点，考虑一个例子：一艘 1 米长、重 1 千克、带有 1 牛顿推进器的飞船，其动力学与一艘 1 厘米长、重 1 克、带有 1 达因推进器的飞船相同。这是因为 <a class="reference external" href="https://en.wikipedia.org/wiki/MKS_system_of_units">MKS</a> 和 <a class="reference external" href="https://en.wikipedia.org/wiki/Centimetre%E2%80%93gram%E2%80%93second_system_of_units">CGS</a> 都是自洽的单位制。这一性质使用户可以按自己的选择缩放模型，这在仿真非常小或非常大的事物时很有用，可以改善仿真的数值性质。</p><div class="en-orig" data-for="bi-141" lang="en">MuJoCo does not specify basic physical units. The user may interpret the system of units as they choose, as long as it
+is consistent. To understand this, consider an example: the dynamics of a 1 meter spaceship that weighs 1 kilogram and
+has a 1 Newton thruster are the same as those of a 1 cm spaceship that weighs 1 gram and has a 1 dyn thruster. This is
+because both <a class="reference external" href="https://en.wikipedia.org/wiki/MKS_system_of_units">MKS</a> and <a class="reference external" href="https://en.wikipedia.org/wiki/Centimetre%E2%80%93gram%E2%80%93second_system_of_units">CGS</a> are consistent systems of
+units. This property allows the user to scale their model as they choose, which is useful when simulating very small or
+very large things, to improve the numerical properties of the simulation.</div>
+<p data-bi="bi-142">话虽如此，仍建议用户使用 MKS，因为 MuJoCo 在两处使用了类似 MKS 的默认值：</p><div class="en-orig" data-for="bi-142" lang="en">That said, users are encouraged to use MKS, as there are two places where MuJoCo uses MKS-like default values:</div>
+<ul class="simple">
+<li><p data-bi="bi-143"><a class="reference internal" href="XMLreference.html#option"><span class="std std-ref">gravity</span></a> 的默认值为 (0, 0, -9.81)，对应于 MKS 下的地球表面重力。注意这并没有真正指定 MKS 单位制，因为我们也可能在
+<a class="reference external" href="https://en.wikipedia.org/wiki/Enceladus">土卫二</a> 上使用 CGS。</p><div class="en-orig" data-for="bi-143" lang="en">The default value of <a class="reference internal" href="XMLreference.html#option"><span class="std std-ref">gravity</span></a> is (0, 0, -9.81), which corresponds to Earth surface gravity in MKS.
+Note that this does not really specify the MKS system of units, since we might be using CGS on
+<a class="reference external" href="https://en.wikipedia.org/wiki/Enceladus">Enceladus</a>.</div></li>
+<li><p data-bi="bi-144">用于推断刚体质量和惯性的 <a class="reference internal" href="XMLreference.html#body-geom"><span class="std std-ref">geom 密度</span></a> 默认值为 1000，对应于 MKS 下水的密度。</p><div class="en-orig" data-for="bi-144" lang="en">The default value of <a class="reference internal" href="XMLreference.html#body-geom"><span class="std std-ref">geom density</span></a> (used to infer body masses and inertias) is 1000, which
+corresponds to the density of water in MKS.</div></li>
+</ul>
+<p data-bi="bi-145">一旦选定了一套自洽的基本单位（长度、质量、时间），所有导出单位都对应于该单位制，正如在 <a class="reference external" href="https://en.wikipedia.org/wiki/Dimensional_analysis">量纲分析</a> 中那样。例如，如果我们的模型按 MKS 解释，则力和力矩的单位分别是牛顿和牛顿·米。</p><div class="en-orig" data-for="bi-145" lang="en">Once a consistent system of basic units (length, mass, time) is chosen, all derived units correspond to this system, as
+in <a class="reference external" href="https://en.wikipedia.org/wiki/Dimensional_analysis">Dimensional Analysis</a>. For example if our model is
+interpreted as MKS, then forces and torques are in Newton and Newton-Meter, respectively.</div>
+<p data-bi="bi-146"><strong>角度：</strong> 虽然在 MJCF 中可以用度来指定角度 (事实上度是 <a class="reference internal" href="XMLreference.html#compiler"><span class="std std-ref">默认值</span></a>)，但 <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 和 <a class="reference internal" href="APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 中所有角度量都以 <a class="reference external" href="https://en.wikipedia.org/wiki/Radian">弧度</a> 表示。例如，如果使用 MKS，则 <a class="reference internal" href="XMLreference.html#sensor-gyro"><span class="std std-ref">陀螺仪</span></a> 报告的角速度单位为 rad/s，而铰链关节的刚度单位为 Nm/rad。</p><div class="en-orig" data-for="bi-146" lang="en"><strong>Angles:</strong> Although angles can be specified using degrees in MJCF (and indeed degrees are the
+<a class="reference internal" href="XMLreference.html#compiler"><span class="std std-ref">default</span></a>), all angular quantities <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> and <a class="reference internal" href="APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> are expressed in
+<a class="reference external" href="https://en.wikipedia.org/wiki/Radian">radians</a>. So, for example, if we are using MKS, angular velocities reported by
+<a class="reference internal" href="XMLreference.html#sensor-gyro"><span class="std std-ref">gyroscopes</span></a> would be in rad/s while stiffness of hinge joints would be in Nm/rad.</div>
+</section>
+<section id="surprisingcollisions">
+<span id="id21"></span><h3 data-bi="bi-147">意外的碰撞<a class="headerlink" href="#surprisingcollisions" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-147" lang="en">Surprising Collisions</div>
+<p data-bi="bi-148">默认情况下，MuJoCo 会排除属于具有直接父子关系的刚体对的 geom 之间的碰撞。例如，考虑上文 <a class="reference internal" href="#examples"><span class="std std-ref">示例</span></a> 一节中的机械臂模型：尽管胶囊体 geom 相互穿透，“肘部”处也没有碰撞，因为前臂是上臂的直接子刚体。</p><div class="en-orig" data-for="bi-148" lang="en">MuJoCo by default excludes collisions between geoms that belong to body pairs which have a direct parent-child
+relationship. For example, consider the arm model in the <a class="reference internal" href="#examples"><span class="std std-ref">Examples</span></a> section above: there is no collision at the
+“elbow” even though the capsule geoms are penetrating, because the forearm is an immediate child of the upper arm.</div>
+<p data-bi="bi-149">然而 <strong>如果父刚体是静态刚体，则不会应用这种排除</strong> (静态刚体即世界刚体，或相对于世界刚体没有任何自由度的刚体)。这一行为记录在 <a class="reference internal" href="computation/index.html#collision"><span class="std std-ref">碰撞检测</span></a> 一节中，它可以防止物体掉穿地板或穿过墙壁。但这一行为常常导致下面的情形：</p><div class="en-orig" data-for="bi-149" lang="en">However, this exclusion is <strong>not applied if the parent is a static body</strong> i.e., the world body, or a body without any
+degrees of freedom relative to the world body. This behavior, documented in the <a class="reference internal" href="computation/index.html#collision"><span class="std std-ref">Collision detection</span></a>
+section, prevents objects from falling through the floor or moving through walls. However, this behavior often leads to
+the following situation:</div>
+<p data-bi="bi-150">用户注释掉浮动基座模型的根关节，也许是为了防止它掉落；现在基座刚体被视为静态刚体，于是出现了以前没有的新碰撞，用户感到困惑。有三种简单的方法可以避免这个问题：</p><div class="en-orig" data-for="bi-150" lang="en">The user comments out the root joint of a floating-base model, perhaps in order to prevent it from falling; now that the
+base body is counted as static, new collisions appear that were not there before and the user is confused. There are
+three easy ways to avoid this problem:</div>
+<ol class="arabic simple">
+<li><p data-bi="bi-151">把新变为静态的刚体声明为 <a class="reference internal" href="XMLreference.html#body-mocap"><span class="std std-ref">mocap 刚体</span></a> 即可。mocap 刚体在碰撞过滤中是其自身刚体组的根，而不是被焊接到世界上，因此父子排除照常适用于它们的子刚体。另外，这个刚体还可以交互式地移动。</p><div class="en-orig" data-for="bi-151" lang="en">Make the newly static body a <a class="reference internal" href="XMLreference.html#body-mocap"><span class="std std-ref">mocap body</span></a>. Mocap bodies are the root of their own body group for
+the purposes of collision filtering, rather than being welded to the world, so the parent-child exclusion applies to
+their children as usual. As a bonus, the body can be moved around interactively.</div></li>
+<li><p data-bi="bi-152">不要移除根关节。也许只需 <a class="reference internal" href="XMLreference.html#option-flag"><span class="std std-ref">禁用重力</span></a>，并酌情添加一些 <a class="reference internal" href="XMLreference.html#option"><span class="std std-ref">流体粘性</span></a>，就足以防止模型到处乱动。</p><div class="en-orig" data-for="bi-152" lang="en">Don’t remove the root joint. Perhaps it is enough to <a class="reference internal" href="XMLreference.html#option-flag"><span class="std std-ref">disable gravity</span></a> and possibly add some
+<a class="reference internal" href="XMLreference.html#option"><span class="std std-ref">fluid viscosity</span></a> in order to prevent your model from moving around too much.</div></li>
+<li><p data-bi="bi-153">使用 <a class="reference internal" href="computation/index.html#collision"><span class="std std-ref">碰撞过滤</span></a> 显式禁用不想要的碰撞，方法是设置相关的 <span class="at">contype</span> 和 <span class="at">conaffinity</span> 属性，或使用接触 <a class="reference internal" href="XMLreference.html#contact-exclude"><span class="std std-ref">exclude</span></a> 指令。</p><div class="en-orig" data-for="bi-153" lang="en">Use <a class="reference internal" href="computation/index.html#collision"><span class="std std-ref">collision filtering</span></a> to explicitly disable the unwanted collisions, either by setting the
+relevant <span class="at">contype</span> and <span class="at">conaffinity</span> attributes, or by using a contact <a class="reference internal" href="XMLreference.html#contact-exclude"><span class="std std-ref">exclude</span></a>
+directive.</div></li>
+</ol>
+</section>
+<section id="notobject">
+<span id="id22"></span><h3 data-bi="bi-154">面向数据的设计<a class="headerlink" href="#notobject" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-154" lang="en">Data-oriented design</div>
+<p data-bi="bi-155">MuJoCo 采用面向数据的架构，而非面向对象的架构。这里自然的语义实体是整个物理仿真器，而不是带有私有状态和方法的单个对象。我们没有对象，而是有少量数据结构和大量作用于它们的函数。</p><div class="en-orig" data-for="bi-155" lang="en">MuJoCo uses a data-oriented architecture rather than an object-oriented one. The natural semantic entity here is the
+entire physics simulator, rather than individual objects with private state and methods. Instead of objects, we have a
+small number of data structures and a large number of functions that operate on them.</div>
+<p data-bi="bi-156">我们将模型 (<code class="docutils literal notranslate"><span class="pre">mjModel</span></code>) 与数据 (<code class="docutils literal notranslate"><span class="pre">mjData</span></code>) 分开。它们都是数据结构。模型包含描述被建模物理系统的恒定属性所需的一切，而数据包含随时间变化的状态和内部计算中可复用的中间结果。所有顶层函数都期望将指向 <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> 和 <code class="docutils literal notranslate"><span class="pre">mjData</span></code> 的指针作为参数。这种设计避免了全局变量，并自然地支持多线程：每个线程只需操作自己的 <code class="docutils literal notranslate"><span class="pre">mjData</span></code> 实例。</p><div class="en-orig" data-for="bi-156" lang="en">We separate the model (<code class="docutils literal notranslate"><span class="pre">mjModel</span></code>) from the data (<code class="docutils literal notranslate"><span class="pre">mjData</span></code>). These are both data structures. The model contains
+everything needed to describe the constant properties of the physical system being modeled, while the data contains the
+time-varying state and the reusable intermediate results of internal computations. All top-level functions expect
+pointers to <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> and <code class="docutils literal notranslate"><span class="pre">mjData</span></code> as arguments. This design avoids global variables and naturally supports
+multi-threading: each thread simply operates on its own <code class="docutils literal notranslate"><span class="pre">mjData</span></code> instance.</div>
+</section>
+<section id="soft">
+<span id="id23"></span><h3 data-bi="bi-157">柔性与滑移<a class="headerlink" href="#soft" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-157" lang="en">Softness and slip</div>
+<p data-bi="bi-158">正如我们将在 <a class="reference internal" href="computation/index.html"><span class="doc">计算</span></a> 一章中详细解释的那样，MuJoCo 基于接触及其他约束的物理数学模型。该模型本质上是柔性的，即对某个约束施加更大的推力总会产生更大的加速度，因此逆动力学（inverse dynamics）可以被唯一地定义。这是我们期望的特性，因为它会产生一个凸优化（convex optimization）问题，并使依赖逆动力学的分析成为可能；此外，我们在实践中需要建模的大多数接触本身也具有一定的柔性。然而，一旦允许柔性约束，我们实际上就创造了一种新的动力学（dynamics），即形变动力学，此时我们必须规定这种动力学的行为方式。这就需要对接触和其他约束进行精细的参数化，涉及 <span class="at">solref</span> 和 <span class="at">solimp</span> 属性，它们可以针对每个约束分别设置，稍后将作介绍。</p><div class="en-orig" data-for="bi-158" lang="en">As we will explain at length in the <a class="reference internal" href="computation/index.html"><span class="doc">Computation</span></a> chapter, MuJoCo is based on a mathematical model of the
+physics of contact and other constraints. This model is inherently soft, in the sense that pushing harder against a
+constraint will always result in larger acceleration, and so the inverse dynamics can be uniquely defined. This is
+desirable because it yields a convex optimization problem and enables analyses that rely on inverse dynamics, and
+furthermore, most contacts that we need to model in practice have some softness. However once we allow soft constraints,
+we are effectively creating a new type of dynamics – namely deformation dynamics – and now we must specify how these
+dynamics behave. This calls for elaborate parameterization of contacts and other constraints, involving the attributes
+<span class="at">solref</span> and <span class="at">solimp</span> that can be set per constraints and will be described later.</div>
+<p data-bi="bi-159">这种柔性模型中一个常常令人困惑的方面是，接触的缓慢滑移是无法避免的。同样，带摩擦的关节也会在重力作用下缓慢屈服。这并不是因为求解器（solver）无法阻止滑移，即无法达到摩擦锥或摩擦损耗的极限，而是因为它从一开始就没有试图阻止滑移。请回忆，对给定约束施加更大的力必然导致更大的加速度。如果要完全抑制滑移，就必须违反这一关键性质。因此，如果你在仿真中看到缓慢的滑移，直观的解释可能是摩擦力不足，但在 MuJoCo 中这种情况很少见。实际上，需要调整 <code class="docutils literal notranslate"><span class="pre">solref</span></code> 和 <code class="docutils literal notranslate"><span class="pre">solimp</span></code> 参数向量来减弱这种效应。提高约束阻抗（impedance，即 <code class="docutils literal notranslate"><span class="pre">solimp</span></code> 的前两个元素）以及全局的 <code class="docutils literal notranslate"><span class="pre">mjModel.opt.impratio</span></code> 设置可能特别有效。这样的调整通常需要更小的时间步长（time step）才能保持仿真稳定，因为它们会使非线性动力学更难以进行数值积分。牛顿（Newton）求解器通常也更精确，因此同样能减少滑移。</p><div class="en-orig" data-for="bi-159" lang="en">An often confusing aspect of this soft model is that gradual contact slip cannot be avoided. Similarly, frictional
+joints will gradually yield under gravity. This is not because the solver is unable to prevent slip, in the sense of
+reaching the friction cone or friction loss limit, but because it is not trying to prevent slip in the first place.
+Recall that larger force against a given constraint must result in larger acceleration. If slip were to be fully
+suppressed, this key property would have to be violated. So if you see gradual slip in your simulation, the intuitive
+explanation may be that the friction is insufficient, but that is rarely the case in MuJoCo. Instead the <code class="docutils literal notranslate"><span class="pre">solref</span></code> and
+<code class="docutils literal notranslate"><span class="pre">solimp</span></code> parameter vectors need to be adjusted in order to reduce this effect. Increasing constraint impedance (first
+two elements of <code class="docutils literal notranslate"><span class="pre">solimp</span></code>) as well as the global <code class="docutils literal notranslate"><span class="pre">mjModel.opt.impratio</span></code> setting can be particularly effective. Such
+adjustment often requires smaller time steps to keep the simulation stable, because they make the nonlinear dynamics
+more difficult to integrate numerically. Slip is also reduced by the Newton solver which is more accurate in general.</div>
+<p data-bi="bi-160">对于需要更强滑移抑制的情形，有一个 <a class="reference internal" href="computation/index.html#sonoslip"><span class="std std-ref">NoSlip</span></a> 后处理求解器，它在主求解器之后运行。它通过忽略约束的柔性来更新摩擦维度上的接触力。不过，使用该选项时，MuJoCo 不再求解其原本被设计用来求解的凸优化问题，仿真的鲁棒性可能会下降。因此，推荐的减少滑移的方法是使用带椭圆型摩擦锥（elliptic friction cone）的牛顿求解器，并配合较大的 <code class="docutils literal notranslate"><span class="pre">impratio</span></code> 值。更详细的建议请参阅建模章节中的 <a class="reference internal" href="modeling.html#cslippage"><span class="std std-ref">防止滑移</span></a>。</p><div class="en-orig" data-for="bi-160" lang="en">For situations where stronger slip suppression is required, there is a <a class="reference internal" href="computation/index.html#sonoslip"><span class="std std-ref">NoSlip</span></a>
+post-processing solver which runs after the main solver. It updates the contact forces in friction dimensions by
+disregarding constraint softness. When this option is used however, MuJoCo is no longer solving the convex optimization
+problem it was designed to solve, and the simulation may become less robust. Thus using the Newton solver with elliptic
+friction cones and large value of <code class="docutils literal notranslate"><span class="pre">impratio</span></code> is the recommended way of reducing slip. For more detailed
+recommendations, see <a class="reference internal" href="modeling.html#cslippage"><span class="std std-ref">preventing slip</span></a> in the Modeling chapter.</div>
+</section>
+<section id="typenameid">
+<span id="id"></span><h3 data-bi="bi-161">类型、名称与 id<a class="headerlink" href="#typenameid" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-161" lang="en">Types, names, ids</div>
+<p data-bi="bi-162">MuJoCo 支持大量模型元素，如前文所概述的。每种元素类型在 <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> 中都有对应的一节，列出其各种属性。例如，关节限位（joint limit）数据位于数组</p><div class="en-orig" data-for="bi-162" lang="en">MuJoCo supports a large number of model elements, as summarized earlier. Each element type has a corresponding section
+in <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> listing its various properties. For example the joint limit data is in the array</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjtNum</span><span class="o">*</span><span class="w"> </span><span class="n">jnt_range</span><span class="p">;</span><span class="w">             </span><span class="c1">// joint limits       (njnt x 2)</span>
+</pre></div>
+</div>
+<p data-bi="bi-163">中。每个数组的大小（此处为 <code class="docutils literal notranslate"><span class="pre">njnt</span></code>）同样在 <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> 中给出。首先存放第一个关节的限位，然后是第二个关节的限位，依此类推。这种排列顺序反映了 MuJoCo 中所有矩阵都采用行主序格式这一事实。</p><div class="en-orig" data-for="bi-163" lang="en">The size of each array (<code class="docutils literal notranslate"><span class="pre">njnt</span></code> in this case) is also given in <code class="docutils literal notranslate"><span class="pre">mjModel</span></code>. The limits of the first joint are included
+first, followed by the limits of the second joint etc. This ordering reflects the fact that all matrices in MuJoCo have
+row-major format.</div>
+<p data-bi="bi-164">可用的元素类型定义在 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjtype.h">mjtype.h</a> 中的枚举类型 <a class="reference internal" href="APIreference/APItypes.html#mjtobj"><span class="std std-ref">mjtObj</span></a> 内。这些枚举大多在内部使用。MuJoCo API 中的函数 <a class="reference internal" href="APIreference/APIfunctions.html#mj-name2id"><span class="std std-ref">mj_name2id</span></a> 和 <a class="reference internal" href="APIreference/APIfunctions.html#mj-id2name"><span class="std std-ref">mj_id2name</span></a> 是一个例外，它们将元素名称映射为整数 id，反之亦然。这些函数以元素类型作为输入。</p><div class="en-orig" data-for="bi-164" lang="en">The available element types are defined in <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjtype.h">mjtype.h</a>, in the enum type <a class="reference internal" href="APIreference/APItypes.html#mjtobj"><span class="std std-ref">mjtObj</span></a>.
+These enums are mostly used internally. One exception are the functions <a class="reference internal" href="APIreference/APIfunctions.html#mj-name2id"><span class="std std-ref">mj_name2id</span></a> and <a class="reference internal" href="APIreference/APIfunctions.html#mj-id2name"><span class="std std-ref">mj_id2name</span></a> in the
+MuJoCo API, which map element names to integer ids and vice versa. These functions take an element type as input.</div>
+<p data-bi="bi-165">在 XML 中为模型元素命名是可选的。同一类型的两个元素（例如两个关节）不能同名。只有当某个元素需要在模型的其他位置被引用时才需要命名；在 XML 中只能通过名称进行引用。模型编译完成后，名称仍然会存储在 <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> 中，方便用户使用，尽管它们对仿真不再有进一步的影响。名称可用于查找对应的整数 id，也可用于渲染（rendering）：例如，如果你启用关节标签，每个关节旁边会显示一个字符串（未定义名称的元素被标记为“joint N”，其中 N 是 id）。</p><div class="en-orig" data-for="bi-165" lang="en">Naming model elements in the XML is optional. Two elements of the same type (e.g. two joints) cannot have the same name.
+Naming is required only when a given element needs to be referenced elsewhere in the model; referencing in the XML can
+only be done by name. Once the model is compiled, the names are still stored in <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> for user convenience,
+although they have no further effect on the simulation. Names are useful for finding the corresponding integer ids, as
+well as rendering: if you enable joint labels for example, a string will be shown next to each joint (elements with
+undefined names are labeled as “joint N” where N is the id).</div>
+<p data-bi="bi-166">元素的整数 id 对于索引 MuJoCo 数据数组至关重要。id 从 0 开始，遵循 C 语言的约定。假设我们已经有了 <code class="docutils literal notranslate"><span class="pre">mjModel*</span> <span class="pre">m</span></code>。要打印名为“elbow”的关节的范围，可以这样做：</p><div class="en-orig" data-for="bi-166" lang="en">The integer ids of the elements are essential for indexing the MuJoCo data arrays. The ids are 0-based, following the C
+convention. Suppose we already have <code class="docutils literal notranslate"><span class="pre">mjModel*</span> <span class="pre">m</span></code>. To print the range of a joint named “elbow”, do:</div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="n">jntid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mj_name2id</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">mjOBJ_JOINT</span><span class="p">,</span><span class="w"> </span><span class="s">"elbow"</span><span class="p">);</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">jntid</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">   </span><span class="n">printf</span><span class="p">(</span><span class="s">"(%f, %f)</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="o">-&gt;</span><span class="n">jnt_range</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">jntid</span><span class="p">],</span><span class="w"> </span><span class="n">m</span><span class="o">-&gt;</span><span class="n">jnt_range</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">jntid</span><span class="o">+</span><span class="mi">1</span><span class="p">]);</span>
+</pre></div>
+</div>
+<p data-bi="bi-167">如果未找到该名称，函数返回 -1，因此始终应当检查 id&gt;=0。</p><div class="en-orig" data-for="bi-167" lang="en">If the name is not found the function returns -1, which is why one should always check for id&gt;=0.</div>
+</section>
+<section id="geom-site">
+<span id="bodygeomsite"></span><h3 data-bi="bi-168">刚体、geom 与 site<a class="headerlink" href="#geom-site" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-168" lang="en">Bodies, geoms, sites</div>
+<p data-bi="bi-169">刚体（body）、geom 和 site 是 MuJoCo 的元素，大致对应于物理世界中的刚体。那么为什么要把它们分开呢？这是出于语义和计算两方面的原因，下面将作解释。</p><div class="en-orig" data-for="bi-169" lang="en">Bodies, geoms and sites are MuJoCo elements which roughly correspond to rigid bodies in the physical world. So why are
+they separate? For semantic as well as computational reasons explained here.</div>
+<p data-bi="bi-170">首先是相似之处。刚体、geom 和 site 都附有空间坐标系（不过刚体还有第二个坐标系，其原点位于刚体质心，并与惯性主轴对齐）。这些坐标系的位置和朝向在每个时间步中通过正运动学（forward kinematics）由 <code class="docutils literal notranslate"><span class="pre">mjData.qpos</span></code> 计算得到。正运动学的结果在 <code class="docutils literal notranslate"><span class="pre">mjData</span></code> 中可用：刚体对应 xpos、xquat 和 xmat，geom 对应 geom_xpos 和 geom_xmat，site 对应 site_xpos 和 site_xmat。</p><div class="en-orig" data-for="bi-170" lang="en">First the similarities. Bodies, geoms and sites all have spatial frames attached to them (although bodies also have a
+second frame which is centered at the body center of mass and aligned with the principal axes of inertia). The positions
+and orientations of these frames are computed at each time step from <code class="docutils literal notranslate"><span class="pre">mjData.qpos</span></code> via forward kinematics. The results
+of forward kinematics are available in <code class="docutils literal notranslate"><span class="pre">mjData</span></code> as xpos, xquat and xmat for bodies, geom_xpos and geom_xmat for geoms,
+site_xpos and site_xmat for sites.</div>
+<p data-bi="bi-171">接下来是不同之处。刚体用于构建运动学树（kinematic tree），并且是其他元素（包括 geom 和 site）的容器。刚体具有空间坐标系和惯性属性，但没有与外观或碰撞几何相关的属性。这是因为这些属性不影响物理（当然接触除外，但接触是单独处理的）。如果你在机器人学教材中见过运动学树的示意图，刚体通常被画成无定形的形状，以说明它们的实际形状与物理无关。</p><div class="en-orig" data-for="bi-171" lang="en">Now the differences. Bodies are used to construct the kinematic tree and are containers for other elements, including
+geoms and sites. Bodies have a spatial frame, inertial properties, but no properties related to appearance or collision
+geometry. This is because such properties do not affect the physics (except for contacts of course, but these are
+handled separately). If you have seen diagrams of kinematic trees in robotics textbooks, the bodies are usually drawn as
+amorphous shapes – to make the point that their actual shape is irrelevant to the physics.</div>
+<p data-bi="bi-172">Geom（geometric primitive，即几何基元的简称）用于指定外观和碰撞几何。每个 geom 属于一个刚体，并刚性地固定在该刚体上。多个 geom 可以附着在同一个刚体上。鉴于 MuJoCo 的碰撞检测器假定所有 geom 都是凸的（如果网格不是凸的，它会在内部用其凸包替换网格），这一点尤其有用。因此，如果你想对非凸形状建模，就必须将其分解为若干凸 geom 的并集，并将它们全部附着在同一个刚体上。</p><div class="en-orig" data-for="bi-172" lang="en">Geoms (short for geometric primitive) are used to specify appearance and collision geometry. Each geom belongs to a body
+and is rigidly attached to that body. Multiple geoms can be attached to the same body. This is particularly useful in
+light of the fact that MuJoCo’s collision detector assumes that all geoms are convex (it internally replaces meshes with
+their convex hulls if the meshes are not convex). Thus if you want to model a non-convex shape, you have to decompose it
+into a union of convex geoms and attach all of them to the same body.</div>
+<p data-bi="bi-173">在 XML 中，geom 还可以指定密度或质量值，模型编译器（model compiler）用它们来计算父刚体的质量和惯性。质量要么是直接指定的，要么由 geom 的体积和 <a class="reference internal" href="XMLreference.html#body-geom-density"><span class="std std-ref">密度</span></a> 计算得出。惯性则根据质量、形状以及均匀密度假设计算得出。如果设置了 <a class="reference internal" href="XMLreference.html#body-geom-shellinertia"><span class="std std-ref">shellinertia</span></a> 标志，则假定质量均匀分布在 <strong>表面</strong> 上，<span class="at">density</span> 被解释为单位面积的质量，并据此计算其对父刚体惯性的贡献。在实际仿真的 <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> 中，geom 不具有惯性属性。</p><div class="en-orig" data-for="bi-173" lang="en">A geom can also have density or mass values specified in the XML, which the model compiler uses to compute the parent
+body’s mass and inertia. Mass is either specified or computed from a geom’s volume and <a class="reference internal" href="XMLreference.html#body-geom-density"><span class="std std-ref">density</span></a>. Inertia is computed from the mass, shape, and uniform density assumption. If the
+<a class="reference internal" href="XMLreference.html#body-geom-shellinertia"><span class="std std-ref">shellinertia</span></a> flag is set, mass is assumed to be uniformly distributed on the <strong>surface</strong>,
+<span class="at">density</span> is interpreted as mass-per-area, and the inertia contribution to the parent body is computed accordingly.
+In the actual <code class="docutils literal notranslate"><span class="pre">mjModel</span></code> being simulated, geoms do not have inertial properties.</div>
+<p data-bi="bi-174">Site 是轻量级的 geom。它们具有相同的外观属性，但不能参与碰撞，也不能用于推断刚体质量。另一方面，site 可以做 geom 做不到的事情：它们可以指定触摸传感器的体积、IMU 传感器的安装位置、空间肌腱的走线，以及曲柄滑块执行器的端点。这些都是空间量，但它们并不对应应当具有质量或与其他实体碰撞的实体，这正是创建 site 元素的原因。Site 还可以用来指定用户感兴趣的点（或者更准确地说，坐标系）。</p><div class="en-orig" data-for="bi-174" lang="en">Sites are light geoms. They have the same appearance properties but cannot participate in collisions and cannot be used
+to infer body masses. On the other hand sites can do things that geoms cannot do: they can specify the volumes of touch
+sensors, the attachment of IMU sensors, the routing of spatial tendons, the end-points of slider-crank actuators. These
+are all spatial quantities, and yet they do not correspond to entities that should have mass or collide with other
+entities – which is why the site element was created. Sites can also be used to specify points (or rather frames) of
+interest to the user.</div>
+<p data-bi="bi-175">下面的示例说明了多个 site 和 geom 可以附着在同一个刚体上：此例中一个刚体上有两个 site 和两个 geom。</p><div class="en-orig" data-for="bi-175" lang="en">The following example illustrates the point that multiple sites and geoms can be attached to the same body: two sites
+and two geoms to one body in this case.</div>
+<div class="highlight-XML notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;mujoco&gt;</span>
+<span class="w">  </span><span class="nt">&lt;worldbody&gt;</span>
+<span class="w">    </span><span class="nt">&lt;body</span><span class="w"> </span><span class="na">pos=</span><span class="s">"0 0 0"</span><span class="nt">&gt;</span>
+<span class="w">      </span><span class="nt">&lt;geom</span><span class="w"> </span><span class="na">type=</span><span class="s">"sphere"</span><span class="w"> </span><span class="na">size=</span><span class="s">".1"</span><span class="w"> </span><span class="na">rgba=</span><span class="s">".9 .9 .1 1"</span><span class="nt">/&gt;</span>
+<span class="w">      </span><span class="nt">&lt;geom</span><span class="w"> </span><span class="na">type=</span><span class="s">"capsule"</span><span class="w"> </span><span class="na">pos=</span><span class="s">"0 0 .1"</span><span class="w"> </span><span class="na">size=</span><span class="s">".05 .1"</span><span class="w"> </span><span class="na">rgba=</span><span class="s">".9 .9 .1 1"</span><span class="nt">/&gt;</span>
+<span class="w">      </span><span class="nt">&lt;site</span><span class="w"> </span><span class="na">type=</span><span class="s">"box"</span><span class="w"> </span><span class="na">pos=</span><span class="s">"0 -.1 .3"</span><span class="w"> </span><span class="na">size=</span><span class="s">".02 .02 .02"</span><span class="w"> </span><span class="na">rgba=</span><span class="s">".9 .1 .9 1"</span><span class="nt">/&gt;</span>
+<span class="w">      </span><span class="nt">&lt;site</span><span class="w"> </span><span class="na">type=</span><span class="s">"ellipsoid"</span><span class="w"> </span><span class="na">pos=</span><span class="s">"0 .1 .3"</span><span class="w"> </span><span class="na">size=</span><span class="s">".02 .03 .04"</span><span class="w"> </span><span class="na">rgba=</span><span class="s">".9 .1 .9 1"</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/body&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/worldbody&gt;</span>
+<span class="nt">&lt;/mujoco&gt;</span>
+</pre></div>
+</div>
+<figure class="align-right">
+<a class="reference internal image-reference" href="_images/bodygeomsite.png"><img alt="_images/bodygeomsite.png" src="_images/bodygeomsite.png" style="width: 200px;"/>
+</a>
+</figure>
+<p data-bi="bi-176">该模型由 OpenGL 可视化器（visualizer）渲染如下：</p><div class="en-orig" data-for="bi-176" lang="en">This model is rendered by the OpenGL visualizer as:</div>
+<p data-bi="bi-177">请注意红色的方框。这是对刚体惯性属性的等效惯量方框渲染，由 MuJoCo 在内部生成。该方框覆盖了 geom，但没有覆盖 site。这是因为只有 geom 被用来（自动）推断刚体的惯性属性。如果我们碰巧知道后者，当然可以直接指定它们。但通常更方便的做法是，在均匀密度假设下，让模型编译器根据附着在刚体上的 geom 来推断这些刚体属性（geom 的密度可以在 XML 中指定；默认值为水的密度）。</p><div class="en-orig" data-for="bi-177" lang="en">Note the red box. This is an equivalent-inertia box rendering of the body inertial properties, and is generated by
+MuJoCo internally. The box is over the geoms but not over the sites. This is because only the geoms were used to
+(automatically) infer the inertial properties of the body. If we happen to know the latter, we can of course specify
+them directly. But it is often more convenient to let the model compiler infer these body properties from the geoms
+attached to it, using the assumption of uniform density (geom density can be specified in the XML; the default is the
+density of water).</div>
+</section>
+<section id="jointco">
+<span id="id24"></span><h3 data-bi="bi-178">关节坐标<a class="headerlink" href="#jointco" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-178" lang="en">Joint coordinates</div>
+<p data-bi="bi-179">MuJoCo 与游戏引擎之间的一个关键区别是，MuJoCo 在广义坐标（generalized coordinates）即关节坐标下运行，而大多数游戏引擎在笛卡尔坐标下运行。这两种方法的差异可以总结如下：</p><div class="en-orig" data-for="bi-179" lang="en">One of the key distinctions between MuJoCo and gaming engines is that MuJoCo operates in generalized or joint
+coordinates, while most gaming engines operate in Cartesian coordinates. The differences between these two approaches
+can be summarized as follows:</div>
+<p data-bi="bi-180">关节坐标：</p><div class="en-orig" data-for="bi-180" lang="en">Joint coordinates:</div>
+<ul class="simple">
+<li><p data-bi="bi-181">最适合精细的运动学结构，例如机器人；</p><div class="en-orig" data-for="bi-181" lang="en">Best suited for elaborate kinematic structures such as robots;</div></li>
+<li><p data-bi="bi-182">关节在默认情况下会被焊接在一起的刚体之间 <strong>增加</strong> 自由度（degrees of freedom）；</p><div class="en-orig" data-for="bi-182" lang="en">Joints <strong>add</strong> degrees of freedom among bodies that would be welded together by default;</div></li>
+<li><p data-bi="bi-183">关节约束隐含在表示之中，不会被违反；</p><div class="en-orig" data-for="bi-183" lang="en">Joint constraints are implicit in the representation and cannot be violated;</div></li>
+<li><p data-bi="bi-184">仿真刚体的位置和朝向通过正运动学由广义坐标得到，不能直接操纵（根刚体除外）。</p><div class="en-orig" data-for="bi-184" lang="en">The positions and orientations of the simulated bodies are obtained from the generalized coordinates via forward
+kinematics, and cannot be manipulated directly (except for root bodies).</div></li>
+</ul>
+<p data-bi="bi-185">笛卡尔坐标：</p><div class="en-orig" data-for="bi-185" lang="en">Cartesian coordinates:</div>
+<ul class="simple">
+<li><p data-bi="bi-186">最适合大量相互碰撞弹开的刚体，例如分子动力学和箱体堆叠；</p><div class="en-orig" data-for="bi-186" lang="en">Best suited for many bodies that bounce off each other, as in molecular dynamics and box stacking;</div></li>
+<li><p data-bi="bi-187">关节在默认情况下自由漂浮的刚体之间 <strong>移除</strong> 自由度；</p><div class="en-orig" data-for="bi-187" lang="en">Joints <strong>remove</strong> degrees of freedom among bodies that would be free-floating by default;</div></li>
+<li><p data-bi="bi-188">关节约束通过数值方法强制施加，可能被违反；</p><div class="en-orig" data-for="bi-188" lang="en">Joint constraints are enforced numerically and can be violated;</div></li>
+<li><p data-bi="bi-189">仿真刚体的位置和朝向被显式表示，可以直接操纵，不过这可能会进一步引入关节约束的违反。</p><div class="en-orig" data-for="bi-189" lang="en">The positions and orientations of the simulated bodies are represented explicitly and can be manipulated directly,
+although this can introduce further joint constraint violations.</div></li>
+</ul>
+<p data-bi="bi-190">当处理属于同时包含运动学树的模型的自由漂浮刚体时，关节坐标可能尤其令人困惑。下文将对此作出澄清。</p><div class="en-orig" data-for="bi-190" lang="en">Joint coordinates can be particularly confusing when working with free-floating bodies that are part of a model which
+also contains kinematic trees. This is clarified below.</div>
+</section>
+<section id="floating">
+<span id="id25"></span><h3 data-bi="bi-191">自由漂浮物体<a class="headerlink" href="#floating" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-191" lang="en">Floating objects</div>
+<p data-bi="bi-192">在关节坐标下工作时，你不能简单地把任意刚体的位置和朝向设置成你想要的任何值。要达到这种效果，你必须实现某种形式的逆运动学，它计算一组（不一定唯一的）关节坐标，使得正运动学将该刚体放置在你想要它所处的位置。</p><div class="en-orig" data-for="bi-192" lang="en">When working in joint coordinates, you cannot simply set the position and orientation of an arbitrary body to whatever
+you want. To achieve that effect you would have to implement some form of inverse kinematics, which computes a (not
+necessarily unique) set of joint coordinates for which the forward kinematics place the body where you want it to be.</div>
+<p data-bi="bi-193">对于漂浮刚体，即通过自由关节（free joint）与世界相连的刚体，情况则不同。此类刚体的位置和朝向以及线速度和角速度都显式地表示在 <code class="docutils literal notranslate"><span class="pre">mjData.qpos</span></code> 和 <code class="docutils literal notranslate"><span class="pre">mjData.qvel</span></code> 中，因此可以被直接操纵。有关结构化的状态操纵与序列化，请参阅仿真章节中的 <a class="reference internal" href="programming/simulation.html#sistatecontrol"><span class="std std-ref">状态与控制</span></a>。</p><div class="en-orig" data-for="bi-193" lang="en">The situation is different for floating bodies, i.e., bodies that are connected to the world with a free joint. The
+positions and orientations as well as the linear and angular velocities of such bodies are explicitly represented in
+<code class="docutils literal notranslate"><span class="pre">mjData.qpos</span></code> and <code class="docutils literal notranslate"><span class="pre">mjData.qvel</span></code>, and can therefore be manipulated directly. For structured state manipulation and
+serialization, see <a class="reference internal" href="programming/simulation.html#sistatecontrol"><span class="std std-ref">State and control</span></a> in the Simulation chapter.</div>
+<p data-bi="bi-194">自由关节的语义如下。位置数据为 7 个数（三维位置后接单位四元数），而速度数据为 6 个数（三维线速度后接三维角速度）。自由关节的线性位置位于全局坐标系中，线速度也是如此。自由关节的朝向（四元数）同样位于全局坐标系中。然而，自由关节的旋转速度位于局部刚体坐标系中。这与其说是一种设计决策，不如说是对四元数拓扑结构的正确运用。角速度存在于四元数的切空间中，该空间是针对某个特定朝向局部定义的，因此以坐标系局部表示的角速度是自然的参数化方式。加速度与对应的速度定义在同一空间中。</p><div class="en-orig" data-for="bi-194" lang="en">The semantics of free joints are as follows. The position data is 7 numbers (3D position followed
+by unit quaternion) while the velocity data is 6 numbers (3D linear velocity followed by 3D angular velocity).
+The linear positions of free joints are in the global frame, as are
+linear velocities. The orientation of a free joint (the quaternion) is also in the global frame. However, the rotational
+velocities of a free joint are in the local body frame. This is not so much a design decision but rather correct
+use of the topology of quaternions. Angular velocities live in the quaternion tangent space, which is defined locally
+for a certain orientation, so frame-local angular velocities are the natural parameterization.
+Accelerations are defined in the same space as the corresponding velocities.</div>
+<p data-bi="bi-195">自由关节始终定义在刚体坐标系中，但让该坐标系与刚体的惯性对齐在计算上更为有利。关于此选项的更多信息，请参阅 <a class="reference internal" href="XMLreference.html#body-freejoint-align"><span class="std std-ref">freejoint/align</span></a> 属性的文档。</p><div class="en-orig" data-for="bi-195" lang="en">Free joints are always defined in the body frame, yet it is computationally favorable to align this frame with the
+body’s inertia. Read more about this option in the documentation of the <a class="reference internal" href="XMLreference.html#body-freejoint-align"><span class="std std-ref">freejoint/align</span></a>
+attribute.</div>
+</section>
+</section>
+</section>
+</article>
+</div>
+<footer>
+<div class="related-pages">
+<a class="next-page" href="computation/index.html">
+<div class="page-info">
+<div class="context">
+<span>Next</span>
+</div>
+<div class="title">计算</div>
+</div>
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+</a>
+<a class="prev-page" href="tutorial/index.html">
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+<div class="page-info">
+<div class="context">
+<span>Previous</span>
+</div>
+<div class="title">入门教程</div>
+</div>
+</a>
+</div>
+<div class="bottom-of-page">
+<div class="left-details">
+<div class="copyright">
+                Copyright © DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+</div>
+<div class="right-details">
+</div>
+</div>
+</footer>
+</div>
+<aside class="toc-drawer">
+<div class="toc-sticky toc-scroll">
+<div class="toc-title-container">
+<span class="toc-title">
+            On this page
+          </span>
+</div>
+<div class="toc-tree-container">
+<div class="toc-tree">
+<ul>
+<li><a class="reference internal" href="#">概览</a><ul>
+<li><a class="reference internal" href="#id2">简介</a><ul>
+<li><a class="reference internal" href="#features">主要特性</a></li>
+<li><a class="reference internal" href="#instance">模型实例</a></li>
+<li><a class="reference internal" href="#examples">示例</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#elements">模型元素</a><ul>
+<li><a class="reference internal" href="#options">选项</a><ul>
+<li><a class="reference internal" href="#mjoption"><code class="docutils literal notranslate"><span class="pre">mjOption</span></code></a></li>
+<li><a class="reference internal" href="#mjvisual"><code class="docutils literal notranslate"><span class="pre">mjVisual</span></code></a></li>
+<li><a class="reference internal" href="#mjstatistic"><code class="docutils literal notranslate"><span class="pre">mjStatistic</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#assets">资源</a><ul>
+<li><a class="reference internal" href="#id9">网格</a></li>
+<li><a class="reference internal" href="#id10">蒙皮</a></li>
+<li><a class="reference internal" href="#id11">高度场</a></li>
+<li><a class="reference internal" href="#id12">纹理</a></li>
+<li><a class="reference internal" href="#id13">材质</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#kinematic">运动学树</a><ul>
+<li><a class="reference internal" href="#body">刚体（Body）</a></li>
+<li><a class="reference internal" href="#joint">关节（Joint）</a><ul>
+<li><a class="reference internal" href="#id15">关节参考位姿</a></li>
+<li><a class="reference internal" href="#id16">弹簧参考位姿</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dof">自由度（DoF）</a></li>
+<li><a class="reference internal" href="#tree">树（Tree）</a></li>
+<li><a class="reference internal" href="#geom">Geom（几何体）</a></li>
+<li><a class="reference internal" href="#site">Site（标记点）</a></li>
+<li><a class="reference internal" href="#camera">相机（Camera）</a></li>
+<li><a class="reference internal" href="#light">灯光（Light）</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#standalone">独立元素</a><ul>
+<li><a class="reference internal" href="#tendon">肌腱（Tendon）</a></li>
+<li><a class="reference internal" href="#actuator">执行器（Actuator）</a></li>
+<li><a class="reference internal" href="#sensor">传感器（Sensor）</a></li>
+<li><a class="reference internal" href="#equality">等式约束（Equality）</a></li>
+<li><a class="reference internal" href="#flex">柔性体（Flex）</a></li>
+<li><a class="reference internal" href="#contact-pair">接触对（Contact pair）</a></li>
+<li><a class="reference internal" href="#contact-exclude">接触排除（Contact exclude）</a></li>
+<li><a class="reference internal" href="#custom-numeric">自定义数值（Custom numeric）</a></li>
+<li><a class="reference internal" href="#custom-text">自定义文本（Custom text）</a></li>
+<li><a class="reference internal" href="#custom-tuple">自定义元组（Custom tuple）</a></li>
+<li><a class="reference internal" href="#keyframe">关键帧（Keyframe）</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#clarifications">补充说明</a><ul>
+<li><a class="reference internal" href="#divergence">发散</a></li>
+<li><a class="reference internal" href="#units">单位未指定</a></li>
+<li><a class="reference internal" href="#surprisingcollisions">意外的碰撞</a></li>
+<li><a class="reference internal" href="#notobject">面向数据的设计</a></li>
+<li><a class="reference internal" href="#soft">柔性与滑移</a></li>
+<li><a class="reference internal" href="#typenameid">类型、名称与 id</a></li>
+<li><a class="reference internal" href="#geom-site">刚体、geom 与 site</a></li>
+<li><a class="reference internal" href="#jointco">关节坐标</a></li>
+<li><a class="reference internal" href="#floating">自由漂浮物体</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div><script src="_static/documentation_options.js?v=7d86a446"></script>
+<script src="_static/doctools.js?v=fd6eb6e6"></script>
+<script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+<script src="_static/scripts/furo.js?v=46bd48cc"></script>
+<script src="_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="_static/copybutton.js?v=f281be69"></script>
+<script src="_static/translations.js?v=540d3cec"></script>
+<script src="_static/katex.min.js?v=5cc8ed51"></script>
+<script src="_static/auto-render.min.js?v=af98beb9"></script>
+<script src="_static/katex_autorenderer.js?v=ae454eff"></script>
+<script src="_static/design-tabs.js?v=f930bc37"></script>
+<script src="_static/linenumbers.js?v=ebda5d35"></script>
+<script src="_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+<script src="_static/bilingual.js?v=25c2633d"></script></body></html>

@@ -1,0 +1,157 @@
+﻿.. _StudioNativeViewers:
+.. _StudioLaunchers:
+
+==============
+原生查看器
+==============
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+Studio 提供两种在原生桌面窗口中运行的方式，二者构建在同一套共享的
+:ref:`C++ 组件 <StudioCppComponents>` 之上，因此外观和行为几乎完全一致：
+
+- **MuJoCo Studio 应用**\ （C++）：预构建的独立桌面应用程序，可开箱即用地查看模型，也可
+  用 :ref:`C++ <StudioCpp>` 进行扩展，或编译为 WebAssembly 在浏览器中无服务器运行
+  （:ref:`MuJoCo Live <StudioLive>`）。
+- **Python** ``NativeViewer``：驱动或附加到 Python 仿真循环，并支持
+  :ref:`Python 插件 <StudioPythonPlugins>`。
+
+在使用 Python 编写脚本或进行扩展时，请选择 ``NativeViewer``；在使用 C++ 扩展或面向无服务器 WebAssembly 时，请选择 C++ 应用程序；
+任何需要在二者之间共享的自定义组件都应使用 C++ 编写并绑定到 Python（参见 :ref:`C++ 组件 <StudioCppComponents>`）。
+
+.. _StudioApp:
+
+独立应用程序
+============
+
+每个 `GitHub 发布版本 <https://github.com/google-deepmind/mujoco/releases>`__ 都包含一个预构建的独立 Studio
+应用程序，与 :ref:`simulate <saSimulate>` 并列，通过 :ref:`Filament <FilamentRendering>` 渲染：
+
+- **macOS**\ （``.dmg``）：打包为 ``MuJoCoStudio.app`` 应用包；可直接在磁盘映像中双击启动，
+  或将其拖入 ``/Applications`` 进行安装。
+- **Windows**\ （``.zip``）：解压后的归档中为 ``bin\mujoco_studio.exe``；可在文件资源管理器中双击，
+  或从终端启动。
+- **Linux**\ （``.tar.gz``）：解压后的归档中为 ``bin/mujoco_studio``。
+
+打开后，可从 **File** 菜单加载 ``.xml``、\ ``.mjb`` 或 ``.mjz`` 模型，也可将其拖放到窗口上。在任何平台的终端中，还可以传入模型路径（位置参数或 ``--model_file``）
+以及 ``--gfx``
+:ref:`渲染后端 <StudioBackends>`：
+
+.. code-block:: Text
+
+   macOS:    /Applications/MuJoCoStudio.app/Contents/MacOS/mujoco_studio model/humanoid/humanoid.xml
+   Windows:  bin\mujoco_studio model\humanoid\humanoid.xml
+   Linux:    ./bin/mujoco_studio model/humanoid/humanoid.xml
+
+要从源码构建 ``mujoco_studio`` 或链接自定义 C++ 插件，请参见 :ref:`C++ <StudioCpp>` 中的
+:ref:`构建与启动 <StudioCppLauncher>`。
+
+.. _StudioPythonNative:
+
+Python NativeViewer
+===================
+
+在 Python 中，\ ``NativeViewer``\ （`native_viewer.py
+<https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/native_viewer.py>`__）通过
+:ref:`Filament <FilamentRendering>` 在 SDL2 桌面窗口或离屏缓冲区中于本地渲染 3D
+场景和 `Dear ImGui <https://github.com/ocornut/imgui>`__ 界面。当由 Studio 驱动仿真循环时，使用 **阻塞模式**\ （``launch_native.run``）；
+当将查看器附加到您自己的 Python 循环时，使用 **非阻塞模式**\ （``launch_native.launch``）。
+
+阻塞模式
+--------
+
+要从命令行打开独立的 Studio 查看器，并可选地加载 :ref:`插件文件 <StudioPythonPlugins>` 和
+:ref:`热重载 <StudioHotReload>`：
+
+.. code-block:: shell
+
+   python -m mujoco.studio.viewer \
+     --model=path/to/model.xml \
+     --gfx=opengl \
+     --plugins=path/to/my_plugin.py \
+     --hot_reload=all
+
+在 Python 中，`launch_native.run
+<https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/launch_native.py>`__ 会启动 ``NativeViewer``
+并运行阻塞式仿真同步循环，直到窗口关闭。传入 ``model_path=...``
+可在仿真线程上加载模型文件，从而保持界面中的 **Reload** 和模型 :ref:`热重载 <StudioHotReload>` 可用；也可以传入内存中的 ``model=...``，并可选地传入 ``data=...``：
+
+.. code-block:: python
+
+   from mujoco.studio import app as studio_app
+   from mujoco.studio import launch_native
+   from mujoco.studio import viewer_protocol
+
+   config = viewer_protocol.ViewerConfig(title='MuJoCo Studio', gfx='opengl')
+
+   launch_native.run(
+       config,
+       model_path='humanoid.xml',  # Or model=model, data=data for an in-memory model.
+       plugins=[studio_app.App(), *studio_app.SIM_PLUGINS],
+   )
+
+.. _StudioExecutionModes:
+
+非阻塞模式
+----------
+
+当将 ``NativeViewer`` 附加到现有的 Python 循环（例如强化学习训练循环、轨迹回放脚本或
+测试）时，请将 `launch_native.launch
+<https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/launch_native.py>`__ 用作非阻塞的上下文
+管理器。它在守护线程上启动 ``NativeViewer``，并向调用线程返回一个 ``ViewerHandle``\ （`viewer_handle.py
+<https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/viewer_handle.py>`__）：
+
+.. code-block:: python
+
+   import time
+   import mujoco
+   from mujoco.studio import app as studio_app
+   from mujoco.studio import launch_native
+
+   model = mujoco.MjModel.from_xml_path('humanoid.xml')
+   data = mujoco.MjData(model)
+
+   with launch_native.launch(plugins=[studio_app.App()]) as handle:
+     while handle.is_running():
+       tick = time.perf_counter()
+       model, data = handle.sync(model, data)
+       mujoco.mj_step(model, data)
+       time.sleep(max(0.0, model.opt.timestep - (time.perf_counter() - tick)))
+
+这个最简循环省略了仿真侧插件，因此它不会记录历史，也不会镜像查看器的暂停和
+播放速度控制；关于如何在自定义循环中接入查看器控制，请参见 `custom_sim_loop.py
+<https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/sample/studio/custom_sim_loop.py>`__。
+
+直接驱动 ``ViewerHandle`` 循环时的关键细节：
+
+- **始终重新绑定** ``model, data = handle.sync(model, data)``，每次迭代都要这样做。如果您的脚本创建了新的模型对象，\ ``sync()`` 会发布 ``model`` 和
+  ``data``；每当界面 **Reload**、拖放文件或插件的 ``handle.set_model()`` 切换活动模型时，它会返回替换后的 ``model`` 和 ``data`` 对象。
+- **步进与节奏控制**：\ ``handle.sync()`` 从不休眠。如果省略 ``StepControl()``，则需要在 ``handle.sync()`` 之后自行推进 ``data`` 并控制
+  循环节奏；如果包含 ``*studio_app.SIM_PLUGINS``，则 ``StepControl()`` 会在 ``StepEvent`` 期间于
+  ``handle.sync()`` 内部推进并控制物理仿真的节奏。
+- **修改**：请将 ``model.opt`` 的修改保留在步进事件处理程序中，以便 ``ViewerHandle.sync()`` 的
+  :ref:`基于差异的同步 <StudioDiffSync>` 能够检测并将其转发给查看器。
+- **macOS（mjpython）**：AppKit 要求原生窗口必须在操作系统主线程上创建和处理。阻塞
+  模式（``python -m mujoco.studio.viewer`` 和 ``launch_native.run``）可在标准 ``python`` 下运行，而
+  非阻塞的 ``launch_native.launch`` 则需要使用 ``mjpython`` 运行您的脚本（与可在标准 ``python`` 下运行的 :ref:`launch_web
+  <StudioWebViewer>` 不同）。
+
+.. _StudioBackends:
+
+渲染后端
+========
+
+设置 ``ViewerConfig.gfx`` 或在命令行中传入 ``--gfx``，以选择原生 :ref:`Filament
+<FilamentRendering>` 后端：
+
+- ``''`` *（默认）*：使用平台默认的原生 Filament 后端。
+- ``'opengl'`` / ``'vulkan'``：硬件加速的 OpenGL 或 Vulkan 桌面窗口。
+- ``'opengl_headless'``：没有可见窗口的离屏 OpenGL 上下文，适用于自动化测试和离屏
+  渲染。
+- ``'opengl_software'`` / ``'vulkan_software'``：软件光栅化的 OpenGL 或 Vulkan，适用于没有 GPU 的无头 CI 机器。
+
+在 Linux 上，直接窗口渲染需要 X11（在 Wayland 下 ``'opengl'`` 会被拒绝）。在 Wayland 会话中，省略
+``gfx`` 将回退到 ``'opengl_headless'``；若要直接使用 GPU 呈现，请使用 X11 会话。

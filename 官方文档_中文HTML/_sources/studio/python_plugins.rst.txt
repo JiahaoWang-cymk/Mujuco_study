@@ -1,0 +1,408 @@
+﻿.. _StudioPythonPlugins:
+.. _StudioComposition:
+
+==============
+Python 插件
+==============
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+Python 插件（plugin， `plugin.py <https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/plugin.py>`__ ）
+通过在两个基类之一上用 ``@messages.handler`` 装饰方法来扩展 Studio：
+
+- ``plugin.ViewerPlugin`` ：运行在查看器线程（ ``NativeViewer`` 或 ``WebViewer`` ）上，用于自定义 Dear ImGui 面板、输入处理和 3D 叠加层。它提供 ``self.viewer`` ，用于读取查看器本地的 ``model`` 和 ``data`` ，并通过 ``self.viewer.send_to_sim(...)`` 向仿真发送消息。
+- ``plugin.SimPlugin`` ：运行在 ``ViewerHandle`` 内部的仿真线程上，用于物理步进、控制器以及模型或状态的修改。它提供 ``self.handle`` ，用于修改权威的 ``model`` 和 ``data`` ，通过 ``self.handle.set_model(...)`` 发布新模型，并通过 ``self.handle.send_to_viewer(...)`` 向查看器发送消息。
+
+在 Python 中通过 ``launch_native`` 或 ``launch_web`` 的 ``plugins=[...]`` 传入插件实例，或者在命令行中借助 :ref:`实时热重载 <StudioHotReload>` 直接加载 ``.py`` 文件：
+
+.. code-block:: shell
+
+   python -m mujoco.studio.viewer --model=humanoid.xml --plugins=my_plugin.py --hot_reload=all
+
+.. code-block:: python
+
+   from mujoco.studio.dear_imgui import dear_imgui as imgui
+   from mujoco.studio import messages, plugin
+
+
+   class StatusWindow(plugin.ViewerPlugin):
+
+     @messages.handler
+     def on_build_gui(self, _: messages.BuildGuiEvent) -> None:
+       if imgui.Begin('Simulation Time'):
+         if self.viewer.data is not None:
+           imgui.TextUnformatted(f't = {self.viewer.data.time:.3f} s')
+       imgui.End()
+
+应用程序可以混合搭配内置插件和自定义插件，以适应不同的工作流程：
+
+- **带自定义叠加层的完整 Studio UI：** 加载查看器应用的默认插件 ``studio_app.App()`` 和 ``*studio_app.SIM_PLUGINS``
+  （ `viewer.py
+  <https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/viewer.py>`__ ），同时加载自定义的查看器插件或仿真插件，即可添加可停靠的图表、控制面板或 3D 叠加层，并保留 ``studio_app.App`` 的所有标准功能。
+- **最小化视口：** 省略 ``studio_app.App`` ，只注册一个自定义的 ``plugin.ViewerPlugin`` ，即可得到带有自定义控制面板的简洁 3D 视口。
+- **自定义步进后端：** 用自定义的 ``plugin.SimPlugin`` 替换 ``step_control.StepControl()`` ，即可由 :ref:`MuJoCo XLA <Mjx>` 或 :ref:`MuJoCo Warp <MJW>` 等 GPU 仿真、强化学习环境或录制的轨迹来驱动查看器，同时保留 ``studio_app.App()`` 和 ``sim_history.SimHistory()`` ，用于检查和时间轴拖动。
+
+演示这些模式的示例应用程序，请参见 `python/mujoco/sample/studio/
+<https://github.com/google-deepmind/mujoco/tree/main/python/mujoco/sample/studio>`__ 。
+
+.. note::
+   Python 插件使用的是消息处理器接口，有别于 :ref:`C++ 插件 <StudioCppPlugins>` 目前所用的回调结构体 API；未来的工作将统一这两套插件系统。
+
+.. _StudioViewerPlugins:
+
+查看器插件
+==============
+
+查看器插件负责用户界面、键盘和鼠标交互、相机控制以及 3D 场景叠加层。
+
+studio_app.App
+--------------
+
+Studio 插件框架独立于任何特定的用户界面，并且不赋予 ``studio_app.App``
+（ `app/plugins.py <https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/app/plugins.py>`__ ）任何特权——它是一个普通的 ``ViewerPlugin`` ，你可以省略它，也可以完全替换为自己的 UI。
+``studio_app.App`` 将 MuJoCo 经典的 :ref:`simulate <saSimulate>` 应用程序移植到了 Dear ImGui 上，通常与仿真端的 ``*studio_app.SIM_PLUGINS`` 搭配使用。当它被包含在 ``plugins`` 中时，会添加菜单栏、模型层级结构和属性检查器、可视化（visualization）选项面板、仿真性能分析器、时间轴拖动条、状态栏，以及一个集成的 Studio 控制台，该控制台会捕获 MuJoCo 日志消息、Python ``logging`` 记录、 ``warnings.warn`` 调用以及未捕获的线程异常。点击状态栏中的计数可切换控制台，也可以在控制台内右键单击来清除、复制或配置引擎日志。
+
+.. _StudioSceneOverlays:
+
+3D 场景叠加层
+-----------------
+
+查看器插件可以在不修改 :ref:`mjModel` 的情况下，向渲染的场景中注入自定义的 3D 装饰几何体，例如命令箭头、力向量、轨迹标记或幽灵刚体。在 ``UpdateEvent`` 期间，清空 ``self.viewer.extra_geoms`` 并向其中填充通过 :ref:`mjv_initGeom` 和 :ref:`mjv_connector` 初始化的 ``mujoco.MjvGeom`` 实例。例如，在训练或调试运动策略时，查看器插件可以在机器人躯干上方绘制期望速度向量：
+
+.. code-block:: python
+
+   import mujoco
+   from mujoco.studio import messages
+   from mujoco.studio import plugin
+   import numpy as np
+
+
+   class VelocityCommandOverlay(plugin.ViewerPlugin):
+     """Draws a 3D arrow above the torso showing the desired XY velocity."""
+
+     def __init__(self, cmd_vel: tuple[float, float] = (1.0, 0.0)) -> None:
+       self.cmd_vel = np.array([cmd_vel[0], cmd_vel[1], 0.0])
+
+     @messages.handler
+     def on_update(self, _: messages.UpdateEvent) -> None:
+       self.viewer.extra_geoms.clear()
+       if self.viewer.data is None or self.viewer.model.nbody < 2:
+         return
+
+       origin = self.viewer.data.xpos[1] + np.array([0.0, 0.0, 0.3])
+       geom = mujoco.MjvGeom()
+       mujoco.mjv_initGeom(
+           geom,
+           int(mujoco.mjtGeom.mjGEOM_ARROW),
+           np.zeros(3),
+           np.zeros(3),
+           np.eye(3).flatten(),
+           np.array([0.2, 0.8, 0.3, 0.9], dtype=np.float32),
+       )
+       mujoco.mjv_connector(
+           geom,
+           int(mujoco.mjtGeom.mjGEOM_ARROW),
+           0.02,
+           origin,
+           origin + 0.5 * self.cmd_vel,
+       )
+       self.viewer.extra_geoms.append(geom)
+
+``NativeViewer`` 和 ``WebViewer`` 都会在每一帧自动将 ``viewer.extra_geoms`` 转发给底层渲染器（rendering）。完整的带时间延迟的幽灵刚体示例，请参见 `ghost.py <https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/sample/studio/ghost.py>`__ 。
+
+.. note::
+   ``viewer.extra_geoms`` 通过 :ref:`mjvGeom` 提供瞬态的、逐帧的装饰性叠加层；持久的场景对象则直接通过 :ref:`mujoco.mjrf <FilamentRendering>` 管理。
+
+.. _StudioUiPlugins:
+
+自定义 UI 面板
+----------------
+
+自定义查看器插件通过处理 ``BuildGuiEvent`` 并调用 MuJoCo 为 `Dear
+ImGui <https://github.com/ocornut/imgui>`__ 提供的 Python 绑定来构建用户界面。
+
+.. _StudioViewerBestPractices:
+.. _StudioImGuiTips:
+
+最佳实践
+--------------
+
+编写 :ref:`查看器插件 <StudioViewerPlugins>` 时：
+
+- **只读的查看器状态：** 将 ``self.viewer.model`` 和 ``self.viewer.data`` 视为只读，并在 ``PostModelEvent`` 时重置依赖于模型的查看器缓冲区。
+- **切勿在查看器线程上加载或编译模型：** 权威的模型加载、 :ref:`mjSpec` 编译和状态修改都应放在仿真线程上。通过 ``self.viewer.send_to_sim(...)`` 派发 ``LoadModelEvent`` 或自定义的 ``Event`` ，让 ``plugin.SimPlugin`` 加载或编译模型，并通过 ``self.handle.set_model(...)`` 发布。
+- **保持查看器线程以 60 Hz 运行：** 将文件 I/O、网络请求或繁重的计算转移到后台工作线程或仿真线程。拖慢 ``UpdateEvent`` 或 ``BuildGuiEvent`` 会降低 ``NativeViewer`` 的帧率，并使 :ref:`WebViewer <StudioWebViewer>` 中 ``/ui`` 和 ``/state`` WebSocket 的心跳停滞，导致浏览器客户端显示断开连接的横幅。
+- **将 WebViewer 的主机到浏览器协议视为固定不变：** 用户代码应严格编写为 ``plugin.ViewerPlugin`` 和 ``plugin.SimPlugin`` 类。使用 ``WebViewer`` 时，你不应需要修改 Python 查看器线程与 WebAssembly 浏览器客户端之间的线路协议。如果其中缺少某项功能，应将其设计为也适用于其他应用程序的通用功能，因此请考虑向上游提交 pull request。
+
+MuJoCo 提供了自己的 `Dear ImGui Python 绑定
+<https://github.com/google-deepmind/mujoco/tree/main/python/mujoco/studio/dear_imgui>`__ ，它与 C++ API 相对应，并共享查看器当前活动的 Dear ImGui 上下文。要了解 Dear ImGui 的能力并浏览可用的控件及其代码，可以试用交互式的 `在线演示 <https://pthom.github.io/imgui_explorer/?lib=imgui>`__ ，或在 ``BuildGuiEvent`` 处理器中调用 ``imgui.ShowDemoWindow()`` 。构建用户界面时，请参阅 `入门指南
+<https://github.com/ocornut/imgui/wiki/Getting-Started>`__ 、上游的 `docs/ 文件夹
+<https://github.com/ocornut/imgui/tree/master/docs>`__ 和 `FAQ
+<https://github.com/ocornut/imgui/blob/master/docs/FAQ.md>`__ ，以及 `imgui.cpp <https://github.com/ocornut/imgui/blob/master/imgui.cpp>`__ 顶部头部注释中的 ``CONTROLS GUIDE`` 和 ``PROGRAMMER GUIDE`` ：
+
+- **窗口粒度与停靠：** 将每个查看器插件实现为一两个 ``imgui.Begin(...)`` 窗口，以便面板能够干净地停靠到 ``studio_app.App`` 的停靠空间中，与内置工具并排。
+- **将数据准备与布局分离** （ ``UpdateEvent`` 与 ``BuildGuiEvent`` ）：Dear ImGui 构建的是绘制命令列表，而不是直接光栅化像素。在 ``UpdateEvent`` 期间准备绘图缓冲区，或通过 ``self.viewer.upload_image(...)`` 上传 GUI 纹理，并让 ``BuildGuiEvent`` 严格专注于控件提交，布局方法应命名为 ``build_gui`` 或 ``build_*_gui`` ，而不是 ``render`` 或 ``draw`` 。切勿在 GUI 方法中运行仿真步进、文件 I/O 或阻塞调用。
+- **运行时 ID** （ ``##`` 与 ``###`` ）：Dear ImGui 会将每个窗口或控件的标签字符串与当前 ID 栈种子一起进行哈希； ``##`` 或 ``###`` 之后的任何文本都不会显示在屏幕上：
+
+  - **区分重复的标签** （ ``##`` ）： ``Label##Suffix`` 对整个字符串进行哈希，而只显示 ``Label`` 。当重复的按钮或 ``imgui.Selectable`` 行具有相同的可见文本时，追加 ``##{i}`` ，或用 ``imgui.PushID(i)`` / ``imgui.PopID()`` 包裹循环迭代。
+  - **在动态标签间保持持久的 ID** （ ``###`` ）： ``Dynamic Text###ConstantId`` 会重置哈希种子，并且 *只* 对 ``ConstantId`` 进行哈希。当窗口标题在各帧之间变化时（例如 ``f'Bodies ({n})###Bodies'`` 会保留其停靠位置、焦点和折叠状态），或者要为仅有图标的按钮提供可读的 ID（例如用于 UI 测试自动化的 ``f'{ICON_FA_PLAY}###Play'`` ），请追加 ``###ConstantId`` 。
+- **使用 Tables API 进行网格对齐：** 对于键值检查器和多列布局，优先使用带有 ``TableColumnFlags.WidthFixed`` 和 ``WidthStretch`` 的 ``imgui.BeginTable`` ，而不是手动的 ``SameLine()`` 像素偏移或旧版的 ``Columns()`` 。
+- **使用** ``imgui.ListClipper`` **虚拟化大型列表：** 将长列表、日志视图或表格包裹在 ``clipper = imgui.ListClipper(); clipper.Begin(len(items))`` 中，这样 Dear ImGui 只会提交可见的行；未裁剪的表格会为每个屏幕外的条目生成顶点，并可能占满 :ref:`WebViewer <StudioWebViewer>` 的 WebSocket 带宽。对只读字符串使用 ``imgui.TextUnformatted`` ，以避免格式化和复制的开销。
+- **感知主题的颜色与键盘捕获：** 通过 ``imgui.GetStyleColorVec4(imgui.Col.Text)`` 查询语义化的主题颜色，而不是在 ``PushStyleColor`` 中硬编码 RGB 值，使自定义控件在深色和浅色主题下都保持清晰可读。处理自定义键盘快捷键时，请检查 ``not imgui.GetIO().WantCaptureKeyboard`` ，这样在活动的 ``InputText`` 或过滤框中输入时就不会触发仿真操作。
+- **Dear ImGui 技能指南：** 有关 C++ 和 Python 的 Dear ImGui 详细约定以及 ``# Good:`` 与 ``# Avoid:`` 示例，请参阅 `mujoco-gui skill 文件
+  <https://github.com/google-deepmind/mujoco/blob/main/doc/skills/gui/SKILL.md>`__ 。
+
+.. _StudioSimPlugins:
+.. _StudioSplitPlugins:
+
+仿真插件
+==================
+
+仿真插件负责物理步进、实时节奏控制、轨迹历史缓冲区，以及对 :ref:`mjModel` 、 :ref:`mjData` 和 :ref:`mjSpec` 的权威修改。当某项功能既需要交互式 UI 控件，又需要修改仿真或模型时，请在同一个 ``.py`` 文件中将 ``plugin.ViewerPlugin`` 与 ``plugin.SimPlugin`` 配对使用：查看器插件构建控件，并通过 ``self.viewer.send_to_sim(...)`` 发送自定义的 ``*Snapshot`` 或 ``*Event`` 消息；仿真插件处理这些消息，以修改状态，或重新编译并通过 ``self.handle.set_model(...)`` 发布新模型。
+
+.. _StudioPythonScenes:
+
+Python 场景
+-------------
+
+用 :ref:`mjSpec` 在 Python 中构建的场景是一个 ``plugin.SimPlugin`` ，它处理 ``LoadModelEvent`` ，调用 ``self.handle.set_model(spec)`` ，并返回 ``True`` 以在 ``ViewerHandle`` 的文件加载器运行之前消费该事件；处理 ``HotReloadEvent`` 并调用 ``self.handle.reload()`` ，则会在插件模块或从同一目录导入的辅助模块被保存时就地重建场景，同时保留相机位姿、暂停状态和播放速度：
+
+.. code-block:: python
+
+   import mujoco
+   from mujoco.studio import messages
+   from mujoco.studio import plugin
+
+
+   class MyScene(plugin.SimPlugin):
+     height: int = 5
+
+     @messages.handler
+     def on_load_model(self, event: messages.LoadModelEvent) -> bool:
+       if event.path:
+         return False  # Let ViewerHandle load --model or dropped files.
+       spec = mujoco.MjSpec()
+       ...  # Populate spec from self.height.
+       self.handle.set_model(spec)
+       return True
+
+     @messages.handler
+     def on_hot_reload(self, event: messages.HotReloadEvent) -> None:
+       if self in event.plugins:
+         self.handle.reload()
+
+当 Python 场景还读取基础 XML 文件时（例如通过 ``mujoco.MjSpec.from_file('robot.xml')`` ），请通过 ``self.handle.set_model(spec, watch=['robot.xml'])`` 传入这些文件，这样保存这些 XML 文件或它们的 ``<include>`` 和网格（mesh）资源时也会触发 ``reload()`` 。与 Dear ImGui 控制面板配对的完整参数化场景，请参见 `python_scene.py
+<https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/sample/studio/python_scene.py>`__ 。
+
+内置插件
+----------------
+
+``studio_app.SIM_PLUGINS`` 打包了 Studio 的两个标准仿真插件，因此可以通过 ``plugins=[studio_app.App(), *studio_app.SIM_PLUGINS]`` 与 ``studio_app.App()`` 一起解包使用，也可以在替换其中之一时单独传入：
+
+- ``step_control.StepControl`` （ `step_control.py
+  <https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/step_control.py>`__ ）：在 ``StepEvent`` 期间以实时的挂钟节奏对 CPU 物理（ :ref:`mj_step` ）进行步进，应用从 UI 配置的控制噪声（ ``StepControlSnapshot`` ），并处理暂停（ ``RequestPauseEvent`` ）和单步（ ``SingleStepEvent`` ）请求。每当设置发生变化时，它都会向查看器报告其设置；每当达到的速度变化超过死区量时，它会报告该速度。
+- ``sim_history.SimHistory`` （ `sim_history.py
+  <https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/sim_history.py>`__ ）：在每个物理步之后（ ``PostStepEvent`` ），将一帧记录到权威的环形缓冲区中，通过 ``SimHistorySnapshot`` 向查看器广播缓冲区元数据，并在用户于 ``studio_app.App`` 中拖动时间轴时加载历史帧。 ``studio_app.App`` 与 ``sim_history.SimHistory`` 是解耦的： ``SimHistorySnapshot`` 是二者之间唯一的契约。缓冲区容纳的帧数有限； ``SimHistory(min_seconds=10.0)`` 则改为每隔 N 步记录一次，其中 N 针对每个模型选取，使缓冲区至少跨越该长度的仿真时间。
+
+步进与控制
+------------------
+
+要在每个物理步之前注入自定义控制律，请处理 ``PreStepEvent`` 。要替换 CPU 物理步进（例如步进 :ref:`MuJoCo XLA <Mjx>` 或 :ref:`MuJoCo Warp <MJW>` 的批量仿真，或强化学习环境），请省略 ``step_control.StepControl()`` ，或以更高的优先级消费 ``StepEvent`` ，并在你自己的 ``StepEvent`` 处理器中推进 ``event.data`` 并控制其节奏：
+
+.. code-block:: python
+
+   import time
+   import mujoco
+   from mujoco.studio import messages
+   from mujoco.studio import plugin
+
+
+   class CustomStepperPlugin(plugin.SimPlugin):
+     """Applies PD joint torques and replaces default StepControl stepping."""
+
+     kp: float = 50.0
+     kd: float = 5.0
+
+     @messages.handler
+     def on_pre_step(self, event: messages.PreStepEvent) -> None:
+       qpos_err = -event.data.qpos[: event.model.nu]
+       qvel_err = -event.data.qvel[: event.model.nu]
+       event.data.ctrl[:] = self.kp * qpos_err + self.kd * qvel_err
+
+     @messages.handler(priority=messages.Priority.USER)
+     def on_step(self, event: messages.StepEvent) -> bool:
+       # Runs before StepControl (Priority.INTERNAL); returning True consumes StepEvent.
+       mujoco.mj_step(event.model, event.data)
+       time.sleep(event.model.opt.timestep)
+       return True
+
+.. _StudioBestPractices:
+
+最佳实践
+--------------
+
+编写 :ref:`仿真插件 <StudioSimPlugins>` 时：
+
+- **掌管权威状态与模型重载：** 仅在仿真线程上修改 ``self.handle.model`` 和 ``self.handle.data`` ，通过 ``self.handle.set_model(new_model, path=self.handle.model_path)`` 重新发布结构性的或非 ``opt`` 的模型更改，并在 ``PostModelEvent`` 时重置依赖于模型的缓冲区。
+- **在步进事件处理器内部编辑** ``model.opt`` **和** ``data`` **：** ``ViewerHandle.sync()`` 通过 ``send_if_changes`` 在 ``PreStepEvent`` 、 ``StepEvent`` 和 ``PostStepEvent`` 期间跟踪 ``model.opt`` 的差异，并在 ``PreStepEvent`` *之前* 应用传入的查看器重置、 ``StateEvent`` 覆盖和 ``PerturbSnapshot`` 力。在这些处理器之外的编辑不会被同步，并可能在同一次调用中被覆盖。
+- **仿真循环节奏与纯查看器：** ``handle.sync()`` 从不休眠； ``step_control.StepControl`` 依据挂钟时间控制节奏，并在暂停时让出 ``1 ms`` ，使循环不会以 100% 的 CPU 占用空转。如果你为自定义物理步进器或不调用 :ref:`mj_step` 的纯模型查看器而省略了 ``step_control.StepControl`` ，那么你的 ``StepEvent`` 插件或外层循环必须自行控制每次迭代的节奏。
+- **记录历史时复制 NumPy 视图：** :ref:`mjData` 数组的切片（如 ``data.xpos[body_id]`` 、 ``data.geom_xpos`` 或 ``data.qpos`` ）是由 MuJoCo 的 C 缓冲区支持的零拷贝 NumPy 视图，会在下一次步进或 :ref:`mj_forward` 调用时被就地覆盖。在跨帧存储切片之前，务必调用 ``.copy()`` 。
+- **处理器返回值：** 从 ``@messages.handler`` 方法返回 ``True`` 会消费该消息并跳过较低优先级的处理器。除非有意覆盖某条消息，否则请返回 ``None`` 或 ``False`` ，并且切勿从 ``ExitEvent`` 返回 ``True`` 。
+
+.. _StudioLifecycle:
+
+生命周期事件
+================
+
+查看器线程
+-------------
+
+`viewer_protocol.py
+<https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/viewer_protocol.py>`__ 中的查看器循环按时间顺序向 ``ViewerPlugin`` 实例派发生命周期事件：
+
+.. list-table::
+   :widths: 34 66
+   :header-rows: 1
+
+   * - 事件类型
+     - 描述
+   * - ``ViewerInitEvent(viewer)``
+     - 在启动时派发一次。 ``ViewerPlugin`` 会在子类处理器运行之前，于 ``Priority.CRITICAL`` 之上自动缓存 ``self.viewer`` 。
+   * - ``ModelEvent(model, path)``
+     - 在仿真发布模型时接收； ``Viewer`` 会深拷贝 ``viewer.model`` ，创建 ``viewer.data`` ，记录 ``viewer.model_path`` ，运行 :ref:`mj_forward` ，清空 ``viewer.extra_geoms`` ，并派发 ``PostModelEvent`` 。
+   * - ``PostModelEvent(model, data, path)``
+     - 在 ``viewer.model`` 和 ``viewer.data`` 初始化完成后于本地派发。要重置查看器插件的状态，请订阅此事件而不是 ``ModelEvent`` ；重新加载相同的 ``path`` 会保留 ``studio_app.App`` 中的相机、暂停和播放速度。
+   * - ``PreloadModelEvent(model)``
+     - 来自仿真插件的提示，表示 ``model`` 可能很快成为当前模型，例如播放列表中的下一个场景。查看器可以忽略它； :ref:`Web 查看器 <StudioWebViewers>` 会序列化该模型，并让已连接的浏览器在后台下载它，这样之后的 ``ModelEvent`` 切换时就无需下载。
+   * - ``HotReloadEvent(plugins)``
+     - 当 :ref:`热重载 <StudioHotReload>` 替换已修改的插件类时，在帧与帧之间派发。
+   * - ``UpdateEvent()``
+     - 在应用传入的仿真事件和快照之后，于每个活动帧派发，用于更新视觉效果、填充 ``viewer.extra_geoms`` 、准备 GUI 数据，或通过 ``viewer.upload_image`` 上传纹理。
+   * - ``BuildGuiEvent()``
+     - 在每个活动帧中紧接 ``UpdateEvent`` 之后派发，用于提交 Dear ImGui 控件。
+   * - ``ExitEvent(reason)``
+     - 在查看器关闭时派发一次。请在此处释放资源；切勿返回 ``True`` ，以便清理操作能够到达每个插件。
+
+当 ``studio_app.App`` 被包含在 ``plugins`` 中时，它还会在启动期间派发一次 ``studio_app.InitEvent(app)`` ，以便配套的查看器插件缓存 ``event.app`` 。
+
+仿真线程
+-----------------
+
+``ViewerHandle`` （ `viewer_handle.py
+<https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/viewer_handle.py>`__ ）按时间顺序向 ``SimPlugin`` 实例派发生命周期事件：
+
+.. list-table::
+   :widths: 34 66
+   :header-rows: 1
+
+   * - 事件类型
+     - 描述
+   * - ``SimInitEvent(handle)``
+     - 由 ``ViewerHandle.__init__`` 派发一次。 ``SimPlugin`` 会在子类处理器运行之前，于 ``Priority.CRITICAL`` 之上自动缓存 ``self.handle`` 。
+   * - ``LoadModelEvent(path)``
+     - 在启动、UI 重新加载、模型文件热重载或文件拖放时派发。 ``SimPlugin`` 可以构建 :ref:`Python 场景 <StudioPythonScenes>` ，调用 ``handle.set_model(spec)`` ，并返回 ``True`` 以消费该事件；否则，当 ``path`` 非空时 ``ViewerHandle`` 会加载 ``path`` ，如果加载失败则保留之前的模型。
+   * - ``ModelEvent(model, path)``
+     - 在 ``handle.set_model(...)`` 发布模型，或 ``handle.sync(model, data)`` 发现新的模型对象时派发，随后紧接着派发 ``PostModelEvent`` 。
+   * - ``PostModelEvent(model, data, path)``
+     - 在 ``handle.model`` 和 ``handle.data`` 安装并转发完成后于本地派发。要重置仿真插件的状态，请订阅此事件而不是 ``ModelEvent`` ；重新加载相同的 ``path`` 会保留 ``StepControl`` 的暂停、速度和噪声设置。
+   * - ``HotReloadEvent(plugins)``
+     - 当 :ref:`热重载 <StudioHotReload>` 替换已修改的仿真插件类时，在 ``handle.sync()`` 内部派发。
+   * - ``PreStepEvent(model, data)``
+     - 在每次 ``handle.sync()`` 中，于应用传入的查看器重置、状态覆盖和扰动之后、物理推进之前派发。请在此处写入控制、外力或 ``model.opt`` 的修改，或调用 ``handle.set_model`` 。
+   * - ``StepEvent(model, data)``
+     - 紧接 ``PreStepEvent`` 之后派发，用于推进物理； ``StepControl`` 在此处以实时节奏步进 CPU 物理。
+   * - ``PostStepEvent(model, data)``
+     - 紧接 ``StepEvent`` 之后、向查看器发送 ``StateSnapshot`` 之前派发； ``SimHistory`` 在此处记录步进后的状态。
+   * - ``ExitEvent(reason)``
+     - 由 ``ViewerHandle.close()`` 在每条退出路径上派发一次。请在此处释放资源；切勿返回 ``True`` 。
+
+.. _StudioDiffSync:
+
+基于差异的同步
+---------------
+
+诸如 ``MjOptionSnapshot`` 和 ``StepControlSnapshot`` 之类的双向 :ref:`快照 <StudioMessaging>` 只能由修改了该值的一方发送，这样任何一方都不会把传入的快照回显回去而覆盖另一方的编辑。 ``Viewer`` 和 ``ViewerHandle`` 都提供 ``send_if_changes(*make_messages)`` 上下文管理器，它会在 ``with`` 代码块之前和之后调用每个无参数 lambda，并且只发送值发生了变化的消息：
+
+.. code-block:: python
+
+   with self.viewer.send_if_changes(
+       lambda: messages.StepControlSnapshot.from_step_control(self.step_control_state),
+       lambda: messages.MjOptionSnapshot(opt=copy.deepcopy(self.model.opt)),
+   ):
+     ux.build_options_gui(self.model, self.viewer.vis_options)
+
+传入的快照在 ``send_if_changes`` 代码块之外应用，因此它们永远不会被回显。在仿真端， ``ViewerHandle.sync()`` 会为 ``model.opt`` 将 ``PreStepEvent`` 、 ``StepEvent`` 和 ``PostStepEvent`` 包裹在 ``send_if_changes`` 中。因此，请在步进事件处理器内部修改 ``model.opt`` ，而不是在 ``sync()`` 调用之间的外层循环中修改；并且要通过派发其所处理的事件（例如 ``RequestPauseEvent`` ）来改变另一个插件的状态，而不是直接修改它。
+
+.. _StudioPriorities:
+
+处理器优先级
+===================
+
+.. note::
+   处理器优先级是一项高级功能。大多数插件（plugin）只需要在默认的 ``Priority.USER`` 级别使用普通的 ``@messages.handler`` ，并配合显式的生命周期钩子，例如 ``PostModelEvent`` 、 ``PreStepEvent`` 、
+   ``StepEvent`` 和 ``PostStepEvent`` 。
+
+插件方法使用 ``@messages.handler`` 或 ``@messages.handler(priority=...)`` 进行装饰。 ``PluginRegistry`` 会检查每个被装饰方法的类型注解，以确定它处理哪个 ``Event`` 或 ``Snapshot`` 子类：
+
+.. code-block:: python
+
+   from mujoco.studio import messages
+   from mujoco.studio import plugin
+
+
+   class CustomSimPlugin(plugin.SimPlugin):
+
+     @messages.handler(priority=messages.Priority.CRITICAL)
+     def on_pre_step(self, event: messages.PreStepEvent) -> None:
+       # Run before standard Priority.USER PreStepEvent handlers.
+       event.data.ctrl[:] = 0.0
+
+针对同一消息类型的处理器，按 ``Priority`` 数值从 **最高** 到最低的顺序执行：
+
+.. list-table::
+   :widths: 28 14 58
+   :header-rows: 1
+
+   * - 优先级常量
+     - 值
+     - 预期用途
+   * - ``Priority.CRITICAL``
+     - ``1000``
+     - 必须先于其他一切运行的处理器，例如核心查看器状态更新和 ``studio_app.App`` 布局。
+   * - ``Priority.USER``
+     - ``100``
+     - 使用不带参数的 ``@messages.handler`` 时，用户插件的默认优先级。
+   * - ``Priority.LIBRARY``
+     - ``10``
+     - 可复用的库扩展，默认在用户插件之后运行。
+   * - ``Priority.INTERNAL``
+     - ``1``
+     - 内置框架处理器： ``StepControl`` 、 ``SimHistory`` 、 ``Viewer`` 和 ``ViewerHandle`` 。
+
+停止传播：如果某个处理器返回 ``True`` ，则该消息的分发会立即停止，优先级更低的处理器将被跳过。由于内置处理器以 ``Priority.INTERNAL`` （ ``1`` ）运行，处于 ``Priority.USER`` （ ``100`` ）的用户插件可以通过返回 ``True`` 来覆盖某条消息的内置行为，也可以通过返回 ``None`` 或 ``False`` 来对其进行扩充。切勿从 ``ExitEvent`` 处理器返回 ``True`` 。
+
+事件与优先级
+------------------------
+
+Studio 同时提供显式的 ``Pre*`` / ``Post*`` 生命周期事件和处理器优先级：
+
+- **优先使用生命周期阶段事件** ，例如 ``PostModelEvent`` 、 ``PreStepEvent`` 、 ``StepEvent`` 、 ``PostStepEvent`` 、
+  ``UpdateEvent`` 和 ``BuildGuiEvent`` ，并配合普通的 ``@messages.handler`` 装饰器。通过 ``ModelEvent`` 或 ``StepEvent`` 上的 ``Priority`` 来为不同的生命周期阶段排序，可能会在 :ref:`mj_forward` 运行之前暴露未初始化的 ``MjData`` ，或者在 ``handle.set_model()`` 之后让正在处理中的 ``StepEvent`` 持有过时的 ``model`` / ``data`` 引用。
+- **仅在** 多个处理器针对 *完全相同的* 事件阶段，并且其中一个处理器必须在后备处理器运行之前通过返回 ``True`` 来覆盖或消费该消息时，才使用 ``Priority`` 。
+
+.. _StudioHotReload:
+
+热重载
+==========
+
+.. tip::
+   使用 ``--hot_reload=all`` 开发 Dear ImGui 面板和三维叠加层时，每次保存文件都会更新正在运行的查看器，同时保持正在运行的仿真、相机位姿和停靠的窗口布局不变。已编译的 C++ 插件和 ``pybind11`` 扩展无法在不重新构建并重启进程的情况下热重载，而 MuJoCo 的 Python ``dear_imgui`` 绑定则直接镜像了 C++ 的 ``ImGui::`` API。因此，先用 Python 配合热重载进行 UI 原型开发，待布局稳定后再移植到 C++，也是构建 C++ Studio 组件的最快方式。
+
+向 ``viewer.py`` 传入 ``--hot_reload=all`` ，或设置 ``ViewerConfig(hot_reload='all')`` ，即可在不重启进程的情况下启用实时重载（ `hot_reload.py <https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/hot_reload.py>`__ ）：
+
+- **范围** ：接受 ``'all'`` （插件模块和当前模型文件）、 ``'plugins'`` 、 ``'model'`` ，或以逗号分隔的插件类名，例如 ``'VelocityCommandOverlay'`` 或 ``'model,App'`` 。
+- **实时类替换** ：保存已注册插件的 ``.py`` 文件，或从同一目录导入的辅助模块，会重新加载该模块，并就地替换 ``plugin.__class__`` ，同时保留已有的实例属性、相机位姿、UI 停靠布局和 ``WebViewer`` 浏览器连接，并分发 ``HotReloadEvent(plugins=...)`` ，这样被替换的插件可以协调状态或调用 ``self.handle.reload()`` 。保存当前的 XML/URDF 模型文件、传给 ``handle.set_model(..., watch=[...])`` 的文件，或它们的 ``<include>`` 和网格（mesh）资源，会自动触发 ``handle.reload()`` 。
+- **固定边界与错误恢复** ：框架模块、 ``__main__`` 、C++ 二进制文件以及已注册插件实例的集合，在重载前后保持固定。语法错误、导入错误或模型编译错误会使之前的代码和模型继续运行，并在下一次保存时重试；被替换的插件的处理器所抛出的异常只会向 Studio 控制台记录一次，而不会终止循环。

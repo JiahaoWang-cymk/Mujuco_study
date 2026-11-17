@@ -1,0 +1,77 @@
+﻿.. raw:: html
+
+    <div id="fetchlines"/>
+
+
+.. _API:
+
+=========
+函数
+=========
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+.. tip::
+   点击下方的函数名，即可跳转到 GitHub 仓库中的源码实现。
+
+主头文件 `mujoco.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mujoco.h>`_ 暴露了大量函数，
+但大多数用户可能用到的只是其中一小部分。
+
+API 函数可分类如下：
+
+- **主要入口**
+   - 从 XML 文件和资源中 :ref:`解析并编译<Parseandcompile>` 出 :ref:`mjModel` 。
+   - :ref:`主仿真<Mainsimulation>` 入口，包括 :ref:`mj_step` 。
+
+- **支持函数**
+   - 需要 :ref:`mjModel` 和 :ref:`mjData` 的 :ref:`支持<Support>` 函数。
+   - 流水线 :ref:`组件<Components>` ，由 :ref:`mj_step` 、 :ref:`mj_forward` 和 :ref:`mj_inverse` 调用。
+   - 仿真流水线的 :ref:`子组件<Subcomponents>` 。
+   - :ref:`射线投射<Raycollisions>` 。
+   - 各类量的 :ref:`打印<Printing>` 。
+   - :ref:`虚拟文件系统<Virtualfilesystem>` ，用于从内存加载资源。
+   - :ref:`资源缓存<Assetcache>` ，用于加速模型编译。
+   - :ref:`资源<Resources>` ，与资源提供者对接以加载资源。
+   - 数据结构的 :ref:`初始化<Initialization>` 。
+   - :ref:`错误与内存<Errorandmemory>` 。
+   - :ref:`其他<Miscellaneous>` 函数。
+
+- **可视化、渲染、UI**
+   - :ref:`抽象交互<Interaction>` ：用鼠标控制相机和扰动。
+   - :ref:`抽象可视化<Visualization-api>` 。
+   - :ref:`OpenGL 渲染<OpenGLrendering>` 。
+   - :ref:`Filament 渲染<FilamentRenderingApi>` 。
+   - :ref:`UI 框架<UIframework>` 。
+
+- **线程、插件、导数**
+   - :ref:`导数<Derivatives-api>` 。
+   - :ref:`符号距离函数<Signeddistancefunction>` 。
+   - :ref:`线程<Thread>` |-| 相关函数。
+   - :ref:`批量仿真<Batchedsimulation>` 。
+   - :ref:`插件<Plugins-api>` |-| 相关函数。
+
+- **数学**
+   - C :ref:`标准数学<Standardmath>` 函数的别名。
+   - :ref:`向量数学<Vectormath>` 。
+   - :ref:`稀疏数学<Sparsemath>` 。
+   - :ref:`四元数<Quaternions>` 。
+   - :ref:`位姿变换<Poses>` 。
+   - :ref:`矩阵分解与求解器<Decompositions>` 。
+
+- **模型编辑**
+   - :ref:`附加<Attachment>` 。
+   - :ref:`树元素<AddTreeElements>` 。
+   - :ref:`非树元素<AddNonTreeElements>` 。
+   - :ref:`设置执行器参数<Setactuatorparameters>` 。
+   - :ref:`资源<AddAssets>` 。
+   - :ref:`查找与获取工具<FindAndGetUtilities>` 。
+   - :ref:`属性设置器<AttributeSetters>` 。
+   - :ref:`属性获取器<AttributeGetters>` 。
+   - :ref:`Spec 工具<SpecUtilities>` 。
+   - :ref:`元素初始化<ElementInitialization>` 。
+   - :ref:`元素类型转换<ElementCasting>` 。
+
+.. include:: functions.rst

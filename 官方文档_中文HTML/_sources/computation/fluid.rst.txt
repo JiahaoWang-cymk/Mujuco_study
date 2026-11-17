@@ -1,0 +1,463 @@
+﻿流体力
+======
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+对流体动力学进行严格模拟超出了 MuJoCo 的范围，而且对于我们希望支持的应用来说速度也会太慢。尽管如此，我们提供了两种唯象模型，足以模拟飞行和游泳等行为。这些模型是\ *无状态的*\ ，即不会为周围的流体分配额外的状态，但仍能够捕捉刚体在流体介质中运动时的主要特征。
+
+这两种模型都通过将 :ref:`density<option-density>` 和 :ref:`viscosity<option-viscosity>` 属性设置为正值来启用。这些参数对应于介质的密度 :math:`\rho` 和粘度 :math:`\beta`。
+
+1. :ref:`惯性模型<flInertia>`\ 只使用粘度和密度，并根据刚体（body）的等效惯性盒推断几何形状。
+2. :ref:`椭球模型 <flEllipsoid>`\ 更为精细，它使用 geom 的椭球近似。除了介质的全局粘度和密度之外，该模型还为每个参与相互作用的 geom 提供 5 个可调参数。
+
+.. tip::
+   正如\ :ref:`数值积分<geIntegration>`\ 一节所详述，在存在与速度相关的力时，隐式积分能显著提高仿真稳定性。下面介绍的两种流体力模型都具有这一性质，因此在使用流体力时，推荐使用 ``implicit`` 或 ``implicitfast`` :ref:`积分器<option-integrator>`\ 。这两种模型所需的解析导数均已完整实现。
+
+.. _flInertia:
+
+惯性模型
+--------
+
+在该模型中，出于流体动力学计算的目的，每个刚体的形状被假定为\ *等效惯性盒*\ ，它也可以被可视化（visualization）。对于质量为 :math:`\mathcal{M}`、惯性矩阵（inertia matrix）为 :math:`\mathcal{I}` 的刚体，其等效惯性盒的半尺寸（即半宽、半深和半高）为
+
+.. math::
+   \begin{align*}
+   r_x = \sqrt{\frac{3}{2 \mathcal{M}} \left(\mathcal{I}_{yy} + \mathcal{I}_{zz} - \mathcal{I}_{xx} \right)}  \\
+   r_y = \sqrt{\frac{3}{2 \mathcal{M}} \left(\mathcal{I}_{zz} + \mathcal{I}_{xx} - \mathcal{I}_{yy} \right)}  \\
+   r_z = \sqrt{\frac{3}{2 \mathcal{M}} \left(\mathcal{I}_{xx} + \mathcal{I}_{yy} - \mathcal{I}_{zz} \right)}
+   \end{align*}
+
+令 :math:`\mathbf{v}` 和 :math:`\boldsymbol{\omega}` 表示刚体在刚体局部坐标系（与等效惯性盒对齐）中的线速度和角速度。流体作用于固体的力 :math:`\mathbf{f}_{\text{inertia}}` 和力矩 :math:`\mathbf{g}_{\text{inertia}}` 是以下各项之和
+
+.. math::
+   \begin{align*}
+   \mathbf{f}_{\text{inertia}} &= \mathbf{f}_D + \mathbf{f}_V  \\
+   \mathbf{g}_{\text{inertia}} &= \mathbf{g}_D + \mathbf{g}_V
+   \end{align*}
+
+这里下标 :math:`D` 和 :math:`V` 分别表示二次阻力（Drag）和粘性阻力（Viscous resistance）。
+
+二次阻力项取决于流体的密度 :math:`\rho`，与刚体速度成二次方关系，在高雷诺数下是流体力的有效近似。力矩是通过对旋转产生的力在表面积上积分得到的。力和力矩的第 :math:`i` 个分量可以写为
+
+.. math::
+   \begin{aligned}
+   f_{D, i} = \quad &- 2  \rho r_j r_k |v_i| v_i \\
+   g_{D, i} = \quad &- {1 \over 2} \rho r_i \left(r_j^4 + r_k^4 \right) |\omega_i| \omega_i \\
+   \end{aligned}
+
+粘性阻力项取决于流体粘度 :math:`\beta`，与刚体速度成线性关系，在低雷诺数下近似流体力。请注意，粘度可以独立于密度使用，以使仿真的阻尼更大。我们在低雷诺数下使用半径为 :math:`r_{eq} = (r_x + r_y + r_z) / 3` 的等效球体公式。由此得到的刚体局部坐标系下的三维力和力矩为
+
+.. math::
+   \begin{aligned}
+   f_{V, i} = \quad &- 6 \beta \pi r_{eq} v_i \\
+   g_{V, i} = \quad &- 8 \beta \pi r_{eq}^3 \omega_i \\
+   \end{aligned}
+
+也可以通过指定非零的 :ref:`wind<option-wind>` 来影响这些力，它是一个三维向量，在流体动力学计算中会从刚体线速度中减去。
+
+.. _flEllipsoid:
+
+椭球模型
+--------
+
+.. cssclass:: caption-small
+.. figure:: ../images/computation/fruitfly.png
+   :figwidth: 50%
+   :align: right
+
+   本图中具备飞行能力的黑腹果蝇（Drosophila Melanogaster）模型见 :cite:t:`Vaxenburg2024`。
+
+
+本节基于 geom 形状的椭球近似，描述并推导一个无状态模型，用于计算周围流体作用于运动刚体的力。与上一节的惯性模型相比，该模型能够对不同类型的流体力进行更细粒度的控制。该模型的主要应用场景是昆虫飞行，见右图。
+
+概述
+~~~~
+
+该模型按 geom 激活：将 :ref:`fluidshape<body-geom-fluidshape>` 属性设置为 ``ellipsoid``，这同时会禁用其父刚体的惯性模型。\ :ref:`fluidcoef<body-geom-fluidcoef>` 属性中的 5 个数值对应以下含义
+
+
+.. list-table::
+   :width: 60%
+   :align: left
+   :widths: 1 5 2 1
+   :header-rows: 1
+
+   * - 索引
+     - 描述
+     - 符号
+     - 默认值
+   * - 0
+     - 钝体阻力系数
+     - :math:`C_{D, \text{blunt}}`
+     - 0.5
+   * - 1
+     - 细长体阻力系数
+     - :math:`C_{D, \text{slender}}`
+     - 0.25
+   * - 2
+     - 角阻力系数
+     - :math:`C_{D, \text{angular}}`
+     - 1.5
+   * - 3
+     - Kutta 升力系数
+     - :math:`C_K`
+     - 1.0
+   * - 4
+     - Magnus 升力系数
+     - :math:`C_M`
+     - 1.0
+
+该模型的各个组成部分是 :cite:t:`andersen2005b` 向三维情形的推广。流体作用于固体的力 :math:`\mathbf{f}_{\text{ellipsoid}}` 和力矩 :math:`\mathbf{g}_{\text{ellipsoid}}` 是以下各项之和
+
+.. math::
+   \begin{align*}
+   \mathbf{f}_{\text{ellipsoid}} &= \mathbf{f}_A + \mathbf{f}_D + \mathbf{f}_M + \mathbf{f}_K + \mathbf{f}_V  \\
+   \mathbf{g}_{\text{ellipsoid}} &= \mathbf{g}_A + \mathbf{g}_D + \mathbf{g}_V
+   \end{align*}
+
+其中下标 :math:`A`、\ :math:`D`、\ :math:`M`、\ :math:`K` 和 :math:`V` 分别表示附加质量（Added mass）、阻力（Drag）、Magnus 升力（Magnus lift）、Kutta 升力（Kutta lift）和粘性阻力（Viscous resistance）。\ :math:`D`、\ :math:`M` 和 :math:`K` 项分别由上述 :math:`C_D`、\ :math:`C_M` 和 :math:`C_K` 系数缩放，粘性阻力随流体粘度 :math:`\beta` 缩放，而附加质量项不可缩放。
+
+符号说明
+~~~~~~~~
+
+我们描述物体在密度为 :math:`\rho` 的无粘、不可压缩静止流体中的运动。模型中，任意形状的物体用半轴为 :math:`\mathbf{r} = \{r_x, r_y, r_z\}` 的等效椭球来描述。问题在一个与椭球各边对齐、并随椭球一起运动的参考坐标系中描述。刚体的速度为 :math:`\mathbf{v} = \{v_x, v_y, v_z\}`，角速度为 :math:`\boldsymbol{\omega} = \{\omega_x, \omega_y, \omega_z\}`。我们还将使用
+
+.. math::
+   \begin{align*}
+       r_\text{max} &= \max(r_x, r_y, r_z) \\
+       r_\text{min} &= \min(r_x, r_y, r_z) \\
+       r_\text{mid} &= r_x + r_y + r_z - r_\text{max} - r_\text{min}
+   \end{align*}
+
+雷诺数是流动中惯性力与粘性力之比，定义为 :math:`Re=u~l/\beta`，其中 :math:`\beta` 是流体的运动粘度，\ :math:`u` 是流动的特征速度（或者通过变换参考系，即物体的速度），\ :math:`l` 是流动或物体的特征尺寸。
+
+我们用 :math:`\Gamma` 表示环量，即速度场沿闭合曲线的线积分 :math:`\Gamma = \oint \mathbf{v} \cdot \textrm{d} \mathbf{l}`，并且根据斯托克斯定理，\ :math:`\Gamma = \int_S \nabla \times \mathbf{v} \cdot \textrm{d}\mathbf{s}`。在流体动力学记号中，符号 :math:`\boldsymbol{\omega}` 通常用于表示涡量，定义为 :math:`\nabla \times \mathbf{v}`，而不是角速度。对于刚体运动，涡量是角速度的两倍。
+
+最后，我们用下标 :math:`i, j, k` 表示对 :math:`x, y, z` 对称成立的一组三个方程。例如 :math:`a_i = b_j + b_k` 是以下 3 个方程的简写
+
+.. math::
+   \begin{align*}
+       a_x &= b_y + b_z \\
+       a_y &= b_x + b_z \\
+       a_z &= b_x + b_y
+   \end{align*}
+
+.. _flProjection:
+
+椭球投影
+~~~~~~~~
+
+我们给出如下结论。
+
+.. admonition:: 引理
+   :class: note
+
+   给定一个半轴为 :math:`(r_x, r_y, r_z)` 且与坐标轴 :math:`(x, y, z)` 对齐的椭球，以及一个单位向量 :math:`\mathbf{u} = (u_x, u_y, u_z)`，该椭球在法向为 :math:`\mathbf{u}` 的平面上的投影面积为
+
+   .. math::
+      A^{\mathrm{proj}}_{\mathbf{u}} = \pi \sqrt{\frac{r_y^4 r_z^4 u_x^2 + r_z^4 r_x^4 u_y^2 + r_x^4 r_y^4 u_z^2}{r_y^2 r_z^2 u_x^2 + r_z^2 r_x^2 u_y^2 + r_x^2 r_y^2 u_z^2}}
+
+.. collapse:: 展开查看推导
+
+   .. admonition:: 引理的推导
+      :class: tip
+
+      **椭圆的面积**
+         任何以原点为中心的椭圆都可以用二次型 :math:`\mathbf{x}^T Q \mathbf{x} = 1` 来描述，其中 :math:`Q` 是实对称正定 2x2 矩阵，决定了椭圆的方向和半轴长度，\ :math:`\mathbf{x} = (x, y)` 是椭圆上的点。椭圆的面积为
+
+         .. math::
+            A = \frac{\pi}{\sqrt{\det Q}} .
+
+      **椭球的截面**
+         我们首先计算以原点为中心的椭球与过原点、单位法向量为 :math:`\mathbf{n} = (n_x, n_y, n_z)` 的平面 :math:`\Pi_{\mathbf{n}}` 相交所形成的椭圆的面积。设 :math:`(r_x, r_y, r_z)` 为椭球的半轴长度。不失一般性，可以假设椭球的轴与坐标轴对齐。于是椭球可以描述为 :math:`\mathbf{x}^T Q \mathbf{x} = 1`，其中
+         :math:`Q = \textrm{diag}\mathopen{}\left( \left. 1 \middle/ r_x^2 \right., \left. 1 \middle/ r_y^2 \right., \left. 1 \middle/ r_z^2 \right. \right)\mathclose{}`，
+         :math:`\mathbf{x} = (x, y, z)` 是椭球上的点。
+
+         接下来，我们将平面 :math:`\Pi_{\mathbf{n}}` 连同椭球一起旋转，使旋转后平面的法向指向 :math:`z` 轴。这样，只需令 :math:`z` 坐标为零就能得到所需的交线。记 :math:`\mathbf{\hat{z}}` 为沿 :math:`z` 轴的单位向量，则有
+
+         .. math::
+            \begin{align*}
+            \mathbf{n} \times \mathbf{\hat{z}} &= \sin\theta \, \mathbf{m}, \\
+            \mathbf{n} \cdot \mathbf{\hat{z}} &= \cos\theta ,
+            \end{align*}
+
+         其中 :math:`\mathbf{m}` 是定义旋转轴的单位向量，\ :math:`\theta` 是旋转角。我们可以重新整理这些式子，得到构造旋转四元数（quaternion）所需的量，即
+
+         .. math::
+            \begin{align*}
+            \cos\frac{\theta}{2}
+            &= \sqrt{\frac{1+\cos\theta}{2}}
+            &= \sqrt{\frac{1 + \mathbf{n} \cdot \mathbf{\hat{z}}}{2}}, \\
+            \sin\frac{\theta}{2}\,\mathbf{m}
+            &= \frac{\mathbf{n} \times \mathbf{\hat{z}}}{2\cos\frac{\theta}{2}}
+            &= \frac{\mathbf{n} \times \mathbf{\hat{z}}}{\sqrt{2 (1 + \mathbf{n} \cdot \mathbf{\hat{z}})}} .
+            \end{align*}
+
+         因此旋转四元数 :math:`q = q_r + q_x \mathbf{i} + q_y \mathbf{j} + q_z \mathbf{k}` 为
+
+         .. math::
+            q_r = \sqrt{\frac{1 + n_z}{2}}, \quad
+            q_x = \frac{n_y}{\sqrt{2 \left(1+n_z\right)}},  \quad
+            q_y = \frac{-n_x}{\sqrt{2 \left(1+n_z\right)}}, \quad
+            q_z = 0 .
+
+         由此，旋转矩阵为
+
+         .. math::
+            \def\arraystretch{1.33}
+            \begin{align*}
+            R &= \begin{pmatrix}
+            1 - 2 q_y^2 - 2 q_z^2 & 2 \left(q_x q_y - q_r q_z\right) & 2 \left(q_x q_z + q_r q_y\right) \\
+            2 \left(q_x q_y + q_r q_z\right) & 1 - 2 q_x^2 - 2 q_z^2 & 2 \left(q_y q_z - q_r q_x\right) \\
+            2 \left(q_x q_z - q_r q_y\right) & 2 \left(q_y q_z + q_r q_x\right) & 1 - 2 q_x^2 - 2 q_y^2
+            \end{pmatrix} \\
+            &= \begin{pmatrix}
+            1 - \left. n_x^2 \middle/ \left( 1+n_z \right) \right. & \left. -n_x n_y \middle/ \left( 1+n_z \right) \right. & -n_x \\
+            \left. -n_x n_y \middle/ \left( 1+n_z \right) \right. & 1 - \left. n_y^2 \middle/ \left( 1+n_z \right) \right. & -n_y \\
+            n_x & n_y & 1 - \left. \left( n_x^2 + n_y^2 \right) \middle/ \left( \vphantom{n_x^2} 1+n_z \right) \right.
+            \end{pmatrix},
+            \end{align*}
+
+         旋转后的椭球通过变换后的二次型来描述
+
+         .. math::
+            \mathbf{x}^T Q' \mathbf{x} = \mathbf{x}^T \left( R^T Q R \right) \mathbf{x} = 1 .
+
+         根据上面的椭圆面积公式，要得到 :math:`z=0` 处椭圆的面积，我们需要
+
+         .. math::
+            \begin{align*}
+            Q'_{xx} &= \frac{1}{r_x^2} R_{xx}^2 + \frac{1}{r_y^2} R_{yx}^2 + \frac{1}{r_z^2} R_{zx}^2 , \\
+            Q'_{yy} &= \frac{1}{r_x^2} R_{xy}^2 + \frac{1}{r_y^2} R_{yy}^2 + \frac{1}{r_z^2} R_{zy}^2 , \\
+            Q'_{xy} &= \frac{1}{r_x^2} R_{xx} R_{xy} + \frac{1}{r_y^2} R_{yx} R_{yy} + \frac{1}{r_z^2} R_{zx} R_{zy} ,
+            \end{align*}
+
+         所需的面积为
+
+         .. math::
+            A^{\cap}_{\mathbf{n}}
+            = \frac{\pi}{\sqrt{\vphantom{Q'^2_{xy}} \det Q'}}
+            = \frac{\pi}{\sqrt{Q'_{xx} Q'_{yy} - Q'^2_{xy}}}
+            = \frac{\pi r_x r_y r_z}{\sqrt{r_x^2 n_x^2 + r_y^2 n_y^2 + r_z^2 n_z^2}},
+
+         其中上标 :math:`\cap` 表示该面积对应于与 :math:`\Pi_{\mathbf{n}}` *相交*\ 所得的椭圆。
+
+      **投影椭圆**
+         设 :math:`\mathbf{u} = (u_x, u_y, u_z)` 为某个单位向量（在我们的场景中，它是冲击椭球的流体速度方向），并设 :math:`\Pi_{\mathbf{u}}` 为法向为 :math:`\mathbf{u}` 的平面。一般而言，将椭球 :math:`\mathcal{E}` 投影到 :math:`\Pi_{\mathbf{u}}` 上形成的椭圆（记作 :math:`\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}`）与 :math:`\mathcal{E}` 和 :math:`\Pi_{\mathbf{u}}` 相交形成的椭圆（记作 :math:`\mathcal{E}^{\cap}_{\mathbf{u}}`）是不同的。
+
+         :math:`\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}` 的一个重要性质是：在 :math:`\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}` 上的每一点，\ :math:`\mathbf{u}` 都与椭球 :math:`\mathcal{E}` 相切。
+
+         我们可以把 :math:`\mathcal{E}` 看作单位球 :math:`\mathcal{S}` 在拉伸变换 :math:`T = \mathrm{diag}(r_x, r_y, r_z)` 下的像。此外，如果 :math:`\mathbf{\tilde{u}}` 是与 :math:`\mathcal{S}` 相切的向量，那么它的像 :math:`\mathbf{u}=T\mathbf{\tilde{u}}=(r_x \tilde{u}_x, r_y \tilde{u}_y, r_z \tilde{u}_z)` 与椭球相切。因此，椭圆 :math:`\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}` 是 :math:`\mathcal{S}` 与 :math:`\Pi_{\mathbf{\tilde{u}}}` 相交处的圆 :math:`\mathcal{C}^{\cap}_{\mathbf{\tilde{u}}}` 在 :math:`T` 下的像（对于球体，\ :math:`\mathcal{C}^{\cap}` 和 :math:`\mathcal{C}^{\mathrm{proj}}` 是重合的）。
+
+         设 :math:`\mathbf{\tilde{v}}` 和 :math:`\mathbf{\tilde{w}}` 是平面 :math:`\Pi_{\mathbf{\tilde{u}}}` 内的某一对正交向量，则 :math:`\mathbf{\tilde{u}} = \mathbf{\tilde{v}} \times \mathbf{\tilde{w}}`。它们在 :math:`T` 下的像分别为 :math:`\mathbf{v} = (r_x \tilde{v}_x, r_y \tilde{v}_y, r_z \tilde {v}_z)` 和 :math:`\mathbf{w} = (r_x \tilde{w}_x, r_y \tilde{w}_y, r_z \tilde {w}_z)`，它们仍是 :math:`\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}` 所在平面内的正交向量。因此椭圆 :math:`\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}` 的一个（非单位）法向量为
+
+         .. math::
+            \mathbf{N} = \mathbf{v} \times \mathbf{w}
+            = (r_y r_z \tilde{u}_x, r_z r_x \tilde{u}_y, r_x r_y \tilde{u}_z)
+            = \left( \frac{r_y r_z}{r_x} u_x, \frac{r_z r_x}{r_y} u_y, \frac{r_x r_y}{r_z} u_z \right).
+
+         这表明 :math:`\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}} = \mathcal{E}^{\cap}_{\mathbf{n}}`，其中 :math:`\mathbf{n} = \mathbf{N} / \left\Vert\mathbf{N}\right\Vert`。其面积由上一节推导的公式给出，从而得到上述结论。
+
+附加质量
+~~~~~~~~
+
+对于在流体中运动的物体，附加质量（added mass）或虚拟质量衡量的是因物体运动而被带动的流体的惯性。它可以由势流理论推导得出（即对无粘流动同样存在）。
+
+按照 :cite:t:`lamb1932` 第 5 章，流体由静止开始产生运动时，作用于运动物体的力 :math:`\mathbf{f}_{V}` 和力矩 :math:`\mathbf{g}_{V}` 可以写为：
+
+.. math::
+   \begin{align*}
+       \mathbf{f}_{A} &= - \frac{\textrm{d}}{\textrm{d} t} \nabla_{\mathbf{v}} \mathcal{T} + \nabla_{\mathbf{v}} \mathcal{T} \times \boldsymbol{\omega} \\
+       \mathbf{g}_{A} &= - \frac{\textrm{d}}{\textrm{d} t} \nabla_{\boldsymbol{\omega}} \mathcal{T} + \nabla_{\mathbf{v}} \mathcal{T} \times \mathbf{v} + \boldsymbol{\omega} \times \nabla_{\boldsymbol{\omega}} \mathcal{T}
+   \end{align*}
+
+其中 :math:`\mathcal{T}` 是流体自身的动能。这些力通常被称为附加质量或虚拟质量，因为它们源于被加速物体所推动或偏转的流体的惯性。事实上，对于线速度恒定的物体，这些力会降为零。我们假定物体具有三个对称平面，因为在这一假设下动能大大简化，可以写为：
+
+.. math::
+   2 \mathcal{T} = m_{A, x} v_x^2 + m_{A, y} v_y^2 + m_{A, z} v_z^2 +
+                 I_{A, x} \omega_x^2 + I_ {A, y} \omega_y^2 + I_{A, z} \omega_z^2
+
+
+为方便起见，我们引入附加质量向量 :math:`\mathbf{m}_A = \{m_{A, x}, m_{A, y}, m_{A, z}\}` 和附加转动惯量向量 :math:`\mathbf{I}_A = \{I_{A, x}, I_{A, y}, I_{A, z}\}`。这些量中的每一个都应当估计物体沿相应方向运动时被带动流体的惯性，并且对于一些简单几何形状，可以由势流理论推导得出。
+
+对于具有三个对称平面的物体，我们可以将附加惯性产生的力和力矩写成紧凑形式：
+
+.. math::
+   \begin{align*}
+       \mathbf{f}_{A} &= - \mathbf{m}_A \circ \dot{\mathbf{v}} + \left(\mathbf{m}_A \circ \mathbf{v} \right) \times \boldsymbol{\omega} \\
+       \mathbf{g}_{A} &= - \mathbf{I}_A \circ \dot{\boldsymbol{\omega}} + \left(\mathbf{m}_A \circ \mathbf{v} \right) \times \mathbf{v} + \left(\mathbf{I}_A \circ \boldsymbol{\omega} \right) \times \boldsymbol{\omega}
+   \end{align*}
+
+这里 :math:`\circ` 表示逐元素乘积，\ :math:`\dot{\mathbf{v}}` 是线加速度，\ :math:`\dot{\boldsymbol{\omega}}` 是角加速度。\ :math:`\mathbf{m}_A \circ \mathbf{v}` 和 :math:`\mathbf{I}_A \circ \boldsymbol{\omega}` 分别是虚拟线动量和虚拟角动量。
+
+对于半轴为 :math:`\mathbf{r} = \{r_x, r_y, r_z\}`、体积为 :math:`V = 4 \pi r_x r_y r_z / 3` 的椭球，虚拟惯性系数由 :cite:t:`tuckerman1925` 推导得出。令：
+
+.. math::
+   \kappa_i = \int_0^\infty \frac{r_i r_j r_k}{\sqrt{(r_i^2 + \lambda)^3 (r_j^2 + \lambda) (r_k^2 + \lambda)}} \textrm{d} \lambda
+
+
+需要注意，这些系数是无量纲的（即如果所有半轴都乘以同一个标量，系数保持不变）。椭球的虚拟质量为：
+
+.. math::
+   m_{A, i} = \rho V \frac{\kappa_i}{2 - \kappa_i}
+
+虚拟转动惯量为：
+
+.. math::
+   I_{A, i} = \frac{\rho V}{5} \frac{(r_j^2 - r_k^2)^2 (\kappa_k-\kappa_j)}{2(r_j^2 - r_k^2) + (r_j^2 + r_k^2) (\kappa_j-\kappa_k)}
+
+粘性阻力
+~~~~~~~~
+
+阻力的作用是阻碍物体相对于周围流动的运动。我们发现，粘性力还有助于降低包含流体动力学项的运动方程的刚性。出于这一原因，我们选择偏保守的做法，采用可能高估耗散的粘性项近似。
+
+尽管阻力最终由粘性耗散引起，但在高雷诺数下它与粘度无关，并与速度的二次方成正比。它可以写为：
+
+.. math::
+   \begin{align*}
+   \mathbf{f}_\text{D} = - C_D~\rho~ A_D ~ \|\mathbf{v}\|~ \mathbf{v}\\
+   \mathbf{g}_\text{D} = - C_D \rho~ I_D ~ \|\boldsymbol{\omega}\| ~ \boldsymbol{\omega}
+   \end{align*}
+
+其中 :math:`C_D` 是阻力系数，\ :math:`A_D` 是参考表面积（例如物体在法向为流动方向的平面上的投影面积的某种度量），\ :math:`I_D` 是参考转动惯量。
+
+.. youtube:: nljr0X79vI0
+   :align: right
+   :width: 50%
+
+即使对于简单形状，\ :math:`C_D`、\ :math:`A_D` 和 :math:`I_D` 这几项也需要根据具体问题的物理特性和动力学尺度进行调整 :cite:p:`duan2015`。例如，阻力系数 :math:`C_D` 通常随雷诺数增大而减小，而且对于高度不规则或细长的物体，单一的参考面积 :math:`A_D` 可能不足以体现表面摩擦阻力。再如，实验拟合来自从下落的扑克牌 :cite:p:`wang2004,andersen2005a,andersen2005b` 到颗粒输运 :cite:p:`loth2008,
+bagheri2016` 等各类问题。参见右侧
+`cards.xml <https://github.com/deepmind/mujoco/blob/main/model/cards/cards.xml>`__ 模型的屏幕截图。
+
+我们基于两个表面积 :math:`A^\text{proj}_\mathbf{v}` 和 :math:`A_\text{max}` 推导 :math:`\mathbf{f}_\text{D}` 的公式。第一个 :math:`A^\text{proj}_\mathbf{v}` 是物体沿法向为速度 :math:`\mathbf{v}` 的平面的柱面投影。第二个是最大投影面积 :math:`A_\text{max} = \pi r_{max} r_{mid}`。
+
+.. math::
+   \mathbf{f}_\text{D} = - \rho~ \big[  C_{D, \text{blunt}} ~ A^\text{proj}_\mathbf{v} ~ +
+   C_{D, \text{slender}}\left(A_\text{max} - A^\text{proj}_\mathbf{v} \right) \big] ~ \|\mathbf{v}\|~ \mathbf{v}
+
+:math:`A^\text{proj}_\mathbf{v}` 的公式及推导见上文的\ :ref:`引理<flProjection>`\ 。
+
+我们为角阻力提出一个类似的模型。对于每个笛卡尔坐标轴，我们考虑物体绕该轴旋转所得到的最大扫掠椭球的转动惯量。转动惯量的对角元素为：
+
+.. math::
+   \mathbf{I}_{D,ii} = \frac{8\pi}{15} ~r_i ~\max(r_j, ~r_k)^4 .
+
+给定该参考转动惯量，角阻力矩计算为：
+
+.. math::
+   \mathbf{g}_\text{D} = - \rho ~ \boldsymbol{\omega} ~ \Big( \big[ C_{D, \text{angular}} ~ \mathbf{I}_D ~ +
+   C_{D, \text{slender}} \left(\mathbf{I}_\text{max} - \mathbf{I}_D \right) \big] \cdot \boldsymbol{\omega} \Big)
+
+
+这里 :math:`\mathbf{I}_\text{max}` 是一个向量，其每个元素都等于 :math:`\mathbf{I}_D` 的最大分量。
+
+最后，粘性阻力项也称为线性阻力，在雷诺数约为 :math:`O(10)` 或更低时能很好地近似流体力。它们按照斯托克斯定律针对等效球体计算 :cite:p:`stokes1850,lamb1932`：
+
+.. math::
+   \begin{align*}
+   \mathbf{f}_\text{V} &= - 6 \pi r_D \beta \mathbf{v}\\
+   \mathbf{g}_\text{V} &= - 8 \pi r_D^3 \beta \boldsymbol{\omega}
+   \end{align*}
+
+这里 :math:`r_D = (r_x + r_y + r_z)/3` 是等效球体的半径，\ :math:`\beta` 是介质的运动粘度（例如，常温空气为 :math:`1.48~\times 10^{-5}~m^2/s`，水为 :math:`0.89 \times 10^{-4}~m^2/s`）。举一个定量的例子：对于室温空气，当 :math:`u\cdot l \lesssim 2 \times 10^{-4}~m^2/s` 时，斯托克斯定律是准确的，其中 :math:`u` 是速度，\ :math:`l` 是物体的特征长度。
+
+粘性升力
+~~~~~~~~
+
+库塔-茹科夫斯基定理将在均匀流中以速度 `u` 平移的二维物体的升力 :math:`L` 计算为 :math:`L = \rho u \Gamma`。这里 :math:`\Gamma` 是绕物体的环量。在接下来的小节中，我们定义两种环量来源以及由此产生的升力。
+
+Magnus 力
+^^^^^^^^^
+
+.. cssclass:: caption-small
+.. figure:: ../images/computation/magnus.png
+   :figwidth: 45%
+   :align: right
+
+   绕旋转圆柱流动的烟雾流场可视化（WikiMedia Commons，CC BY-SA 4.0）。由于粘性，旋转圆柱使来流向上偏转，并受到向下的力（红色箭头）。
+
+Magnus 效应描述的是旋转物体在流体中运动时的行为。通过粘性效应，旋转的物体会带动周围流体旋转。这种旋转使流经物体的流体轨迹发生偏转（即产生线性加速度），而物体则受到大小相等、方向相反的反作用力。对于圆柱，单位长度圆柱上的 Magnus 力可以计算为 :math:`F_\text{M} / L = \rho v \Gamma`，其中 :math:`\Gamma` 是旋转引起的流动环量，\ :math:`v` 是物体的速度。对于任意形状的物体，我们将该力估计为：
+
+.. math::
+   \mathbf{f}_{\text{M}} = C_M ~\rho~ V~ \boldsymbol{\omega}\times\mathbf{v} ,
+
+其中 :math:`V` 是物体的体积，\ :math:`C_M` 是该力的系数，通常设为 1。
+
+不妨举一个例子。为了减少变量数量，假设物体仅绕一个方向旋转，例如 :math:`\boldsymbol{\omega} = \{0, 0, \omega_z\}`，并沿另外两个方向平移，例如 :math:`\mathbf{v} = \{v_x, v_y, 0\}`。附加质量力与 Magnus 效应产生的力沿（例如）\ :math:`x` 方向之和为：
+
+.. math::
+   \frac{f}{\pi \rho r_z} = v_y \omega_z \left(2 r_x \min\{r_x, r_z\} - (r_x + r_z)^2\right)
+
+请注意这两项符号相反。
+
+库塔条件（Kutta condition）
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+驻点（stagnation point）是流场中速度为零的位置。对于在流动中运动的物体（在二维情形下，取随物体一起运动的坐标系），有两个驻点：一个在前方，流线在此分开并流向物体两侧；另一个在后方，流线在此重新汇合。带有尖锐后缘（尾缘）的运动物体，会在周围流动中产生强度足以把后驻点固定在后缘的环量。这就是库塔条件，一种流体动力学现象，可以在带有尖角的固体上观察到，例如细长物体或翼型的后缘。
+
+.. figure:: ../images/computation/kutta_cond_plate.svg
+   :class: only-light
+   :figwidth: 95%
+   :align: left
+
+.. cssclass:: caption-small
+.. figure:: ../images/computation/kutta_cond_plate_dark.svg
+   :class: only-dark
+   :figwidth: 95%
+   :align: left
+
+   库塔条件示意图。蓝线为流线，两个品红色的点为驻点。连接两个驻点的分流线（dividing streamline）以绿色标出。分流线与物体围成一个区域，其中的流动被称为“分离”的，并在其内部再循环。这一环量对平板产生一个向上的力。
+
+对于上图所示的二维流动，由库塔条件产生的环量可以估算为：
+:math:`\Gamma_\text{K} = C_K ~ r_x ~ \| \mathbf{v}\| ~ \sin(2\alpha)` ，
+其中 :math:`C_K` 是升力系数， :math:`\alpha` 是速度矢量与其在表面上的投影之间的夹角。单位长度的升力可以由库塔-茹科夫斯基定理（Kutta–Joukowski theorem）计算为
+:math:`\mathbf{f}_K / L = \rho \Gamma_\text{K} \times \mathbf{v}` 。
+
+为了把升力方程推广到三维运动，我们考虑物体横截面的法向量
+:math:`\mathbf{n}_{s, \mathbf{v}} = \{\frac{r_y r_z}{r_x}v_x, \frac{r_z r_x}{r_y}v_y, \frac{r_x r_y}{r_z}v_z\}` ，
+该横截面产生物体在垂直于速度的平面上的投影 :math:`A^\text{proj}_\mathbf{v}` （见上文的 :ref:`引理<flProjection>` ），以及相应的单位向量
+:math:`\hat{\mathbf{n}}_{s, \mathbf{v}}` 。
+我们利用这一方向把速度分解为 :math:`\mathbf{v} = \mathbf{v}_\parallel ~+~ \mathbf{v}_\perp` ，其中
+:math:`\mathbf{v}_\perp = \left(\mathbf{v} \cdot \hat{\mathbf{n}}_{s, \mathbf{v}}\right) \hat{\mathbf{n}}_{s, \mathbf{v}}` 。
+升力写为：
+
+.. math::
+   \begin{align*}
+       \mathbf{f}_\text{K} &= \frac{C_K~\rho~ A^\text{proj}_\mathbf{v}}{\|\mathbf{v}\|}
+                                 \left( \mathbf{v} \times \mathbf{v}_\parallel\right)\times \mathbf{v} \\
+       &= C_K~\rho~ A^\text{proj}_\mathbf{v} \left(\hat{\mathbf{v}} \cdot \hat{\mathbf{n}}_{s, \mathbf{v}}\right)
+                                 \left( \hat{\mathbf{n}}_{s, \mathbf{v}} \times \mathbf{v} \right)\times \mathbf{v}
+   \end{align*}
+
+这里， :math:`\hat{\mathbf{v}}` 是沿 :math:`\mathbf{v}` 的单位法向量。请注意， :math:`\hat{\mathbf{n}}_{s,
+\mathbf{v}}` 的方向仅在物体半轴不相等的平面上与 :math:`\hat{\mathbf{v}}` 不同。因此，例如对于球形物体，
+:math:`\hat{\mathbf{n}}_{s, \mathbf{v}} \equiv \hat{\mathbf{v}}` ，并且按构造有
+:math:`\mathbf{f}_\text{K} = 0` 。
+
+我们用一个例子来解释这一关系。假设一个物体满足 :math:`r_x = r_y` 且 :math:`r_z \ll r_x` 。请注意，向量
+:math:`\hat{\mathbf{n}}_{s, \mathbf{v}} \times \hat{\mathbf{v}}` 给出了由固体物体使流动发生偏转所诱导的环量的方向。沿 :math:`z` 方向，环量将正比于 :math:`\frac{r_y r_z}{r_x}v_x v_y
+- \frac{r_z r_x}{r_y}v_x v_y = 0` （由于 :math:`r_x = r_y` ）。因此，在固体呈钝形的平面上，该运动不产生环量。
+
+现在，为简单起见，令 :math:`v_x = 0` 。这时沿 :math:`y` 方向的环量（正比于
+:math:`\frac{r_y r_z}{r_x}v_x v_z - \frac{r_y r_x}{r_y}v_x v_z` ）同样为零。环量唯一的非零分量沿 :math:`x` 方向，并且正比于 :math:`\left(\frac{r_x r_z}{r_y} - \frac{r_x r_y}{r_z}\right) v_y v_z \approx
+\frac{r_x^2}{r_z} v_y v_z` 。
+
+此时有 :math:`\mathbf{v}_\parallel = \{v_x, 0, v_z\}` 以及
+:math:`\Gamma \propto \{r_z v_y v_z, ~ 0,~ - r_x v_x v_y \} / \|\mathbf{v}\|` 。
+该运动在固体呈钝形的平面上不产生环量，而在另外两个平面上，环量为
+:math:`\Gamma \propto r_\Gamma ~ \|\mathbf{v}\|~ \sin(2 \alpha) ~ = ~2 r_\Gamma ~\|\mathbf{v}\| ~\sin(\alpha)~\cos(\alpha)` ，
+其中 :math:`\alpha` 是速度与其在该平面上物体投影之间的夹角（例如，在与 :math:`x` 正交的平面上，有 :math:`\sin(\alpha) = v_y/\|\mathbf{v}\|` 和
+:math:`\cos(\alpha) = v_z/\|\mathbf{v}\|` ），而 :math:`r_\Gamma` 是该平面上的升力面（例如，与 :math:`x` 正交的平面上为 :math:`r_z` ）。此外，环量的方向由叉积给出（因为固体边界会把来流速度“旋转”到其在物体上的投影方向）。
+
+致谢
+~~~~~~~~~~~~~~~~
+
+本节中模型的设计与实现由 Guido Novati 完成。
+
+参考文献
+~~~~~~~~~~
+
+.. bibliography::

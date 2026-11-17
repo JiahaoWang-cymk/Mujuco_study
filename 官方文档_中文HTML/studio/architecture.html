@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html class="no-js" data-content_root="../" lang="zh-CN">
+<head><meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="light dark" name="color-scheme"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="../_static/favicons/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+<link href="../_static/favicons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="apple-touch-icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-192x192.png" rel="icon" sizes="192x192" type="image/png"/><link href="../genindex.html" rel="index" title="索引"/><link href="../search.html" rel="search" title="搜索"/><link href="python_plugins.html" rel="next" title="Python 插件"/><link href="native_viewers.html" rel="prev" title="原生查看器"/>
+<link as="image" href="../_static/banner.svg" rel="prefetch"/>
+<!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+<title>架构 - MuJoCo 文档（中文）</title>
+<link href="../_static/pygments.css?v=b86133f3" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo.css?v=7bdb33bb" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css?v=05624691" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo-extensions.css?v=8dab3a3b" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides.css?v=8d83ad8c" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides_mjwarp.css?v=e08d3b36" rel="stylesheet" type="text/css"/>
+<link href="../_static/zh_overrides.css?v=ee52c62c" rel="stylesheet" type="text/css"/>
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #16213a;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #2a4fd6;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #2a4fd6;
+  --color-brand-content: #2a4fd6;
+  --color-background-secondary: #f4f6f9;
+  --color-sidebar-background: #f4f6f9;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+      }
+    }
+  }
+</style></head>
+<body>
+<script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+<symbol id="svg-toc" viewbox="0 0 24 24">
+<title>Contents</title>
+<svg fill="currentColor" stroke="currentColor" stroke-width="0" viewbox="0 0 1024 1024">
+<path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"></path>
+</svg>
+</symbol>
+<symbol id="svg-menu" viewbox="0 0 24 24">
+<title>Menu</title>
+<svg class="feather-menu" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<line x1="3" x2="21" y1="12" y2="12"></line>
+<line x1="3" x2="21" y1="6" y2="6"></line>
+<line x1="3" x2="21" y1="18" y2="18"></line>
+</svg>
+</symbol>
+<symbol id="svg-arrow-right" viewbox="0 0 24 24">
+<title>Expand</title>
+<svg class="feather-chevron-right" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</symbol>
+<symbol id="svg-sun" viewbox="0 0 24 24">
+<title>Light mode</title>
+<svg class="feather-sun" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" x2="12" y1="1" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="23"></line>
+<line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+<line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+<line x1="1" x2="3" y1="12" y2="12"></line>
+<line x1="21" x2="23" y1="12" y2="12"></line>
+<line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+<line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
+</svg>
+</symbol>
+<symbol id="svg-moon" viewbox="0 0 24 24">
+<title>Dark mode</title>
+<svg class="icon-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+</svg>
+</symbol>
+<symbol id="svg-sun-with-moon" viewbox="0 0 24 24">
+<title>Auto light/dark, in light mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z" style="opacity: 50%"></path>
+<line x1="14.5" x2="14.5" y1="3.25" y2="1.25"></line>
+<line x1="14.5" x2="14.5" y1="15.85" y2="17.85"></line>
+<line x1="10.044" x2="8.63" y1="5.094" y2="3.68"></line>
+<line x1="19" x2="20.414" y1="14.05" y2="15.464"></line>
+<line x1="8.2" x2="6.2" y1="9.55" y2="9.55"></line>
+<line x1="20.8" x2="22.8" y1="9.55" y2="9.55"></line>
+<line x1="10.044" x2="8.63" y1="14.006" y2="15.42"></line>
+<line x1="19" x2="20.414" y1="5.05" y2="3.636"></line>
+<circle cx="14.5" cy="9.55" r="3.6"></circle>
+</svg>
+</symbol>
+<symbol id="svg-moon-with-sun" viewbox="0 0 24 24">
+<title>Auto light/dark, in dark mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"></path>
+<line style="opacity: 50%" x1="18" x2="18" y1="3.705" y2="2.5"></line>
+<line style="opacity: 50%" x1="18" x2="18" y1="11.295" y2="12.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="4.816" y2="3.964"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="10.212" y2="11.063"></line>
+<line style="opacity: 50%" x1="14.205" x2="13.001" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="21.795" x2="23" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="10.184" y2="11.036"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="4.789" y2="3.937"></line>
+<circle cx="18" cy="7.5" r="2.169" style="opacity: 50%"></circle>
+</svg>
+</symbol>
+<symbol id="svg-pencil" viewbox="0 0 24 24">
+<svg class="icon-tabler-pencil-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
+<path d="M13.5 6.5l4 4"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+<symbol id="svg-eye" viewbox="0 0 24 24">
+<svg class="icon-tabler-eye-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
+<path d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+</svg>
+<input aria-label="Toggle site navigation sidebar" class="sidebar-toggle" id="__navigation" name="__navigation" type="checkbox"/>
+<input aria-label="Toggle table of contents sidebar" class="sidebar-toggle" id="__toc" name="__toc" type="checkbox"/>
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+<div class="page">
+<header class="mobile-header">
+<div class="header-left">
+<label class="nav-overlay-icon" for="__navigation">
+<span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+</label>
+</div>
+<div class="header-center">
+<a href="../index.html"><div class="brand">MuJoCo 文档（中文）</div></a>
+</div>
+<div class="header-right">
+<div class="theme-toggle-container theme-toggle-header">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-header-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+</header>
+<aside class="sidebar-drawer">
+<div class="sidebar-container">
+<div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+<div class="sidebar-logo-container">
+<img alt="Logo" class="sidebar-logo" src="../_static/banner.svg"/>
+</div>
+<span class="sidebar-brand-text">MuJoCo 文档（中文）</span>
+</a><form action="../search.html" class="sidebar-search-container" method="get" role="search">
+<input aria-label="搜索" class="sidebar-search" name="q" placeholder="搜索"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">入门教程</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">概览</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../computation/index.html">计算</a><input aria-label="Toggle navigation of 计算" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../computation/fluid.html">流体力</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computation/speculative.html">推测接触</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">建模</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../XMLreference.html">XML 参考</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../programming/index.html">编程</a><input aria-label="Toggle navigation of 编程" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../programming/simulation.html">仿真</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/visualization.html">可视化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/rendering.html">渲染</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/ui.html">用户界面</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/modeledit.html">模型编辑</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/samples.html">代码示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/extension.html">扩展</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../APIreference/index.html">API 参考</a><input aria-label="Toggle navigation of API 参考" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APItypes.html">类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIfunctions.html">函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIglobals.html">全局变量</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Studio</a><input aria-label="Toggle navigation of Studio" checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="web_viewers.html">Web 查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="native_viewers.html">原生查看器</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_plugins.html">Python 插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python.html">Python</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjx.html">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../unity.html">Unity 插件</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/building.html">构建</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcf_file_format_plugin.html">文件格式插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/importing.html">导入</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/exporting.html">导出</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">模型库</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">更新日志</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<div class="main">
+<div class="content">
+<div class="article-container">
+<a class="back-to-top muted-link" href="#">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+</svg>
+<span>Back to top</span>
+</a>
+<div class="content-icon-container">
+<div class="view-this-page">
+<a class="muted-link" href="../_sources/studio/architecture.rst.txt" title="View this page">
+<svg><use href="#svg-eye"></use></svg>
+<span class="visually-hidden">View this page</span>
+</a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-content-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+<article id="furo-main-content" role="main">
+<section id="studioarchitecture">
+<span id="id1"></span><h1 data-bi="bi-1">架构<a class="headerlink" href="#studioarchitecture" title="链接到此标题。">#</a></h1><div class="en-orig en-h" data-for="bi-1" lang="en">Architecture</div>
+<div class="mt-notice admonition note">
+<p class="admonition-title">备注</p>
+<p>本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 <code class="docutils literal notranslate"><span class="pre">术语表.md</span></code> 。</p>
+</div>
+<p data-bi="bi-2">MuJoCo Studio 的架构建立在三个核心理念之上：</p><div class="en-orig" data-for="bi-2" lang="en">MuJoCo Studio’s architecture rests on three core ideas:</div>
+<ol class="arabic simple">
+<li><p data-bi="bi-3"><strong>仿真与可视化解耦</strong>：物理仿真与 UI／渲染（rendering）运行在不同的线程上，不共享任何可变状态，仅通过带类型的 <a class="reference internal" href="#studiomessaging"><span class="std std-ref">Snapshot 与 Event
+消息通道</span></a> 进行通信。因此，任何 <a class="reference internal" href="python_plugins.html#studiopythonplugins"><span class="std std-ref">Python 插件</span></a> 无需修改即可同时用于本地的
+<a class="reference internal" href="native_viewers.html#studionativeviewers"><span class="std std-ref">NativeViewer</span></a> 窗口和远程的 <a class="reference internal" href="web_viewers.html#studiowebviewers"><span class="std std-ref">WebViewer</span></a> 浏览器会话。</p><div class="en-orig" data-for="bi-3" lang="en"><strong>Decoupled simulation and visualization</strong>: Physics simulation and UI/rendering run on separate threads with no
+shared mutable state, communicating strictly through typed <a class="reference internal" href="#studiomessaging"><span class="std std-ref">Snapshot and Event message channels</span></a>. Any <a class="reference internal" href="python_plugins.html#studiopythonplugins"><span class="std std-ref">Python plugin</span></a> therefore works unchanged against both a local
+<a class="reference internal" href="native_viewers.html#studionativeviewers"><span class="std std-ref">NativeViewer</span></a> window and a remote <a class="reference internal" href="web_viewers.html#studiowebviewers"><span class="std std-ref">WebViewer</span></a> browser session.</div></li>
+<li><p data-bi="bi-4"><strong>通过插件实现可组合的扩展性</strong>：内置功能——包括标准的 Studio UI（<code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code>）、实时物理步进（<code class="docutils literal notranslate"><span class="pre">step_control.StepControl</span></code>）以及轨迹历史回放（<code class="docutils literal notranslate"><span class="pre">sim_history.SimHistory</span></code>）——都实现为模块化的
+<a class="reference internal" href="python_plugins.html#studiopythonplugins"><span class="std std-ref">查看器与仿真插件</span></a>，应用程序可以对其进行混合搭配、替换，或通过自定义 UI 面板、3D 叠加层和步进后端加以扩展。</p><div class="en-orig" data-for="bi-4" lang="en"><strong>Composable extensibility via plugins</strong>: Built-in features—including the standard Studio UI (<code class="docutils literal notranslate"><span class="pre">studio_app.App</span></code>),
+real-time physics stepping (<code class="docutils literal notranslate"><span class="pre">step_control.StepControl</span></code>), and trajectory history scrubbing
+(<code class="docutils literal notranslate"><span class="pre">sim_history.SimHistory</span></code>)—are implemented as modular <a class="reference internal" href="python_plugins.html#studiopythonplugins"><span class="std std-ref">viewer and simulation plugins</span></a>
+that applications can mix, replace, or extend with custom UI panels, 3D overlays, and stepping backends.</div></li>
+<li><p data-bi="bi-5"><strong>共享的 C++ 组件</strong>：核心 UI 面板、3D 视口交互、物理步进节奏控制、轨迹历史缓冲区以及 <a class="reference internal" href="../programming/rendering.html#filamentrendering"><span class="std std-ref">Filament</span></a> 渲染都实现为模块化的 C++
+库，既可编译为原生机器码（附带 Python 绑定），也可编译为 WebAssembly（附带 JavaScript 绑定），从而确保在 C++、Python 和浏览器目标之间行为一致。</p><div class="en-orig" data-for="bi-5" lang="en"><strong>Shared C++ components</strong>: Core UI panels, 3D viewport interaction, physics step pacing, trajectory history buffers,
+and <a class="reference internal" href="../programming/rendering.html#filamentrendering"><span class="std std-ref">Filament</span></a> rendering are implemented as modular C++ libraries that compile both to
+native machine code (with Python bindings) and to WebAssembly (with JavaScript bindings), ensuring consistent
+behavior across C++, Python, and browser targets.</div></li>
+</ol>
+<section id="studiothreads">
+<span id="id2"></span><h2 data-bi="bi-6">线程模型<a class="headerlink" href="#studiothreads" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-6" lang="en">Thread Model</div>
+<p data-bi="bi-7">在 Python 中，Studio 将物理仿真与渲染及 UI 呈现分离到两个执行上下文中，二者通过 <a class="reference internal" href="#studiomessaging"><span class="std std-ref">消息通道</span></a>
+（<code class="docutils literal notranslate"><span class="pre">SimEndpoint</span></code> ↔ <code class="docutils literal notranslate"><span class="pre">ViewerEndpoint</span></code>）连接，使查看器和仿真可以运行在不同的线程上，或者运行在相互独立的进程中：</p><div class="en-orig" data-for="bi-7" lang="en">In Python, Studio separates physics simulation from rendering and UI presentation across two execution contexts
+connected by <a class="reference internal" href="#studiomessaging"><span class="std std-ref">message channels</span></a> (<code class="docutils literal notranslate"><span class="pre">SimEndpoint</span></code> ↔ <code class="docutils literal notranslate"><span class="pre">ViewerEndpoint</span></code>), allowing the viewer and
+simulation to run on separate threads or in independent processes:</div>
+<a class="only-light reference internal image-reference" href="../_images/threads_light.svg"><img alt="../_images/threads_light.svg" class="align-center only-light" src="../_images/threads_light.svg" style="width: 100%;"/>
+</a>
+<a class="only-dark reference internal image-reference" href="../_images/threads_dark.svg"><img alt="../_images/threads_dark.svg" class="align-center only-dark" src="../_images/threads_dark.svg" style="width: 100%;"/>
+</a>
+<p data-bi="bi-8">这种解耦设计提供了三项架构保证：</p><div class="en-orig" data-for="bi-8" lang="en">This decoupled design provides three architectural guarantees:</div>
+<ul class="simple">
+<li><p data-bi="bi-9"><strong>零共享状态争用</strong>：与旧版的 <a class="reference internal" href="../python.html#pyviewerpassive"><span class="std std-ref">被动查看器</span></a> 不同——后者要求用户脚本在修改 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 或 <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 之前先获取
+<code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">viewer.lock():</span></code>——Studio 的仿真线程独占权威的物理结构体。每一步之后，<code class="docutils literal notranslate"><span class="pre">ViewerHandle.sync()</span></code> 会通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-getstate"><span class="std std-ref">mj_getState</span></a>
+（<code class="docutils literal notranslate"><span class="pre">mjSTATE_INTEGRATION</span></code>）将扁平的积分状态向量提取到一个不可变的 <code class="docutils literal notranslate"><span class="pre">StateSnapshot(state,</span> <span class="pre">state_sig)</span></code> 中。查看器线程通过 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-setstate"><span class="std std-ref">mj_setState</span></a>
+将最新的快照应用到它私有的 <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 副本上，并以显示刷新率在本地运行 <a class="reference internal" href="../APIreference/APIfunctions.html#mj-forward"><span class="std std-ref">mj_forward</span></a>，而不会阻塞物理计算。</p><div class="en-orig" data-for="bi-9" lang="en"><strong>Zero shared-state contention</strong>: Unlike the legacy <a class="reference internal" href="../python.html#pyviewerpassive"><span class="std std-ref">passive viewer</span></a>, which required user
+scripts to acquire <code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">viewer.lock():</span></code> before mutating <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> or <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a>, Studio’s simulation thread
+exclusively owns the authoritative physics structs. After each step, <code class="docutils literal notranslate"><span class="pre">ViewerHandle.sync()</span></code> extracts the flat
+integration state vector via <a class="reference internal" href="../APIreference/APIfunctions.html#mj-getstate"><span class="std std-ref">mj_getState</span></a> (<code class="docutils literal notranslate"><span class="pre">mjSTATE_INTEGRATION</span></code>) into an immutable
+<code class="docutils literal notranslate"><span class="pre">StateSnapshot(state,</span> <span class="pre">state_sig)</span></code>. The viewer thread applies the latest snapshot to its private copy of
+<a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> via <a class="reference internal" href="../APIreference/APIfunctions.html#mj-setstate"><span class="std std-ref">mj_setState</span></a> and runs <a class="reference internal" href="../APIreference/APIfunctions.html#mj-forward"><span class="std std-ref">mj_forward</span></a> locally at display refresh rate without blocking
+physics.</div></li>
+<li><p data-bi="bi-10"><strong>后台查看器守护线程</strong>：<a class="reference internal" href="native_viewers.html#studionativeviewers"><span class="std std-ref">原生</span></a> 和 <a class="reference internal" href="web_viewers.html#studiowebviewers"><span class="std std-ref">Web</span></a> 两种 Python 启动器都会在后台守护线程上启动查看器循环
+(<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/launch_thread.py">launch_thread.py</a>)，同时在调用线程上运行仿真同步循环或调用方的 <code class="docutils literal notranslate"><span class="pre">with</span></code> 代码块。查看器线程上未处理的异常会被立即记录，并在
+<code class="docutils literal notranslate"><span class="pre">ViewerHandle.close()</span></code> 运行时在仿真线程上重新抛出。</p><div class="en-orig" data-for="bi-10" lang="en"><strong>Background viewer daemon thread</strong>: Both <a class="reference internal" href="native_viewers.html#studionativeviewers"><span class="std std-ref">native</span></a> and <a class="reference internal" href="web_viewers.html#studiowebviewers"><span class="std std-ref">web</span></a>
+Python launchers spawn the viewer loop on a background daemon thread (<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/launch_thread.py">launch_thread.py</a>) while running the
+simulation sync loop or caller <code class="docutils literal notranslate"><span class="pre">with</span></code> block on the calling thread. Unhandled exceptions on the viewer thread are
+logged immediately and re-raised on the simulation thread when <code class="docutils literal notranslate"><span class="pre">ViewerHandle.close()</span></code> runs.</div></li>
+<li><p data-bi="bi-11"><strong>统一的插件契约</strong>：由于 <a class="reference internal" href="python_plugins.html#studioviewerplugins"><span class="std std-ref">查看器插件</span></a> 和 <a class="reference internal" href="python_plugins.html#studiosimplugins"><span class="std std-ref">仿真插件</span></a> 仅通过带类型的 <code class="docutils literal notranslate"><span class="pre">Snapshot</span></code> 和 <code class="docutils literal notranslate"><span class="pre">Event</span></code>
+消息通信，而不通过共享内存，因此插件类无需修改即可同时用于原生桌面窗口和远程的 <a class="reference internal" href="web_viewers.html#studiowebviewer"><span class="std std-ref">WebViewer</span></a> 浏览器会话。</p><div class="en-orig" data-for="bi-11" lang="en"><strong>Unified plugin contract</strong>: Because <a class="reference internal" href="python_plugins.html#studioviewerplugins"><span class="std std-ref">viewer plugins</span></a> and <a class="reference internal" href="python_plugins.html#studiosimplugins"><span class="std std-ref">simulation plugins</span></a> communicate exclusively through typed <code class="docutils literal notranslate"><span class="pre">Snapshot</span></code> and <code class="docutils literal notranslate"><span class="pre">Event</span></code> messages rather than shared
+memory, plugin classes work unchanged across native desktop windows and remote <a class="reference internal" href="web_viewers.html#studiowebviewer"><span class="std std-ref">WebViewer</span></a>
+browser sessions.</div></li>
+</ul>
+</section>
+<section id="python-c">
+<h2 data-bi="bi-12">Python 与 C++<a class="headerlink" href="#python-c" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-12" lang="en">Python vs. C++</div>
+<p data-bi="bi-13">Studio 会根据各运行环境调整其执行模型：</p><div class="en-orig" data-for="bi-13" lang="en">Studio adapts its execution model to each runtime environment:</div>
+<ul class="simple">
+<li><p data-bi="bi-14"><strong>Python</strong>（<code class="docutils literal notranslate"><span class="pre">mujoco.studio</span></code>）：仿真端点和查看器端点各自持有独立的 <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 与 <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 实例，并仅通过有方向的 <code class="docutils literal notranslate"><span class="pre">Snapshot</span></code> 和 <code class="docutils literal notranslate"><span class="pre">Event</span></code>
+通道通信。</p><div class="en-orig" data-for="bi-14" lang="en"><strong>Python</strong> (<code class="docutils literal notranslate"><span class="pre">mujoco.studio</span></code>): Simulation and viewer endpoints hold separate <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> and <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a>
+instances and communicate strictly through directional <code class="docutils literal notranslate"><span class="pre">Snapshot</span></code> and <code class="docutils literal notranslate"><span class="pre">Event</span></code> channels.</div></li>
+<li><p data-bi="bi-15"><strong>C++ 桌面端</strong>（<a class="reference internal" href="cpp.html#studiocpp"><span class="std std-ref">mujoco::studio::App</span></a>）：在专用的后台线程上运行物理计算，并与主 UI 和渲染循环同步。</p><div class="en-orig" data-for="bi-15" lang="en"><strong>C++ Desktop</strong> (<a class="reference internal" href="cpp.html#studiocpp"><span class="std std-ref">mujoco::studio::App</span></a>): Runs physics on a dedicated background thread synchronized
+with the main UI and rendering loop.</div></li>
+<li><p data-bi="bi-16"><strong>C++ WebAssembly</strong>（<a class="reference internal" href="web_viewers.html#studiolive"><span class="std std-ref">MuJoCo Live</span></a>）：在浏览器单线程的 <code class="docutils literal notranslate"><span class="pre">requestAnimationFrame</span></code> 循环内，依次驱动物理更新、Dear ImGui 布局和 Filament WebGL 渲染。</p><div class="en-orig" data-for="bi-16" lang="en"><strong>C++ WebAssembly</strong> (<a class="reference internal" href="web_viewers.html#studiolive"><span class="std std-ref">MuJoCo Live</span></a>): Drives physics updates, Dear ImGui layout, and Filament WebGL
+rendering sequentially inside the browser’s single-threaded <code class="docutils literal notranslate"><span class="pre">requestAnimationFrame</span></code> loop.</div></li>
+</ul>
+<section id="c">
+<span id="studiocppcomponents"></span><h3 data-bi="bi-17">C++ 组件<a class="headerlink" href="#c" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-17" lang="en">C++ Components</div>
+<p data-bi="bi-18">在 Python SDK 和 C++ 应用程序之下，是位于 <a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/studio">studio/</a> 中的一层共享的可复用 C++ 组件：</p><div class="en-orig" data-for="bi-18" lang="en">Beneath both the Python SDK and the C++ applications sits a shared layer of reusable C++ components under <a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/studio">studio/</a>:</div>
+<ul class="simple">
+<li><p data-bi="bi-19"><strong>UI 与交互</strong>（<a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/studio/ux">ux/</a>）：内置的 Dear ImGui
+面板——模型层级、物理与渲染选项、执行器控制、关节滑块、传感器与求解器曲线图、<code class="docutils literal notranslate"><span class="pre">SimHistory</span></code> 时间线拖动条、<code class="docutils literal notranslate"><span class="pre">Console</span></code>、画中画视图，以及 <code class="docutils literal notranslate"><span class="pre">imgui_widgets.h</span></code>
+中的自定义控件——此外还有 <code class="docutils literal notranslate"><span class="pre">interaction.h</span></code> 中的 3D 鼠标拾取、相机运动和刚体扰动。通过 <code class="docutils literal notranslate"><span class="pre">mujoco.studio.ux</span></code> 暴露给 Python，该模块在执行 C++ 代码期间会释放 Python GIL。</p><div class="en-orig" data-for="bi-19" lang="en"><strong>UI &amp; interaction</strong> (<a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/studio/ux">ux/</a>): Built-in Dear ImGui
+panels—model hierarchy, physics and rendering options, actuator controls, joint sliders, sensor and solver plots, the
+<code class="docutils literal notranslate"><span class="pre">SimHistory</span></code> timeline scrubber, <code class="docutils literal notranslate"><span class="pre">Console</span></code>, picture-in-picture views, and custom widgets in <code class="docutils literal notranslate"><span class="pre">imgui_widgets.h</span></code>—along
+with 3D mouse picking, camera motion, and body perturbation in <code class="docutils literal notranslate"><span class="pre">interaction.h</span></code>. Exposed to Python via
+<code class="docutils literal notranslate"><span class="pre">mujoco.studio.ux</span></code>, which releases the Python GIL during C++ execution.</div></li>
+<li><p data-bi="bi-20"><strong>仿真状态管理</strong>（<a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/studio/sim">sim/</a>）：通过 <code class="docutils literal notranslate"><span class="pre">StepControl</span></code> 实现实时步进节奏控制和控制噪声，通过
+<code class="docutils literal notranslate"><span class="pre">SimHistory</span></code> 实现环形缓冲区轨迹记录与回放，通过 <code class="docutils literal notranslate"><span class="pre">SimProfiler</span></code> 实现性能分析，通过 <code class="docutils literal notranslate"><span class="pre">ModelHolder</span></code> 实现模型生命周期管理，并由 Python 的
+<code class="docutils literal notranslate"><span class="pre">step_control</span></code> 和 <code class="docutils literal notranslate"><span class="pre">sim_history</span></code> 模块进行封装。</p><div class="en-orig" data-for="bi-20" lang="en"><strong>Simulation state management</strong> (<a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/studio/sim">sim/</a>): Real-time
+step pacing and control noise via <code class="docutils literal notranslate"><span class="pre">StepControl</span></code>, ring-buffer trajectory recording and scrubbing via <code class="docutils literal notranslate"><span class="pre">SimHistory</span></code>,
+profiling via <code class="docutils literal notranslate"><span class="pre">SimProfiler</span></code>, and model lifecycle management via <code class="docutils literal notranslate"><span class="pre">ModelHolder</span></code>, wrapped by Python’s
+<code class="docutils literal notranslate"><span class="pre">step_control</span></code> and <code class="docutils literal notranslate"><span class="pre">sim_history</span></code> modules.</div></li>
+<li><p data-bi="bi-21"><strong>渲染与窗口管理</strong>（<a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/studio/hal">hal/</a>、<a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/studio/render">render/</a>）：通过 <code class="docutils literal notranslate"><span class="pre">FilamentRenderer</span></code> 和 <code class="docutils literal notranslate"><span class="pre">ModelScene</span></code> 实现硬件抽象的 <a class="reference internal" href="../programming/rendering.html#filamentrendering"><span class="std std-ref">Filament</span></a> 渲染，以及跨 OpenGL、Vulkan 和 WebGL 的 SDL2 与离屏窗口管理。</p><div class="en-orig" data-for="bi-21" lang="en"><strong>Rendering &amp; windowing</strong> (<a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/studio/hal">hal/</a>, <a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/studio/render">render/</a>): Hardware-abstracted <a class="reference internal" href="../programming/rendering.html#filamentrendering"><span class="std std-ref">Filament</span></a> rendering via <code class="docutils literal notranslate"><span class="pre">FilamentRenderer</span></code> and <code class="docutils literal notranslate"><span class="pre">ModelScene</span></code>, plus SDL2 and offscreen window management
+across OpenGL, Vulkan, and WebGL.</div></li>
+</ul>
+<p data-bi="bi-22">由于这些 C++ 库可以编译为原生二进制文件，通过 <code class="docutils literal notranslate"><span class="pre">pybind11</span></code> 绑定到 Python，并通过 Emscripten 编译为带 JavaScript 绑定的 WebAssembly，因此任何需要在 C++、Python 和
+JavaScript/WebAssembly 各端之间共享的组件或自定义控件，都应当用 C++ 实现，并绑定到 Python 和 JS。纯 Python 插件在主机 CPU 上执行——在 <a class="reference internal" href="web_viewers.html#studiowebviewer"><span class="std std-ref">WebViewer</span></a>
+中将其 UI 绘制列表流式传输到浏览器——而 C++ 组件既可以在主机上原生运行，<em>也</em> 可以在客户端的 WebAssembly 浏览器应用内运行，例如 <a class="reference internal" href="web_viewers.html#studiolive"><span class="std std-ref">MuJoCo Live</span></a> 和 <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> 浏览器客户端。</p><div class="en-orig" data-for="bi-22" lang="en">Because these C++ libraries compile to native binaries, bind to Python via <code class="docutils literal notranslate"><span class="pre">pybind11</span></code>, and compile to WebAssembly via
+Emscripten with JavaScript bindings, any component or custom widget that needs to be shared across C++, Python, and
+JavaScript/WebAssembly surfaces should be implemented in C++ and bound to Python and JS. Pure Python plugins execute on
+the host CPU—streaming their UI draw lists to the browser in <a class="reference internal" href="web_viewers.html#studiowebviewer"><span class="std std-ref">WebViewer</span></a>—whereas C++
+components can run natively on the host <em>and</em> client-side inside WebAssembly browser apps such as <a class="reference internal" href="web_viewers.html#studiolive"><span class="std std-ref">MuJoCo Live</span></a> and the <code class="docutils literal notranslate"><span class="pre">WebViewer</span></code> browser client.</div>
+</section>
+</section>
+<section id="studiosnapshotsvsevents">
+<span id="studiomessaging"></span><span id="id3"></span><h2 data-bi="bi-23">消息传递<a class="headerlink" href="#studiosnapshotsvsevents" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-23" lang="en">Message Passing</div>
+<p data-bi="bi-24">由于仿真循环和查看器循环运行在不同的线程上，且不共享可变状态（参见 <a class="reference internal" href="#studiothreads"><span class="std std-ref">线程模型</span></a>），所有状态更新和命令都以 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/messages.py">messages.py</a> 中定义的带类型消息的形式跨越端点边界。</p><div class="en-orig" data-for="bi-24" lang="en">Because the simulation and viewer loops run on separate threads with no shared mutable state (see <a class="reference internal" href="#studiothreads"><span class="std std-ref">Thread Model</span></a>), all state updates and commands cross the endpoint boundary as typed messages defined in <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/messages.py">messages.py</a>.</div>
+<section id="snapshot-event">
+<h3 data-bi="bi-25">Snapshot 与 Event<a class="headerlink" href="#snapshot-event" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-25" lang="en">Snapshots vs. Events</div>
+<p data-bi="bi-26">通信分为两个 <code class="docutils literal notranslate"><span class="pre">Message</span></code> 基类，二者具有不同的投递语义。按照惯例，自定义消息子类以 <code class="docutils literal notranslate"><span class="pre">*Snapshot</span></code> 或 <code class="docutils literal notranslate"><span class="pre">*Event</span></code> 结尾：</p><div class="en-orig" data-for="bi-26" lang="en">Communication is divided into two <code class="docutils literal notranslate"><span class="pre">Message</span></code> base classes with distinct delivery semantics. By convention, custom
+message subclasses end in <code class="docutils literal notranslate"><span class="pre">*Snapshot</span></code> or <code class="docutils literal notranslate"><span class="pre">*Event</span></code>:</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 18.0%"/>
+<col style="width: 24.0%"/>
+<col style="width: 23.0%"/>
+<col style="width: 35.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-27">基类</p><div class="en-orig" data-for="bi-27" lang="en">Base Class</div></th>
+<th class="head"><p data-bi="bi-28">通道类型</p><div class="en-orig" data-for="bi-28" lang="en">Channel Type</div></th>
+<th class="head"><p data-bi="bi-29">投递保证</p><div class="en-orig" data-for="bi-29" lang="en">Delivery Guarantee</div></th>
+<th class="head"><p data-bi="bi-30">示例</p><div class="en-orig" data-for="bi-30" lang="en">Examples</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">messages.Snapshot</span></code></p></td>
+<td><p data-bi="bi-31"><code class="docutils literal notranslate"><span class="pre">SnapshotChannel</span></code> 是一个“最新值优先”的字典，每个 <code class="docutils literal notranslate"><span class="pre">Snapshot</span></code> 子类占一个槽位，以 <code class="docutils literal notranslate"><span class="pre">type(msg)</span></code> 为键。</p><div class="en-orig" data-for="bi-31" lang="en"><code class="docutils literal notranslate"><span class="pre">SnapshotChannel</span></code> is a latest-wins dictionary with one slot per <code class="docutils literal notranslate"><span class="pre">Snapshot</span></code> subclass, keyed by <code class="docutils literal notranslate"><span class="pre">type(msg)</span></code>.</div></td>
+<td><p data-bi="bi-32">取出（drain）时，每种类型仅投递最新的一个快照。</p><div class="en-orig" data-for="bi-32" lang="en">Only the most recent snapshot of each type is delivered on drain.</div></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">StateSnapshot</span></code>, <code class="docutils literal notranslate"><span class="pre">StepControlSnapshot</span></code>, <code class="docutils literal notranslate"><span class="pre">SimHistorySnapshot</span></code>, <code class="docutils literal notranslate"><span class="pre">MjOptionSnapshot</span></code>, <code class="docutils literal notranslate"><span class="pre">PerturbSnapshot</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">messages.Event</span></code></p></td>
+<td><p data-bi="bi-33"><code class="docutils literal notranslate"><span class="pre">EventChannel</span></code> 是一个严格有序的先进先出队列。</p><div class="en-orig" data-for="bi-33" lang="en"><code class="docutils literal notranslate"><span class="pre">EventChannel</span></code> is a strictly ordered FIFO queue.</div></td>
+<td><p data-bi="bi-34">每个入队的事件都会按顺序投递，不会丢弃任何事件。</p><div class="en-orig" data-for="bi-34" lang="en">Every queued event is delivered in order; no event is dropped.</div></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ModelEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">LoadModelEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">StateEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">KeyframeEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">ResetEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">SingleStepEvent</span></code>,
+<code class="docutils literal notranslate"><span class="pre">RequestPauseEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">ThreadPoolEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">HotReloadEvent</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="id4">
+<h3 data-bi="bi-35">选择类型<a class="headerlink" href="#id4" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-35" lang="en">Choosing a Type</div>
+<p data-bi="bi-36">在为 GUI 控件或插件通信设计自定义消息时：</p><div class="en-orig" data-for="bi-36" lang="en">When designing custom messages for GUI widgets or plugin communication:</div>
+<ul class="simple">
+<li><p data-bi="bi-37"><strong>对于滑块、开关和设置等连续的 GUI 选项，使用</strong> <code class="docutils literal notranslate"><span class="pre">Snapshot</span></code>，此时消息携带完整的当前值，且只有最新值才有意义，例如 <code class="docutils literal notranslate"><span class="pre">StepControlSnapshot</span></code>、<code class="docutils literal notranslate"><span class="pre">MjOptionSnapshot</span></code>，或某个插件自己的
+<code class="docutils literal notranslate"><span class="pre">FooConfigSnapshot</span></code>。如果用户拖动滑块时查看器的渲染速度快于仿真的步进速度，中间值会自动合并，而不是排队堆积。</p><div class="en-orig" data-for="bi-37" lang="en"><strong>Use a</strong> <code class="docutils literal notranslate"><span class="pre">Snapshot</span></code> <strong>for continuous GUI options such as sliders, toggles, and settings</strong> where a message carries
+the complete current value and only the latest value matters, such as <code class="docutils literal notranslate"><span class="pre">StepControlSnapshot</span></code>, <code class="docutils literal notranslate"><span class="pre">MjOptionSnapshot</span></code>,
+or a plugin’s own <code class="docutils literal notranslate"><span class="pre">FooConfigSnapshot</span></code>. If the viewer renders faster than the simulation steps while a user drags a
+slider, intermediate values coalesce automatically instead of queuing up.</div></li>
+<li><p data-bi="bi-38"><strong>对于离散的 GUI 按钮动作和一次性命令，使用</strong> <code class="docutils literal notranslate"><span class="pre">Event</span></code>，例如 <code class="docutils literal notranslate"><span class="pre">ResetEvent</span></code>、<code class="docutils literal notranslate"><span class="pre">SingleStepEvent</span></code>、<code class="docutils literal notranslate"><span class="pre">RequestPauseEvent</span></code>、<code class="docutils literal notranslate"><span class="pre">LoadModelEvent</span></code> 和
+<code class="docutils literal notranslate"><span class="pre">KeyframeEvent</span></code>；此外，当同一个类的不同局部更新会在 <code class="docutils literal notranslate"><span class="pre">SnapshotChannel</span></code> 的按类型槽位中相互覆盖时，也应使用 <code class="docutils literal notranslate"><span class="pre">Event</span></code>——例如，<code class="docutils literal notranslate"><span class="pre">StateEvent(state,</span> <span class="pre">state_sig)</span></code>
+会应用有针对性的状态覆盖，其 <code class="docutils literal notranslate"><span class="pre">state_sig</span></code> 位掩码各不相同，因此每个分量都会按顺序应用。</p><div class="en-orig" data-for="bi-38" lang="en"><strong>Use an</strong> <code class="docutils literal notranslate"><span class="pre">Event</span></code> <strong>for discrete GUI button actions and one-shot commands</strong> such as <code class="docutils literal notranslate"><span class="pre">ResetEvent</span></code>,
+<code class="docutils literal notranslate"><span class="pre">SingleStepEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">RequestPauseEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">LoadModelEvent</span></code>, and <code class="docutils literal notranslate"><span class="pre">KeyframeEvent</span></code>, and when distinct partial
+updates of the same class would clobber one another in <code class="docutils literal notranslate"><span class="pre">SnapshotChannel</span></code>’s per-type slot—for example,
+<code class="docutils literal notranslate"><span class="pre">StateEvent(state,</span> <span class="pre">state_sig)</span></code> applies targeted state overrides whose <code class="docutils literal notranslate"><span class="pre">state_sig</span></code> bitmasks differ so each
+component is applied in order.</div></li>
+</ul>
+<p data-bi="bi-39">有关按时间顺序排列的 <a class="reference internal" href="python_plugins.html#studiolifecycle"><span class="std std-ref">生命周期事件表</span></a>、<a class="reference internal" href="python_plugins.html#studiodiffsync"><span class="std std-ref">基于差异的同步</span></a> 和 <a class="reference internal" href="python_plugins.html#studiopriorities"><span class="std std-ref">处理器优先级</span></a>，请参见
+<a class="reference internal" href="python_plugins.html#studiopythonplugins"><span class="std std-ref">Python 插件</span></a>。</p><div class="en-orig" data-for="bi-39" lang="en">For chronological <a class="reference internal" href="python_plugins.html#studiolifecycle"><span class="std std-ref">lifecycle event tables</span></a>, <a class="reference internal" href="python_plugins.html#studiodiffsync"><span class="std std-ref">diff-based synchronization</span></a>,
+and <a class="reference internal" href="python_plugins.html#studiopriorities"><span class="std std-ref">handler priorities</span></a>, see <a class="reference internal" href="python_plugins.html#studiopythonplugins"><span class="std std-ref">Python Plugins</span></a>.</div>
+</section>
+</section>
+</section>
+</article>
+</div>
+<footer>
+<div class="related-pages">
+<a class="next-page" href="python_plugins.html">
+<div class="page-info">
+<div class="context">
+<span>Next</span>
+</div>
+<div class="title">Python 插件</div>
+</div>
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+</a>
+<a class="prev-page" href="native_viewers.html">
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+<div class="page-info">
+<div class="context">
+<span>Previous</span>
+</div>
+<div class="title">原生查看器</div>
+</div>
+</a>
+</div>
+<div class="bottom-of-page">
+<div class="left-details">
+<div class="copyright">
+                Copyright © DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+</div>
+<div class="right-details">
+</div>
+</div>
+</footer>
+</div>
+<aside class="toc-drawer">
+<div class="toc-sticky toc-scroll">
+<div class="toc-title-container">
+<span class="toc-title">
+            On this page
+          </span>
+</div>
+<div class="toc-tree-container">
+<div class="toc-tree">
+<ul>
+<li><a class="reference internal" href="#">架构</a><ul>
+<li><a class="reference internal" href="#studiothreads">线程模型</a></li>
+<li><a class="reference internal" href="#python-c">Python 与 C++</a><ul>
+<li><a class="reference internal" href="#c">C++ 组件</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#studiosnapshotsvsevents">消息传递</a><ul>
+<li><a class="reference internal" href="#snapshot-event">Snapshot 与 Event</a></li>
+<li><a class="reference internal" href="#id4">选择类型</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div><script src="../_static/documentation_options.js?v=7d86a446"></script>
+<script src="../_static/doctools.js?v=fd6eb6e6"></script>
+<script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+<script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+<script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="../_static/copybutton.js?v=f281be69"></script>
+<script src="../_static/translations.js?v=540d3cec"></script>
+<script src="../_static/katex.min.js?v=5cc8ed51"></script>
+<script src="../_static/auto-render.min.js?v=af98beb9"></script>
+<script src="../_static/katex_autorenderer.js?v=ae454eff"></script>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<script src="../_static/linenumbers.js?v=ebda5d35"></script>
+<script src="../_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+<script src="../_static/bilingual.js?v=25c2633d"></script></body></html>

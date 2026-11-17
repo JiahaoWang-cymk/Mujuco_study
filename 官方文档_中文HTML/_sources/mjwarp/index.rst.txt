@@ -1,0 +1,1618 @@
+﻿.. _MJW:
+
+====================
+MuJoCo Warp (MJWarp)
+====================
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+.. toctree::
+    :hidden:
+
+    API <api.rst>
+
+MuJoCo Warp (MJWarp) 是用 `Warp <https://nvidia.github.io/warp/>`__ 编写的 MuJoCo 实现，针对
+`NVIDIA <https://nvidia.com>`__ 硬件和并行仿真进行了优化。MJWarp 位于
+`google-deepmind/mujoco_warp <https://github.com/google-deepmind/mujoco_warp>`__ GitHub 仓库中。
+
+MJWarp 由 `NVIDIA <https://nvidia.com>`__ 与
+`Google DeepMind <https://deepmind.google/>`__ 共同开发和维护。
+
+.. _MJW_tutorial:
+
+教程 Notebook
+=============
+
+MJWarp 的基础知识在教程 |notebook| |open in colab| 中介绍。
+
+.. |notebook| replace:: `[notebook] <https://github.com/google-deepmind/mujoco_warp/blob/main/notebooks/tutorial.ipynb>`__
+
+.. |open in colab| replace:: `[在 Colab 中打开] <https://colab.research.google.com/github/google-deepmind/mujoco_warp/blob/main/notebooks/tutorial.ipynb>`__
+
+
+何时使用 MJWarp？
+=================
+
+高吞吐量
+--------
+
+MuJoCo 生态系统提供了多种批量仿真方案。
+
+- :ref:`mujoco.rollout <PyRollout>` ：用于在 CPU 上多线程调用 :ref:`mj_step` 的 Python API。使用核心速度快、线程数多的硬件可以实现高吞吐量，
+  但对于需要频繁进行主机<>设备传输的应用（例如在 CPU 上仿真、在 GPU 上学习的强化学习），整体性能可能受限于传输开销。
+- :ref:`mjx.step <MjxFunctions>` ： `jax.vmap` 和 `jax.pmap` 使得可以借助 JAX 在 CPU、GPU 或 TPU 上进行多线程和多设备仿真。
+- :func:`mujoco_warp.step <mujoco_warp.step>` ：面向 NVIDIA GPU 的高吞吐量仿真 Python API。几乎在所有工作负载上都比 MJX 扩展性更好，
+  尤其是复杂的仿真场景。与 PyTorch 配合良好。
+
+.. TODO(robotics-simulation): add step/time comparison plot
+
+低延迟
+------
+
+MJWarp 针对吞吐量进行了优化，即单位时间内仿真步数的总量；而 MuJoCo 针对延迟进行了优化，即一个仿真步所需的时间。
+可以预期，对于同一仿真，MJWarp 的单个仿真步性能不如 MuJoCo 的单步。
+
+因此，MJWarp 非常适合需要大量样本的应用，如强化学习；而 MuJoCo 可能更适用于实时应用，
+如在线控制（例如模型预测控制）或交互式图形界面（例如基于仿真的遥操作）。
+
+复杂场景
+--------
+
+对于含有许多 geom 或自由度（degrees of freedom）的场景，MJWarp 的扩展性优于 MJX，但对于单个大型运动学树（kinematic tree），则不如 MuJoCo。
+只要启用了 :ref:`休眠 <Sleeping>` ，并且场景可以划分为含有休眠刚体（body）的独立岛，MJWarp 就可以扩展到含有数百个自由度的场景。
+将单个连通机构的性能提升到约 60 个自由度以上，仍是当前的优先事项。
+
+.. TODO(robotic-simulation): add graph for ngeom and nv scaling
+
+可微性
+------
+
+MJX 中的动力学（dynamics）API 可通过 JAX 自动微分。我们正在考虑是否通过 Warp 在 MJWarp 中支持这一功能——如果该功能对您很重要，请在
+`这个 issue <https://github.com/google-deepmind/mujoco_warp/issues/500>`__ 中表达您的意见。
+
+.. TODO(robotics-simulation): Newton multi-physics
+
+.. _MJW_install:
+
+安装
+====
+
+**通过 PyPI：**
+
+.. code-block:: shell
+
+    pip install mujoco-warp
+
+MJWarp 仅依赖 MuJoCo 的核心绑定 (:ref:`mujoco-core <PyInstallation>`)。 ``mjwarp-viewer`` 和
+``mjwarp-record`` 工具需要 ``viewer`` extra：
+
+.. code-block:: shell
+
+    pip install "mujoco-warp[viewer]"
+
+**从源码安装：**
+
+.. code-block:: shell
+
+    git clone https://github.com/google-deepmind/mujoco_warp.git
+    cd mujoco_warp
+    uv sync --all-extras
+
+要确认一切正常工作：
+
+.. code-block:: shell
+
+    uv run pytest -n 8
+
+.. _MJW_Usage:
+
+基本用法
+========
+
+安装完成后，可以通过 ``import mujoco_warp as mjw`` 导入该包。结构体、函数和枚举可直接从顶层 :mod:`mjw <mujoco_warp>` 模块获得。
+
+结构体
+------
+在 NVIDIA GPU 上运行 MJWarp 函数之前，必须通过
+:func:`mjw.put_model <mujoco_warp.put_model>` 以及 :func:`mjw.make_data <mujoco_warp.make_data>` 或
+:func:`mjw.put_data <mujoco_warp.put_data>` 函数将结构体复制到设备上。将 :ref:`mjModel` 放到设备上会得到
+:class:`mjw.Model <mujoco_warp.Model>` 。将 :ref:`mjData` 放到设备上会得到
+:class:`mjw.Data <mujoco_warp.Data>` 。
+
+.. code-block:: python
+
+  mjm = mujoco.MjModel.from_xml_string("...")
+  mjd = mujoco.MjData(mjm)
+  m = mjw.put_model(mjm)
+  d = mjw.put_data(mjm, mjd)
+
+这些 MJWarp 版本与对应的 MuJoCo 结构体相似，但有几个关键区别：
+
+#. :class:`mjw.Model <mujoco_warp.Model>` 和 :class:`mjw.Data <mujoco_warp.Data>` 包含已复制到设备上的 Warp 数组。
+#. 由于某些功能不受支持， :class:`mjw.Model <mujoco_warp.Model>` 和 :class:`mjw.Data <mujoco_warp.Data>` 中缺少部分字段。
+
+批大小
+------
+
+MJWarp 针对并行仿真进行了优化。一批仿真可以用三个参数指定：
+
+- :attr:`nworld <mujoco_warp.Data.nworld>` ：要仿真的世界（world）数量。
+- _`nconmax` ：每个世界的预期接触（contact）数。所有世界的最大接触数为
+  ``nconmax * nworld`` 。
+- _`naconmax` ：作为 `nconmax`_ 的替代，为所有世界的最大接触数。如果同时设置了 `nconmax`_ 和 `naconmax`_ ，
+  则忽略 `nconmax`_ 。
+- _`njmax` ：每个世界的最大约束（constraint）数。
+
+.. admonition:: `nconmax`_ 和 `njmax`_ 的语义差异。
+  :class: note
+
+  只要所有世界的接触总数不超过 ``nworld x nconmax`` ，每个世界的接触数就可能超过 `nconmax`_ 。
+  然而，每个世界的约束数受 `njmax`_ 严格限制。
+
+.. admonition:: XML 解析
+  :class: note
+
+  `nconmax`_ 和 `njmax`_ 的值不会从 :ref:`size/nconmax <size-nconmax>` 和
+  :ref:`size/njmax <size-njmax>` 解析得到（这些参数已弃用）。这些参数的值必须提供给
+  :func:`mjw.make_data <mujoco_warp.make_data>` 或 :func:`mjw.put_data <mujoco_warp.put_data>` 。
+
+函数
+----
+
+MuJoCo 函数以同名的 MJWarp 函数形式提供，但名称遵循符合
+`PEP 8 <https://peps.python.org/pep-0008/>`__ 规范的命名风格。 :ref:`主仿真 <Mainsimulation>` 的大部分函数以及用于正向仿真的
+:ref:`子组件 <Subcomponents>` 中的一部分函数，可从顶层
+:mod:`mjw <mujoco_warp>` 模块获得。
+
+最小示例
+--------
+
+.. code-block:: python
+
+   # Throw a ball at 100 different velocities.
+
+   import mujoco
+   import mujoco_warp as mjw
+   import warp as wp
+
+   _MJCF=r"""
+   <mujoco>
+     <worldbody>
+       <body>
+         <freejoint/>
+         <geom size=".15" mass="1" type="sphere"/>
+       </body>
+     </worldbody>
+   </mujoco>
+   """
+
+   mjm = mujoco.MjModel.from_xml_string(_MJCF)
+   m = mjw.put_model(mjm)
+   d = mjw.make_data(mjm, nworld=100)
+
+   # initialize velocities
+   wp.copy(d.qvel, wp.array([[float(i) / 100, 0, 0, 0, 0, 0] for i in range(100)], dtype=float))
+
+   # simulate physics
+   mjw.step(m, d)
+
+   print(f'qpos:\n{d.qpos.numpy()}')
+
+.. _mjwCLI:
+
+命令行脚本
+----------
+
+使用 _`testspeed` 对某个环境进行基准测试
+
+.. code-block:: shell
+
+    mjwarp-testspeed benchmark/humanoid/humanoid.xml
+
+.. _mjwViewer:
+
+使用 MJWarp 交互式地仿真环境 (需要 ``mujoco-warp[viewer]``)
+
+.. code-block:: shell
+
+    mjwarp-viewer benchmark/humanoid/humanoid.xml
+
+功能对等
+========
+
+MJWarp 支持 MuJoCo 的大部分主要仿真功能，但有少数例外。如果要求将字段值引用了不受支持功能的 :ref:`mjModel` 复制到设备，MJWarp 会抛出异常。
+关于最新的功能可用性，请参见
+`MuJoCo API 兼容性 <https://github.com/google-deepmind/mujoco_warp#mujoco-api-compatibility>`__ 。
+
+.. _mjwPerf:
+
+性能调优
+========
+
+以下是优化 MJWarp 性能时的一些注意事项。
+
+.. _mjwGC:
+
+图捕获
+------
+
+MJWarp 函数（例如 :func:`mjw.step <mujoco_warp.step>` ）通常由一组内核启动组成。如果直接调用函数，Warp
+会逐个启动这些内核。为提高性能，尤其是函数将被多次调用时，建议将构成该函数的操作捕获为 CUDA
+图
+
+.. code-block:: python
+
+  with wp.ScopedCapture() as capture:
+    mjw.step(m, d)
+
+随后可以启动或重新启动该图
+
+.. code-block:: python
+
+  wp.capture_launch(capture.graph)
+
+并且与直接调用该函数相比，通常会显著更快。详情请参见
+`Warp 图 API 参考 <https://nvidia.github.io/warp/stable/user_guide/execution_and_performance/concurrency.html#graph-launches>`__ 。
+
+批大小
+------
+
+接触数和约束数的最大值，分别为 `nconmax`_ / `naconmax`_ 和 `njmax`_ ，在使用 :func:`mjw.make_data <mujoco_warp.make_data>` 或
+:func:`mjw.put_data <mujoco_warp.put_data>` 创建 :class:`mjw.Data <mujoco_warp.Data>` 时指定。内存和计算量随这些参数的取值而增长。
+为获得最佳性能，这些参数的值应在确保仿真不超出这些限制的前提下尽可能小。
+
+可以预期，这些限制的合适取值与具体环境相关。在实践中，选择合适的值通常需要反复试验。
+带有 `--measure_alloc` 标志（用于在每个仿真步打印接触数和约束数）和 `--overflow_behavior=error` （默认，用于检测溢出）的
+:func:`mjwarp-testspeed <mujoco_warp.testspeed>` ，以及通过 :ref:`溢出检测 <mjwOverflow>` 进行的程序化检查，
+都是迭代测试这些参数取值的有用手段。
+
+求解器迭代次数
+--------------
+
+MuJoCo 对 :ref:`求解器迭代次数<option-iterations>` 和
+:ref:`线搜索迭代次数<option-ls_iterations>` 最大值的默认求解器（solver）设置预计能提供合理的性能。减小 MJWarp 的
+:attr:`Option.iterations <mujoco_warp.Option.iterations>` 和/或
+:attr:`Option.ls_iterations <mujoco_warp.Option.ls_iterations>` 限制可能会提升性能，应当在调好 `nconmax`_ / `naconmax`_ 和 `njmax`_ 之后再作为次要考虑。
+
+过度减小这些限制可能导致约束求解器无法收敛，并可能造成仿真不准确或不稳定。
+
+.. admonition:: 对性能的影响：MJX (JAX) 与 MJWarp
+  :class: note
+
+  在 :ref:`MJX<mjx>` 中，这些求解器参数是控制仿真性能的关键。与之相比，在 MJWarp 中，一旦所有世界都已收敛，求解器就可以提前退出，避免不必要的计算。
+  因此，这些设置的取值对性能的影响相对较小。
+
+接触传感器匹配
+--------------
+
+包含 :ref:`接触传感器<sensor-contact>` 的场景有一个参数，用于指定每个传感器（sensor）的最大匹配接触数
+:attr:`Option.contact_sensor_max_match <mujoco_warp.Option.contact_sensor_max_match>` 。为获得最佳性能，该参数的值应在确保仿真不超出
+该限制的前提下尽可能小。超出该限制的匹配接触将被忽略。
+
+该参数的值可以直接设置，例如 ``model.opt.contact_sensor_maxmatch = 16`` ，也可以通过 XML
+自定义数值字段设置
+
+.. code-block:: xml
+
+   <custom>
+     <numeric name="contact_sensor_maxmatch" data="16"/>
+   </custom>
+
+与接触数和约束数的最大值类似，该设置的合适取值预计也与具体环境相关。 :func:`mjwarp-testspeed <mujoco_warp.testspeed>` 和 :func:`mjwarp-viewer <mujoco_warp.viewer>`
+可能有助于调整该参数的值。
+
+
+内存
+----
+
+仿真吞吐量常常受限于大量世界所需的内存。优化内存使用的考虑因素包括：
+
+- CCD 碰撞器比基元碰撞器需要更多内存，有关碰撞器的信息请参见 :ref:`成对碰撞器表 <mjwPairwise>` 。
+- :ref:`multiccd <option-flag-multiccd>` 比 CCD 需要更多内存。
+- CCD 的内存需求随 :ref:`Option.ccd_iterations <option-ccd_iterations>` 线性增长。
+- 至少含有一个网格（mesh）geom 并使用 :ref:`multiccd <option-flag-multiccd>` 的场景，其内存需求随每个面的最大顶点数以及每个顶点的最大边数线性增长，
+  这两个最大值是在所有网格上计算得到的。
+
+`testspeed`_ 提供 ``--memory`` 标志，用于报告仿真的总内存使用量，以及需要大量内存的
+:class:`mjw.Model <mujoco_warp.Model>` 和 :class:`mjw.Data <mujoco_warp.Data>` 字段的信息。
+内联分配的内存（包括用于 CCD 和约束求解器的内存）也可能很可观，并作为
+``Other memory`` 报告。
+
+.. admonition:: 每个碰撞器的最大接触数
+  :class: note
+
+  部分 MJWarp 碰撞器的最大接触数与 MuJoCo 不同 (参见
+  :ref:`成对碰撞器表 <mjwPairwise>`)：
+
+  - ``PLANE<>MESH`` ：4 对 3
+  - ``HFieldCCD`` ：4 对 ``mjMAXCONPAIR``
+
+稀疏雅可比（Jacobian）(例如 ``efc.J``, ``ten_J``, ``flexedge_J`` 和 ``actuator_moment``) 仅存储可能非零的元素，从而减少内存并跳过零运算。
+对于高自由度场景（ :math:`n_v > 60` ），稀疏性使得原本在稠密模式下不受支持的仿真成为可能。例如，在 Aloha clutter 基准测试
+（ :math:`n_v = 136` ，2048 个世界， ``njmax = 384`` ）中， ``efc.J`` 及其列索引
+``efc.J_colind`` 的稀疏表示合计需要约 84 MB（各约 42 MB），而稠密 ``efc.J`` 约需 408 MB，内存减少约 4 倍。
+
+:func:`mjw.make_data <mujoco_warp.make_data>` 或 :func:`mjw.put_data <mujoco_warp.put_data>` 的参数
+``nccdmax`` / ``naccdmax`` 可以设置为小于 `nconmax`_ / `naconmax`_ 的值，以减少 CCD 的内存需求。
+该参数的值应分别为每个世界或所有世界中 CCD 碰撞器产生的最大接触数。例如，一个含 10 个世界、共产生 80
+个接触的批量仿真，其各碰撞器的接触数为：mesh-mesh：30（CCD），ellipsoid-ellipsoid：10（CCD），sphere-sphere：40
+（基元），则应将 `nconmax`_ / `naconmax`_ 设为至少 8 / 80（粗测阶段可能需要更多），并将
+``nccdmax`` / ``naccdmax`` 设为 3 / 30。
+
+大型场景
+--------
+
+仿真具有许多自由度（即 `nv` ）的场景，计算开销可能很大。然而，在许多情形下，场景中相当一部分可能是静止的。
+MJWarp 可以使静止物体进入 *休眠* （参见
+:ref:`Sleeping` ），将它们排除在许多计算的工作集之外。此外，MJWarp 将刚体分组为独立的
+:ref:`岛 <soIsland>` ；如果某个岛中的所有刚体都静止，则整个岛进入休眠。目前，碰撞流水线和
+约束求解器都受益于休眠，将来可能会加入更多能感知休眠的组件。
+
+紧凑求解器
+~~~~~~~~~~
+
+为了优化总自由度很多但活跃自由度相对较少（通常少于 64 个，例如两个带夹爪的机械臂（16 个自由度）
+加 8 个活跃物体（48 个自由度））的场景的性能，MJWarp
+提供了利用该休眠机制的 **紧凑求解器** ：
+
+1. 确定每个世界的活跃自由度集合，由活跃的岛决定。
+2. 将这些活跃自由度 **压缩** 到一个大小已知的最大值（ ``nvmax`` ）的连续稠密工作区中。
+3. 在该压缩空间上，使用针对 GPU 优化的固定大小 tile 运算（如分块 Cholesky
+   分解）执行约束求解器（Newton）。
+4. 将结果散射回全局状态，冻结不活跃的自由度。
+
+通过使用固定大小的压缩工作区，求解器避免了 GPU 线程发散，并利用了
+针对固定 tile 大小优化的高性能张量/矩阵运算。
+
+.. rubric:: 启用紧凑求解器
+
+1. 启用 Newton 求解器：
+
+   - 通过 XML：
+
+     .. code-block:: xml
+
+        <option solver="Newton"/>
+
+   - 通过 Python 的 ``MjSpec`` ：
+
+     .. code-block:: python
+
+        spec = mujoco.MjSpec()
+        spec.option.solver = mujoco.mjtSolver.mjSOL_NEWTON
+
+2. 启用休眠：
+
+   - 通过 XML：
+
+     .. code-block:: xml
+
+        <option>
+          <flag sleep="enable"/>
+        </option>
+
+   - 通过 Python 的 ``MjSpec`` ：
+
+     .. code-block:: python
+
+        spec = mujoco.MjSpec()
+        spec.option.enableflags |= mujoco.mjtEnableBit.mjENBL_SLEEP
+
+3. 在分配数据时，指定任一世界预期的最大活跃自由度数（ ``nvmax`` ）。这决定了
+   压缩工作区的大小。
+
+   - 在 Python 中：
+
+     .. code-block:: python
+
+        # Allocate data with a maximum of 64 active DOFs per world
+        d = mjw.make_data(mjm, nworld=2048, nvmax=64)
+
+   - 通过命令行：
+
+     .. code-block:: shell
+
+        mjwarp-testspeed scene.xml --nvmax=64
+
+   如果未指定 ``nvmax`` ，则默认为全部自由度数（ ``nv`` ）。将 ``nvmax``
+   设置为预期活跃自由度的紧上界，可显著减少 GPU 内存占用并提高
+   吞吐量。
+
+.. TODO(taylorhowell): update example with correct island cycles initialization
+
+4. 设置 ``nvmax < nv`` 时，建议将所有树初始化为休眠状态，以避免初始的自由度
+   溢出。
+
+   .. code-block:: python
+
+      d.tree_asleep.assign(np.array(np.arange(mjm.ntree, dtype=np.int32)), dtype=np.int32)
+
+.. note::
+   可以考虑将休眠容差设置（例如 XML 选项中的 ``sleep_tolerance="0.01"`` 或
+   Python 中的 ``spec.option.sleep_tolerance = 0.01`` ）从默认值（0.001）调大，以便物体更快地
+   进入休眠。
+
+.. _mjwOverflow:
+
+溢出检测
+--------
+
+MJWarp 依赖固定大小的缓冲区分配 (`nconmax`_ / `naconmax`_, `njmax`_, ``nccdmax`` / ``naccdmax``,
+``nvmax``, :attr:`Option.contact_sensor_maxmatch <mujoco_warp.Option.contact_sensor_maxmatch>`) 来实现高吞吐量的 GPU
+执行。当仿真需求超出这些预分配的限制时，就会发生溢出，导致未定义行为。
+
+MJWarp 按世界在 :attr:`Data.overflow <mujoco_warp.Data.overflow>` 中跟踪溢出，它是形状为
+``(nworld,)`` 的一维 Warp 数组，存储 :class:`mjw.OverflowType <mujoco_warp.OverflowType>` 的位掩码。
+
+:attr:`Data.overflow <mujoco_warp.Data.overflow>` 在创建时初始化为零，并在
+:func:`mjw.reset_data <mujoco_warp.reset_data>` 时清零。
+
+.. rubric:: 以编程方式检查溢出
+
+.. code-block:: python
+
+   mjw.step(m, d)
+
+   # device-to-host transfer
+   overflow = d.overflow.numpy()
+
+   # check worlds for any overflow
+   any_overflow = np.any(overflow != 0)
+
+   # check for each world for (narrowphase) contact overflow
+   has_contact_overflow = (overflow & mjw.OverflowType.NARROWPHASE) != 0
+
+.. rubric:: 控制警告
+
+默认情况下， :attr:`Option.warn_overflow <mujoco_warp.Option.warn_overflow>` 为 ``True`` ，这会使内核在发生溢出时通过 ``wp.printf``
+向标准输出打印警告消息。设置 ``m.opt.warn_overflow = False`` 会抑制
+这些 GPU 端的警告打印，同时仍会在 :attr:`Data.overflow <mujoco_warp.Data.overflow>` 中记录溢出位掩码。
+
+在 `testspeed`_ 中，命令行标志 ``--overflow_behavior=error`` （默认）会自动检查
+:attr:`Data.overflow <mujoco_warp.Data.overflow>` ，并在任何世界溢出时以诊断错误中止；而
+``--overflow_behavior=continue`` 则允许在启用警告的情况下继续执行。
+
+.. rubric:: 性能影响
+
+- **设备端 printf 开销** ：从 GPU 内核打印警告 (``m.opt.warn_overflow = True``) 会使各线程的执行串行化，引入 CUDA 设备同步，
+  并且在许多并行世界溢出时会严重降低仿真吞吐量。禁用警告 (``m.opt.warn_overflow = False``) 可消除这种 GPU I/O 开销。
+- **主机-设备同步** ：通过 ``d.overflow.numpy()`` 在 CPU 上读取 :attr:`Data.overflow <mujoco_warp.Data.overflow>`
+  需要进行设备到主机的内存复制和流水线同步。在高吞吐量的强化学习流水线中，应避免在每个仿真步都进行同步；而应
+  定期（例如在环境重置或 rollout 边界处）检查 :attr:`Data.overflow <mujoco_warp.Data.overflow>`，或直接在设备上检查该张量。
+- **仿真保真度** ：如果禁用了警告且没有检查 :attr:`Data.overflow <mujoco_warp.Data.overflow>` ，
+  溢出将导致未定义行为。
+
+.. _mjwBatch:
+
+批量化的 :class:`Model <mujoco_warp.Model>` 字段
+================================================
+
+为了支持使用不同模型（model）参数值的批量仿真，许多 :class:`mjw.Model <mujoco_warp.Model>` 字段
+带有前导批维度。默认情况下，前导维度为 1（即 ``field.shape[0] == 1`` ），并且相同的
+值会应用于所有世界。可以按字段设置批大小
+
+.. code-block:: python
+
+  m = mjw.put_model(mjm, batch_sizes={"dof_damping": 2})
+  m.dof_damping.assign(np.array([[0.1], [0.2]], dtype=float))
+
+然后覆盖默认值。批量化字段将通过世界 id 与批维度的取模运算来索引：
+``field[worldid % field.shape[0]]`` 。
+
+修改字段
+--------
+
+修改 :ref:`mjModel` 字段的推荐工作流程是：先修改对应的 :ref:`mjSpec` ，再编译以创建带有更新字段的新 :ref:`mjModel` 。
+然而，编译目前需要主机调用：每个新的字段实例需要 1 次调用，即 ``nworld`` 个实例需要 ``nworld`` 次主机调用。
+
+某些字段可以安全地直接修改而无需编译，从而实现设备上的更新。有关具体字段的详细信息，请参见
+:ref:`mjModel 的变更<sichange>` 。此外，
+`GitHub issue 893 <https://github.com/google-deepmind/mujoco_warp/issues/893>`__ 跟踪了为部分字段添加设备上更新的工作。
+
+按世界划分的资产（Per-world assets）
+------------------------------------------
+
+按世界划分的资产（per-world assets）支持异构世界，即不同的世界仿真不同的
+`资产 <https://mujoco.readthedocs.io/en/latest/XMLreference.html#asset>`__ ，包括网格（mesh）、高度场、材质和纹理。通用工作流程如下：
+
+1. 创建包含 **全部** 资产的 :ref:`mjSpec` 。
+2. 通过修改 spec 并调用 ``spec.compile()`` 来编译每个变体。
+3. 编译一个 **基础** 模型，并由它创建 :class:`mjw.Model <mujoco_warp.Model>` 。
+4. 用由已编译变体构建的按世界划分的数组，覆盖 :class:`mjw.Model <mujoco_warp.Model>` 的相关字段。
+
+.. rubric:: 按世界划分的网格
+
+**示例 1——按世界划分的网格：geom 级** 随机化（1 个刚体（body），1 个 geom，2 个网格资产）：
+
+基础场景包含所有网格资产。该 geom 引用其中一个网格（``mesh_a``）；第二个网格（``mesh_b``）可用于按世界替换。
+
+.. code-block:: xml
+
+  <mujoco>
+    <asset>
+      <mesh name="mesh_a" vertex="0 0 0 1 0 0 0 1 0 0 0 1"/>
+      <mesh name="mesh_b" vertex="0 0 0 2 0 0 0 2 0 0 0 2"/>
+    </asset>
+    <worldbody>
+      <body pos="0 0 1">
+        <freejoint/>
+        <geom name="obj" type="mesh" mesh="mesh_a"/>
+      </body>
+    </worldbody>
+  </mujoco>
+
+.. code-block:: python
+
+  nworld = 4
+
+  # base spec: 1 body with 1 mesh geom, all mesh assets
+  spec = mujoco.MjSpec()
+  mesh_a = spec.add_mesh()
+  mesh_a.name = "mesh_a"
+  mesh_a.uservert = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+  mesh_b = spec.add_mesh()
+  mesh_b.name = "mesh_b"
+  mesh_b.uservert = [0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2]
+
+  body = spec.worldbody.add_body()
+  body.pos = [0, 0, 1]
+  body.add_freejoint()
+  geom = body.add_geom()
+  geom.name = "obj"
+  geom.type = mujoco.mjtGeom.mjGEOM_MESH
+  geom.meshname = "mesh_a"
+
+  # compile each variant
+  geom.meshname = "mesh_a"
+  mjm_a = spec.compile()
+  geom.meshname = "mesh_b"
+  mjm_b = spec.compile()
+
+  # restore and compile base
+  geom.meshname = "mesh_a"
+  mjm = spec.compile()
+
+  m = mjw.put_model(mjm)
+  d = mjw.make_data(mjm, nworld=nworld)
+
+  # build per-world arrays: worlds 0-1 use mesh_a, worlds 2-3 use mesh_b
+  geom_id = mujoco.mj_name2id(mjm, mujoco.mjtObj.mjOBJ_GEOM, "obj")
+  variants = [mjm_a, mjm_b]
+  assignment = [0, 0, 1, 1]  # variant index per world
+
+  # build per-world arrays
+  dataid = np.tile(mjm.geom_dataid, (nworld, 1))
+  geom_size = np.zeros((nworld, mjm.ngeom, 3))
+  geom_aabb = np.zeros((nworld, mjm.ngeom, 2, 3))
+  geom_rbound = np.zeros((nworld, mjm.ngeom))
+  geom_pos = np.zeros((nworld, mjm.ngeom, 3))
+  body_mass = np.zeros((nworld, mjm.nbody))
+  body_subtreemass = np.zeros((nworld, mjm.nbody))
+  body_inertia = np.zeros((nworld, mjm.nbody, 3))
+  body_invweight0 = np.zeros((nworld, mjm.nbody, 2))
+  body_ipos = np.zeros((nworld, mjm.nbody, 3))
+  body_iquat = np.zeros((nworld, mjm.nbody, 4))
+
+  for w in range(nworld):
+    ref = variants[assignment[w]]
+    dataid[w, geom_id] = ref.geom_dataid[geom_id]
+    geom_size[w] = ref.geom_size
+    geom_aabb[w] = ref.geom_aabb.reshape(mjm.ngeom, 2, 3)
+    geom_rbound[w] = ref.geom_rbound
+    geom_pos[w] = ref.geom_pos
+    body_mass[w] = ref.body_mass
+    body_subtreemass[w] = ref.body_subtreemass
+    body_inertia[w] = ref.body_inertia
+    body_invweight0[w] = ref.body_invweight0
+    body_ipos[w] = ref.body_ipos
+    body_iquat[w] = ref.body_iquat
+
+  m.geom_dataid = wp.array(dataid, dtype=int)
+  m.geom_size = wp.array(geom_size, dtype=wp.vec3)
+  m.geom_aabb = wp.array(geom_aabb, dtype=wp.vec3)
+  m.geom_rbound = wp.array(geom_rbound, dtype=float)
+  m.geom_pos = wp.array(geom_pos, dtype=wp.vec3)
+  m.body_mass = wp.array(body_mass, dtype=float)
+  m.body_subtreemass = wp.array(body_subtreemass, dtype=float)
+  m.body_inertia = wp.array(body_inertia, dtype=wp.vec3)
+  m.body_invweight0 = wp.array(body_invweight0, dtype=wp.vec2)
+  m.body_ipos = wp.array(body_ipos, dtype=wp.vec3)
+  m.body_iquat = wp.array(body_iquat, dtype=wp.quat)
+
+**示例 2——按世界划分的网格：body 级** 随机化（1 个 body，1 或 2 个 geom，3 个网格资产）：
+
+.. admonition:: 最大 geom 数量
+   :class: important
+
+   对于 body 级随机化，提供给 ``mjw.put_model`` 的基础 ``mjModel`` 应当指定所有变体中所需的 **最大 geom 数量** 。在某个特定变体中未使用的 geom 槽位可以被禁用（例如 ``contype=0``、\ ``conaffinity=0``、\ ``dataid=-1``），但它们仍应作为该 body 的一部分存在于基础模型中。
+
+.. code-block:: xml
+
+  <mujoco>
+    <asset>
+      <mesh name="mA" vertex="0 0 0 1 0 0 0 1 0 0 0 1"/>
+      <mesh name="mB" vertex="0 0 0 2 0 0 0 2 0 0 0 2"/>
+      <mesh name="mC" vertex="0 0 0 3 0 0 0 3 0 0 0 3"/>
+    </asset>
+    <worldbody>
+      <body name="obj" pos="0 0 1">
+        <freejoint/>
+        <geom name="obj_0" type="mesh" mesh="mA"/>
+        <geom name="obj_1" size=".001" contype="0" conaffinity="0" mass="0"/>
+      </body>
+    </worldbody>
+  </mujoco>
+
+.. code-block:: python
+
+  nworld = 6
+
+  # base spec: body with 2 geom slots (max across variants), all mesh assets
+  spec = mujoco.MjSpec()
+  for name, scale in [("mA", 1), ("mB", 2), ("mC", 3)]:
+    mesh = spec.add_mesh()
+    mesh.name = name
+    mesh.uservert = [0, 0, 0, scale, 0, 0, 0, scale, 0, 0, 0, scale]
+
+  body = spec.worldbody.add_body()
+  body.name = "obj"
+  body.pos = [0, 0, 1]
+  body.add_freejoint()
+
+  g0 = body.add_geom()
+  g0.name = "obj_0"
+  g0.type = mujoco.mjtGeom.mjGEOM_MESH
+  g0.meshname = "mA"
+
+  # null geom slot: disabled collision, no mesh
+  g1 = body.add_geom()
+  g1.name = "obj_1"
+  g1.size = [0.001, 0, 0]
+  g1.contype = 0
+  g1.conaffinity = 0
+  g1.mass = 0
+
+  # variant A: 1 geom (mesh mA), g1 stays null
+  mjm_a = spec.compile()
+
+  # variant B: 2 geoms (mesh mB + mC)
+  g0.meshname = "mB"
+  g1.type = mujoco.mjtGeom.mjGEOM_MESH
+  g1.meshname = "mC"
+  g1.contype = 1
+  g1.conaffinity = 1
+  mjm_b = spec.compile()
+
+  # restore base and compile
+  g0.meshname = "mA"
+  g1.type = mujoco.mjtGeom.mjGEOM_SPHERE
+  g1.contype = 0
+  g1.conaffinity = 0
+  mjm = spec.compile()
+
+  m = mjw.put_model(mjm)
+  d = mjw.make_data(mjm, nworld=nworld)
+
+  # worlds 0-2: variant A (1 active geom), worlds 3-5: variant B (2 active geoms)
+  variants = [mjm_a, mjm_b]
+  assignment = [0, 0, 0, 1, 1, 1]
+
+  geom0_id = mujoco.mj_name2id(mjm, mujoco.mjtObj.mjOBJ_GEOM, "obj_0")
+  geom1_id = mujoco.mj_name2id(mjm, mujoco.mjtObj.mjOBJ_GEOM, "obj_1")
+  body_id = mjm.geom_bodyid[geom0_id]
+
+  # build per-world arrays
+  dataid = np.tile(mjm.geom_dataid, (nworld, 1))
+  geom_size = np.zeros((nworld, mjm.ngeom, 3))
+  geom_rbound = np.zeros((nworld, mjm.ngeom))
+  geom_aabb = np.zeros((nworld, mjm.ngeom, 2, 3))
+  geom_pos = np.zeros((nworld, mjm.ngeom, 3))
+  body_mass = np.zeros((nworld, mjm.nbody))
+  body_subtreemass = np.zeros((nworld, mjm.nbody))
+  body_inertia = np.zeros((nworld, mjm.nbody, 3))
+  body_invweight0 = np.zeros((nworld, mjm.nbody, 2))
+  body_ipos = np.zeros((nworld, mjm.nbody, 3))
+  body_iquat = np.zeros((nworld, mjm.nbody, 4))
+
+  for w in range(nworld):
+    ref = variants[assignment[w]]
+    dataid[w] = ref.geom_dataid
+    # disable unused geom slot for variant A
+    if assignment[w] == 0:
+      dataid[w, geom1_id] = -1
+    geom_size[w] = ref.geom_size
+    geom_rbound[w] = ref.geom_rbound
+    geom_aabb[w] = ref.geom_aabb.reshape(mjm.ngeom, 2, 3)
+    geom_pos[w] = ref.geom_pos
+    body_mass[w] = ref.body_mass
+    body_subtreemass[w] = ref.body_subtreemass
+    body_inertia[w] = ref.body_inertia
+    body_invweight0[w] = ref.body_invweight0
+    body_ipos[w] = ref.body_ipos
+    body_iquat[w] = ref.body_iquat
+
+  m.geom_dataid = wp.array(dataid, dtype=int)
+  m.geom_size = wp.array(geom_size, dtype=wp.vec3)
+  m.geom_rbound = wp.array(geom_rbound, dtype=float)
+  m.geom_aabb = wp.array(geom_aabb, dtype=wp.vec3)
+  m.geom_pos = wp.array(geom_pos, dtype=wp.vec3)
+  m.body_mass = wp.array(body_mass, dtype=float)
+  m.body_subtreemass = wp.array(body_subtreemass, dtype=float)
+  m.body_inertia = wp.array(body_inertia, dtype=wp.vec3)
+  m.body_invweight0 = wp.array(body_invweight0, dtype=wp.vec2)
+  m.body_ipos = wp.array(body_ipos, dtype=wp.vec3)
+  m.body_iquat = wp.array(body_iquat, dtype=wp.quat)
+
+**批量字段** ——对于按世界划分的网格，必须覆盖的字段：
+
+.. list-table::
+   :width: 90%
+   :align: left
+   :widths: 3 2 3
+   :header-rows: 1
+
+   * - 字段
+     - dtype
+     - 形状
+   * - ``geom_dataid``
+     - ``int``
+     - ``(nworld, ngeom)``
+   * - ``geom_size``
+     - ``wp.vec3``
+     - ``(nworld, ngeom)``
+   * - ``geom_aabb``
+     - ``wp.vec3``
+     - ``(nworld, ngeom, 2)``
+   * - ``geom_rbound``
+     - ``float``
+     - ``(nworld, ngeom)``
+   * - ``geom_pos``
+     - ``wp.vec3``
+     - ``(nworld, ngeom)``
+   * - ``body_mass``
+     - ``float``
+     - ``(nworld, nbody)``
+   * - ``body_subtreemass``
+     - ``float``
+     - ``(nworld, nbody)``
+   * - ``body_inertia``
+     - ``wp.vec3``
+     - ``(nworld, nbody)``
+   * - ``body_invweight0``
+     - ``wp.vec2``
+     - ``(nworld, nbody)``
+   * - ``body_ipos``
+     - ``wp.vec3``
+     - ``(nworld, nbody)``
+   * - ``body_iquat``
+     - ``wp.quat``
+     - ``(nworld, nbody)``
+
+按世界划分的高度场、材质和纹理也可以用类似方式构造。
+
+.. admonition:: 依赖于按世界划分资产的字段构造
+  :class: note
+
+  MJWarp 支持按世界划分资产的功能，但不提供用于构造相应的按世界划分的字段变体的工具。构造工作留给用户或环境编写框架来完成。
+
+批量渲染（Batch Rendering）
+===========================
+
+MJWarp 提供了一个用于高吞吐光线追踪的批量渲染器（renderer），构建在
+`Warp 的加速 BVH <https://nvidia.github.io/warp/stable/api_reference/_generated/warp.Bvh.html>`__ 之上，可并行渲染带有多个相机的多个世界。
+
+主要特性：
+
+- **带纹理的网格渲染** ：BVH 加速的网格渲染，完整支持纹理。
+- **高度场渲染** ：针对高度场的优化渲染。
+- **flex 渲染** ：渲染 :ref:`flex<deformable-flex>` 对象。
+- **3D 高斯泼溅（3D Gaussian Splatting，3DGS）** ：对 3D 高斯泼溅点进行 BVH 加速的光线追踪和 alpha 合成，支持按世界分组以及双向的物理遮挡。
+- **光照和阴影** ：带有可配置阴影的动态光照；可进行域随机化的字段有： `light_active` 、
+  `light_type` 、 `light_castshadow` 、 `light_xpos` 、 `light_xdir` 。
+- **异构多相机** ：每个世界可有多个相机，且每个相机可以有不同的分辨率
+  （ `cam_resolution` ）、视场角（ `cam_fovy` 、 `cam_sensorsize` 、 `cam_intrinsic` ）和输出模式（ `cam_output` ）。
+- **域随机化（Domain Randomization）** ：按世界划分的 :class:`mjw.Model <mujoco_warp.Model>` 字段（参见上文的
+  :ref:`批量模型字段 <mjwBatch>` ）： `geom_matid` 、 `geom_size` 、 `geom_rgba` 、 `mat_texid` 、 `mat_texrepeat` 、
+  `mat_rgba` 。
+- **BVH 加速的 ray/rays API** ：光线投射：通过
+  `Warp 的 BVH <https://nvidia.github.io/warp/stable/api_reference/_generated/warp.Bvh.html>`__ 加速 :func:`mjw.ray <mujoco_warp.ray>` 、
+  :func:`mjw.rays <mujoco_warp.rays>` 和 :ref:`测距仪传感器 <sensor-rangefinder>` 。
+
+基本用法
+--------
+
+渲染或光线投射需要一个 :class:`mjw.RenderContext <mujoco_warp.RenderContext>` ，其中包含 BVH 结构、渲染相关字段和输出缓冲区。
+
+.. code-block:: python
+
+    rc = mjw.create_render_context(
+        mjm,
+        nworld=1,
+        cam_res=(256, 256),           # Override camera resolution (or per-camera list)
+        render_rgb=True,              # Enable RGB output (or per-camera list)
+        render_depth=True,            # Enable depth output (or per-camera list)
+        use_textures=True,            # Apply material textures
+        use_shadows=False,            # Enable shadow casting (slower)
+        enabled_geom_groups=[0, 1],   # Only render geoms in groups 0 and 1
+        cam_active=[True, False],     # Selectively enable/disable cameras
+        flex_render_smooth=True,      # Smooth shading for soft bodies
+        splat_position=pos,           # Optional (nsplat, 3) 3DGS centers
+        splat_rotation=rot,           # Optional (nsplat, 4) 3DGS quaternions (w, x, y, z)
+        splat_scale=scale,            # Optional (nsplat, 3) 3DGS standard deviations
+        splat_rgba=rgba,              # Optional (nsplat, 4) 3DGS RGB color and opacity
+        splat_adr=adr,                # Optional (ngroup+1,) group offsets for per-world splats
+        splat_group_id=group_id,      # Optional (nworld,) splat group index per world
+        backend="warp",               # Ray-casting backend ("warp" or "optix")
+    )
+
+每个 :class:`mjw.RenderContext <mujoco_warp.RenderContext>` 参数既可以全局应用，也可以按相机应用。
+此外， :class:`mjw.RenderContext <mujoco_warp.RenderContext>` 参数的值还可以从 XML 中解析：
+
+.. code-block:: xml
+
+    <camera name="front_camera" pos="3 0 2" xyaxes="0 1 0 -0.6 0 0.8" resolution="64 64" output="rgb depth"/>
+
+或者通过 :ref:`mjSpec <mjspec>` 设置，以实现相机定制。
+
+渲染时，首先调用 :func:`mjw.refit_bvh <mujoco_warp.refit_bvh>` 更新 BVH 树，
+然后调用 :func:`mjw.render <mujoco_warp.render>` 写入输出缓冲区。
+
+.. code-block:: python
+
+    mjw.refit_bvh(m, d, rc)
+    mjw.render(m, d, rc)
+
+输出缓冲区包含所有相机堆叠在一起的像素，形状为 `(nworld, npixel)` ，RGB 数据被
+打包进一个 `uint32` 变量中。 `RenderContext.rgb_adr` 和 `RenderContext.depth_adr` 提供按相机的索引。
+为方便起见， :func:`mjw.get_rgb <mujoco_warp.get_rgb>` 和 :func:`mjw.get_depth <mujoco_warp.get_depth>`
+会返回针对给定相机、对所有世界批量处理后并重新整形的 RGB 和深度数据。
+
+.. code-block:: python
+
+    nworld = 1
+    cam_index = 0
+    resolution = rc.cam_res.numpy()[cam_index]
+    rgb_data = wp.zeros((nworld, resolution[1], resolution[0]), dtype=wp.vec3)
+    mjw.get_rgb(rc, rgb_data=rgb_data, cam_id=cam_index)
+
+完整示例可参见 MJWarp 教程 |notebook| |open in colab| 。
+
+OptiX 后端
+----------
+
+在 NVIDIA RTX GPU 上，可使用一个基于 `warp-optix <https://github.com/NVIDIA/warp-optix>`__ 构建的可选硬件加速光线投射后端。安装方式：
+
+.. code-block:: shell
+
+    pip install "mujoco-warp[optix]"
+
+向 :func:`mjw.create_render_context <mujoco_warp.create_render_context>` 传入 ``backend="optix"`` （或向 `testspeed`_ 传入
+``--render_backend=optix`` ）即可。如果 OptiX 不可用，或场景使用了不受支持的特性（例如
+flex 或 3D 高斯泼溅），MJWarp 会发出警告并回退到 ``backend="warp"`` 。OptiX 渲染无法录制
+到 CUDA graph（``wp.ScopedCapture``）中，并且 :func:`mjw.ray <mujoco_warp.ray>` / :func:`mjw.rays <mujoco_warp.rays>`
+要求 ``backend="warp"`` 。
+
+基准测试
+--------
+
+可以使用 `testspeed`_ 对渲染进行基准测试：
+
+.. code-block:: shell
+
+    mjwarp-testspeed benchmarks/primitives.xml --function=render
+
+关于各种场景下的基准测试结果，请参见
+`已发布的基准测试 <https://github.com/google-deepmind/mujoco_warp/pull/1113>`__ 。
+
+3D 高斯泼溅（3D Gaussian Splatting，3DGS）
+------------------------------------------
+
+MJWarp 支持渲染 3D 高斯泼溅（3DGS）场景，并将其与仿真的 MuJoCo 物理对象合成。泼溅点通过专用的、以 SAH 构建的 BVH（`build_splat_bvh`）进行光线追踪，并沿每条光线使用单次命中的平面切片近似来求值。
+
+物理遮挡
+~~~~~~~~
+泼溅点在与 MuJoCo 实体几何求交 *之前* 进行光线追踪和 alpha 合成。如果相机光线击中了某个物理刚体（例如网格、基本几何体或 flex），则位于命中距离（`dist`）之后的泼溅点会被该物理对象遮挡，而位于命中距离之前的泼溅点则会混合叠加在该物理对象的表面颜色之上。
+
+加载 PLY 文件
+~~~~~~~~~~~~~
+标准的二进制小端序 3DGS `.ply` 文件可以使用 `contrib/render.py` 中的辅助函数加载，或手动准备为 NumPy 数组：
+
+- `splat_position` ：泼溅点在世界坐标系中的中心 `(nsplat, 3)` （ `float32` ）。
+- `splat_rotation` ：采用 MuJoCo 约定 `(w, x, y, z)` 的泼溅点单位四元数（quaternion） `(nsplat, 4)` （ `float32` ）。
+- `splat_scale` ：泼溅点在各局部轴向上的标准差 `(nsplat, 3)` （ `float32` ），由 PLY 中的对数尺度属性取指数得到。
+- `splat_rgba` ：漫反射 RGB 颜色（由 0 阶球谐函数 `f_dc_0..2` 转换而来）和经 sigmoid 激活的不透明度 `(nsplat, 4)` （ `float32` ）。
+
+.. code-block:: python
+
+    import mujoco_warp as mjw
+    import numpy as np
+
+    # Example defining a single splat
+    splat_pos = np.array([[0.0, 0.0, 0.5]], dtype=np.float32)
+    splat_rot = np.array([[1.0, 0.0, 0.0, 0.0]], dtype=np.float32)  # w, x, y, z
+    splat_scale = np.array([[0.1, 0.1, 0.1]], dtype=np.float32)
+    splat_rgba = np.array([[1.0, 0.2, 0.2, 0.9]], dtype=np.float32)
+
+    rc = mjw.create_render_context(
+        mjm,
+        nworld=1,
+        render_rgb=True,
+        splat_position=splat_pos,
+        splat_rotation=splat_rot,
+        splat_scale=splat_scale,
+        splat_rgba=splat_rgba,
+    )
+
+按世界划分的泼溅点分组
+~~~~~~~~~~~~~~~~~~~~~~
+与按世界划分的网格类似，MJWarp 支持异构的按世界划分的 3DGS 场景。多个泼溅点场景可以拼接成单个属性数组，分组偏移由 `splat_adr` `(ngroup + 1,)` 指定，并通过 `splat_group_id` `(nworld,)` 分配给每个世界。
+
+.. code-block:: python
+
+    # Group 0 has 100 splats (indices 0..99), Group 1 has 250 splats (indices 100..349)
+    splat_adr = np.array([0, 100, 350], dtype=np.int32)
+    # Assign Group 0 to World 0 and Group 1 to World 1
+    splat_group_id = np.array([0, 1], dtype=np.int32)
+
+动态泼溅点重新拟合
+~~~~~~~~~~~~~~~~~~
+如果泼溅点的位置、旋转或缩放在仿真过程中动态变化（例如泼溅点附着在运动的刚体上），请在渲染之前调用 :func:`mjw.refit_splat_bvh <mujoco_warp.refit_splat_bvh>` ：
+
+.. code-block:: python
+
+    # Update splat positions on device
+    wp.copy(rc.splat_position, updated_positions)
+    mjw.refit_splat_bvh(rc)
+    mjw.render(m, d, rc)
+
+性能与光线投射阈值
+~~~~~~~~~~~~~~~~~~
+- **BVH 响应截断** ：泼溅点的包围盒大小被设定为能够容纳低至 `SPLAT_MIN_RESPONSE = 0.01` 的密度响应。
+- **有界合成** ：光线投射对每条光线最多累积按深度排序的前 `_MAX_SPLAT_HITS = 32` 次 BVH 相交。
+- **提前终止** ：一旦剩余的光线透射率降到 `0.005` 以下，或单个泼溅点的 alpha 低于 8 位量化精度（`1 / 255`），合成就会提前停止。
+
+命令行预览器与相机环绕
+~~~~~~~~~~~~~~~~~~~~~~
+命令行工具 `mjwarp-render` 支持渲染 3DGS PLY 场景并生成相机环绕动画：
+
+.. code-block:: shell
+
+    # Render single frame with 3DGS PLY
+    mjwarp-render scene.xml --splat=my_scene.ply --width=512 --height=512
+
+    # Render a 128-frame circular camera orbit video around a target
+    mjwarp-render scene.xml --splat=my_scene.ply --orbit --orbit_center="0,0,1" --orbit_radius=4.0 --output_video=orbit.gif
+
+注意事项
+--------
+
+- **网格** ：渲染计算量随网格复杂度而增长，具体取决于顶点和面的数量。基本几何体预计具有更好的性能（即更高的吞吐量），优于尺寸相近的
+  :ref:`网格<body-geom-mesh>` 或 :ref:`高度场 <body-geom-hfield>` 。
+- **缩放** ：渲染开销随分辨率（总像素数）和相机数量线性增长。
+
+.. _mjwFAQ:
+
+常见问题
+========
+
+学习框架
+--------
+
+**MJWarp 能与 JAX 一起使用吗？**
+
+可以。MJWarp 可与 `JAX <https://jax.readthedocs.io/>`__ 互操作。详情请参见
+`Warp 互操作性 <https://nvidia.github.io/warp/stable/user_guide/interoperability/jax.html>`__ 文档。
+
+此外， :ref:`MJX <mjx>` 为 MJWarp 的 :doc:`API <api>` 的一个子集提供了 JAX API。其实现通过
+``impl='warp'`` 指定。
+
+**MJWarp 能与 PyTorch 一起使用吗？**
+
+可以。MJWarp 可与 `PyTorch <https://pytorch.org>`__ 互操作。详情请参见
+`Warp 互操作性 <https://nvidia.github.io/warp/stable/user_guide/interoperability/pytorch.html>`__ 文档。
+
+**如何用 MJWarp 物理引擎训练策略？**
+
+关于使用 MJWarp 物理引擎训练策略的示例，请参见：
+
+- `Isaac Lab <https://github.com/isaac-sim/IsaacLab>`__ ：通过
+  `Newton API <https://github.com/newton-physics/newton>`__ 训练。
+- `mjlab <https://github.com/mujocolab/mjlab>`__ ：使用 PyTorch 直接基于 MJWarp 训练。
+- `MuJoCo Playground <https://github.com/google-deepmind/mujoco_playground>`__ ：通过 :ref:`MJX API <mjx>` 训练。
+
+特性
+----
+
+.. _mjwDiff:
+
+**MJWarp 是可微分的吗？**
+
+不是。MJWarp 目前无法通过
+Warp 的 `自动微分 <https://nvidia.github.io/warp/stable/user_guide/differentiability.html>`__
+功能进行微分。团队在为 MJWarp 启用自动微分方面的进展更新，记录在这个
+`GitHub issue <https://github.com/google-deepmind/mujoco_warp/issues/500>`__ 中。
+
+**MJWarp 能使用多块 GPU 吗？**
+
+可以。Warp 的 ``wp.ScopedDevice`` 支持多 GPU 计算
+
+.. code-block:: python
+
+   # create a graph for each device
+   graph = {}
+   for device in wp.get_cuda_devices():
+     with wp.ScopedDevice(device):
+       m = mjw.put_model(mjm)
+       d = mjw.make_data(mjm)
+       with wp.ScopedCapture(device) as capture:
+         mjw.step(m, d)
+       graph[device] = capture.graph
+
+   # launch a graph on each device
+   for device in wp.get_cuda_devices():
+     wp.capture_launch(graph[device])
+
+详情请参见
+`Warp 文档 <https://nvidia.github.io/warp/stable/user_guide/execution_and_performance/concurrency.html>`__ ，
+强化学习示例请参见
+`mjlab 分布式训练 <https://mujocolab.github.io/mjlab/main/source/training/distributed_training.html>`__ 。
+
+**GPU 上的 MJWarp 是确定性的吗？**
+
+不是。同一份代码的不同次执行所计算的结果之间，可能存在顺序或 *微小的* 数值差异。这是 GPU 上非确定性原子操作的特点。将设备设为 CPU（``wp.set_device("cpu")``）可获得确定性的结果。
+
+GPU 上确定性结果的开发进展记录在这个
+`GitHub issue <https://github.com/google-deepmind/mujoco_warp/issues/562>`__ 中。
+
+**姿态是如何表示的？**
+
+姿态用单位四元数表示，并遵循 :ref:`MuJoCo 的约定<siLayout>` ：
+``w, x, y, z`` 即 ``scalar, vector``\ （标量在前，向量在后）。
+
+.. admonition:: ``wp.quat``
+  :class: note
+
+  MJWarp 使用了 Warp 的 `内置类型 <https://nvidia.github.io/warp/stable/api_reference/_generated/warp.quat.html>`__
+  ``wp.quat`` 。但需要注意的是，MJWarp 并不使用 Warp 的 ``x, y, z, w`` 四元数约定或相关
+  运算，而是实现了遵循 MuJoCo 约定的四元数例程。具体实现请参见
+  `math.py <https://github.com/google-deepmind/mujoco_warp/blob/main/mujoco_warp/_src/math.py>`__ 。
+
+**MJWarp 有命名访问 API / bind 吗？**
+
+没有。该功能的进展更新记录在这个
+`GitHub issue <https://github.com/google-deepmind/mujoco_warp/issues/884>`__ 中。
+
+**为什么没有发生碰撞时仍会报告接触？**
+
+对于任何一个参与了某个碰撞传感器的唯一 geom 对，即使该 geom 对并未发生碰撞，也会报告 1 个接触。在 MuJoCo 或 MJX 中， :ref:`碰撞传感器<collision-sensors>` 在计算传感器数据时会单独调用碰撞例程；与之不同，MJWarp 在运行其主碰撞流水线的同时，就在接触中计算并存储这些传感器的数据。
+
+:ref:`接触传感器<sensor-contact>` 会对影响物理的接触报告正确的信息。
+
+**为什么有些数组的形状与 mjModel 或 mjData 中的不同？**
+
+对于批量仿真，默认情况下许多 :class:`mjw.Data <mujoco_warp.Data>` 字段带有一个前导的批量维度，其大小为
+``Data.nworld`` 。一些 :class:`mjw.Model <mujoco_warp.Model>` 字段带有一个大小为
+``1`` 的前导批量维度，表示该
+:ref:`字段可以被一个批量参数数组覆盖，以实现域随机化 <mjwBatch>` 。
+
+此外，包括 ``Model.M`` 、 ``Data.efc.J`` 和 ``Data.efc.D`` 在内的某些字段经过了填充，以便在 GPU 上快速加载。
+
+**为什么 MJWarp 与 MuJoCo 的数值结果不同？**
+
+MJWarp 使用单精度 `float32
+<https://nvidia.github.io/warp/stable/api_reference/_generated/warp.float32.html>`__ ，而 MuJoCo 对 :ref:`mjtNum` 默认使用双精度（float64）表示。求解器（solver）设置，包括迭代次数、碰撞检测和较小的摩擦值，可能对浮点表示的差异比较敏感。
+
+如果遇到意外结果，包括 NaN，请提交 GitHub issue。
+
+**如何修复仿真运行时的警告？**
+
+当内存需求超过现有分配时，会给出警告：
+
+- `nconmax`_ / `njmax`_ ：已超出接触 / 约束的最大数量。请通过更新传给 :func:`mjw.make_data <mujoco_warp.make_data>` 或
+  :func:`mjw.put_data <mujoco_warp.put_data>` 的相关参数来增大该设置的值。
+- ``mjw.Option.ccd_iterations`` ：凸碰撞检测算法已超出最大迭代次数。
+  请在 XML / :ref:`mjSpec` / :ref:`mjModel` 中增大该设置的值。重要的是，该修改必须作用于
+  提供给 :func:`mjw.put_model <mujoco_warp.put_model>` 和
+  :func:`mjw.make_data <mujoco_warp.make_data>` / :func:`mjw.put_data <mujoco_warp.put_data>` 的 :ref:`mjModel` 实例。
+- ``mjw.Option.contact_sensor_maxmatch`` ：某个
+  :ref:`接触传感器<sensor-contact>` 匹配条件的最大接触匹配数已被超出。请增大这个 MJWarp 独有的
+  设置 `m.opt.contact_sensor_maxmatch` 的值。或者，重构接触传感器的匹配条件，例如如果
+  已知感兴趣的 2 个 geom，则指定 ``geom1`` 和 ``geom2`` 。
+- ``height field collision overflow`` ：高度场产生的潜在接触数量超过
+  :ref:`mjMAXCONPAIR <glNumericEngine>` ，部分接触被忽略。要消除该警告，请降低高度场
+  分辨率，或减小与高度场相互作用的 geom 的尺寸。
+
+若要以编程方式检查这些溢出情况，请查看 :attr:`Data.overflow <mujoco_warp.Data.overflow>`
+和 :class:`mjw.OverflowType <mujoco_warp.OverflowType>` 。若要在高吞吐运行期间抑制向 stdout 打印的警告，
+请将 :attr:`Option.warn_overflow <mujoco_warp.Option.warn_overflow>` 设为 ``False`` 。详情参见
+:ref:`溢出检测 <mjwOverflow>` 。
+
+编译
+-----------
+
+**如何缩短编译时间？**
+
+限制需要通用凸体碰撞流水线的不同碰撞器的数量。这些碰撞器在
+`collision_driver.py <https://github.com/google-deepmind/mujoco_warp/blob/e357e88b6b47166d325b564c805d9ecbae659a64/mujoco_warp/_src/collision_driver.py#L45>`__
+的 ``MJ_COLLISION_TABLE`` 中被列为 ``CONVEX``
+（在 :ref:`成对碰撞器表 <mjwPairwise>` 中标记为 ``CCD`` ）。
+
+**升级 MJWarp 后，为什么物理行为与预期不符？**
+
+Warp 缓存可能与当前代码不兼容，在调试过程中应将其清除。可以通过删除目录 ``~/.cache/warp`` 或通过 Python 来完成：
+
+.. code-block:: python
+
+   import warp as wp
+   wp.clear_kernel_cache()
+
+**能否提前编译 MJWarp，而不是在运行时编译？**
+
+可以。详情请参见 Warp 的
+`提前编译工作流 <https://nvidia.github.io/warp/stable/user_guide/programming_model/code_generation.html#ahead-of-time-compilation-workflows>`__
+文档。
+
+与 MuJoCo 的差异
+=======================
+
+本节记录 MJWarp 与 MuJoCo 之间的差异。
+
+热启动
+---------
+
+如果热启动（warmstart）没有被 :ref:`禁用 <option-flag-warmstart>` ，MJWarp 求解器的热启动总是用 ``qacc_warmstart`` 来初始化加速度。
+相比之下，MuJoCo 会对 ``qacc_smooth`` 和 ``qacc_warmstart`` 进行比较，以确定使用哪一个来初始化。
+
+惯性矩阵分解
+----------------------------
+
+MJWarp 对存储在 ``qLD`` 中的惯性矩阵（inertia matrix）逐树进行分解，并根据树的大小，决定采用 Warp 的 ``U'U`` Cholesky 分解
+`wp.tile_cholesky <https://nvidia.github.io/warp/stable/language_reference/_generated/warp.tile_cholesky.html>`__ 、
+MuJoCo 的稀疏逆序 ``L'DL`` 例程，还是简单的对角求逆例程。
+
+选项
+-------
+
+:class:`mjw.Option <mujoco_warp.Option>` 的字段与其对应的 :ref:`mjOption` 字段相对应，但有以下例外：
+
+- :ref:`impratio <option-impratio>` 以其平方根的倒数 ``impratio_invsqrt`` 的形式存储。
+- 约束求解器（constraint solver）设置 :ref:`tolerance <option-tolerance>` 会被钳位到最小值 ``1e-6`` 。
+- 接触（contact） :ref:`覆盖 <option-flag-override>` 参数 :ref:`o_margin <option-o_margin>` 、
+  :ref:`o_solref <option-o_solref>` 、 :ref:`o_solimp <option-o_solimp>` 和 :ref:`o_friction <option-o_friction>` 不可用。
+
+:ref:`disableflags <option-flag>` 有以下差异：
+
+- :ref:`mjDSBL_MIDPHASE <mjtDisablebit>` 不可用。
+- :ref:`mjDSBL_AUTORESET <mjtDisablebit>` 不可用。
+- :ref:`mjDSBL_NATIVECCD <mjtDisablebit>` 会将默认的盒-盒碰撞器从 CCD 改为基本碰撞器。
+
+:ref:`enableflags <option-flag>` 有以下差异：
+
+- :ref:`mjENBL_OVERRIDE <mjtEnablebit>` 不可用。
+- :ref:`mjENBL_FWDINV <mjtEnablebit>` 不可用。
+- :ref:`mjENBL_SPECULATIVE <mjtEnablebit>` 不可用。
+
+另外还提供一些仅 MJWarp 具有的选项：
+
+- ``broadphase`` ：粗测阶段（broad-phase）算法的类型（ :class:`mjw.BroadphaseType <mujoco_warp.BroadphaseType>` ）
+- ``broadphase_filter`` ：粗测阶段所使用的过滤类型
+  （ :class:`mjw.BroadphaseFilter <mujoco_warp.BroadphaseFilter>` ）
+- ``graph_conditional`` ：使用 CUDA 图条件节点
+- ``run_collision_detection`` ：使用碰撞检测（collision detection）例程
+- ``contact_sensor_maxmatch`` ：接触传感器匹配条件的最大接触数
+- ``warn_overflow`` ：遇到仿真溢出时发出警告
+- ``deterministic`` ：确定性执行的位掩码（ :class:`mjw.DeterminismType <mujoco_warp.DeterminismType>` ）
+
+.. admonition:: 流体模型
+  :class: note
+
+  修改流体模型参数 ``density`` 、 ``viscosity`` 或 ``wind`` 时，可能需要更新
+  ``Model.has_fluid`` 。
+
+.. admonition:: 图捕获
+  :class: note
+
+  修改 :class:`mjw.Option <mujoco_warp.Option>` 字段之后，可能需要重新进行 :ref:`图捕获 <mjwGC>` ，
+  更新后的设置才会生效。
+
+SDF 插件
+-----------
+
+SDF 碰撞支持插件（plugin）。下面针对
+`plugin/sdf/bowl.xml <https://github.com/google-deepmind/mujoco/blob/main/model/plugin/sdf/bowl.xml>`__ 的示例，说明了如何实现
+`bowl.cc <https://github.com/google-deepmind/mujoco/blob/main/plugin/sdf/bowl.cc>`__ 中的 SDF 插件：
+
+.. code-block:: python
+
+  import mujoco_warp as mjw
+  import warp as wp
+
+  # distance function
+  @wp.func
+  def bowl(p: wp.vec3, attr: wp.vec3) -> float:
+    """Signed distance function for a bowl shape.
+
+    attr[0] = height
+    attr[1] = radius
+    attr[2] = thickness
+    """
+    height = attr[0]
+    radius = attr[1]
+    thick = attr[2]
+    width = wp.sqrt(radius * radius - height * height)
+
+    # q = (norm_xy(p), p.z)
+    q0 = wp.sqrt(p[0] * p[0] + p[1] * p[1])
+    q1 = p[2]
+
+    # qdiff = q - (width, height)
+    qdiff0 = q0 - width
+    qdiff1 = q1 - height
+
+    if height * q0 < width * q1:
+      dist = wp.sqrt(qdiff0 * qdiff0 + qdiff1 * qdiff1)
+    else:
+      q_norm = wp.sqrt(q0 * q0 + q1 * q1)
+      dist = wp.abs(q_norm - radius)
+
+    return dist - thick
+
+
+  # gradient of distance function
+  @wp.func
+  def bowl_sdf_grad(p: wp.vec3, attr: wp.vec3) -> wp.vec3:
+    """Gradient of bowl SDF via finite differences."""
+    eps = float(1e-6)
+    f0 = bowl(p, attr)
+
+    px = wp.vec3(p[0] + eps, p[1], p[2])
+    py = wp.vec3(p[0], p[1] + eps, p[2])
+    pz = wp.vec3(p[0], p[1], p[2] + eps)
+
+    grad = wp.vec3(
+      (bowl(px, attr) - f0) / eps,
+      (bowl(py, attr) - f0) / eps,
+      (bowl(pz, attr) - f0) / eps,
+    )
+    return grad
+
+
+  # register the bowl SDF plugin
+  @wp.func
+  def user_sdf(p: wp.vec3, attr: wp.vec3, sdf_type: int) -> float:
+    return bowl(p, attr)
+
+
+  @wp.func
+  def user_sdf_grad(p: wp.vec3, attr: wp.vec3, sdf_type: int) -> wp.vec3:
+    return bowl_sdf_grad(p, attr)
+
+
+  # override the module-level hooks
+  mjw._src.collision_sdf.user_sdf = user_sdf
+  mjw._src.collision_sdf.user_sdf_grad = user_sdf_grad
+
+物理回调
+-----------------
+
+MuJoCo 提供全局的 `物理回调 <https://mujoco.readthedocs.io/en/latest/APIreference/APIglobals.html#physics-callbacks>`__ ，
+允许用户向仿真流水线中注入自定义逻辑。MJWarp 支持类似的机制，但回调是通过 ``Model.callback`` 在每个 :class:`mjw.Model <mujoco_warp.Model>`
+实例上设置的 Python 函数，而不是全局函数指针。
+
+可用的回调如下：
+
+.. list-table::
+   :width: 90%
+   :align: left
+   :widths: 3 5
+   :header-rows: 1
+
+   * - 回调
+     - 说明
+   * - ``control``
+     - 自定义控制律，写入 ``Data.ctrl``
+   * - ``passive``
+     - 自定义被动力，写入 ``Data.qfrc_passive``
+   * - ``act_dyn``
+     - 自定义执行器动力学，写入 ``Data.act_dot``
+   * - ``act_gain``
+     - 自定义执行器增益，写入 ``Data.actuator_force``
+   * - ``act_bias``
+     - 自定义执行器偏置，写入 ``Data.actuator_force``
+   * - ``sensor``
+     - 自定义传感器，写入 ``Data.sensordata`` ；接收一个额外的 ``stage`` 参数
+   * - ``contactfilter``
+     - 自定义接触过滤，写入 ``Data.contact``
+
+.. code-block:: python
+
+  import mujoco
+  import mujoco_warp as mjw
+  import warp as wp
+
+  _MJCF = r"""
+  <mujoco>
+    <worldbody>
+      <body>
+        <geom size=".1"/>
+        <joint name="hinge"/>
+      </body>
+    </worldbody>
+    <actuator>
+      <motor joint="hinge"/>
+    </actuator>
+  </mujoco>
+  """
+
+  @wp.kernel
+  def _ctrl_callback(ctrl_out: wp.array2d(dtype=float)):
+    worldid = wp.tid()
+    ctrl_out[worldid, 0] = 2.0
+
+  def ctrl_callback(m, d):
+    wp.launch(_ctrl_callback, dim=(d.nworld,), outputs=[d.ctrl])
+
+  mjm = mujoco.MjModel.from_xml_string(_MJCF)
+  m = mjw.put_model(mjm)
+  d = mjw.make_data(mjm)
+
+  m.callback.control = ctrl_callback
+  mjw.step(m, d)
+  assert d.ctrl.numpy()[0, 0] == 2.0
+
+.. _mjwPairwise:
+
+成对碰撞器
+-------------------
+
+下表给出了 MJWarp 中不同 geom 对所使用的碰撞器，以及它们生成的最大接触数。使用开关可以查看在选项
+:ref:`nativeccd<option-flag-nativeccd>` 和 :ref:`multiccd<option-flag-multiccd>` 下的最大接触数。
+
+.. raw:: html
+
+   <div class="pairwise-toggles">
+     <div class="pairwise-toggle-item">
+       <label class="pairwise-switch">
+         <input type="checkbox" id="nativeccd-checkbox" checked>
+         <span class="pairwise-slider"></span>
+       </label>
+       <span>nativeccd</span>
+     </div>
+     <div class="pairwise-toggle-item">
+       <label class="pairwise-switch">
+         <input type="checkbox" id="multiccd-checkbox" checked>
+         <span class="pairwise-slider"></span>
+       </label>
+       <span>multiccd</span>
+     </div>
+   </div>
+
+.. list-table::
+   :header-rows: 1
+   :stub-columns: 1
+   :widths: auto
+   :class: table-pairwise
+
+   * -
+     - Sphere
+     - Capsule
+     - Ellipsoid
+     - Cylinder
+     - Box
+     - Mesh
+     - SDF
+   * - Plane
+     - | primitive
+       | **1**
+     - | primitive
+       | **2**
+     - | primitive
+       | **1**
+     - | primitive
+       | **4**
+     - | primitive
+       | **4**
+     - | primitive
+       | **4**
+     - | primitive
+       | **1**
+   * - HField
+     - | HFieldCCD
+       | **4**
+     - | HFieldCCD
+       | **4**
+     - | HFieldCCD
+       | **4**
+     - | HFieldCCD
+       | **4**
+     - | HFieldCCD
+       | **4**
+     - | HFieldCCD
+       | **4**
+     - | HFieldSDF
+       | :ref:`sdf_initpoints <option-sdf_initpoints>`
+   * - Sphere
+     - | primitive
+       | **1**
+     - | primitive
+       | **1**
+     - | CCD
+       | **1**
+     - | primitive
+       | **1**
+     - | primitive
+       | **1**
+     - | CCD
+       | **1**
+     - | SDF
+       | :ref:`sdf_initpoints <option-sdf_initpoints>`
+   * - Capsule
+     -
+     - | primitive
+       | **2**
+     - | CCD
+       | **1**
+     -
+       .. raw:: html
+
+         <div class="line">CCD</div>
+         <div class="line"><strong class="mjw-cap-ccd">2</strong></div>
+
+     - | primitive
+       | **2**
+     -
+       .. raw:: html
+
+         <div class="line">CCD</div>
+         <div class="line"><strong class="mjw-cap-ccd">2</strong></div>
+
+     - | SDF
+       | :ref:`sdf_initpoints <option-sdf_initpoints>`
+   * - Ellipsoid
+     -
+     -
+     - | CCD
+       | **1**
+     - | CCD
+       | **1**
+     - | CCD
+       | **1**
+     - | CCD
+       | **1**
+     - | SDF
+       | :ref:`sdf_initpoints <option-sdf_initpoints>`
+   * - Cylinder
+     -
+     -
+     -
+     -
+       .. raw:: html
+
+         <div class="line">CCD</div>
+         <div class="line"><strong class="mjw-ccd">4</strong></div>
+
+     -
+       .. raw:: html
+
+         <div class="line">CCD</div>
+         <div class="line"><strong class="mjw-ccd">4</strong></div>
+
+     -
+       .. raw:: html
+
+         <div class="line">CCD</div>
+         <div class="line"><strong class="mjw-ccd">4</strong></div>
+
+     - | SDF
+       | :ref:`sdf_initpoints <option-sdf_initpoints>`
+   * - Box
+     -
+     -
+     -
+     -
+     -
+       .. raw:: html
+
+         <div class="mjw-boxbox">
+           <div class="line">CCD</div>
+           <div class="line"><strong>4</strong></div>
+         </div>
+
+     -
+       .. raw:: html
+
+         <div class="line">CCD</div>
+         <div class="line"><strong class="mjw-ccd">4</strong></div>
+
+     - | SDF
+       | :ref:`sdf_initpoints <option-sdf_initpoints>`
+   * - Mesh
+     -
+     -
+     -
+     -
+     -
+     -
+       .. raw:: html
+
+         <div class="line">CCD</div>
+         <div class="line"><strong class="mjw-ccd">4</strong></div>
+
+     - | MeshSDF
+       | :ref:`sdf_initpoints <option-sdf_initpoints>`
+   * - SDF
+     -
+     -
+     -
+     -
+     -
+     -
+     - | SDF
+       | :ref:`sdf_initpoints <option-sdf_initpoints>`
+
+.. raw:: html
+
+   <script>
+     (() => {
+       const nativeccd = document.getElementById('nativeccd-checkbox');
+       const multiccd = document.getElementById('multiccd-checkbox');
+
+       const update = () => {
+         const isNative = nativeccd && nativeccd.checked;
+         const isMulti = multiccd && multiccd.checked;
+
+         const ccdVal = isMulti ? '4' : '1';
+         document.querySelectorAll('.mjw-ccd').forEach(el => el.textContent = ccdVal);
+
+         const capVal = isMulti ? '2' : '1';
+         document.querySelectorAll('.mjw-cap-ccd').forEach(el => el.textContent = capVal);
+
+         const boxbox = document.querySelector('.mjw-boxbox');
+         if (boxbox) {
+           if (!isNative) {
+             boxbox.innerHTML = '<div class="line">primitive</div><div class="line"><strong>8</strong></div>';
+           } else {
+             boxbox.innerHTML = `<div class="line">CCD</div><div class="line"><strong>${ccdVal}</strong></div>`;
+           }
+         }
+       };
+
+       [nativeccd, multiccd].forEach(cb => cb && cb.addEventListener('change', update));
+     })();
+   </script>
+
+.. _mjwBoxBox:
+
+盒-盒碰撞
+------------------
+
+默认情况下，盒-盒碰撞使用通用凸体碰撞流水线（GJK/EPA）。通过设置 ``NATIVECCD`` 禁用标志，可以使用基于
+`engine_collision_box.c <https://github.com/google-deepmind/mujoco/blob/main/src/engine/engine_collision_box.c>`__
+的专用基本碰撞器：
+
+.. code-block:: python
+
+   m.opt.disableflags |= mjw.DisableBit.NATIVECCD
+
+该专用碰撞器最多生成 8 个接触点，而凸体流水线最多生成 4 个，并且可能提高涉及盒体堆叠或操作的任务的接触稳定性。
+
+渲染
+---------
+
+MJWarp 中包含的批量渲染器（rendering）与 MuJoCo 的渲染器用途不同。MJWarp 批量渲染器是一个单次命中的光线投射器，针对高吞吐量和低保真度进行了优化。
+
+它支持：
+ * 简单的朗伯漫反射着色
+ * 基本的点光源和平行光源
+ * 纹理
+ * 阴影
+ * 具有物理遮挡的三维高斯泼溅（3D Gaussian Splatting，3DGS）漫反射渲染
+
+它不支持：
+ * 全局光照等高级光照效果
+ * 基于物理的材质属性
+ * 3DGS 的视角相关球谐函数（更高阶 SH > 0）

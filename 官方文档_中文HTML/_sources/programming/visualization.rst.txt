@@ -1,0 +1,118 @@
+﻿.. _Visualization:
+.. _Abstract:
+
+可视化
+------
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+MuJoCo 拥有一个独立于任何图形库的原生 3D 可视化（visualization）层。它提供交互式相机控制、基于射线投射的对象拾取、鼠标驱动的力与位姿扰动、可视化选项，并能自动生成装饰性和诊断性的几何体，例如接触点和接触力、等效惯性盒、凸包、运动学树、约束违反量、空间坐标系以及文字标签。这些元素有助于深入了解物理仿真，并帮助在交互式查看器（:ref:`MuJoCo Studio <Studio>`、\ :ref:`simulate.cc <saSimulate>`）和离屏渲染管线（:ref:`render.cc <saRender>`）中微调模型。
+
+抽象可视化层中的所有数据结构和函数都带有前缀 ``mjv``，并在 ``mjvisualize.h`` 中声明：
+
+- :ref:`mjvCamera` 和 :ref:`mjvGLCamera` 分别表示高层交互式相机和底层视锥相机。
+- :ref:`mjvOption` 控制哪些元素类别、geom 组和诊断叠加层可见。
+- :ref:`mjvPerturb` 跟踪交互式对象选择以及鼠标施加的力和力矩。
+- :ref:`mjvScene` 和 :ref:`mjvGeom` 保存对 3D 场景及其装饰的完整逐帧几何描述。
+
+将抽象可视化与\ :ref:`渲染 <Rendering>`\ （rendering）分离，可使交互和场景逻辑独立于图形 API，并允许多个渲染后端共享相同的相机、选择、扰动和选项机制。\ :ref:`经典 OpenGL 渲染器 <ClassicRendering>`\ 在每一帧都会使用整个 :ref:`mjvScene`，而 :ref:`Filament 渲染器 <FilamentRendering>`\ 则根据 :ref:`mjData` 更新其自身的持久场景，仅将 ``mjvScene`` 用于瞬态装饰；两者的并排比较参见\ :ref:`渲染 <Rendering>`\ 一章。第三方渲染器也可以直接使用 ``mjvScene``。
+
+.. _viCamera:
+
+相机
+~~~~
+
+相机对象有两种类型：一种是以独立数据结构 :ref:`mjvCamera` 表示的抽象相机，另一种是以数据结构 :ref:`mjvGLCamera`\ （也别名为 ``mjrCamera``）表示的底层相机，后者嵌入在 :ref:`mjvScene` 中，或通过 :ref:`mjv_camera2GLCamera` 直接计算得到。存在抽象相机时，它被用来自动计算渲染器所使用的底层相机参数。或者，用户也可以绕过抽象相机机制，直接设置底层相机参数，如下文\ :ref:`虚拟现实 <viVR>`\ 一节所述。
+
+抽象相机可以表示三种不同的相机类型，由 mjvCamera.type 决定。可能的设置由枚举 mjtCamera 定义：
+
+mjCAMERA_FREE
+   这是最常用的抽象相机。它可以用鼠标自由移动。它具有注视点、到注视点的距离、方位角和仰角；不允许绕视线方向扭转。函数 :ref:`mjv_moveCamera` 是一个鼠标钩子，用于通过鼠标交互式地控制所有这些相机属性。\ :ref:`simulate.cc <saSimulate>` 首次启动时使用的就是自由相机。
+mjCAMERA_TRACKING
+   这与自由相机类似，只是注视点不再是自由参数，而是与 id 由 mjvCamera.trackbodyid 给出的 MuJoCo body 耦合。每次更新时，注视点被设置为以指定 body 为根的运动学子树的质心。此外还有一些滤波处理，以产生平滑的相机运动。距离、方位角和仰角由用户控制，不会被自动修改。这对于在不转动相机的情况下跟踪运动中的 body 很有用。要在 :ref:`simulate.cc <saSimulate>` 中从自由相机切换到跟踪相机，请按住 Ctrl 并在目标 body 上右键双击。按 Esc 可返回自由相机。
+mjCAMERA_FIXED
+   这指的是在模型中显式定义的相机，不同于仅存在于可视化器中、并未在模型中定义的自由相机和跟踪相机。模型相机的 id 由 mjvCamera.fixedcamid 给出。该相机是固定的，意思是可视化器不能改变其位姿或任何其他参数。但是，仿真器会在每个时间步计算相机位姿，如果该相机附着在运动的 body 上，或处于跟踪或瞄准模式，它就会移动。
+mjCAMERA_USER
+   这表示在更新期间忽略抽象相机，并且底层 OpenGL 相机不会改变。这等价于完全不指定抽象相机，即在下文所述的更新函数中将 NULL 指针传给 mjvCamera。
+
+底层 mjvGLCamera 决定实际的渲染。mjvScene 中嵌入了两个这样的相机，每只眼睛一个。每个相机具有位置、前向和上向。前向对应于相机坐标系的负 Z 轴，而上向对应于正 Y 轴。此外还有 OpenGL 意义上的视锥，只不过我们存储的是左右视锥边缘的平均值，然后在渲染期间根据视口的宽高比、并假设像素宽高比为 1:1，计算出实际的边缘。两个相机位置之间的距离对应于瞳距（ipd）。当底层相机参数根据抽象相机自动计算时，对于自由相机和跟踪相机，瞳距以及垂直视场角（fovy）取自 ``mjModel.vis.global.ipd``/``fovy``，对于模型中定义的相机，则取自相机专属的 ``mjModel.cam_ipd/fovy``。当未启用立体模式（由 mjvScene.stereo 决定）时，两只眼睛的相机数据会在渲染期间于内部取平均。
+
+.. _viSelect:
+
+选择
+~~~~
+
+在许多应用中，我们需要点击某个点并确定该点/像素所属的 3D 对象。这通过函数 :ref:`mjv_select` 完成，它使用\ :ref:`射线碰撞 <Raycollisions>`。射线碰撞功能属于引擎层，不依赖可视化器（实际上它也用于独立于可视化地仿真\ :ref:`测距仪 <sensor-rangefinder>`\ 传感器），但选择函数是在可视化器中实现的，因为它需要相机和视口的信息。
+
+函数 mjv_select 返回指定窗口坐标处的 geom 的索引，如果该坐标处没有 geom 则返回 -1。同时还会返回 3D 位置。该函数的使用示例参见代码样例 :ref:`simulate.cc <saSimulate>`。在内部，mjv_select 调用引擎层函数 :ref:`mj_ray`，后者又调用逐 geom 的函数 :ref:`mj_rayMesh`、\ :ref:`mj_rayHfield` 和 :ref:`mju_rayGeom`。用户可以通过直接调用这些函数来实现自定义的选择机制。例如在 VR 应用中，将手持控制器用作可以选择对象的“激光指示器”会很合理。
+
+.. _viPerturb:
+
+扰动
+~~~~
+
+事实证明，交互式扰动对于探索模型动力学（dynamics）以及探查闭环控制系统非常有用。用户可以自由实现自己选择的任何扰动机制，方法是将 ``mjData.qfrc_applied`` 或 ``mjData.xfrc_applied`` 设置为合适的力（分别以广义坐标和笛卡尔坐标表示）。
+
+实现交互式扰动所需的所有对象都被归入数据结构 :ref:`mjvPerturb`。其用法在 :ref:`simulate.cc <saSimulate>` 中有所展示。其思路是选择一个感兴趣的 MuJoCo body，并为该 body 提供一个参考位姿（即 3D 位置和四元数（quaternion）姿态）。它们存储在 mjPerturb.refpos/quat 中。函数 :ref:`mjv_movePerturb` 是一个鼠标钩子，用于通过鼠标控制参考位姿。函数 :ref:`mjv_initPerturb` 用于在扰动开始时将参考位姿设置为等于所选 body 的位姿，以避免跳变。
+
+随后，该扰动对象可用于直接移动所选 body（在仿真暂停时，或所选 body 是 mocap 刚体时），或对该 body 施加力和力矩。这分别通过函数 :ref:`mjv_applyPerturbPose` 和 :ref:`mjv_applyPerturbForce` 完成。后一个函数会将所选 body 的外部扰动力写入 ``mjData.xfrc_applied``。但它不会清除其余 body 的 ``mjData.xfrc_applied``，因此建议在用户代码中将其清除，以防所选 body 发生了变化，而某个扰动力是上一个时间步遗留下来的。如果有多个设备可以施加扰动，或者用户代码需要添加来自其他来源的扰动，则用户必须实现必要的逻辑，使 ``mjData.xfrc_applied`` 中只存在所需的扰动，并清除所有旧的扰动。
+
+除了影响仿真之外，扰动对象还能被抽象可视化器识别并被渲染。这是通过添加一条表示位置差的可视化弦，以及一个表示所选 body 参考姿态的旋转立方体来实现的。当启用 :ref:`mjvOption` 中相应的可视化标志时，扰动力本身也可以被渲染。
+
+.. _viOption:
+
+可视化选项
+~~~~~~~~~~
+
+数据结构 :ref:`mjvOption` 控制显示什么，与如何渲染无关。\ :ref:`mjv_updateScene` 在填充 ``mjvScene`` 时使用它，\ :ref:`Filament 渲染器 <FilamentRendering>`\ 也直接读取它，以设置其持久对象的可见性。其字段包括：
+
+- ``flags`` 以 :ref:`mjtVisFlag` 为索引，用于启用各种装饰性和诊断性元素：接触点和接触力、关节和执行器轴、约束违反量、惯性盒、凸包、蒙皮、肌腱、扰动力等等。
+- ``geomgroup``、\ ``sitegroup``、\ ``jointgroup``、\ ``tendongroup``、\ ``actuatorgroup``、\ ``flexgroup`` 和 ``skingroup`` 按模型元素的 :ref:`group<body-geom-group>` 属性切换其可见性。
+- ``label``\ （:ref:`mjtLabel`）和 ``frame``\ （:ref:`mjtFrame`）分别选择为哪一类对象添加文字标签，以及绘制哪些空间坐标系。
+- ``bvh_depth`` 和 ``flex_layer`` 分别选择显示包围体层次结构的哪一层，以及 3D flex 元素的哪一层。
+
+函数 :ref:`mjv_defaultOption` 将所有字段设置为其默认值，其中第 0、1 和 2 组可见，标志取 :ref:`mjVISSTRING` 中列出的默认值。
+
+.. _viUpdate:
+
+场景更新
+~~~~~~~~
+
+最后，我们将以上所有元素整合起来，说明 :ref:`mjvScene` 是如何更新的。在经典 :ref:`OpenGL 渲染器 <ClassicRendering>`\ 这样的立即模式渲染器中，\ ``mjvScene`` 是渲染阶段的主要输入；而在 :ref:`Filament <FilamentRendering>` 这样的保留模式渲染器中，模型几何体直接根据 ``mjData`` 更新，\ ``mjvScene`` 仅用于装饰元素（``mjCAT_DECOR``）。
+
+更新 ``mjvScene`` 只需在每一帧调用一次函数 :ref:`mjv_updateScene`。mjvCamera 和 mjvPerturb 是该函数的参数，也可以是 NULL 指针，此时相应的功能被禁用。在 VR 应用中，每一帧还必须设置 mjvScene.camera[n]（n=0,1）的参数；这由 mjv_updateScene 之外的用户代码完成。函数 mjv_updateScene 检查 mjModel 和 mjData，构造所有需要渲染的 geom（依据指定的可视化选项），并用 :ref:`mjvGeom` 对象填充数组 mjvScene.geoms。请注意，mjvGeom 是抽象 geom，与 mjModel 和 mjData 中的仿真 geom 并非一一对应。具体而言，mjvGeom 包含 geom 的位姿、缩放、形状（mjModel 中的基元或网格索引）、材质属性、纹理（mjModel 中的索引）、标注，以及指定如何进行渲染所需的其他一切。mjvScene 还包含从模型复制而来的至多 ``mjMAXLIGHT`` 个光源，以及一个头灯（若存在，则位于 0 号光源位置）。
+
+上述过程是最常见的做法，它在每一帧更新整个场景。此外，我们还提供了两个用于更精细控制的函数。\ :ref:`mjv_updateCamera` 只更新相机（即将抽象的 mjvCamera 映射到底层的 mjvGLCamera），而不触碰 geom 或光源；另外，\ :ref:`mjv_camera2GLCamera` 直接返回单个 ``mjvGLCamera``，无需 ``mjvScene``。当仿真暂停而用户在快速移动相机时，或使用 Filament 渲染器时（相机参数通过 :ref:`mjrfRenderRequest` 传递），这很有用。
+
+通过操作抽象 geom 的列表，可以实现更高级的渲染效果。例如，用户可以在列表末尾添加自定义 geom。有时我们希望渲染一系列仿真状态（即轨迹），而不仅仅是当前状态。为此，我们提供了函数 :ref:`mjv_addGeoms`，它将当前仿真状态对应的 geom 添加到 mjvScene 中已有的列表中。它不会改变光源列表，因为光照是叠加的，光源过多会使场景过亮。重要的是，用户可以通过枚举类型 mjtCatBit 的位掩码来选择要添加哪些 geom 类别：
+
+mjCAT_STATIC
+   选择属于世界刚体（world body，body id 为 0）的 MuJoCo geom 和 site。
+mjCAT_DYNAMIC
+   选择属于世界刚体之外的 body 的 MuJoCo geom 和 site。
+mjCAT_DECOR
+   选择装饰元素，例如力箭头、自动生成的骨架、等效惯性盒，以及由抽象可视化器添加、与模型中定义的 MuJoCo geom 和 site 并不对应的任何其他元素。
+mjCAT_ALL
+   选择以上所有类别。
+
+主更新函数 mjv_updateScene 通常以 mjCAT_ALL 调用。它会清空 geom 列表，并调用 mjv_addGeoms，仅为当前模型状态添加 geom。如果我们想渲染轨迹，就必须注意避免视觉上的杂乱。因此合理的做法是：用 mjCAT_ALL 渲染其中一帧（根据用例，通常是第一帧或最后一帧），而用 mjCAT_DYNAMIC 渲染所有其他帧。由于静态/世界对象不会移动，在每一帧中都渲染它们只会拖慢 GPU 并造成视觉走样。至于装饰元素，在某些情形下我们可能想把它们全部渲染出来，例如为了可视化接触力随时间的演变。总之，mjvScene 的构造方式具有很大的灵活性。我们为主要用例提供了自动化，但用户也可以根据需要通过编程方式进行修改。
+
+.. _viVR:
+
+虚拟现实
+~~~~~~~~
+
+在桌面应用中，使用抽象的 mjvCamera 以便直观地用鼠标控制，然后自动将其映射为用于渲染的 mjvGLCamera，是很方便的。在 VR 应用中，情况则大不相同。此时用户的头部/眼睛以及投影面都受到跟踪，因而在房间中具有物理存在。如果有什么东西可以被用户（通过鼠标或其他输入设备）移动，那就是模型相对于房间的位置、朝向和缩放。这称为模型变换，并在 mjvScene 中表示。函数 :ref:`mjv_moveModel` 是控制该变换的鼠标钩子。在更新时使用抽象 mjvCamera 的情况下，模型变换会被自动禁用，方法是设置标志 mjvScene.enabletransform = 0，而不是清除实际参数。这样用户就可以在 VR 和桌面相机模式之间切换，而不会丢失模型变换参数。
+
+由于我们引入了两个空间，即模型空间和房间空间，所以需要在二者之间进行映射，并明确哪些空间量是相对于哪个空间坐标系定义的。仿真器可访问的一切都位于模型空间中。房间空间只有可视化器才能访问。房间空间中定义的量只有 mjvGLCamera 的参数。函数 :ref:`mjv_room2model`、\ :ref:`mjv_model2room`、\ :ref:`mjv_cameraInModel` 和 :ref:`mjv_cameraInRoom` 执行必要的变换，VR 应用需要用到它们。
+
+虽然 MuJoCo 不提供内置的 VR 应用，但它提供了数据结构和函数，以支持在用户代码中集成 VR。
+
+**头部跟踪与相机**
+   在典型的 VR 应用中，跟踪设备实时提供用户双眼的位置和朝向。这些数据可以直接复制到 ``mjvScene.camera[n]`` 中的两个 ``mjvGLCamera`` 结构体里（其中 ``n=0`` 为左眼，\ ``n=1`` 为右眼）。还必须根据被跟踪显示器的物理特性设置 ``mjvGLCamera`` 的视锥参数。
+
+**控制器与 mocap 刚体**
+   手持空间控制器同样在房间空间中被跟踪。函数 :ref:`mjv_room2model` 可以将这些位姿映射到模型空间。一旦进入模型空间，控制器的位姿就可以用来更新 MuJoCo 的 *mocap 刚体*\ 的位置。从物理角度看，mocap 刚体被视为固定的，但用户需要在每个仿真步以编程方式移动它们。它们可以通过接触与仿真相互作用，或者更好的做法是，通过软等式约束连接到与之产生接触的普通 body 上。这提供了有效的动态滤波，并避免了涉及表现得如同无限重的 body 的接触。mocap 刚体随时间变化的位置和朝向存储在 ``mjData.mocap_pos`` 和 ``mjData.mocap_quat`` 中。

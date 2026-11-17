@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html class="no-js" data-content_root="./" lang="zh-CN">
+<head><meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="light dark" name="color-scheme"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="_static/favicons/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+<link href="_static/favicons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="_static/favicons/favicon-180x180.png" rel="apple-touch-icon" sizes="180x180" type="image/png"/>
+<link href="_static/favicons/favicon-180x180.png" rel="icon" sizes="180x180" type="image/png"/>
+<link href="_static/favicons/favicon-192x192.png" rel="icon" sizes="192x192" type="image/png"/><link href="genindex.html" rel="index" title="索引"/><link href="search.html" rel="search" title="搜索"/><link href="mjx_api.html" rel="next" title="MJX API"/><link href="python.html" rel="prev" title="Python"/>
+<link as="image" href="_static/banner.svg" rel="prefetch"/>
+<!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+<title>MuJoCo XLA (MJX) - MuJoCo 文档（中文）</title>
+<link href="_static/pygments.css?v=b86133f3" rel="stylesheet" type="text/css"/>
+<link href="_static/styles/furo.css?v=7bdb33bb" rel="stylesheet" type="text/css"/>
+<link href="_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
+<link href="_static/katex/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="_static/katex-math.css?v=05624691" rel="stylesheet" type="text/css"/>
+<link href="_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="_static/styles/furo-extensions.css?v=8dab3a3b" rel="stylesheet" type="text/css"/>
+<link href="_static/theme_overrides.css?v=8d83ad8c" rel="stylesheet" type="text/css"/>
+<link href="_static/theme_overrides_mjwarp.css?v=e08d3b36" rel="stylesheet" type="text/css"/>
+<link href="_static/zh_overrides.css?v=ee52c62c" rel="stylesheet" type="text/css"/>
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #16213a;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #2a4fd6;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #2a4fd6;
+  --color-brand-content: #2a4fd6;
+  --color-background-secondary: #f4f6f9;
+  --color-sidebar-background: #f4f6f9;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+      }
+    }
+  }
+</style></head>
+<body>
+<script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+<symbol id="svg-toc" viewbox="0 0 24 24">
+<title>Contents</title>
+<svg fill="currentColor" stroke="currentColor" stroke-width="0" viewbox="0 0 1024 1024">
+<path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"></path>
+</svg>
+</symbol>
+<symbol id="svg-menu" viewbox="0 0 24 24">
+<title>Menu</title>
+<svg class="feather-menu" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<line x1="3" x2="21" y1="12" y2="12"></line>
+<line x1="3" x2="21" y1="6" y2="6"></line>
+<line x1="3" x2="21" y1="18" y2="18"></line>
+</svg>
+</symbol>
+<symbol id="svg-arrow-right" viewbox="0 0 24 24">
+<title>Expand</title>
+<svg class="feather-chevron-right" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</symbol>
+<symbol id="svg-sun" viewbox="0 0 24 24">
+<title>Light mode</title>
+<svg class="feather-sun" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" x2="12" y1="1" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="23"></line>
+<line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+<line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+<line x1="1" x2="3" y1="12" y2="12"></line>
+<line x1="21" x2="23" y1="12" y2="12"></line>
+<line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+<line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
+</svg>
+</symbol>
+<symbol id="svg-moon" viewbox="0 0 24 24">
+<title>Dark mode</title>
+<svg class="icon-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+</svg>
+</symbol>
+<symbol id="svg-sun-with-moon" viewbox="0 0 24 24">
+<title>Auto light/dark, in light mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z" style="opacity: 50%"></path>
+<line x1="14.5" x2="14.5" y1="3.25" y2="1.25"></line>
+<line x1="14.5" x2="14.5" y1="15.85" y2="17.85"></line>
+<line x1="10.044" x2="8.63" y1="5.094" y2="3.68"></line>
+<line x1="19" x2="20.414" y1="14.05" y2="15.464"></line>
+<line x1="8.2" x2="6.2" y1="9.55" y2="9.55"></line>
+<line x1="20.8" x2="22.8" y1="9.55" y2="9.55"></line>
+<line x1="10.044" x2="8.63" y1="14.006" y2="15.42"></line>
+<line x1="19" x2="20.414" y1="5.05" y2="3.636"></line>
+<circle cx="14.5" cy="9.55" r="3.6"></circle>
+</svg>
+</symbol>
+<symbol id="svg-moon-with-sun" viewbox="0 0 24 24">
+<title>Auto light/dark, in dark mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"></path>
+<line style="opacity: 50%" x1="18" x2="18" y1="3.705" y2="2.5"></line>
+<line style="opacity: 50%" x1="18" x2="18" y1="11.295" y2="12.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="4.816" y2="3.964"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="10.212" y2="11.063"></line>
+<line style="opacity: 50%" x1="14.205" x2="13.001" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="21.795" x2="23" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="10.184" y2="11.036"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="4.789" y2="3.937"></line>
+<circle cx="18" cy="7.5" r="2.169" style="opacity: 50%"></circle>
+</svg>
+</symbol>
+<symbol id="svg-pencil" viewbox="0 0 24 24">
+<svg class="icon-tabler-pencil-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
+<path d="M13.5 6.5l4 4"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+<symbol id="svg-eye" viewbox="0 0 24 24">
+<svg class="icon-tabler-eye-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
+<path d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+</svg>
+<input aria-label="Toggle site navigation sidebar" class="sidebar-toggle" id="__navigation" name="__navigation" type="checkbox"/>
+<input aria-label="Toggle table of contents sidebar" class="sidebar-toggle" id="__toc" name="__toc" type="checkbox"/>
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+<div class="page">
+<header class="mobile-header">
+<div class="header-left">
+<label class="nav-overlay-icon" for="__navigation">
+<span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+</label>
+</div>
+<div class="header-center">
+<a href="index.html"><div class="brand">MuJoCo 文档（中文）</div></a>
+</div>
+<div class="header-right">
+<div class="theme-toggle-container theme-toggle-header">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-header-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+</header>
+<aside class="sidebar-drawer">
+<div class="sidebar-container">
+<div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+<div class="sidebar-logo-container">
+<img alt="Logo" class="sidebar-logo" src="_static/banner.svg"/>
+</div>
+<span class="sidebar-brand-text">MuJoCo 文档（中文）</span>
+</a><form action="search.html" class="sidebar-search-container" method="get" role="search">
+<input aria-label="搜索" class="sidebar-search" name="q" placeholder="搜索"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/index.html">入门教程</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">概览</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="computation/index.html">计算</a><input aria-label="Toggle navigation of 计算" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="computation/fluid.html">流体力</a></li>
+<li class="toctree-l2"><a class="reference internal" href="computation/speculative.html">推测接触</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modeling.html">建模</a></li>
+<li class="toctree-l1"><a class="reference internal" href="XMLreference.html">XML 参考</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="programming/index.html">编程</a><input aria-label="Toggle navigation of 编程" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="programming/simulation.html">仿真</a></li>
+<li class="toctree-l2"><a class="reference internal" href="programming/visualization.html">可视化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="programming/rendering.html">渲染</a></li>
+<li class="toctree-l2"><a class="reference internal" href="programming/ui.html">用户界面</a></li>
+<li class="toctree-l2"><a class="reference internal" href="programming/modeledit.html">模型编辑</a></li>
+<li class="toctree-l2"><a class="reference internal" href="programming/samples.html">代码示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="programming/extension.html">扩展</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="APIreference/index.html">API 参考</a><input aria-label="Toggle navigation of API 参考" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="APIreference/APItypes.html">类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="APIreference/APIfunctions.html">函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="APIreference/APIglobals.html">全局变量</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="studio/index.html">Studio</a><input aria-label="Toggle navigation of Studio" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="studio/web_viewers.html">Web 查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="studio/native_viewers.html">原生查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="studio/architecture.html">架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="studio/python_plugins.html">Python 插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="studio/cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="python.html">Python</a></li>
+<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="unity.html">Unity 插件</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="OpenUSD/building.html">构建</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OpenUSD/mjcf_file_format_plugin.html">文件格式插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OpenUSD/importing.html">导入</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OpenUSD/exporting.html">导出</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="models.html">模型库</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">更新日志</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<div class="main">
+<div class="content">
+<div class="article-container">
+<a class="back-to-top muted-link" href="#">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+</svg>
+<span>Back to top</span>
+</a>
+<div class="content-icon-container">
+<div class="view-this-page">
+<a class="muted-link" href="_sources/mjx.rst.txt" title="View this page">
+<svg><use href="#svg-eye"></use></svg>
+<span class="visually-hidden">View this page</span>
+</a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-content-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+<article id="furo-main-content" role="main">
+<section id="mujoco-xla-mjx">
+<span id="mjx"></span><h1>MuJoCo XLA (MJX)<a class="headerlink" href="#mujoco-xla-mjx" title="链接到此标题。">#</a></h1>
+<div class="mt-notice admonition note">
+<p class="admonition-title">备注</p>
+<p>本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 <code class="docutils literal notranslate"><span class="pre">术语表.md</span></code> 。</p>
+</div>
+<div class="toctree-wrapper compound">
+</div>
+<p data-bi="bi-1">MuJoCo XLA (MJX) 为 MuJoCo 的多种实现提供了 <a class="reference external" href="https://github.com/jax-ml/jax#readme">JAX</a> API。MJX 位于 MuJoCo 仓库的
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/mjx">mjx</a> 目录下。</p><div class="en-orig" data-for="bi-1" lang="en">MuJoCo XLA (MJX) provides a <a class="reference external" href="https://github.com/jax-ml/jax#readme">JAX</a> API for various implementations of MuJoCo. MJX can be found
+under the <a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/mjx">mjx</a> directory in the MuJoCo repository.</div>
+<p data-bi="bi-2">MJX 允许用户在 <a class="reference external" href="https://www.tensorflow.org/xla">XLA</a> 编译器支持的所有计算硬件上运行 MuJoCo。我们提供了 MuJoCo 的 JAX 重新实现（<a class="reference internal" href="#mjxjax"><span class="std std-ref">MJX-JAX</span></a>）。MJX-JAX
+<a class="reference external" href="https://jax.readthedocs.io/en/latest/installation.html#supported-platforms">可运行于</a>：Nvidia 和 AMD GPU、Apple Silicon 以及 <a class="reference external" href="https://cloud.google.com/tpu">Google Cloud TPU</a>。MuJoCo 的 Warp 实现（<a class="reference internal" href="#mjxwarp"><span class="std std-ref">MJX-Warp</span></a>）专门针对 NVIDIA GPU 优化性能，解决了 MJX-JAX 中存在的若干性能瓶颈。</p><div class="en-orig" data-for="bi-2" lang="en">MJX allows users to run MuJoCo
+on all compute hardware supported by the <a class="reference external" href="https://www.tensorflow.org/xla">XLA</a> compiler. A JAX re-implementation of
+MuJoCo (<a class="reference internal" href="#mjxjax"><span class="std std-ref">MJX-JAX</span></a>) is available. MJX-JAX
+<a class="reference external" href="https://jax.readthedocs.io/en/latest/installation.html#supported-platforms">runs on</a>: Nvidia and AMD GPUs,
+Apple Silicon, and <a class="reference external" href="https://cloud.google.com/tpu">Google Cloud TPUs</a>. A Warp implementation of MuJoCo
+(<a class="reference internal" href="#mjxwarp"><span class="std std-ref">MJX-Warp</span></a>) optimizes performance specifically for NVIDIA GPUs, resolving
+several performance bottlenecks exhibited in MJX-JAX.</div>
+<p data-bi="bi-3">MJX 以名为 <code class="docutils literal notranslate"><span class="pre">mujoco-mjx</span></code> 的独立包发布在 <a class="reference external" href="https://pypi.org/project/mujoco-mjx">PyPI</a> 上。它依赖主 <code class="docutils literal notranslate"><span class="pre">mujoco</span></code> 包进行模型（model）编译和可视化（visualization），并且依赖 <a class="reference internal" href="mjwarp/index.html#mjw"><span class="std std-ref">MuJoCo Warp</span></a> 来提供 MuJoCo 的 Warp 实现。</p><div class="en-orig" data-for="bi-3" lang="en">MJX is distributed as a separate package called <code class="docutils literal notranslate"><span class="pre">mujoco-mjx</span></code> on <a class="reference external" href="https://pypi.org/project/mujoco-mjx">PyPI</a>.
+It depends on the main <code class="docutils literal notranslate"><span class="pre">mujoco</span></code> package for model compilation and visualization, and also depends on
+<a class="reference internal" href="mjwarp/index.html#mjw"><span class="std std-ref">MuJoCo Warp</span></a> for the Warp implementation of MuJoCo.</div>
+<section id="mjxinstallation">
+<span id="id1"></span><h2 data-bi="bi-4">安装<a class="headerlink" href="#mjxinstallation" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-4" lang="en">Installation</div>
+<p data-bi="bi-5">推荐通过 <a class="reference external" href="https://pypi.org/project/mujoco-mjx/">PyPI</a> 安装此包：</p><div class="en-orig" data-for="bi-5" lang="en">The recommended way to install this package is via <a class="reference external" href="https://pypi.org/project/mujoco-mjx/">PyPI</a>:</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>mujoco-mjx
+</pre></div>
+</div>
+<p data-bi="bi-6">要在 MJX 中使用 <a class="reference internal" href="mjwarp/index.html#mjw"><span class="std std-ref">MuJoCo Warp</span></a>，请通过以下方式安装：</p><div class="en-orig" data-for="bi-6" lang="en">To use <a class="reference internal" href="mjwarp/index.html#mjw"><span class="std std-ref">MuJoCo Warp</span></a> with MJX, install via:</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>mujoco-mjx<span class="o">[</span>warp<span class="o">]</span>
+</pre></div>
+</div>
+<p data-bi="bi-7">MuJoCo 库的副本已作为此包的依赖项提供，<strong>无需</strong>单独下载或安装。</p><div class="en-orig" data-for="bi-7" lang="en">A copy of the MuJoCo library is provided as part of this package’s dependencies and does <strong>not</strong> need to be downloaded
+or installed separately.</div>
+</section>
+<section id="mjxexample">
+<span id="id2"></span><h2 data-bi="bi-8">最小示例<a class="headerlink" href="#mjxexample" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-8" lang="en">Minimal example</div>
+<p data-bi="bi-9">安装完成后，可以通过导入 <code class="docutils literal notranslate"><span class="pre">mujoco.mjx</span></code> 包来使用 MJX。调用 <code class="docutils literal notranslate"><span class="pre">mjx.put_model</span></code> 将 MuJoCo 模型放置到设备上，调用 <code class="docutils literal notranslate"><span class="pre">mjx.make_data</span></code> 在设备上创建 MuJoCo 数据。然后即可使用 <code class="docutils literal notranslate"><span class="pre">mjx.step</span></code> 推进仿真。</p><div class="en-orig" data-for="bi-9" lang="en">Once installed, you can use MJX by importing the <code class="docutils literal notranslate"><span class="pre">mujoco.mjx</span></code> package. A MuJoCo model is placed on device by calling <code class="docutils literal notranslate"><span class="pre">mjx.put_model</span></code>,
+and a MuJoCo data is created on device with <code class="docutils literal notranslate"><span class="pre">mjx.make_data</span></code>. You can then step the simulation with <code class="docutils literal notranslate"><span class="pre">mjx.step</span></code>.</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Throw a ball at 100 different velocities.</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">mujoco</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mujoco</span><span class="w"> </span><span class="kn">import</span> <span class="n">mjx</span>
+
+<span class="n">XML</span><span class="o">=</span><span class="sa">r</span><span class="s2">"""</span>
+<span class="s2">&lt;mujoco&gt;</span>
+<span class="s2">  &lt;worldbody&gt;</span>
+<span class="s2">    &lt;body&gt;</span>
+<span class="s2">      &lt;freejoint/&gt;</span>
+<span class="s2">      &lt;geom size=".15" mass="1" type="sphere"/&gt;</span>
+<span class="s2">    &lt;/body&gt;</span>
+<span class="s2">  &lt;/worldbody&gt;</span>
+<span class="s2">&lt;/mujoco&gt;</span>
+<span class="s2">"""</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">mujoco</span><span class="o">.</span><span class="n">MjModel</span><span class="o">.</span><span class="n">from_xml_string</span><span class="p">(</span><span class="n">XML</span><span class="p">)</span>
+<span class="n">mjx_model</span> <span class="o">=</span> <span class="n">mjx</span><span class="o">.</span><span class="n">put_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<span class="nd">@jax</span><span class="o">.</span><span class="n">vmap</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">batched_step</span><span class="p">(</span><span class="n">vel</span><span class="p">):</span>
+  <span class="n">mjx_data</span> <span class="o">=</span> <span class="n">mjx</span><span class="o">.</span><span class="n">make_data</span><span class="p">(</span><span class="n">mjx_model</span><span class="p">)</span>
+  <span class="n">qvel</span> <span class="o">=</span> <span class="n">mjx_data</span><span class="o">.</span><span class="n">qvel</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">vel</span><span class="p">)</span>
+  <span class="n">mjx_data</span> <span class="o">=</span> <span class="n">mjx_data</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">qvel</span><span class="o">=</span><span class="n">qvel</span><span class="p">)</span>
+  <span class="n">pos</span> <span class="o">=</span> <span class="n">mjx</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">mjx_model</span><span class="p">,</span> <span class="n">mjx_data</span><span class="p">)</span><span class="o">.</span><span class="n">qpos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+  <span class="k">return</span> <span class="n">pos</span>
+
+<span class="n">vel</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
+<span class="n">pos</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">batched_step</span><span class="p">)(</span><span class="n">vel</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h2 data-bi="bi-10">MJX 的实现<a class="headerlink" href="#id3" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-10" lang="en">MJX Implementations</div>
+<p data-bi="bi-11">MJX 目前支持 MuJoCo 的两种实现：纯 <a class="reference internal" href="#mjxjax"><span class="std std-ref">JAX</span></a> 实现和 <a class="reference internal" href="#mjxwarp"><span class="std std-ref">Warp</span></a> 实现。</p><div class="en-orig" data-for="bi-11" lang="en">MJX currently supports two implementations of MuJoCo: a pure <a class="reference internal" href="#mjxjax"><span class="std std-ref">JAX</span></a> and a <a class="reference internal" href="#mjxwarp"><span class="std std-ref">Warp</span></a> implementation.</div>
+<section id="mjx-warp">
+<span id="mjxwarp"></span><h3>MJX-Warp<a class="headerlink" href="#mjx-warp" title="链接到此标题。">#</a></h3>
+<p data-bi="bi-12">MJX-Warp 使用 <a class="reference internal" href="mjwarp/index.html#mjw"><span class="std std-ref">MuJoCo Warp</span></a>，这是 MuJoCo 在硬件加速设备上功能最完整的实现。MJX-Warp 解决了 MJX-JAX 中围绕接触（contact）和约束（constraint）的关键性能瓶颈。</p><div class="en-orig" data-for="bi-12" lang="en">MJX-Warp uses <a class="reference internal" href="mjwarp/index.html#mjw"><span class="std std-ref">MuJoCo Warp</span></a>, the most fully-featured
+implementation of MuJoCo for hardware accelerated devices. MJX-Warp resolves key performance
+bottlenecks exhibited in MJX-JAX around contacts and constraints.</div>
+<p data-bi="bi-13">请注意，与 MJX-JAX 不同，MJX-Warp 不支持自动微分，并且近期没有支持自动微分的计划。</p><div class="en-orig" data-for="bi-13" lang="en">Note that unlike MJX-JAX, MJX-Warp does not support automatic differentiation and has no immediate plans to
+support auto-diff.</div>
+<section id="id4">
+<h4 data-bi="bi-14">基本用法<a class="headerlink" href="#id4" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-14" lang="en">Basic Usage</div>
+<p data-bi="bi-15">我们通过向 <code class="docutils literal notranslate"><span class="pre">mjx.put_model</span></code> 和 <code class="docutils literal notranslate"><span class="pre">mjx.make_data</span></code> 函数传入 <code class="docutils literal notranslate"><span class="pre">impl='warp'</span></code> 来创建模型和数据：</p><div class="en-orig" data-for="bi-15" lang="en">We create model and data by passing <code class="docutils literal notranslate"><span class="pre">impl='warp'</span></code> to the <code class="docutils literal notranslate"><span class="pre">mjx.put_model</span></code> and <code class="docutils literal notranslate"><span class="pre">mjx.make_data</span></code> functions:</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mj_model</span> <span class="o">=</span> <span class="n">mujoco</span><span class="o">.</span><span class="n">MjModel</span><span class="o">.</span><span class="n">from_xml_path</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">mjx</span><span class="o">.</span><span class="n">put_model</span><span class="p">(</span><span class="n">mj_model</span><span class="p">,</span> <span class="n">impl</span><span class="o">=</span><span class="s1">'warp'</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">mjx</span><span class="o">.</span><span class="n">make_data</span><span class="p">(</span><span class="n">mj_model</span><span class="p">,</span> <span class="n">impl</span><span class="o">=</span><span class="s1">'warp'</span><span class="p">,</span> <span class="n">naconmax</span><span class="o">=</span><span class="n">naconmax</span><span class="p">,</span> <span class="n">njmax</span><span class="o">=</span><span class="n">njmax</span><span class="p">)</span>
+</pre></div>
+</div>
+<p data-bi="bi-16">请注意，我们向 <code class="docutils literal notranslate"><span class="pre">mjx.make_data</span></code> 传入了两个额外的参数：</p><div class="en-orig" data-for="bi-16" lang="en">Notice that we pass two extra arguments to <code class="docutils literal notranslate"><span class="pre">mjx.make_data</span></code>:</div>
+<ul class="simple">
+<li><p data-bi="bi-17"><code class="docutils literal notranslate"><span class="pre">naconmax</span></code> 定义所有世界（world）合计的最大接触数。</p><div class="en-orig" data-for="bi-17" lang="en"><code class="docutils literal notranslate"><span class="pre">naconmax</span></code> defines the maximum number of contacts for all worlds combined.</div></li>
+<li><p data-bi="bi-18"><code class="docutils literal notranslate"><span class="pre">njmax</span></code> 定义每个世界的最大约束数。如果您正在开发新的场景，应当在<a class="reference internal" href="mjwarp/index.html#mjwviewer"><span class="std std-ref">查看器</span></a>中加载场景来调整这些参数，并在发生溢出时相应地增大数值。请将 <code class="docutils literal notranslate"><span class="pre">naconmax</span></code> 按您最终在 <code class="docutils literal notranslate"><span class="pre">jax.vmap</span></code> 中需要的环境数量进行缩放！</p><div class="en-orig" data-for="bi-18" lang="en"><code class="docutils literal notranslate"><span class="pre">njmax</span></code> defines the maximum number of constraints per world. If you are developing a new scene, these parameters
+should be tuned by loading them in the <a class="reference internal" href="mjwarp/index.html#mjwviewer"><span class="std std-ref">viewer</span></a> and increasing the values accordingly as overflows
+occur. Scale <code class="docutils literal notranslate"><span class="pre">naconmax</span></code> by the number of environments you’ll eventually need in a <code class="docutils literal notranslate"><span class="pre">jax.vmap</span></code>!</div></li>
+</ul>
+</section>
+<section id="id5">
+<h4 data-bi="bi-19">接触<a class="headerlink" href="#id5" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-19" lang="en">Contacts</div>
+<p data-bi="bi-20">由于 JAX 和 Warp 在接触缓冲区的实现上有所不同，接触位于私有的 <code class="docutils literal notranslate"><span class="pre">mjx.Data._impl</span></code> 中，而不是 <code class="docutils literal notranslate"><span class="pre">mjx.Data.contact</span></code>。我们鼓励用户仅通过<a class="reference internal" href="XMLreference.html#sensor-contact"><span class="std std-ref">接触传感器</span></a>读取接触信息。</p><div class="en-orig" data-for="bi-20" lang="en">Since JAX and Warp diverge in their implementations of contact buffers, contacts are located in the private
+<code class="docutils literal notranslate"><span class="pre">mjx.Data._impl</span></code> instead of <code class="docutils literal notranslate"><span class="pre">mjx.Data.contact</span></code>. We encourage users to read out contacts solely through
+<a class="reference internal" href="XMLreference.html#sensor-contact"><span class="std std-ref">contact sensors</span></a>.</div>
+<p data-bi="bi-21">有关在实际中使用 MJX-Warp 的更多细节和示例，请参见 MuJoCo Playground 中的<a class="reference external" href="https://github.com/google-deepmind/mujoco_playground/discussions/197">公告</a>。</p><div class="en-orig" data-for="bi-21" lang="en">For more details and examples of using MJX-Warp in the wild, see the announcement in MuJoCo Playground
+<a class="reference external" href="https://github.com/google-deepmind/mujoco_playground/discussions/197">here</a>.</div>
+</section>
+<section id="data">
+<h4 data-bi="bi-22">批量 <code class="docutils literal notranslate"><span class="pre">Data</span></code> 更新<a class="headerlink" href="#data" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-22" lang="en">Batched <code class="docutils literal notranslate"><span class="pre">Data</span></code> updates</div>
+<p data-bi="bi-23">在 MJX-JAX 中，可以使用 <code class="docutils literal notranslate"><span class="pre">jax.tree.map(jax.numpy.where,</span> <span class="pre">done,</span> <span class="pre">reset_data,</span> <span class="pre">data)</span></code> 重置一批环境中的一部分。然而，由于内部实现细节，这种方法在 MJX-Warp 中无法开箱即用。</p><div class="en-orig" data-for="bi-23" lang="en">With MJX-JAX it is possible to reset a subset of environments in a batch with
+<code class="docutils literal notranslate"><span class="pre">jax.tree.map(jax.numpy.where,</span> <span class="pre">done,</span> <span class="pre">reset_data,</span> <span class="pre">data)</span></code>. However, this approach does not work out-of-the-box for
+MJX-Warp due to internal implementation details.</div>
+<p data-bi="bi-24">为了让两种实现都支持批量 <code class="docutils literal notranslate"><span class="pre">Data</span></code> 更新，MJX 在 <code class="docutils literal notranslate"><span class="pre">Data</span></code> 对象上提供了统一的 <code class="docutils literal notranslate"><span class="pre">where</span></code> 方法：</p><div class="en-orig" data-for="bi-24" lang="en">To support batched <code class="docutils literal notranslate"><span class="pre">Data</span></code> updates for both implementations, MJX provides a unified <code class="docutils literal notranslate"><span class="pre">where</span></code> method on <code class="docutils literal notranslate"><span class="pre">Data</span></code> objects:</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">done</span><span class="p">,</span> <span class="n">reset_data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="mjxwarpgraphmodes">
+<span id="id6"></span><h4 data-bi="bi-25">图模式<a class="headerlink" href="#mjxwarpgraphmodes" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-25" lang="en">Graph Modes</div>
+<p data-bi="bi-26"><code class="docutils literal notranslate"><span class="pre">mjx.put_model</span></code> 函数接受 <code class="docutils literal notranslate"><span class="pre">graph_mode</span></code> 参数来配置 CUDA 图捕获行为，该参数由 <code class="docutils literal notranslate"><span class="pre">mjx.warp.GraphMode</span></code> 枚举暴露。从 JAX 调用时，CUDA 图由 Warp 外部函数接口（Foreign Function interface）捕获并缓存，以帮助提升运行时性能。更多细节请参见
+<a class="reference external" href="https://nvidia.github.io/warp/stable/user_guide/interoperability/jax.html">Warp JAX 互操作文档</a>。图模式可以按如下方式配置：</p><div class="en-orig" data-for="bi-26" lang="en">The <code class="docutils literal notranslate"><span class="pre">mjx.put_model</span></code> function accepts a <code class="docutils literal notranslate"><span class="pre">graph_mode</span></code> argument to configure the CUDA graph capture behavior,
+exposed by the <code class="docutils literal notranslate"><span class="pre">mjx.warp.GraphMode</span></code> enum. When called from JAX, CUDA graphs are captured by the Warp
+Foreign Function interface and are cached to help improve runtime performance. See the
+<a class="reference external" href="https://nvidia.github.io/warp/stable/user_guide/interoperability/jax.html">Warp JAX interoperability documentation</a>
+for more details. The graph mode can be configured as follows:</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">mujoco.mjx.warp</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mjxw</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">mjx</span><span class="o">.</span><span class="n">put_model</span><span class="p">(</span><span class="n">mj_model</span><span class="p">,</span> <span class="n">impl</span><span class="o">=</span><span class="s1">'warp'</span><span class="p">,</span> <span class="n">graph_mode</span><span class="o">=</span><span class="n">mjxw</span><span class="o">.</span><span class="n">GraphMode</span><span class="o">.</span><span class="n">WARP_STAGED</span><span class="p">)</span>
+</pre></div>
+</div>
+<p data-bi="bi-27">各种图模式在性能上有一定的权衡：</p><div class="en-orig" data-for="bi-27" lang="en">The various graph modes have certain performance tradeoffs:</div>
+<ul class="simple">
+<li><p data-bi="bi-28"><code class="docutils literal notranslate"><span class="pre">JAX</span></code>：不适用于 MuJoCo Warp，因为 Warp 实现会创建无法并入 XLA 图的子图节点。</p><div class="en-orig" data-for="bi-28" lang="en"><code class="docutils literal notranslate"><span class="pre">JAX</span></code>: Does not work with MuJoCo Warp since the Warp implementation creates child graph nodes that cannot be rolled
+up into the XLA graph.</div></li>
+<li><p data-bi="bi-29"><code class="docutils literal notranslate"><span class="pre">WARP</span></code>：（默认）Warp 在内部捕获 CUDA 图，并使用来自 XLA 的缓冲区指针对其进行缓存。JAX 和 XLA 经常以意想不到的方式优化内存布局，并可能在两次调用 Warp 之间更改缓冲区指针。由于 Warp/CUDA 需要稳定的指针，如果输入和输出缓冲区指针发生变化，CUDA 图将被重新捕获。图捕获的运行开销通常很大，因此 JAX 的指针不稳定导致的过多图重新捕获会降低性能。如果您的 JAX 程序的瓶颈在于过多的图捕获，请考虑使用 <code class="docutils literal notranslate"><span class="pre">WARP_STAGED</span></code> 或 <code class="docutils literal notranslate"><span class="pre">WARP_STAGED_EX</span></code>。</p><div class="en-orig" data-for="bi-29" lang="en"><code class="docutils literal notranslate"><span class="pre">WARP</span></code>: (Default) Warp captures the CUDA graph internally and caches it using buffer pointers from XLA. JAX and XLA
+often optimize memory layouts in unexpected ways and may change buffer pointers between calls to Warp. Since
+Warp/CUDA require stable pointers, CUDA graphs will be re-captured if the input and output buffer pointers change.
+Graph captures are typically expensive to run, so excessive graph recaptures due to unstable pointers from JAX
+will degrade performance. If your JAX program is bottlenecked by
+excessive graph captures, consider <code class="docutils literal notranslate"><span class="pre">WARP_STAGED</span></code> or <code class="docutils literal notranslate"><span class="pre">WARP_STAGED_EX</span></code>.</div></li>
+<li><p data-bi="bi-30"><code class="docutils literal notranslate"><span class="pre">WARP_STAGED</span></code>：会创建暂存缓冲区（因此会增加内存占用），并将 XLA 缓冲区复制进出暂存缓冲区，使 CUDA 图获得一致的内存指针。CUDA 图捕获只会发生一次。</p><div class="en-orig" data-for="bi-30" lang="en"><code class="docutils literal notranslate"><span class="pre">WARP_STAGED</span></code>: Staging buffers are created (thus increasing memory usage) and the XLA buffers are copied in and out
+of staging buffers so that the CUDA graph gets consistent memory pointers. A CUDA graph capture occurs only once.</div></li>
+<li><p data-bi="bi-31"><code class="docutils literal notranslate"><span class="pre">WARP_STAGED_EX</span></code>：与 <code class="docutils literal notranslate"><span class="pre">WARP_STAGED</span></code> 类似，但复制操作被移到初始图捕获之外。</p><div class="en-orig" data-for="bi-31" lang="en"><code class="docutils literal notranslate"><span class="pre">WARP_STAGED_EX</span></code>: Similar to <code class="docutils literal notranslate"><span class="pre">WARP_STAGED</span></code> but the copy operations are moved outside the initial graph capture.</div></li>
+</ul>
+<p data-bi="bi-32">根据您的 JAX 程序处理内存的方式，您可能需要使用 <code class="docutils literal notranslate"><span class="pre">WARP_STAGED</span></code> 或 <code class="docutils literal notranslate"><span class="pre">WARP_STAGED_EX</span></code> 来避免过多的图捕获。</p><div class="en-orig" data-for="bi-32" lang="en">Depending on how your JAX program handles memory, you may want to use <code class="docutils literal notranslate"><span class="pre">WARP_STAGED</span></code> or <code class="docutils literal notranslate"><span class="pre">WARP_STAGED_EX</span></code> to avoid
+excessive graph captures.</div>
+<p data-bi="bi-33">下表展示了不同图模式之间权衡的一个示例。我们报告了不同配置在 Humanoid 和 Aloha Pot 场景上的每秒步数（Steps per Second，SPS）。请注意，如果我们强制每一步都重新捕获图，性能会显著下降：</p><div class="en-orig" data-for="bi-33" lang="en">The following table shows an example of the tradeoff between different graph modes. We report Steps per Second (SPS)
+of different configurations on the Humanoid and Aloha Pot scenes. Notice that if we force a graph recapture on every
+step, there is a significant performance drop:</div>
+<div class="table-wrapper colwidths-given docutils container" id="id23">
+<table class="docutils align-default" id="id23">
+<caption><span class="caption-text">MJX-Warp 图模式的每秒步数 (SPS)</span><a class="headerlink" href="#id23" title="链接到此表格。">#</a></caption>
+<colgroup>
+<col style="width: 50.0%"/>
+<col style="width: 25.0%"/>
+<col style="width: 25.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-34">配置</p><div class="en-orig" data-for="bi-34" lang="en">Configuration</div></th>
+<th class="head"><p>Humanoid</p></th>
+<th class="head"><p>Aloha Pot</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p data-bi="bi-35">纯 Warp（无 JAX FFI）</p><div class="en-orig" data-for="bi-35" lang="en">Pure Warp (No JAX FFI)</div></td>
+<td><p>3.35M</p></td>
+<td><p>2.45M</p></td>
+</tr>
+<tr class="row-odd"><td><p>JAX FFI (<code class="docutils literal notranslate"><span class="pre">WARP</span></code>)</p></td>
+<td><p>2.96M</p></td>
+<td><p>2.33M</p></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-36">JAX FFI（<code class="docutils literal notranslate"><span class="pre">WARP</span></code>，每一步都强制重新捕获）</p><div class="en-orig" data-for="bi-36" lang="en">JAX FFI (<code class="docutils literal notranslate"><span class="pre">WARP</span></code> with forced recaptures on every step)</div></td>
+<td><p>0.80M</p></td>
+<td><p>0.65M</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p data-bi="bi-37">为了减少重新捕获，我们可以使用 <code class="docutils literal notranslate"><span class="pre">WARP_STAGED</span></code> 或 <code class="docutils literal notranslate"><span class="pre">WARP_STAGED_EX</span></code>。由于这些模式引入了暂存缓冲区，它们的性能可能低于 <code class="docutils literal notranslate"><span class="pre">WARP</span></code>，但如果 JAX-Warp FFI 层中存在过多的图捕获，它们的性能会明显优于 <code class="docutils literal notranslate"><span class="pre">WARP</span></code>。</p><div class="en-orig" data-for="bi-37" lang="en">To mitigate the recaptures, we can use <code class="docutils literal notranslate"><span class="pre">WARP_STAGED</span></code> or <code class="docutils literal notranslate"><span class="pre">WARP_STAGED_EX</span></code>. Since these modes introduce staging buffers,
+they may exhibit lower performance than <code class="docutils literal notranslate"><span class="pre">WARP</span></code>, but they are significantly more performant than <code class="docutils literal notranslate"><span class="pre">WARP</span></code> if there are
+excessive graph captures in the JAX-Warp FFI layer.</div>
+<div class="table-wrapper colwidths-given docutils container" id="id24">
+<table class="docutils align-default" id="id24">
+<caption><span class="caption-text">MJX-Warp 图模式的每秒步数 (SPS)</span><a class="headerlink" href="#id24" title="链接到此表格。">#</a></caption>
+<colgroup>
+<col style="width: 50.0%"/>
+<col style="width: 25.0%"/>
+<col style="width: 25.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-38">配置</p><div class="en-orig" data-for="bi-38" lang="en">Configuration</div></th>
+<th class="head"><p>Humanoid</p></th>
+<th class="head"><p>Aloha Pot</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>JAX FFI (<code class="docutils literal notranslate"><span class="pre">WARP_STAGED</span></code>)</p></td>
+<td><p>2.67M</p></td>
+<td><p>1.96M</p></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-39">JAX FFI（<code class="docutils literal notranslate"><span class="pre">WARP</span></code>，每一步都强制重新捕获）</p><div class="en-orig" data-for="bi-39" lang="en">JAX FFI (<code class="docutils literal notranslate"><span class="pre">WARP</span></code> with forced recaptures on every step)</div></td>
+<td><p>0.80M</p></td>
+<td><p>0.65M</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="mjxwarpbatchrendering">
+<span id="id7"></span><h4 data-bi="bi-40">批量渲染<a class="headerlink" href="#mjxwarpbatchrendering" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-40" lang="en">Batch Rendering</div>
+<p data-bi="bi-41">MJX-Warp 包含一个硬件加速的批量渲染器（rendering），用于在多个并行环境中生成像素观测（例如 RGB 和深度）。</p><div class="en-orig" data-for="bi-41" lang="en">MJX-Warp includes a hardware-accelerated batch renderer for generating pixel observations (such as RGB and depth)
+across multiple parallel environments.</div>
+<p data-bi="bi-42">要使用批量渲染器，必须先创建一个渲染上下文来分配必要的缓冲区。请注意，并行世界的数量（<code class="docutils literal notranslate"><span class="pre">nworld</span></code>）在创建上下文时就已固定。<code class="docutils literal notranslate"><span class="pre">create_render_context</span></code> 返回一个渲染上下文对象，可直接访问缓冲区元数据（相机分辨率、地址等）。调用 <code class="docutils literal notranslate"><span class="pre">.pytree()</span></code> 可获得轻量级的 JAX pytree，应将其传入经 <code class="docutils literal notranslate"><span class="pre">jit</span></code>/<code class="docutils literal notranslate"><span class="pre">vmap</span></code> 编译的函数：</p><div class="en-orig" data-for="bi-42" lang="en">To use the batch renderer, you must first create a render context that allocates the necessary buffers.
+Note that the number of parallel worlds (<code class="docutils literal notranslate"><span class="pre">nworld</span></code>) is fixed when creating the context.
+<code class="docutils literal notranslate"><span class="pre">create_render_context</span></code> returns a render context object that provides direct access to buffer
+metadata (camera resolution, addresses, etc.). Call <code class="docutils literal notranslate"><span class="pre">.pytree()</span></code> to obtain the lightweight JAX
+pytree that should be passed into <code class="docutils literal notranslate"><span class="pre">jit</span></code>/<code class="docutils literal notranslate"><span class="pre">vmap</span></code>-compiled functions:</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.mjx</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_render_context</span>
+
+<span class="n">rc</span> <span class="o">=</span> <span class="n">create_render_context</span><span class="p">(</span>
+    <span class="n">mjm</span><span class="o">=</span><span class="n">m</span><span class="p">,</span>
+    <span class="n">nworld</span><span class="o">=</span><span class="n">nworld</span><span class="p">,</span>
+    <span class="n">cam_res</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span>
+    <span class="n">use_textures</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">use_shadows</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">render_rgb</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">]</span> <span class="o">*</span> <span class="n">ncam</span><span class="p">,</span>
+    <span class="n">render_depth</span><span class="o">=</span><span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">*</span> <span class="n">ncam</span><span class="p">,</span>
+    <span class="n">enabled_geom_groups</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p data-bi="bi-43">请在程序的整个生命周期内持有 <code class="docutils literal notranslate"><span class="pre">rc</span></code> 的引用，并将 <code class="docutils literal notranslate"><span class="pre">rc.pytree()</span></code> 传给下游的 JAX 函数。该 pytree 是一个轻量级句柄，通过内部注册表指回上下文。</p><div class="en-orig" data-for="bi-43" lang="en">Hold a reference to <code class="docutils literal notranslate"><span class="pre">rc</span></code> for the lifetime of your program and pass <code class="docutils literal notranslate"><span class="pre">rc.pytree()</span></code> to
+downstream JAX functions.  The pytree is a lightweight handle that refers back to the
+context via an internal registry.</div>
+<p data-bi="bi-44">创建上下文之后，就可以在编译后的 JAX 函数中渲染图像。这包括更新包围体层次结构（BVH）并执行光线投射器：</p><div class="en-orig" data-for="bi-44" lang="en">Once the context is created, you can render images within a compiled JAX function. This involves updating the bounding
+volume hierarchy (BVH) and executing the raycaster:</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.mjx</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_rgb</span>
+
+<span class="nd">@jax</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">render_fn</span><span class="p">(</span><span class="n">mx</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">rc_pytree</span><span class="p">):</span>
+    <span class="c1"># 1. Update the BVH for the current scene state</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">mjx</span><span class="o">.</span><span class="n">refit_bvh</span><span class="p">(</span><span class="n">mx</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">rc_pytree</span><span class="p">)</span>
+
+    <span class="c1"># 2. Render all configured cameras</span>
+    <span class="n">pixels</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">mjx</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">mx</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">rc_pytree</span><span class="p">)</span>
+
+    <span class="c1"># 3. Extract the RGB tensor for the first camera (index 0)</span>
+    <span class="n">rgb</span> <span class="o">=</span> <span class="n">get_rgb</span><span class="p">(</span><span class="n">rc_pytree</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pixels</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rgb</span><span class="p">,</span> <span class="n">d</span>
+
+<span class="n">rgb</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">render_fn</span><span class="p">(</span><span class="n">mx</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">rc</span><span class="o">.</span><span class="n">pytree</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title" data-bi="bi-45">备注</p><div class="en-orig" data-for="bi-45" lang="en">Note</div>
+<p data-bi="bi-46"><a class="reference internal" href="mjx_api.html#mujoco.mjx.refit_bvh" title="mujoco.mjx.refit_bvh"><code class="xref py py-func docutils literal notranslate"><span class="pre">refit_bvh()</span></code></a> 和 <a class="reference internal" href="mjx_api.html#mujoco.mjx.render" title="mujoco.mjx.render"><code class="xref py py-func docutils literal notranslate"><span class="pre">render()</span></code></a> 会更新 <a class="reference internal" href="mjx_api.html#mujoco.mjx.Data" title="mujoco.mjx.Data"><code class="xref py py-class docutils literal notranslate"><span class="pre">Data</span></code></a> 内部的执行令牌（<code class="docutils literal notranslate"><span class="pre">d._impl._jax_token</span></code>）。将 <code class="docutils literal notranslate"><span class="pre">d</span></code> 依次传递给 <code class="docutils literal notranslate"><span class="pre">refit_bvh</span></code> 和 <code class="docutils literal notranslate"><span class="pre">render</span></code> 会建立显式的数据依赖，防止 XLA 在迭代或展开的循环之间对 BVH 更新和光线投射过程重新排序。</p><div class="en-orig" data-for="bi-46" lang="en"><a class="reference internal" href="mjx_api.html#mujoco.mjx.refit_bvh" title="mujoco.mjx.refit_bvh"><code class="xref py py-func docutils literal notranslate"><span class="pre">refit_bvh()</span></code></a> and <a class="reference internal" href="mjx_api.html#mujoco.mjx.render" title="mujoco.mjx.render"><code class="xref py py-func docutils literal notranslate"><span class="pre">render()</span></code></a> update an internal execution token
+(<code class="docutils literal notranslate"><span class="pre">d._impl._jax_token</span></code>) within <a class="reference internal" href="mjx_api.html#mujoco.mjx.Data" title="mujoco.mjx.Data"><code class="xref py py-class docutils literal notranslate"><span class="pre">Data</span></code></a>. Passing <code class="docutils literal notranslate"><span class="pre">d</span></code> sequentially through
+<code class="docutils literal notranslate"><span class="pre">refit_bvh</span></code> and <code class="docutils literal notranslate"><span class="pre">render</span></code> creates an explicit data dependency, preventing XLA from reordering BVH
+updates and raycasting passes across iterations or unrolled loops.</div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title" data-bi="bi-47">警告</p><div class="en-orig" data-for="bi-47" lang="en">Warning</div>
+<p data-bi="bi-48">批量维度 <code class="docutils literal notranslate"><span class="pre">nworld</span></code> 在通过 <a class="reference internal" href="mjx_api.html#mujoco.mjx.create_render_context" title="mujoco.mjx.create_render_context"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_render_context()</span></code></a> 创建渲染上下文时就已固定，因为底层的 Warp 渲染上下文会为 JAX 不可见的 <code class="docutils literal notranslate"><span class="pre">nworld</span></code> 个环境分配缓冲区。<a class="reference internal" href="mjx_api.html#mujoco.mjx.render" title="mujoco.mjx.render"><code class="xref py py-func docutils literal notranslate"><span class="pre">render()</span></code></a> 始终返回前导批量维度大小为 <code class="docutils literal notranslate"><span class="pre">nworld</span></code> 的输出。因此存在一个已知问题：<a class="reference internal" href="mjx_api.html#mujoco.mjx.render" title="mujoco.mjx.render"><code class="xref py py-func docutils literal notranslate"><span class="pre">render()</span></code></a> 与 <code class="docutils literal notranslate"><span class="pre">jax.vmap(jax.lax.scan)</span></code> 不能很好地配合。</p><div class="en-orig" data-for="bi-48" lang="en">The batch dimension <code class="docutils literal notranslate"><span class="pre">nworld</span></code> is fixed when the render context is created via
+<a class="reference internal" href="mjx_api.html#mujoco.mjx.create_render_context" title="mujoco.mjx.create_render_context"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_render_context()</span></code></a> since the underlying Warp render context allocates
+buffers for <code class="docutils literal notranslate"><span class="pre">nworld</span></code> environments that are not visible to JAX. <a class="reference internal" href="mjx_api.html#mujoco.mjx.render" title="mujoco.mjx.render"><code class="xref py py-func docutils literal notranslate"><span class="pre">render()</span></code></a>
+will always return outputs with a leading batch dimension of size <code class="docutils literal notranslate"><span class="pre">nworld</span></code>. Because of this,
+there is a known issue where <a class="reference internal" href="mjx_api.html#mujoco.mjx.render" title="mujoco.mjx.render"><code class="xref py py-func docutils literal notranslate"><span class="pre">render()</span></code></a> does not play nice with a
+<code class="docutils literal notranslate"><span class="pre">jax.vmap(jax.lax.scan)</span></code>.</div>
+</div>
+<section id="pmap-gpu">
+<h5 data-bi="bi-49">使用 <code class="docutils literal notranslate"><span class="pre">pmap</span></code> 的多 GPU 渲染<a class="headerlink" href="#pmap-gpu" title="链接到此标题。">#</a></h5><div class="en-orig en-h" data-for="bi-49" lang="en">Multi-GPU with <code class="docutils literal notranslate"><span class="pre">pmap</span></code></div>
+<p data-bi="bi-50">要跨多个 GPU 渲染，请向 <a class="reference internal" href="mjx_api.html#mujoco.mjx.create_render_context" title="mujoco.mjx.create_render_context"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_render_context</span></code></a> 传入 <code class="docutils literal notranslate"><span class="pre">devices</span></code>，为<strong>每个设备</strong>创建一个渲染上下文。</p><div class="en-orig" data-for="bi-50" lang="en">To render across multiple GPUs, create a render context <strong>per device</strong> by passing <code class="docutils literal notranslate"><span class="pre">devices</span></code> to
+<a class="reference internal" href="mjx_api.html#mujoco.mjx.create_render_context" title="mujoco.mjx.create_render_context"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_render_context</span></code></a>.</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ndevices</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">local_device_count</span><span class="p">()</span>
+<span class="n">nworld_per_device</span> <span class="o">=</span> <span class="n">nworld</span> <span class="o">//</span> <span class="n">ndevices</span>
+
+<span class="c1"># Create one render context for all devices</span>
+<span class="n">rc</span> <span class="o">=</span> <span class="n">create_render_context</span><span class="p">(</span>
+    <span class="n">mjm</span><span class="o">=</span><span class="n">m</span><span class="p">,</span>
+    <span class="n">nworld</span><span class="o">=</span><span class="n">nworld_per_device</span><span class="p">,</span>
+    <span class="n">devices</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s1">'cuda:</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndevices</span><span class="p">)],</span>
+    <span class="n">cam_res</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p data-bi="bi-51">然后使用 <code class="docutils literal notranslate"><span class="pre">jax.pmap</span></code> 在各设备间并行渲染。完整示例请参见
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/mjx/mujoco/mjx/warp/visualize_render.py">visualize_render.py</a>。</p><div class="en-orig" data-for="bi-51" lang="en">Then use <code class="docutils literal notranslate"><span class="pre">jax.pmap</span></code> to parallelize the rendering across devices. See the complete example in
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/mjx/mujoco/mjx/warp/visualize_render.py">visualize_render.py</a>.</div>
+</section>
+</section>
+</section>
+<section id="mjx-jax">
+<span id="mjxjax"></span><h3>MJX-JAX<a class="headerlink" href="#mjx-jax" title="链接到此标题。">#</a></h3>
+<p data-bi="bi-52">MJX-JAX 是 MuJoCo 的重新实现，使用与 MuJoCo 实现相同的算法。不过，为了充分利用 JAX，MJX 有意在少数地方偏离了 MuJoCo API（见下文）。对于需要一个在小场景上性能良好、并大致支持梯度的模拟器的用户，MJX-JAX 是一个不错的选择。其他情况下，我们建议用户使用 <a class="reference internal" href="#mjxwarp"><span class="std std-ref">MJX-Warp</span></a>。</p><div class="en-orig" data-for="bi-52" lang="en">MJX-JAX is a re-implementation of MuJoCo that uses the same algorithms as the MuJoCo implementation. However, in order
+to properly leverage JAX, MJX deliberately diverges from the MuJoCo API in a few places (see below). For users looking
+for a simulator that is performant for small scenes and that roughly supports gradients, MJX-JAX is a good option. We
+point users to <a class="reference internal" href="#mjxwarp"><span class="std std-ref">MJX-Warp</span></a> otherwise.</div>
+<p data-bi="bi-53">MJX-JAX 通过 <a class="reference external" href="https://github.com/jax-ml/jax#readme">JAX</a> 框架，使 MuJoCo 能够在 <a class="reference external" href="https://www.tensorflow.org/xla">XLA</a> 编译器<a class="reference external" href="https://jax.readthedocs.io/en/latest/installation.html#supported-platforms">支持的</a>所有计算硬件上运行（AMD GPU、Apple Silicon 和 <a class="reference external" href="https://cloud.google.com/tpu">Google Cloud TPU</a>）。</p><div class="en-orig" data-for="bi-53" lang="en">MJX-JAX allows MuJoCo to run on all compute
+<a class="reference external" href="https://jax.readthedocs.io/en/latest/installation.html#supported-platforms">hardware supported</a> by the
+<a class="reference external" href="https://www.tensorflow.org/xla">XLA</a> compiler via the <a class="reference external" href="https://github.com/jax-ml/jax#readme">JAX</a> framework
+(AMD GPUs, Apple Silicon, and <a class="reference external" href="https://cloud.google.com/tpu">Google Cloud TPUs</a>).</div>
+<p data-bi="bi-54">MJX-JAX 的 API 与 MuJoCo API 中的主要仿真函数保持一致，尽管缺少一些功能。<a class="reference internal" href="APIreference/APIfunctions.html#mainsimulation"><span class="std std-ref">API 文档</span></a>对两个库都适用，我们会在下面的<a class="reference internal" href="#mjxfeatureparity"><span class="std std-ref">说明</span></a>中指出 MJX-JAX 不支持的功能。</p><div class="en-orig" data-for="bi-54" lang="en">The MJX-JAX API is consistent with the main simulation functions in the MuJoCo API, although it is missing some
+features. While the <a class="reference internal" href="APIreference/APIfunctions.html#mainsimulation"><span class="std std-ref">API documentation</span></a> is applicable to both libraries, we indicate features
+unsupported by MJX-JAX in the <a class="reference internal" href="#mjxfeatureparity"><span class="std std-ref">notes</span></a> below.</div>
+<p data-bi="bi-55">MJX-JAX 是 Google <a class="reference external" href="https://github.com/google/brax">Brax</a> 物理与强化学习库中<a class="reference external" href="https://github.com/google/brax/tree/main/brax/generalized">广义物理流水线</a>的后继者。MJX-JAX 由 MuJoCo 和 Brax 的核心贡献者共同构建。Brax 依赖 <code class="docutils literal notranslate"><span class="pre">mujoco-mjx</span></code> 包，Brax 现有的<a class="reference external" href="https://github.com/google/brax/tree/main/brax/generalized">广义流水线</a>已不再维护。</p><div class="en-orig" data-for="bi-55" lang="en">MJX-JAX is a successor to the <a class="reference external" href="https://github.com/google/brax/tree/main/brax/generalized">generalized physics pipeline</a>
+in Google’s <a class="reference external" href="https://github.com/google/brax">Brax</a> physics and reinforcement learning library.  MJX-JAX was built
+by core contributors to both MuJoCo and Brax.  Brax
+depends on the <code class="docutils literal notranslate"><span class="pre">mujoco-mjx</span></code> package, and Brax’s existing
+<a class="reference external" href="https://github.com/google/brax/tree/main/brax/generalized">generalized pipeline</a> is no longer maintained.</div>
+</section>
+</section>
+<section id="notebook">
+<span id="mjxnotebook"></span><h2 data-bi="bi-56">教程 notebook<a class="headerlink" href="#notebook" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-56" lang="en">Tutorial notebook</div>
+<p data-bi="bi-57">下面的 IPython notebook 演示了如何使用 MJX 结合强化学习来训练人形机器人和四足机器人行走：<a class="reference external" href="https://colab.research.google.com/github/google-deepmind/mujoco/blob/main/mjx/tutorial.ipynb"><img alt="colab" src="https://colab.research.google.com/assets/colab-badge.png"/></a>。</p><div class="en-orig" data-for="bi-57" lang="en">The following IPython notebook demonstrates the use of MJX along with reinforcement learning to train humanoid and
+quadruped robots to locomote: <a class="reference external" href="https://colab.research.google.com/github/google-deepmind/mujoco/blob/main/mjx/tutorial.ipynb"><img alt="colab" src="https://colab.research.google.com/assets/colab-badge.png"/></a>.</div>
+</section>
+<section id="mjxusage">
+<span id="id8"></span><h2 data-bi="bi-58">深入用法<a class="headerlink" href="#mjxusage" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-58" lang="en">In-depth usage</div>
+<section id="mjxstructs">
+<span id="id9"></span><h3 data-bi="bi-59">结构体<a class="headerlink" href="#mjxstructs" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-59" lang="en">Structs</div>
+<p data-bi="bi-60">在加速器设备上运行 MJX 函数之前，必须通过 <code class="docutils literal notranslate"><span class="pre">mjx.put_model</span></code> 和 <code class="docutils literal notranslate"><span class="pre">mjx.put_data</span></code> 函数将结构体复制到设备上。将 <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 放置到设备上会得到 <code class="docutils literal notranslate"><span class="pre">mjx.Model</span></code>，将 <a class="reference internal" href="APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 放置到设备上会得到 <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code>：</p><div class="en-orig" data-for="bi-60" lang="en">Before running MJX functions on an accelerator device, structs must be copied onto the device via the <code class="docutils literal notranslate"><span class="pre">mjx.put_model</span></code>
+and <code class="docutils literal notranslate"><span class="pre">mjx.put_data</span></code> functions. Placing an <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> on device yields an <code class="docutils literal notranslate"><span class="pre">mjx.Model</span></code>. Placing an <a class="reference internal" href="APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> on
+device yields an <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code>:</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">mujoco</span><span class="o">.</span><span class="n">MjModel</span><span class="o">.</span><span class="n">from_xml_string</span><span class="p">(</span><span class="s2">"..."</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">mujoco</span><span class="o">.</span><span class="n">MjData</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">mjx_model</span> <span class="o">=</span> <span class="n">mjx</span><span class="o">.</span><span class="n">put_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">mjx_data</span> <span class="o">=</span> <span class="n">mjx</span><span class="o">.</span><span class="n">put_data</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+<p data-bi="bi-61">这些 MJX 变体与对应的 MuJoCo 结构体相互映射，但有几个关键区别：</p><div class="en-orig" data-for="bi-61" lang="en">These MJX variants mirror their MuJoCo counterparts but have a few key differences:</div>
+<ol class="arabic simple">
+<li><p data-bi="bi-62"><code class="docutils literal notranslate"><span class="pre">mjx.Model</span></code> 和 <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code> 包含被复制到设备上的 JAX 数组。</p><div class="en-orig" data-for="bi-62" lang="en"><code class="docutils literal notranslate"><span class="pre">mjx.Model</span></code> and <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code> contain JAX arrays that are copied onto device.</div></li>
+<li><p data-bi="bi-63"><code class="docutils literal notranslate"><span class="pre">mjx.Model</span></code> 和 <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code> 中缺少一些字段，这些字段对应于特定 MuJoCo 实现私有的功能，或者<a class="reference internal" href="#mjxfeatureparity"><span class="std std-ref">不受支持</span></a>的功能。</p><div class="en-orig" data-for="bi-63" lang="en">Some fields are missing from <code class="docutils literal notranslate"><span class="pre">mjx.Model</span></code> and <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code> for features that are private
+to a specific implementation of MuJoCo, or that are <a class="reference internal" href="#mjxfeatureparity"><span class="std std-ref">unsupported</span></a>.</div></li>
+<li><p data-bi="bi-64"><code class="docutils literal notranslate"><span class="pre">mjx.Model</span></code> 和 <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code> 中的 JAX 数组支持添加批量维度。批量维度是表达域随机化（对 <code class="docutils literal notranslate"><span class="pre">mjx.Model</span></code> 而言）或用于强化学习的高吞吐量仿真（对 <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code> 而言）的自然方式。</p><div class="en-orig" data-for="bi-64" lang="en">JAX arrays in <code class="docutils literal notranslate"><span class="pre">mjx.Model</span></code> and <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code> support adding batch dimensions. Batch dimensions are a natural way to
+express domain randomization (in the case of <code class="docutils literal notranslate"><span class="pre">mjx.Model</span></code>) or high-throughput simulation for reinforcement learning
+(in the case of <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code>).</div></li>
+<li><p data-bi="bi-65"><code class="docutils literal notranslate"><span class="pre">mjx.Model</span></code> 和 <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code> 中的 Numpy 数组是控制 JIT 编译输出的结构性字段。修改这些数组会迫使 JAX 重新编译 MJX 函数。例如，<code class="docutils literal notranslate"><span class="pre">jnt_limited</span></code> 是一个从 <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 按引用传递的 numpy 数组，它决定是否应用关节限位（limit）约束。如果修改了 <code class="docutils literal notranslate"><span class="pre">jnt_limited</span></code>，JAX 会重新编译 MJX 函数。另一方面，<code class="docutils literal notranslate"><span class="pre">jnt_range</span></code> 是可以在运行时修改的 JAX 数组，并且只会应用于 <code class="docutils literal notranslate"><span class="pre">jnt_limited</span></code> 字段所指定的有限位的关节。</p><div class="en-orig" data-for="bi-65" lang="en">Numpy arrays in <code class="docutils literal notranslate"><span class="pre">mjx.Model</span></code> and <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code> are structural fields that control the output of JIT compilation.
+Modifying these arrays will force JAX to recompile MJX functions. As an example, <code class="docutils literal notranslate"><span class="pre">jnt_limited</span></code> is a numpy array
+passed by reference from <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>, which determines if joint limit constraints should be applied. If
+<code class="docutils literal notranslate"><span class="pre">jnt_limited</span></code> is modified, JAX will re-compile MJX functions. On the other hand, <code class="docutils literal notranslate"><span class="pre">jnt_range</span></code> is a JAX array that
+can be modified at runtime, and will only apply to joints with limits as specified by the <code class="docutils literal notranslate"><span class="pre">jnt_limited</span></code> field.</div></li>
+</ol>
+<p data-bi="bi-66"><code class="docutils literal notranslate"><span class="pre">mjx.Model</span></code> 和 <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code> 都不应手动构造。可以通过调用 <code class="docutils literal notranslate"><span class="pre">mjx.make_data</span></code> 来创建 <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code>，它对应于 MuJoCo 中的 <a class="reference internal" href="APIreference/APIfunctions.html#mj-makedata"><span class="std std-ref">mj_makeData</span></a> 函数：</p><div class="en-orig" data-for="bi-66" lang="en">Neither <code class="docutils literal notranslate"><span class="pre">mjx.Model</span></code> nor <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code> are meant to be constructed manually.  An <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code> may be created by calling
+<code class="docutils literal notranslate"><span class="pre">mjx.make_data</span></code>, which mirrors the <a class="reference internal" href="APIreference/APIfunctions.html#mj-makedata"><span class="std std-ref">mj_makeData</span></a> function in MuJoCo:</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">mujoco</span><span class="o">.</span><span class="n">MjModel</span><span class="o">.</span><span class="n">from_xml_string</span><span class="p">(</span><span class="s2">"..."</span><span class="p">)</span>
+<span class="n">mjx_model</span> <span class="o">=</span> <span class="n">mjx</span><span class="o">.</span><span class="n">put_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">mjx_data</span> <span class="o">=</span> <span class="n">mjx</span><span class="o">.</span><span class="n">make_data</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+<p data-bi="bi-67">在 <code class="docutils literal notranslate"><span class="pre">vmap</span></code> 内部构造批量 <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code> 结构时，使用 <code class="docutils literal notranslate"><span class="pre">mjx.make_data</span></code> 可能更为合适。</p><div class="en-orig" data-for="bi-67" lang="en">Using <code class="docutils literal notranslate"><span class="pre">mjx.make_data</span></code> may be preferable when constructing batched <code class="docutils literal notranslate"><span class="pre">mjx.Data</span></code> structures inside of a <code class="docutils literal notranslate"><span class="pre">vmap</span></code>.</div>
+</section>
+<section id="mjxfunctions">
+<span id="id10"></span><h3 data-bi="bi-68">函数<a class="headerlink" href="#mjxfunctions" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-68" lang="en">Functions</div>
+<p data-bi="bi-69">MuJoCo 函数以同名的 MJX 函数形式暴露，但名称遵循符合 <a class="reference external" href="https://peps.python.org/pep-0008/">PEP 8</a> 的命名规范。大部分<a class="reference internal" href="APIreference/APIfunctions.html#mainsimulation"><span class="std std-ref">主要仿真</span></a>函数和一些用于前向仿真的<a class="reference internal" href="APIreference/APIfunctions.html#subcomponents"><span class="std std-ref">子组件</span></a>可从顶层 <code class="docutils literal notranslate"><span class="pre">mjx</span></code> 模块获得。</p><div class="en-orig" data-for="bi-69" lang="en">MuJoCo functions are exposed as MJX functions of the same name, but following <a class="reference external" href="https://peps.python.org/pep-0008/">PEP 8</a>-compliant names. Most of the <a class="reference internal" href="APIreference/APIfunctions.html#mainsimulation"><span class="std std-ref">main simulation</span></a> and some of
+the <a class="reference internal" href="APIreference/APIfunctions.html#subcomponents"><span class="std std-ref">sub-components</span></a> for forward simulation are available from the top-level <code class="docutils literal notranslate"><span class="pre">mjx</span></code> module.</div>
+<p data-bi="bi-70">MJX 函数默认<em>不会</em>被 <a class="reference external" href="https://jax.readthedocs.io/en/latest/jax-101/02-jitting.html">JIT 编译</a>——我们将对 MJX 函数进行 JIT 的工作留给用户，或者由用户对引用 MJX 函数的自有函数进行 JIT。请参见下面的<a class="reference internal" href="#mjxexample"><span class="std std-ref">最小示例</span></a>。</p><div class="en-orig" data-for="bi-70" lang="en">MJX functions are not <a class="reference external" href="https://jax.readthedocs.io/en/latest/jax-101/02-jitting.html">JIT compiled</a> by default – we
+leave it to the user to JIT MJX functions, or JIT their own functions that reference MJX functions.  See the
+<a class="reference internal" href="#mjxexample"><span class="std std-ref">minimal example</span></a> below.</div>
+</section>
+<section id="mjxenums">
+<span id="id11"></span><h3 data-bi="bi-71">枚举和常量<a class="headerlink" href="#mjxenums" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-71" lang="en">Enums and constants</div>
+<p data-bi="bi-72">MJX 枚举以 <code class="docutils literal notranslate"><span class="pre">mjx.EnumType.ENUM_VALUE</span></code> 的形式提供，例如 <code class="docutils literal notranslate"><span class="pre">mjx.JointType.FREE</span></code>。不受支持的 MJX 功能所对应的枚举会从 MJX 枚举声明中省略。MJX 不声明任何常量，而是直接引用 MuJoCo 常量。</p><div class="en-orig" data-for="bi-72" lang="en">MJX enums are available as <code class="docutils literal notranslate"><span class="pre">mjx.EnumType.ENUM_VALUE</span></code>, for example <code class="docutils literal notranslate"><span class="pre">mjx.JointType.FREE</span></code>. Enums for unsupported MJX
+features are omitted from the MJX enum declaration.  MJX declares no constants but references MuJoCo constants directly.</div>
+</section>
+<section id="mjxcli">
+<span id="id12"></span><h3 data-bi="bi-73">实用的命令行脚本<a class="headerlink" href="#mjxcli" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-73" lang="en">Helpful Command Line Scripts</div>
+<p data-bi="bi-74"><code class="docutils literal notranslate"><span class="pre">mujoco-mjx</span></code> 包附带两个命令行脚本：</p><div class="en-orig" data-for="bi-74" lang="en">We provide two command line scripts with the <code class="docutils literal notranslate"><span class="pre">mujoco-mjx</span></code> package:</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>mjx-testspeed<span class="w"> </span>--mjcf<span class="o">=</span>/PATH/TO/MJCF/<span class="w"> </span>--base_path<span class="o">=</span>.
+</pre></div>
+</div>
+<p data-bi="bi-75">该命令接受 MJCF 文件的路径以及可选参数（使用 <code class="docutils literal notranslate"><span class="pre">--help</span></code> 获取更多信息），并计算有助于性能调优的指标。该命令会输出总仿真时间、总每秒步数和总实时因子等信息（这里的总数是指所有可用设备的合计）。</p><div class="en-orig" data-for="bi-75" lang="en">This command takes in a path to an MJCF file along with optional arguments (use <code class="docutils literal notranslate"><span class="pre">--help</span></code> for more information)
+and computes helpful metrics for performance tuning. The command will output, among other things, the total
+simulation time, the total steps per second and the total realtime factor (here total is across all available
+devices).</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>mjx-viewer<span class="w"> </span>--help
+</pre></div>
+</div>
+<p data-bi="bi-76">该命令在 simulate 查看器中启动 MJX 模型，使您可以对模型进行可视化和交互。请注意，这使用 MJX 物理（而不是 C 版 MuJoCo）来推进仿真，因此例如在调试求解器（solver）参数时会很有帮助。</p><div class="en-orig" data-for="bi-76" lang="en">This command launches the MJX model in the simulate viewer, allowing you to visualize and interact with the model.
+Note this steps the simulation using MJX physics (not C MuJoCo) so it can be helpful for example for debugging
+solver parameters.</div>
+</section>
+</section>
+<section id="mjxfeatureparity">
+<span id="id13"></span><h2 data-bi="bi-77">功能对等<a class="headerlink" href="#mjxfeatureparity" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-77" lang="en">Feature Parity</div>
+<p data-bi="bi-78">MJX 支持 MuJoCo 的大部分主要仿真功能，可在硬件加速设备上执行。如果要求将引用了不受支持功能的 <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> 复制到设备上，MJX 会引发异常。</p><div class="en-orig" data-for="bi-78" lang="en">MJX supports most of the main simulation features of MuJoCo for execution on hardware-accelerated devices. MJX will
+raise an exception if asked to copy an <a class="reference internal" href="APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> to the device that references unsupported features.</div>
+<p data-bi="bi-79">下表比较了 MJX-Warp 和 MJX-JAX 相对于 MuJoCo 的功能支持情况：</p><div class="en-orig" data-for="bi-79" lang="en">The following table compares feature support between MJX-Warp and MJX-JAX compared to MuJoCo:</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-left" style="width: 100%">
+<colgroup>
+<col style="width: 20.0%"/>
+<col style="width: 40.0%"/>
+<col style="width: 40.0%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-80">类别</p><div class="en-orig" data-for="bi-80" lang="en">Category</div></th>
+<th class="head"><p>MJX-Warp</p></th>
+<th class="head"><p>MJX-JAX</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p data-bi="bi-81">动力学</p><div class="en-orig" data-for="bi-81" lang="en">Dynamics</div></td>
+<td><p data-bi="bi-82"><a class="reference internal" href="APIreference/APIfunctions.html#mj-forward"><span class="std std-ref">正向</span></a>、<a class="reference internal" href="APIreference/APIfunctions.html#mj-inverse"><span class="std std-ref">逆向</span></a></p><div class="en-orig" data-for="bi-82" lang="en"><a class="reference internal" href="APIreference/APIfunctions.html#mj-forward"><span class="std std-ref">Forward</span></a>, <a class="reference internal" href="APIreference/APIfunctions.html#mj-inverse"><span class="std std-ref">Inverse</span></a></div></td>
+<td><p data-bi="bi-83"><a class="reference internal" href="APIreference/APIfunctions.html#mj-forward"><span class="std std-ref">正向</span></a>、<a class="reference internal" href="APIreference/APIfunctions.html#mj-inverse"><span class="std std-ref">逆向</span></a></p><div class="en-orig" data-for="bi-83" lang="en"><a class="reference internal" href="APIreference/APIfunctions.html#mj-forward"><span class="std std-ref">Forward</span></a>, <a class="reference internal" href="APIreference/APIfunctions.html#mj-inverse"><span class="std std-ref">Inverse</span></a></div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-84">可微性 <a class="footnote-reference brackets" href="#id17" id="id14" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p><div class="en-orig" data-for="bi-84" lang="en">Differentiability <a class="footnote-reference brackets" href="#id4" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></div></td>
+<td><p>✗</p></td>
+<td><p>✓</p></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-85"><a class="reference internal" href="APIreference/APItypes.html#mjtjoint"><span class="std std-ref">关节</span></a></p><div class="en-orig" data-for="bi-85" lang="en"><a class="reference internal" href="APIreference/APItypes.html#mjtjoint"><span class="std std-ref">Joint</span></a></div></td>
+<td><p data-bi="bi-86">全部</p><div class="en-orig" data-for="bi-86" lang="en">All</div></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">FREE</span></code>, <code class="docutils literal notranslate"><span class="pre">BALL</span></code>, <code class="docutils literal notranslate"><span class="pre">SLIDE</span></code>, <code class="docutils literal notranslate"><span class="pre">HINGE</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-87"><a class="reference internal" href="APIreference/APItypes.html#mjttrn"><span class="std std-ref">传动</span></a></p><div class="en-orig" data-for="bi-87" lang="en"><a class="reference internal" href="APIreference/APItypes.html#mjttrn"><span class="std std-ref">Transmission</span></a></div></td>
+<td><p data-bi="bi-88">全部</p><div class="en-orig" data-for="bi-88" lang="en">All</div></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">JOINT</span></code>, <code class="docutils literal notranslate"><span class="pre">JOINTINPARENT</span></code>, <code class="docutils literal notranslate"><span class="pre">SITE</span></code>, <code class="docutils literal notranslate"><span class="pre">TENDON</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-89"><a class="reference internal" href="APIreference/APItypes.html#mjtdyn"><span class="std std-ref">执行器动力学</span></a></p><div class="en-orig" data-for="bi-89" lang="en"><a class="reference internal" href="APIreference/APItypes.html#mjtdyn"><span class="std std-ref">Actuator Dynamics</span></a></div></td>
+<td><p data-bi="bi-90">全部</p><div class="en-orig" data-for="bi-90" lang="en">All</div></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">NONE</span></code>, <code class="docutils literal notranslate"><span class="pre">INTEGRATOR</span></code>, <code class="docutils literal notranslate"><span class="pre">FILTER</span></code>, <code class="docutils literal notranslate"><span class="pre">FILTEREXACT</span></code>, <code class="docutils literal notranslate"><span class="pre">MUSCLE</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-91"><a class="reference internal" href="APIreference/APItypes.html#mjtgain"><span class="std std-ref">执行器增益</span></a></p><div class="en-orig" data-for="bi-91" lang="en"><a class="reference internal" href="APIreference/APItypes.html#mjtgain"><span class="std std-ref">Actuator Gain</span></a></div></td>
+<td><p data-bi="bi-92">全部</p><div class="en-orig" data-for="bi-92" lang="en">All</div></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">FIXED</span></code>, <code class="docutils literal notranslate"><span class="pre">AFFINE</span></code>, <code class="docutils literal notranslate"><span class="pre">MUSCLE</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-93"><a class="reference internal" href="APIreference/APItypes.html#mjtbias"><span class="std std-ref">执行器偏置</span></a></p><div class="en-orig" data-for="bi-93" lang="en"><a class="reference internal" href="APIreference/APItypes.html#mjtbias"><span class="std std-ref">Actuator Bias</span></a></div></td>
+<td><p data-bi="bi-94">全部</p><div class="en-orig" data-for="bi-94" lang="en">All</div></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">NONE</span></code>, <code class="docutils literal notranslate"><span class="pre">AFFINE</span></code>, <code class="docutils literal notranslate"><span class="pre">MUSCLE</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="APIreference/APItypes.html#mjtgeom"><span class="std std-ref">Geom</span></a></p></td>
+<td><p data-bi="bi-95">全部</p><div class="en-orig" data-for="bi-95" lang="en">All</div></td>
+<td><p data-bi="bi-96"><code class="docutils literal notranslate"><span class="pre">PLANE</span></code>, <code class="docutils literal notranslate"><span class="pre">HFIELD</span></code>, <code class="docutils literal notranslate"><span class="pre">SPHERE</span></code>, <code class="docutils literal notranslate"><span class="pre">CAPSULE</span></code>, <code class="docutils literal notranslate"><span class="pre">BOX</span></code>, <code class="docutils literal notranslate"><span class="pre">MESH</span></code> 已完全实现。<code class="docutils literal notranslate"><span class="pre">ELLIPSOID</span></code> 和
+<code class="docutils literal notranslate"><span class="pre">CYLINDER</span></code> 已实现，但只与其他基本几何体发生碰撞 <a class="footnote-reference brackets" href="#id19" id="id15" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>，请注意 <code class="docutils literal notranslate"><span class="pre">BOX</span></code> 是以网格的方式实现的。</p><div class="en-orig" data-for="bi-96" lang="en"><code class="docutils literal notranslate"><span class="pre">PLANE</span></code>, <code class="docutils literal notranslate"><span class="pre">HFIELD</span></code>, <code class="docutils literal notranslate"><span class="pre">SPHERE</span></code>, <code class="docutils literal notranslate"><span class="pre">CAPSULE</span></code>, <code class="docutils literal notranslate"><span class="pre">BOX</span></code>, <code class="docutils literal notranslate"><span class="pre">MESH</span></code> are fully implemented. <code class="docutils literal notranslate"><span class="pre">ELLIPSOID</span></code> and
+<code class="docutils literal notranslate"><span class="pre">CYLINDER</span></code> are implemented but only collide with other primitives <a class="footnote-reference brackets" href="#id6" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>, note that <code class="docutils literal notranslate"><span class="pre">BOX</span></code> is implemented as a mesh.</div></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-97"><a class="reference internal" href="APIreference/APItypes.html#mjtconstraint"><span class="std std-ref">约束</span></a></p><div class="en-orig" data-for="bi-97" lang="en"><a class="reference internal" href="APIreference/APItypes.html#mjtconstraint"><span class="std std-ref">Constraint</span></a></div></td>
+<td><p data-bi="bi-98">全部</p><div class="en-orig" data-for="bi-98" lang="en">All</div></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">EQUALITY</span></code>, <code class="docutils literal notranslate"><span class="pre">LIMIT_JOINT</span></code>, <code class="docutils literal notranslate"><span class="pre">CONTACT_FRICTIONLESS</span></code>, <code class="docutils literal notranslate"><span class="pre">CONTACT_PYRAMIDAL</span></code>, <code class="docutils literal notranslate"><span class="pre">CONTACT_ELLIPTIC</span></code>,
+<code class="docutils literal notranslate"><span class="pre">FRICTION_DOF</span></code>, <code class="docutils literal notranslate"><span class="pre">FRICTION_TENDON</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-99"><a class="reference internal" href="APIreference/APItypes.html#mjteq"><span class="std std-ref">等式</span></a></p><div class="en-orig" data-for="bi-99" lang="en"><a class="reference internal" href="APIreference/APItypes.html#mjteq"><span class="std std-ref">Equality</span></a></div></td>
+<td><p data-bi="bi-100">全部</p><div class="en-orig" data-for="bi-100" lang="en">All</div></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">CONNECT</span></code>, <code class="docutils literal notranslate"><span class="pre">WELD</span></code>, <code class="docutils literal notranslate"><span class="pre">JOINT</span></code>, <code class="docutils literal notranslate"><span class="pre">TENDON</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-101"><a class="reference internal" href="APIreference/APItypes.html#mjtintegrator"><span class="std std-ref">积分器</span></a></p><div class="en-orig" data-for="bi-101" lang="en"><a class="reference internal" href="APIreference/APItypes.html#mjtintegrator"><span class="std std-ref">Integrator</span></a></div></td>
+<td><p data-bi="bi-102">除 <code class="docutils literal notranslate"><span class="pre">IMPLICITFAST</span></code> 中点积分器功能外的全部</p><div class="en-orig" data-for="bi-102" lang="en">All except <code class="docutils literal notranslate"><span class="pre">IMPLICITFAST</span></code> midpoint integrator feature</div></td>
+<td><p data-bi="bi-103"><code class="docutils literal notranslate"><span class="pre">EULER</span></code>, <code class="docutils literal notranslate"><span class="pre">RK4</span></code>, <code class="docutils literal notranslate"><span class="pre">IMPLICITFAST</span></code>（<code class="docutils literal notranslate"><span class="pre">IMPLICITFAST</span></code> 不支持与<a class="reference internal" href="computation/fluid.html"><span class="doc">流体阻力</span></a>一起使用）</p><div class="en-orig" data-for="bi-103" lang="en"><code class="docutils literal notranslate"><span class="pre">EULER</span></code>, <code class="docutils literal notranslate"><span class="pre">RK4</span></code>, <code class="docutils literal notranslate"><span class="pre">IMPLICITFAST</span></code> (<code class="docutils literal notranslate"><span class="pre">IMPLICITFAST</span></code> not supported with <a class="reference internal" href="computation/fluid.html"><span class="doc">fluid drag</span></a>)</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-104"><a class="reference internal" href="APIreference/APItypes.html#mjtcone"><span class="std std-ref">锥</span></a></p><div class="en-orig" data-for="bi-104" lang="en"><a class="reference internal" href="APIreference/APItypes.html#mjtcone"><span class="std std-ref">Cone</span></a></div></td>
+<td><p data-bi="bi-105">全部</p><div class="en-orig" data-for="bi-105" lang="en">All</div></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">PYRAMIDAL</span></code>, <code class="docutils literal notranslate"><span class="pre">ELLIPTIC</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="computation/index.html#cocontact"><span class="std std-ref">Condim</span></a></p></td>
+<td><p data-bi="bi-106">全部</p><div class="en-orig" data-for="bi-106" lang="en">All</div></td>
+<td><p data-bi="bi-107">1, 3, 4, 6（1 不支持与 <code class="docutils literal notranslate"><span class="pre">ELLIPTIC</span></code> 一起使用）</p><div class="en-orig" data-for="bi-107" lang="en">1, 3, 4, 6 (1 is not supported with <code class="docutils literal notranslate"><span class="pre">ELLIPTIC</span></code>)</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-108"><a class="reference internal" href="APIreference/APItypes.html#mjtsolver"><span class="std std-ref">求解器</span></a></p><div class="en-orig" data-for="bi-108" lang="en"><a class="reference internal" href="APIreference/APItypes.html#mjtsolver"><span class="std std-ref">Solver</span></a></div></td>
+<td><p data-bi="bi-109">除 <code class="docutils literal notranslate"><span class="pre">PGS</span></code>、<code class="docutils literal notranslate"><span class="pre">noslip</span></code> 外的全部</p><div class="en-orig" data-for="bi-109" lang="en">All except <code class="docutils literal notranslate"><span class="pre">PGS</span></code>, <code class="docutils literal notranslate"><span class="pre">noslip</span></code></div></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">CG</span></code>, <code class="docutils literal notranslate"><span class="pre">NEWTON</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-110">流体模型</p><div class="en-orig" data-for="bi-110" lang="en">Fluid Model</div></td>
+<td><p data-bi="bi-111">全部</p><div class="en-orig" data-for="bi-111" lang="en">All</div></td>
+<td><p data-bi="bi-112">仅 <a class="reference internal" href="computation/fluid.html#flinertia"><span class="std std-ref">惯性模型</span></a></p><div class="en-orig" data-for="bi-112" lang="en"><a class="reference internal" href="computation/fluid.html#flinertia"><span class="std std-ref">Inertia model</span></a> only</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-113"><a class="reference internal" href="APIreference/APItypes.html#mjtwrap"><span class="std std-ref">肌腱缠绕</span></a></p><div class="en-orig" data-for="bi-113" lang="en"><a class="reference internal" href="APIreference/APItypes.html#mjtwrap"><span class="std std-ref">Tendon Wrapping</span></a></div></td>
+<td><p data-bi="bi-114">全部</p><div class="en-orig" data-for="bi-114" lang="en">All</div></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">JOINT</span></code>, <code class="docutils literal notranslate"><span class="pre">SITE</span></code>, <code class="docutils literal notranslate"><span class="pre">PULLEY</span></code>, <code class="docutils literal notranslate"><span class="pre">SPHERE</span></code>, <code class="docutils literal notranslate"><span class="pre">CYLINDER</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-115"><a class="reference internal" href="XMLreference.html#tendon"><span class="std std-ref">肌腱</span></a></p><div class="en-orig" data-for="bi-115" lang="en"><a class="reference internal" href="XMLreference.html#tendon"><span class="std std-ref">Tendons</span></a></div></td>
+<td><p data-bi="bi-116">全部</p><div class="en-orig" data-for="bi-116" lang="en">All</div></td>
+<td><p data-bi="bi-117"><a class="reference internal" href="XMLreference.html#tendon-fixed"><span class="std std-ref">固定</span></a>、<a class="reference internal" href="XMLreference.html#tendon-spatial"><span class="std std-ref">空间</span></a></p><div class="en-orig" data-for="bi-117" lang="en"><a class="reference internal" href="XMLreference.html#tendon-fixed"><span class="std std-ref">Fixed</span></a>, <a class="reference internal" href="XMLreference.html#tendon-spatial"><span class="std std-ref">Spatial</span></a></div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-118"><a class="reference internal" href="APIreference/APItypes.html#mjtsensor"><span class="std std-ref">传感器</span></a></p><div class="en-orig" data-for="bi-118" lang="en"><a class="reference internal" href="APIreference/APItypes.html#mjtsensor"><span class="std std-ref">Sensors</span></a></div></td>
+<td><p data-bi="bi-119">除 <code class="docutils literal notranslate"><span class="pre">PLUGIN</span></code> 外的全部</p><div class="en-orig" data-for="bi-119" lang="en">All except <code class="docutils literal notranslate"><span class="pre">PLUGIN</span></code></div></td>
+<td><p data-bi="bi-120">参见下面的说明 <a class="footnote-reference brackets" href="#id18" id="id16" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></p><div class="en-orig" data-for="bi-120" lang="en">See notes below <a class="footnote-reference brackets" href="#id5" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></div></td>
+</tr>
+<tr class="row-even"><td><p>Flex</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">VERTCOLLIDE</span></code>, <code class="docutils literal notranslate"><span class="pre">ELASTICITY</span></code></p></td>
+<td><p data-bi="bi-121">不支持。</p><div class="en-orig" data-for="bi-121" lang="en">Not supported.</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-122">质量矩阵格式</p><div class="en-orig" data-for="bi-122" lang="en">Mass matrix format</div></td>
+<td><p data-bi="bi-123">稀疏和稠密</p><div class="en-orig" data-for="bi-123" lang="en">Sparse and Dense</div></td>
+<td><p data-bi="bi-124">稀疏和稠密</p><div class="en-orig" data-for="bi-124" lang="en">Sparse and Dense</div></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-125">雅可比格式</p><div class="en-orig" data-for="bi-125" lang="en">Jacobian format</div></td>
+<td><p data-bi="bi-126"><code class="docutils literal notranslate"><span class="pre">DENSE</span></code> 和 <code class="docutils literal notranslate"><span class="pre">SPARSE</span></code></p><div class="en-orig" data-for="bi-126" lang="en"><code class="docutils literal notranslate"><span class="pre">DENSE</span></code> and <code class="docutils literal notranslate"><span class="pre">SPARSE</span></code></div></td>
+<td><p data-bi="bi-127">仅 <code class="docutils literal notranslate"><span class="pre">DENSE</span></code></p><div class="en-orig" data-for="bi-127" lang="en"><code class="docutils literal notranslate"><span class="pre">DENSE</span></code> only</div></td>
+</tr>
+<tr class="row-odd"><td><p data-bi="bi-128">光源</p><div class="en-orig" data-for="bi-128" lang="en">Lights</div></td>
+<td><p>✓</p></td>
+<td><p data-bi="bi-129">位置和方向</p><div class="en-orig" data-for="bi-129" lang="en">Positions and directions</div></td>
+</tr>
+<tr class="row-even"><td><p data-bi="bi-130">光线</p><div class="en-orig" data-for="bi-130" lang="en">Ray</div></td>
+<td><p data-bi="bi-131">全部，网格、hfield 和 flex 使用 BVH</p><div class="en-orig" data-for="bi-131" lang="en">All, BVH for meshes, hfield, and flex</div></td>
+<td><p data-bi="bi-132">网格较慢，hfield 和 flex 未实现</p><div class="en-orig" data-for="bi-132" lang="en">Slow for meshes, hfield and flex unimplemented</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id17" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a href="#id14" role="doc-backlink">1</a><span class="fn-bracket">]</span></span>
+<p data-bi="bi-133">可微性在 MJX-JAX 中<a class="reference external" href="https://github.com/google-deepmind/mujoco/issues/2259">基本得到支持</a>，但目前在 MJX-Warp 中<strong>不</strong>可用。更多细节请参见 <a class="reference external" href="https://nvidia.github.io/warp/stable/user_guide/differentiability.html">Warp 可微性</a>。</p><div class="en-orig" data-for="bi-133" lang="en">Differentiability is <a class="reference external" href="https://github.com/google-deepmind/mujoco/issues/2259">mostly supported</a> in MJX-JAX but is
+<strong>not</strong> currently available in MJX-Warp. See <a class="reference external" href="https://nvidia.github.io/warp/stable/user_guide/differentiability.html">Warp differentiability</a>
+for more details.</div>
+</aside>
+<aside class="footnote brackets" id="id18" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a href="#id16" role="doc-backlink">2</a><span class="fn-bracket">]</span></span>
+<p data-bi="bi-134"><strong>传感器</strong>：<code class="docutils literal notranslate"><span class="pre">MAGNETOMETER</span></code>, <code class="docutils literal notranslate"><span class="pre">CAMPROJECTION</span></code>, <code class="docutils literal notranslate"><span class="pre">RANGEFINDER</span></code>, <code class="docutils literal notranslate"><span class="pre">JOINTPOS</span></code>, <code class="docutils literal notranslate"><span class="pre">TENDONPOS</span></code>, <code class="docutils literal notranslate"><span class="pre">ACTUATORPOS</span></code>,
+<code class="docutils literal notranslate"><span class="pre">BALLQUAT</span></code>, <code class="docutils literal notranslate"><span class="pre">FRAMEPOS</span></code>, <code class="docutils literal notranslate"><span class="pre">FRAMEXAXIS</span></code>, <code class="docutils literal notranslate"><span class="pre">FRAMEYAXIS</span></code>, <code class="docutils literal notranslate"><span class="pre">FRAMEZAXIS</span></code>, <code class="docutils literal notranslate"><span class="pre">FRAMEQUAT</span></code>, <code class="docutils literal notranslate"><span class="pre">SUBTREECOM</span></code>, <code class="docutils literal notranslate"><span class="pre">CLOCK</span></code>,
+<code class="docutils literal notranslate"><span class="pre">VELOCIMETER</span></code>, <code class="docutils literal notranslate"><span class="pre">GYRO</span></code>, <code class="docutils literal notranslate"><span class="pre">JOINTVEL</span></code>, <code class="docutils literal notranslate"><span class="pre">TENDONVEL</span></code>, <code class="docutils literal notranslate"><span class="pre">ACTUATORVEL</span></code>, <code class="docutils literal notranslate"><span class="pre">BALLANGVEL</span></code>, <code class="docutils literal notranslate"><span class="pre">FRAMELINVEL</span></code>,
+<code class="docutils literal notranslate"><span class="pre">FRAMEANGVEL</span></code>, <code class="docutils literal notranslate"><span class="pre">SUBTREELINVEL</span></code>, <code class="docutils literal notranslate"><span class="pre">SUBTREEANGMOM</span></code>, <code class="docutils literal notranslate"><span class="pre">TOUCH</span></code>, <code class="docutils literal notranslate"><span class="pre">CONTACT</span></code>, <code class="docutils literal notranslate"><span class="pre">ACCELEROMETER</span></code>, <code class="docutils literal notranslate"><span class="pre">FORCE</span></code>,
+<code class="docutils literal notranslate"><span class="pre">TORQUE</span></code>, <code class="docutils literal notranslate"><span class="pre">ACTUATORFRC</span></code>, <code class="docutils literal notranslate"><span class="pre">JOINTACTFRC</span></code>, <code class="docutils literal notranslate"><span class="pre">TENDONACTFRC</span></code>, <code class="docutils literal notranslate"><span class="pre">FRAMELINACC</span></code>, <code class="docutils literal notranslate"><span class="pre">FRAMEANGACC</span></code>
+（<code class="docutils literal notranslate"><span class="pre">CONTACT</span></code>：匹配 <code class="docutils literal notranslate"><span class="pre">none-none</span></code>、<code class="docutils literal notranslate"><span class="pre">geom-geom</span></code>；归约 <code class="docutils literal notranslate"><span class="pre">mindist</span></code>、<code class="docutils literal notranslate"><span class="pre">maxforce</span></code>；数据 <code class="docutils literal notranslate"><span class="pre">all</span></code>）</p><div class="en-orig" data-for="bi-134" lang="en"><strong>Sensors</strong>: <code class="docutils literal notranslate"><span class="pre">MAGNETOMETER</span></code>, <code class="docutils literal notranslate"><span class="pre">CAMPROJECTION</span></code>, <code class="docutils literal notranslate"><span class="pre">RANGEFINDER</span></code>, <code class="docutils literal notranslate"><span class="pre">JOINTPOS</span></code>, <code class="docutils literal notranslate"><span class="pre">TENDONPOS</span></code>, <code class="docutils literal notranslate"><span class="pre">ACTUATORPOS</span></code>,
+<code class="docutils literal notranslate"><span class="pre">BALLQUAT</span></code>, <code class="docutils literal notranslate"><span class="pre">FRAMEPOS</span></code>, <code class="docutils literal notranslate"><span class="pre">FRAMEXAXIS</span></code>, <code class="docutils literal notranslate"><span class="pre">FRAMEYAXIS</span></code>, <code class="docutils literal notranslate"><span class="pre">FRAMEZAXIS</span></code>, <code class="docutils literal notranslate"><span class="pre">FRAMEQUAT</span></code>, <code class="docutils literal notranslate"><span class="pre">SUBTREECOM</span></code>, <code class="docutils literal notranslate"><span class="pre">CLOCK</span></code>,
+<code class="docutils literal notranslate"><span class="pre">VELOCIMETER</span></code>, <code class="docutils literal notranslate"><span class="pre">GYRO</span></code>, <code class="docutils literal notranslate"><span class="pre">JOINTVEL</span></code>, <code class="docutils literal notranslate"><span class="pre">TENDONVEL</span></code>, <code class="docutils literal notranslate"><span class="pre">ACTUATORVEL</span></code>, <code class="docutils literal notranslate"><span class="pre">BALLANGVEL</span></code>, <code class="docutils literal notranslate"><span class="pre">FRAMELINVEL</span></code>,
+<code class="docutils literal notranslate"><span class="pre">FRAMEANGVEL</span></code>, <code class="docutils literal notranslate"><span class="pre">SUBTREELINVEL</span></code>, <code class="docutils literal notranslate"><span class="pre">SUBTREEANGMOM</span></code>, <code class="docutils literal notranslate"><span class="pre">TOUCH</span></code>, <code class="docutils literal notranslate"><span class="pre">CONTACT</span></code>, <code class="docutils literal notranslate"><span class="pre">ACCELEROMETER</span></code>, <code class="docutils literal notranslate"><span class="pre">FORCE</span></code>,
+<code class="docutils literal notranslate"><span class="pre">TORQUE</span></code>, <code class="docutils literal notranslate"><span class="pre">ACTUATORFRC</span></code>, <code class="docutils literal notranslate"><span class="pre">JOINTACTFRC</span></code>, <code class="docutils literal notranslate"><span class="pre">TENDONACTFRC</span></code>, <code class="docutils literal notranslate"><span class="pre">FRAMELINACC</span></code>, <code class="docutils literal notranslate"><span class="pre">FRAMEANGACC</span></code>
+(<code class="docutils literal notranslate"><span class="pre">CONTACT</span></code>: matching <code class="docutils literal notranslate"><span class="pre">none-none</span></code>, <code class="docutils literal notranslate"><span class="pre">geom-geom</span></code>; reduction <code class="docutils literal notranslate"><span class="pre">mindist</span></code>, <code class="docutils literal notranslate"><span class="pre">maxforce</span></code>; data <code class="docutils literal notranslate"><span class="pre">all</span></code>)</div>
+</aside>
+<aside class="footnote brackets" id="id19" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a href="#id15" role="doc-backlink">3</a><span class="fn-bracket">]</span></span>
+<p data-bi="bi-135"><strong>不支持的 Geom</strong>：<code class="docutils literal notranslate"><span class="pre">SDF</span></code>。（<code class="docutils literal notranslate"><span class="pre">SPHERE</span></code>、<code class="docutils literal notranslate"><span class="pre">BOX</span></code>、<code class="docutils literal notranslate"><span class="pre">MESH</span></code>、<code class="docutils literal notranslate"><span class="pre">HFIELD</span></code>）与 <code class="docutils literal notranslate"><span class="pre">CYLINDER</span></code> 之间的碰撞。（<code class="docutils literal notranslate"><span class="pre">BOX</span></code>、<code class="docutils literal notranslate"><span class="pre">MESH</span></code>、<code class="docutils literal notranslate"><span class="pre">HFIELD</span></code>）与 <code class="docutils literal notranslate"><span class="pre">ELLIPSOID</span></code> 之间的碰撞。</p><div class="en-orig" data-for="bi-135" lang="en"><strong>Geom unsupported</strong>: <code class="docutils literal notranslate"><span class="pre">SDF</span></code>. Collisions between (<code class="docutils literal notranslate"><span class="pre">SPHERE</span></code>, <code class="docutils literal notranslate"><span class="pre">BOX</span></code>, <code class="docutils literal notranslate"><span class="pre">MESH</span></code>, <code class="docutils literal notranslate"><span class="pre">HFIELD</span></code>) and <code class="docutils literal notranslate"><span class="pre">CYLINDER</span></code>.
+Collisions between (<code class="docutils literal notranslate"><span class="pre">BOX</span></code>, <code class="docutils literal notranslate"><span class="pre">MESH</span></code>, <code class="docutils literal notranslate"><span class="pre">HFIELD</span></code>) and <code class="docutils literal notranslate"><span class="pre">ELLIPSOID</span></code>.</div>
+</aside>
+</aside>
+</section>
+<section id="mjxperformance">
+<span id="id20"></span><h2 data-bi="bi-136">性能调优<a class="headerlink" href="#mjxperformance" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-136" lang="en">Performance Tuning</div>
+<section id="mjxperformancewarp">
+<span id="id21"></span><h3>MJX-Warp<a class="headerlink" href="#mjxperformancewarp" title="链接到此标题。">#</a></h3>
+<p data-bi="bi-137"><a class="reference internal" href="#mjxwarp"><span class="std std-ref">MJX-Warp</span></a> 缓解了 <a class="reference internal" href="#mjxsharpbits"><span class="std std-ref">MJX-JAX</span></a> 在接触和约束数量扩展方面的性能问题。MJX-Warp 还完全支持网格碰撞。关于 MuJoCo Warp 性能调优的内容，请参见<a class="reference external" href="https://mujoco.readthedocs.io/en/stable/mjwarp/index.html#performance-tuning">此处</a>的相应章节。</p><div class="en-orig" data-for="bi-137" lang="en"><a class="reference internal" href="#mjxwarp"><span class="std std-ref">MJX-Warp</span></a> mitigates performance issues around scaling the number of contacts and constraints from
+<a class="reference internal" href="#mjxsharpbits"><span class="std std-ref">MJX-JAX</span></a>. MJX-Warp also fully supports mesh collisions. See the section on MuJoCo Warp
+performance tuning <a class="reference external" href="https://mujoco.readthedocs.io/en/stable/mjwarp/index.html#performance-tuning">here</a>.</div>
+</section>
+<section id="mjxperformancejax">
+<span id="id22"></span><h3>MJX-JAX<a class="headerlink" href="#mjxperformancejax" title="链接到此标题。">#</a></h3>
+<div class="admonition note">
+<p class="admonition-title" data-bi="bi-138">备注</p><div class="en-orig" data-for="bi-138" lang="en">Note</div>
+<p data-bi="bi-139"><a class="reference internal" href="#mjxwarp"><span class="std std-ref">MJX-Warp</span></a> 缓解了 MJX-JAX 的许多性能问题！</p><div class="en-orig" data-for="bi-139" lang="en"><a class="reference internal" href="#mjxwarp"><span class="std std-ref">MJX-Warp</span></a> mitigates many of the performance issues with MJX-JAX!</div>
+</div>
+<p data-bi="bi-140">为了让 MJX-JAX 表现良好，应当将一些配置参数从 MuJoCo 的默认值进行调整：</p><div class="en-orig" data-for="bi-140" lang="en">For MJX-JAX to perform well, some configuration parameters should be adjusted from their default MuJoCo values:</div>
+<dl class="simple">
+<dt data-bi="bi-141"><a class="reference internal" href="XMLreference.html#option-iterations"><span class="std std-ref">option/iterations</span></a> 和 <a class="reference internal" href="XMLreference.html#option-ls-iterations"><span class="std std-ref">option/ls_iterations</span></a><div class="en-orig" data-for="bi-141" lang="en"><a class="reference internal" href="XMLreference.html#option-iterations"><span class="std std-ref">option/iterations</span></a> and <a class="reference internal" href="XMLreference.html#option-ls-iterations"><span class="std std-ref">option/ls_iterations</span></a></div></dt><dd><p data-bi="bi-142"><a class="reference internal" href="XMLreference.html#option-iterations"><span class="std std-ref">iterations</span></a> 和 <a class="reference internal" href="XMLreference.html#option-ls-iterations"><span class="std std-ref">ls_iterations</span></a> 属性——分别控制求解器迭代和线搜索迭代——应当降低到刚好能保持仿真稳定的程度。在强化学习中，精确的求解器力并不那么重要，因为强化学习中经常使用域随机化为物理引入噪声以实现 sim-to-real。<code class="docutils literal notranslate"><span class="pre">NEWTON</span></code> <a class="reference internal" href="APIreference/APItypes.html#mjtsolver"><span class="std std-ref">求解器</span></a>只需很少的（通常只有一次）求解器迭代就能获得出色的收敛性，并且在 GPU 上表现良好。目前 <code class="docutils literal notranslate"><span class="pre">CG</span></code> 是 TPU 上更好的选择。</p><div class="en-orig" data-for="bi-142" lang="en">The <a class="reference internal" href="XMLreference.html#option-iterations"><span class="std std-ref">iterations</span></a> and <a class="reference internal" href="XMLreference.html#option-ls-iterations"><span class="std std-ref">ls_iterations</span></a> attributes—which control
+solver and linesearch iterations, respectively—should be brought down to just low enough that the simulation remains
+stable. Accurate solver forces are not so important in reinforcement learning in which domain randomization is often
+used to add noise to physics for sim-to-real. The <code class="docutils literal notranslate"><span class="pre">NEWTON</span></code> <a class="reference internal" href="APIreference/APItypes.html#mjtsolver"><span class="std std-ref">Solver</span></a> delivers excellent convergence
+with very few (often just one) solver iterations, and performs well on GPU. <code class="docutils literal notranslate"><span class="pre">CG</span></code> is currently a better choice for
+TPU.</div>
+</dd>
+<dt><a class="reference internal" href="XMLreference.html#contact-pair"><span class="std std-ref">contact/pair</span></a></dt><dd><p data-bi="bi-143">考虑为碰撞检测（collision detection）显式标记 geom，以减少 MJX-JAX 在每一步中必须考虑的接触数量。仅启用显式的有效接触列表，可以对 MJX-JAX 的仿真性能产生显著影响。要做好这一点，往往需要对任务有所了解——例如，<a class="reference external" href="https://github.com/openai/gym/blob/master/gym/envs/mujoco/humanoid_v4.py">OpenAI Gym Humanoid</a> 任务会在人形开始跌倒时重置，因此不需要与地面的完整接触。</p><div class="en-orig" data-for="bi-143" lang="en">Consider explicitly marking geoms for collision detection to reduce the number of contacts that MJX-JAX must consider
+during each step.  Enabling only an explicit list of valid contacts can have a dramatic effect on simulation
+performance in MJX-JAX.  Doing this well often requires an understanding of the task – for example, the
+<a class="reference external" href="https://github.com/openai/gym/blob/master/gym/envs/mujoco/humanoid_v4.py">OpenAI Gym Humanoid</a> task resets when
+the humanoid starts to fall, so full contact with the floor is not needed.</div>
+</dd>
+<dt><a class="reference internal" href="XMLreference.html#asset-mesh-maxhullvert"><span class="std std-ref">maxhullvert</span></a></dt><dd><p data-bi="bi-144">将 <a class="reference internal" href="XMLreference.html#asset-mesh-maxhullvert"><span class="std std-ref">maxhullvert</span></a> 设置为 <code class="docutils literal notranslate"><span class="pre">64</span></code> 或更小，以获得更好的凸网格碰撞性能。</p><div class="en-orig" data-for="bi-144" lang="en">Set <a class="reference internal" href="XMLreference.html#asset-mesh-maxhullvert"><span class="std std-ref">maxhullvert</span></a> to <code class="docutils literal notranslate"><span class="pre">64</span></code> or less for better convex mesh collision performance.</div>
+</dd>
+<dt><a class="reference internal" href="XMLreference.html#option-flag-eulerdamp"><span class="std std-ref">option/flag/eulerdamp</span></a></dt><dd><p data-bi="bi-145">禁用 <code class="docutils literal notranslate"><span class="pre">eulerdamp</span></code> 有助于提升性能，并且通常不影响稳定性。有关该标志语义的详细信息，请阅读<a class="reference internal" href="computation/index.html#geintegration"><span class="std std-ref">数值积分</span></a>一节。</p><div class="en-orig" data-for="bi-145" lang="en">Disabling <code class="docutils literal notranslate"><span class="pre">eulerdamp</span></code> can help performance and is often not needed for stability. Read the
+<a class="reference internal" href="computation/index.html#geintegration"><span class="std std-ref">Numerical Integration</span></a> section for details regarding the semantics of this flag.</div>
+</dd>
+<dt><a class="reference internal" href="XMLreference.html#option-jacobian"><span class="std std-ref">option/jacobian</span></a></dt><dd><p data-bi="bi-146">显式设置为 "dense" 或 "sparse" 可能会根据您的设备加速仿真。现代 TPU 具有专门用于快速处理稀疏矩阵的硬件，而 GPU 只要稠密矩阵能放进设备，往往在稠密矩阵上更快。因此，MJX-JAX 中默认 "auto" 设置的行为是：如果 <code class="docutils literal notranslate"><span class="pre">nv</span> <span class="pre">&gt;=</span> <span class="pre">60</span></code>（60 个或更多自由度（degrees of freedom）），或者 MJX-JAX 检测到默认后端是 TPU，则使用 sparse，否则使用 "dense"。对于 TPU，在牛顿求解器中使用 "sparse" 可以将仿真加速 2 到 3 倍。对于 GPU，只要稠密矩阵能放进设备，选择 "dense" 可能带来较为温和的 10% 到 20% 的加速。</p><div class="en-orig" data-for="bi-146" lang="en">Explicitly setting “dense” or “sparse” may speed up simulation depending on your device. Modern TPUs have specialized
+hardware for rapidly operating over sparse matrices, whereas GPUs tend to be faster with dense matrices as long as
+they fit onto the device. As such, the behavior in MJX-JAX for the default “auto” setting is sparse if <code class="docutils literal notranslate"><span class="pre">nv</span> <span class="pre">&gt;=</span> <span class="pre">60</span></code>
+(60 or more degrees of freedom), or if MJX-JAX detects a TPU as the default backend, otherwise “dense”. For TPU, using
+“sparse” with the Newton solver can speed up simulation by 2x to 3x. For GPU, choosing “dense” may impart a more modest
+speedup of 10% to 20%, as long as the dense matrices can fit on the device.</div>
+</dd>
+<dt data-bi="bi-147">粗测阶段<div class="en-orig" data-for="bi-147" lang="en">Broadphase</div></dt><dd><p data-bi="bi-148">MuJoCo 开箱即用地处理粗测阶段（broadphase）剔除，而 MJX-JAX 则需要额外的参数。要使用近似版本的粗测阶段，请使用实验性的自定义 numeric 参数 <code class="docutils literal notranslate"><span class="pre">max_contact_points</span></code> 和 <code class="docutils literal notranslate"><span class="pre">max_geom_pairs</span></code>。<code class="docutils literal notranslate"><span class="pre">max_contact_points</span></code> 限制针对每种 condim 类型发送给求解器的接触点数量。<code class="docutils literal notranslate"><span class="pre">max_geom_pairs</span></code> 限制针对每种 geom 类型对发送给相应碰撞函数的 geom 对总数。例如，<a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/mjx/mujoco/mjx/test_data/shadow_hand">shadow hand</a> 环境就使用了这些参数。</p><div class="en-orig" data-for="bi-148" lang="en">While MuJoCo handles broadphase culling out of the box, MJX-JAX requires additional parameters. For an approximate
+version of broadphase, use the experimental custom numeric parameters <code class="docutils literal notranslate"><span class="pre">max_contact_points</span></code> and <code class="docutils literal notranslate"><span class="pre">max_geom_pairs</span></code>.
+<code class="docutils literal notranslate"><span class="pre">max_contact_points</span></code> caps the number of contact points sent to the solver for each condim type. <code class="docutils literal notranslate"><span class="pre">max_geom_pairs</span></code>
+caps the total number of geom-pairs sent to respective collision functions for each geom-type pair. As an example, the
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/mjx/mujoco/mjx/test_data/shadow_hand">shadow hand</a> environment
+makes use of these parameters.</div>
+</dd>
+</dl>
+<section id="gpu">
+<h4 data-bi="bi-149">GPU 性能<a class="headerlink" href="#gpu" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-149" lang="en">GPU performance</div>
+<p data-bi="bi-150">应当设置以下环境变量：</p><div class="en-orig" data-for="bi-150" lang="en">The following environment variables should be set:</div>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">XLA_FLAGS=--xla_gpu_triton_gemm_any=true</span></code></dt><dd><p data-bi="bi-151">这会对任何受支持的 GEMM 启用基于 Triton 的 GEMM（矩阵乘法）发射器。这在 NVIDIA GPU 上可带来 30% 的加速。如果您有多个 GPU，启用与<a class="reference external" href="https://jax.readthedocs.io/en/latest/gpu_performance_tips.html">GPU 之间通信</a>相关的标志也可能使您受益。</p><div class="en-orig" data-for="bi-151" lang="en">This enables the Triton-based GEMM (matmul) emitter for any GEMM that it supports.  This can yield a 30% speedup on
+NVIDIA GPUs.  If you have multiple GPUs, you may also benefit from enabling flags related to
+<a class="reference external" href="https://jax.readthedocs.io/en/latest/gpu_performance_tips.html">communication between GPUs</a>.</div>
+</dd>
+</dl>
+</section>
+</section>
+</section>
+<section id="mjx-jax-the-sharp-bits">
+<span id="mjxsharpbits"></span><h2 data-bi="bi-152">🔪 MJX-JAX 的锋利之处（The Sharp Bits）🔪<a class="headerlink" href="#mjx-jax-the-sharp-bits" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-152" lang="en">🔪 MJX-JAX - The Sharp Bits 🔪</div>
+<div class="admonition note">
+<p class="admonition-title" data-bi="bi-153">备注</p><div class="en-orig" data-for="bi-153" lang="en">Note</div>
+<p data-bi="bi-154"><a class="reference internal" href="#mjxwarp"><span class="std std-ref">MJX-Warp</span></a> 缓解了 MJX-JAX 的许多锋利之处！</p><div class="en-orig" data-for="bi-154" lang="en"><a class="reference internal" href="#mjxwarp"><span class="std std-ref">MJX-Warp</span></a> mitigates many of the sharp bits of MJX-JAX!</div>
+</div>
+<p data-bi="bi-155">GPU 和 TPU 具有独特的性能权衡，MJX-JAX 也会受其影响。MJX-JAX 专长于使用可在 <a class="reference external" href="https://en.wikipedia.org/wiki/Single_instruction,_multiple_data">SIMD 硬件</a>上高效向量化的算法，模拟大批量并行的相同物理场景。这一专长对于<a class="reference external" href="https://en.wikipedia.org/wiki/Reinforcement_learning">强化学习</a>等需要海量数据吞吐的机器学习工作负载很有用。</p><div class="en-orig" data-for="bi-155" lang="en">GPUs and TPUs have unique performance tradeoffs that MJX-JAX is subject to.  MJX-JAX specializes in simulating big batches of
+parallel identical physics scenes using algorithms that can be efficiently vectorized on
+<a class="reference external" href="https://en.wikipedia.org/wiki/Single_instruction,_multiple_data">SIMD hardware</a>.  This specialization is useful
+for machine learning workloads such as <a class="reference external" href="https://en.wikipedia.org/wiki/Reinforcement_learning">reinforcement learning</a>
+that require massive data throughput.</div>
+<p data-bi="bi-156">有一些工作流不适合 MJX-JAX（MJX-Warp 完全缓解了这些问题）：</p><div class="en-orig" data-for="bi-156" lang="en">There are certain workflows that MJX-JAX is ill-suited for (that MJX-Warp entirely mitigates):</div>
+<dl>
+<dt data-bi="bi-157">单场景仿真<div class="en-orig" data-for="bi-157" lang="en">Single scene simulation</div></dt><dd><p data-bi="bi-158">在模拟单个场景（1 个 <a class="reference internal" href="APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> 实例）时，MJX-JAX 可能比 MuJoCo 慢 <strong>10 倍</strong>，因为 MuJoCo 已针对 CPU 进行了精心优化。MJX-JAX 在并行模拟数千或数万个场景时效果最佳。</p><div class="en-orig" data-for="bi-158" lang="en">Simulating a single scene (1 instance of <a class="reference internal" href="APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a>), MJX-JAX can be <strong>10x</strong> slower than MuJoCo, which has been
+carefully optimized for CPU.  MJX-JAX works best when simulating thousands or tens of thousands of scenes in parallel.</div>
+</dd>
+<dt data-bi="bi-159">大型网格之间的碰撞<div class="en-orig" data-for="bi-159" lang="en">Collisions between large meshes</div></dt><dd><p data-bi="bi-160">MJX-JAX 支持凸网格几何体之间的碰撞。不过，MJX-JAX 中的凸体碰撞算法与 MuJoCo 中的实现方式不同。MJX-JAX 使用<a class="reference external" href="https://ubm-twvideo01.s3.amazonaws.com/o1/vault/gdc2013/slides/822403Gregorius_Dirk_TheSeparatingAxisTest.pdf">分离轴测试</a>（Separating Axis Test，SAT）的无分支版本来判断几何体是否与凸网格发生碰撞，而 MuJoCo 使用 MPR 或 GJK/EPA，更多细节请参见<a class="reference internal" href="computation/index.html#cochecking"><span class="std std-ref">碰撞检测</span></a>。SAT 对较小的网格效果良好，但对较大的网格在运行时间和内存方面都会吃力。</p><div class="en-orig" data-for="bi-160" lang="en">MJX-JAX supports collisions between convex mesh geometries. However the convex collision algorithms in MJX-JAX are
+implemented differently than in MuJoCo. MJX-JAX uses a branchless version of the <a class="reference external" href="https://ubm-twvideo01.s3.amazonaws.com/o1/vault/gdc2013/slides/822403Gregorius_Dirk_TheSeparatingAxisTest.pdf">Separating Axis Test</a>
+(SAT) to determine if geometries are colliding with convex meshes, while MuJoCo uses either MPR or GJK/EPA, see
+<a class="reference internal" href="computation/index.html#cochecking"><span class="std std-ref">Collision Detection</span></a> for more details. SAT works well for smaller meshes but suffers in both runtime
+and memory for larger meshes.</div>
+<p data-bi="bi-161">对于与凸网格和基本几何体之间的碰撞，网格的凸分解应当具有大约<strong>200 个或更少的顶点</strong>，才能获得合理的性能。对于凸体与凸体之间的碰撞，凸网格应当具有大约<strong>少于 32 个顶点</strong>。我们建议在 MuJoCo 编译器中使用 <a class="reference internal" href="XMLreference.html#asset-mesh-maxhullvert"><span class="std std-ref">maxhullvert</span></a> 来获得所需的凸网格属性。经过仔细调优，MJX-JAX 可以模拟带有网格碰撞的场景——示例请参见 MJX-JAX 的 <a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/mjx/mujoco/mjx/test_data/shadow_hand">shadow hand</a> 配置。加速网格碰撞检测（collision detection）是 MJX-JAX 正在积极开发的方向。</p><div class="en-orig" data-for="bi-161" lang="en">For collisions with convex meshes and primitives, the convex decomposition of the mesh should have roughly <strong>200
+vertices or less</strong> for reasonable performance. For convex-convex collisions, the convex mesh should have roughly
+<strong>fewer than 32 vertices</strong>. We recommend using <a class="reference internal" href="XMLreference.html#asset-mesh-maxhullvert"><span class="std std-ref">maxhullvert</span></a> in the MuJoCo compiler to
+achieve desired convex mesh properties. With careful tuning, MJX-JAX can simulate scenes with mesh collisions – see the
+MJX-JAX <a class="reference external" href="https://github.com/google-deepmind/mujoco/tree/main/mjx/mujoco/mjx/test_data/shadow_hand">shadow hand</a> config
+for an example. Speeding up mesh collision detection is an active area of development for MJX-JAX.</div>
+</dd>
+<dt data-bi="bi-162">包含大量接触的大型复杂场景<div class="en-orig" data-for="bi-162" lang="en">Large, complex scenes with many contacts</div></dt><dd><p data-bi="bi-163">加速器在<a class="reference external" href="https://aschrein.github.io/jekyll/update/2019/06/13/whatsup-with-my-branches-on-gpu.html#tldr">分支代码</a>上表现不佳。在粗测阶段（broad-phase）碰撞检测中会用到分支，用于在场景中大量刚体之间识别潜在的碰撞。MJX-JAX 自带一个简单的无分支粗测阶段算法（参见性能调优），但它不如 MuJoCo 中的算法强大。</p><div class="en-orig" data-for="bi-163" lang="en">Accelerators exhibit poor performance for
+<a class="reference external" href="https://aschrein.github.io/jekyll/update/2019/06/13/whatsup-with-my-branches-on-gpu.html#tldr">branching code</a>.
+Branching is used in broad-phase collision detection, when identifying potential collisions between large numbers of
+bodies in a scene.  MJX-JAX ships with a simple branchless broad-phase algorithm (see performance tuning) but it is not as
+powerful as the one in MuJoCo.</div>
+<p data-bi="bi-164">为了说明这对仿真有何影响，让我们考虑一个物理场景，其中人形刚体的数量从 1 增加到 10。我们在 Apple M3 Max 和 64 核 AMD 3995WX 上使用 CPU 版 MuJoCo 模拟该场景，并使用 <a class="reference internal" href="programming/samples.html#satestspeed"><span class="std std-ref">testspeed</span></a> 计时，线程数为 <code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">x</span> <span class="pre">numcore</span></code>。我们在 Nvidia A100 GPU 上以 8192 的批量大小，以及在 8 芯片的
+<a class="reference external" href="https://cloud.google.com/blog/products/compute/announcing-cloud-tpu-v5e-and-a3-gpus-in-ga">v5 TPU</a>
+机器上以 16384 的批量大小，对 MJX-JAX 仿真计时。请注意纵轴是对数刻度。</p><div class="en-orig" data-for="bi-164" lang="en">To see how this affects simulation, let us consider a physics scene with increasing numbers of humanoid bodies,
+varied from 1 to 10. We simulate this scene using CPU MuJoCo on an Apple M3 Max and a 64-core AMD 3995WX and time
+it using <a class="reference internal" href="programming/samples.html#satestspeed"><span class="std std-ref">testspeed</span></a>, using <code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">x</span> <span class="pre">numcore</span></code> threads. We time the MJX-JAX simulation on an Nvidia
+A100 GPU using a batch size of 8192 and an 8-chip
+<a class="reference external" href="https://cloud.google.com/blog/products/compute/announcing-cloud-tpu-v5e-and-a3-gpus-in-ga">v5 TPU</a>
+machine using a batch size of 16384. Note the vertical scale is logarithmic.</div>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/SPS.svg"><img alt="_images/SPS.svg" src="_images/SPS.svg" style="width: 95%;"/>
+</a>
+</figure>
+<p data-bi="bi-165">这四种计时架构在单个人形（最左侧数据点）时的值依次为每秒 <strong>650K</strong>、<strong>1.8M</strong>、<strong>950K</strong> 和 <strong>2.7M</strong> 步。请注意，随着人形数量的增加（这会增加场景中潜在接触的数量），MJX-JAX 的吞吐量比 MuJoCo 下降得更快。</p><div class="en-orig" data-for="bi-165" lang="en">The values for a single humanoid (leftmost datapoints) for the four timed architectures are <strong>650K</strong>, <strong>1.8M</strong>,
+<strong>950K</strong> and <strong>2.7M</strong> steps per second, respectively. Note that as we increase the number of humanoids (which
+increases the number of potential contacts in a scene), MJX-JAX throughput decreases more rapidly than MuJoCo.</div>
+</dd>
+</dl>
+</section>
+</section>
+</article>
+</div>
+<footer>
+<div class="related-pages">
+<a class="next-page" href="mjx_api.html">
+<div class="page-info">
+<div class="context">
+<span>Next</span>
+</div>
+<div class="title">MJX API</div>
+</div>
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+</a>
+<a class="prev-page" href="python.html">
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+<div class="page-info">
+<div class="context">
+<span>Previous</span>
+</div>
+<div class="title">Python</div>
+</div>
+</a>
+</div>
+<div class="bottom-of-page">
+<div class="left-details">
+<div class="copyright">
+                Copyright © DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+</div>
+<div class="right-details">
+</div>
+</div>
+</footer>
+</div>
+<aside class="toc-drawer">
+<div class="toc-sticky toc-scroll">
+<div class="toc-title-container">
+<span class="toc-title">
+            On this page
+          </span>
+</div>
+<div class="toc-tree-container">
+<div class="toc-tree">
+<ul>
+<li><a class="reference internal" href="#">MuJoCo XLA (MJX)</a><ul>
+<li><a class="reference internal" href="#mjxinstallation">安装</a></li>
+<li><a class="reference internal" href="#mjxexample">最小示例</a></li>
+<li><a class="reference internal" href="#id3">MJX 的实现</a><ul>
+<li><a class="reference internal" href="#mjx-warp">MJX-Warp</a><ul>
+<li><a class="reference internal" href="#id4">基本用法</a></li>
+<li><a class="reference internal" href="#id5">接触</a></li>
+<li><a class="reference internal" href="#data">批量 <code class="docutils literal notranslate"><span class="pre">Data</span></code> 更新</a></li>
+<li><a class="reference internal" href="#mjxwarpgraphmodes">图模式</a></li>
+<li><a class="reference internal" href="#mjxwarpbatchrendering">批量渲染</a><ul>
+<li><a class="reference internal" href="#pmap-gpu">使用 <code class="docutils literal notranslate"><span class="pre">pmap</span></code> 的多 GPU 渲染</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mjx-jax">MJX-JAX</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#notebook">教程 notebook</a></li>
+<li><a class="reference internal" href="#mjxusage">深入用法</a><ul>
+<li><a class="reference internal" href="#mjxstructs">结构体</a></li>
+<li><a class="reference internal" href="#mjxfunctions">函数</a></li>
+<li><a class="reference internal" href="#mjxenums">枚举和常量</a></li>
+<li><a class="reference internal" href="#mjxcli">实用的命令行脚本</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mjxfeatureparity">功能对等</a></li>
+<li><a class="reference internal" href="#mjxperformance">性能调优</a><ul>
+<li><a class="reference internal" href="#mjxperformancewarp">MJX-Warp</a></li>
+<li><a class="reference internal" href="#mjxperformancejax">MJX-JAX</a><ul>
+<li><a class="reference internal" href="#gpu">GPU 性能</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mjx-jax-the-sharp-bits">🔪 MJX-JAX 的锋利之处（The Sharp Bits）🔪</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div><script src="_static/documentation_options.js?v=7d86a446"></script>
+<script src="_static/doctools.js?v=fd6eb6e6"></script>
+<script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+<script src="_static/scripts/furo.js?v=46bd48cc"></script>
+<script src="_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="_static/copybutton.js?v=f281be69"></script>
+<script src="_static/translations.js?v=540d3cec"></script>
+<script src="_static/katex.min.js?v=5cc8ed51"></script>
+<script src="_static/auto-render.min.js?v=af98beb9"></script>
+<script src="_static/katex_autorenderer.js?v=ae454eff"></script>
+<script src="_static/design-tabs.js?v=f930bc37"></script>
+<script src="_static/linenumbers.js?v=ebda5d35"></script>
+<script src="_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+<script src="_static/bilingual.js?v=25c2633d"></script></body></html>

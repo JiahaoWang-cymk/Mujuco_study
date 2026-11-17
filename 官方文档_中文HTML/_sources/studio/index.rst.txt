@@ -1,0 +1,97 @@
+﻿.. _Studio:
+
+=============
+MuJoCo Studio
+=============
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+**MuJoCo Studio** 是一个 Python 和 C++ SDK，用于构建交互式仿真、研究工具和自定义可视化工具（visualizer），无需修改用户代码即可在原生桌面窗口或网页浏览器中运行。它是 :ref:`simulate <saSimulate>` 应用程序和 :ref:`mujoco.viewer <PyViewer>` 的下一代版本，用 :ref:`Filament <FilamentRendering>` 基于物理的渲染（rendering）、\ `Dear ImGui <https://github.com/ocornut/imgui>`__ 即时模式 UI 和模块化的插件（plugin）系统，取代了经典的 OpenGL 渲染器和固定的 :ref:`mjUI <Ui>` 面板。
+
+.. _StudioQuickStart:
+
+快速入门
+========
+
+- **在浏览器中（无需安装）**：打开 `live.mujoco.org <https://live.mujoco.org>`__，将任意 ``.xml``、\ ``.mjb`` 或 ``.mjz`` 模型（model）拖放到画布上，或通过 ``?model=github:<org>/<repo>/<branch>/<path>`` 分享模型 URL（参见 :ref:`MuJoCo Live <StudioLive>`）。
+- **独立桌面应用**：下载\ `最新版本 <https://github.com/google-deepmind/mujoco/releases>`__\ ，在 macOS 上打开 ``MuJoCoStudio.app``，在 Windows 上打开 ``bin\mujoco_studio.exe``，在 Linux 上打开 ``bin/mujoco_studio``\ （参见\ :ref:`独立应用程序 <StudioApp>`\ ）。
+- **通过 Python CLI**：在\ :ref:`原生窗口 <StudioNativeViewers>`\ 中启动 Studio 查看器，或将其以无界面方式流式传输到\ :ref:`浏览器 <StudioWebViewer>`\ ：
+
+  .. code-block:: shell
+
+     python -m mujoco.studio.viewer --model=humanoid.xml            # native desktop window
+     python -m mujoco.studio.viewer --model=humanoid.xml --gfx=web  # headless web viewer
+
+- **在 Python 仿真循环内部**：附加一个非阻塞查看器（``launch_native.launch`` 或 ``launch_web.launch``），而无需锁定 ``model`` 或 ``data``；请参见 `custom_sim_loop.py
+  <https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/sample/studio/custom_sim_loop.py>`__ 和\ :ref:`非阻塞模式 <StudioExecutionModes>`\ 。
+
+.. _StudioOverview:
+
+概述
+====
+
+MuJoCo 还在 ``doc/skills/`` 下附带了自包含的\ `智能体 SKILL 文件 <https://github.com/google-deepmind/mujoco/tree/main/doc/skills>`__\ ——包括 `mujoco-studio
+<https://github.com/google-deepmind/mujoco/blob/main/doc/skills/studio/SKILL.md>`__ 和 `mujoco-gui
+<https://github.com/google-deepmind/mujoco/blob/main/doc/skills/gui/SKILL.md>`__\ ——为开发者和 AI 编码助手提供惯用的 API 模式和常见陷阱。
+
+.. toctree::
+   :maxdepth: 2
+
+   web_viewers
+   native_viewers
+   architecture
+   python_plugins
+   cpp
+
+核心组件
+--------
+
+MuJoCo Studio 围绕五个构建模块组织而成，这些模块在 C++ 和 Python 之间共享：
+
+- **Studio 查看器应用**：功能完整的交互式可视化工具，在 :ref:`C++ <StudioCpp>` 中实现为 ``mujoco::studio::App``
+  （`app.h <https://github.com/google-deepmind/mujoco/blob/main/studio/app.h>`__），在 :ref:`Python
+  <StudioViewerPlugins>` 中实现为 ``studio_app.App``\ （`app/plugins.py
+  <https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/app/plugins.py>`__）。它提供模型加载、仿真历史回放、步进控制、性能剖析、集成的日志和警告控制台以及场景层次结构检查功能。
+- **可组合的插件**：用于扩展查看器 UI、3D 场景和物理步进的模块化组件。在 Python 中，标准的 Studio UI（\ :ref:`studio_app.App <StudioViewerPlugins>`\ ）、实时物理步进（\ :ref:`StepControl <StudioSimPlugins>`\ ）和轨迹历史记录（\ :ref:`SimHistory <StudioSimPlugins>`\ ）本身就是作为 :ref:`ViewerPlugin 和 SimPlugin <StudioPythonPlugins>` 的子类实现的，它们通过非阻塞的\ :ref:`消息通道 <StudioMessaging>`\ 通信。
+- **即时模式 UI**：由 `Dear ImGui <https://github.com/ocornut/imgui>`__ 驱动，\ `即时模式 GUI（IMGUI）范式 <https://github.com/ocornut/imgui/wiki#about-the-imgui-paradigm>`__\ 最大限度地减少了多余的状态复制、状态同步和 UI 侧的状态保留——使其比传统的保留模式界面更不易出错，非常适合快速迭代那些直接反映实时仿真数据的动态可视化和调试工具。控件调用并不直接操作 GPU 状态，而是输出紧凑的顶点缓冲区和绘制命令列表，这些内容可以在本地渲染，也可以远程流式传输（参见 :ref:`WebViewer <StudioWebViewer>`）。
+- **在浏览器中运行**：Studio 提供两种网页查看器：\ :ref:`MuJoCo Live <StudioLive>` 完全在浏览器中运行，可以托管在静态页面上；而 :ref:`WebViewer <StudioWebViewer>` 则将由主机驱动的 Python 仿真和 UI 流式传输到浏览器，主机上无需 GPU 或显示服务器。
+- **基于物理的渲染**：通过 :ref:`Filament <FilamentRendering>` 在 OpenGL、Vulkan 和 WebGL 上实现硬件加速的基于物理的渲染（PBR），并提供用于自动化测试的无界面和软件光栅化器。有关 Filament 和基于物理的渲染理论的背景知识，请参见 `Filament 文档
+  <https://google.github.io/filament/>`__、在线指南 `Physically Based Rendering in Filament
+  <https://google.github.io/filament/Filament.html>`__ 以及 `Physically Based Rendering: From Theory to
+  Implementation <https://www.pbr-book.org/>`__。
+
+.. _StudioComparison:
+
+旧版可视化工具
+--------------
+
+.. list-table::
+   :widths: 22 36 42
+   :header-rows: 1
+
+   * - 特性
+     - 旧版 :ref:`mujoco.viewer <PyViewer>`
+     - MuJoCo Studio
+   * - **GUI 框架**
+     - 固定的自定义 C :ref:`mjUI <Ui>` 面板（\ :ref:`simulate <saSimulate>`\ ）
+     - 可停靠的 `Dear ImGui <https://github.com/ocornut/imgui>`__ 窗口（``studio_app.App`` 是 :ref:`simulate
+       <saSimulate>` 的移植版本）
+   * - **3D 渲染器**
+     - 固定功能的\ :ref:`经典 OpenGL <ClassicRendering>`\ （``mjr_``）
+     - :ref:`Filament <FilamentRendering>`\ （OpenGL、Vulkan、WebGL、无界面/软件渲染）
+   * - **网页支持**
+     - 无（需要本地显示或 X11/VNC）
+     - :ref:`MuJoCo Live <StudioLive>`\ （独立 WASM）和 Python :ref:`WebViewer <StudioWebViewer>`\ （流式传输的 ImGui + WASM）
+   * - **架构**
+     - UI 与物理耦合的单体循环
+     - 可组合的 :ref:`ViewerPlugin / SimPlugin <StudioPythonPlugins>` 类（Python）和\ :ref:`回调插件
+       <StudioCppPlugins>`\ （C++）
+   * - **同步**
+     - 在 ``viewer.lock()`` 下共享 :ref:`mjModel` / :ref:`mjData`
+     - Python 中使用\ :ref:`消息传递 <StudioMessaging>`\ ；C++ 中使用内部物理互斥锁（``mujoco::studio::App``）
+   * - **实时迭代**
+     - 仅支持静态模型重新加载
+     - 模型文件监视和实时 Python 插件\ :ref:`热重载 <StudioHotReload>`

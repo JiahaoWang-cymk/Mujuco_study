@@ -1,0 +1,769 @@
+﻿.. _Rendering:
+
+渲染
+---------
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+MuJoCo 提供两个内置的 3D 渲染（rendering）后端，同时支持交互式的屏上查看器和无头离屏渲染：
+
+- :ref:`Filament 渲染 <FilamentRendering>` (``mjrf``)：一个现代的、基于物理的渲染（PBR）引擎，支持 OpenGL、Vulkan、Metal 和
+  WebGL。它采用 **保留模式** （retained-mode）的异步架构，其中网格（mesh）、纹理、光源和 :ref:`可渲染对象 <mjrfRenderable>`
+  一次性从 :ref:`mjModel` 创建，并在每一帧中根据 :ref:`mjData` 就地更新。Filament 为 :ref:`MuJoCo Studio <Studio>`
+  提供支持，也是新应用推荐使用的渲染器。
+- :ref:`OpenGL 渲染 <ClassicRendering>` (``mjr``)：经典的固定功能 OpenGL 1.5 渲染器，目前处于维护模式。它采用 **立即模式** 场景架构，
+  其中每一帧都由 :ref:`mjv_updateScene` 用所有几何对象和光源填充一个
+  :ref:`mjvScene` ，再由 :ref:`mjr_render` 绘制。它为经典的 :ref:`simulate.cc <saSimulate>` 和 :ref:`basic.cc <saBasic>` 示例提供支持。
+
+两个渲染器共享与图形无关的 :ref:`可视化 <Visualization>` (``mjv``) 层，用于相机控制 (:ref:`mjvCamera`)、可视化（visualization）选项
+(:ref:`mjvOption`)、对象拾取 (:ref:`mjv_select`) 和交互式扰动 (:ref:`mjvPerturb`)。经典 OpenGL 渲染器依赖 :ref:`mjvScene`
+来描述整个场景，而 Filament 渲染器直接根据 :ref:`mjData` 更新模型几何，仅将 :ref:`mjvScene` 用于瞬态装饰性叠加层
+(``mjCAT_DECOR``)。下表给出了两个渲染器主要概念之间的对应关系：
+
+.. list-table::
+   :widths: 22 39 39
+   :header-rows: 1
+
+   * -
+     - OpenGL (``mjr``)
+     - Filament (``mjrf``)
+   * - GPU 上下文
+     - :ref:`mjrContext` ，需要外部创建的 OpenGL 上下文
+     - :ref:`mjrfContext` ，自行拥有其图形上下文（OpenGL 或 Vulkan，带窗口或无头）
+   * - 模型资源
+     - 由 :ref:`mjr_makeContext` 上传
+     - :ref:`mjrfMesh` 和 :ref:`mjrfTexture` ，由 ``ModelResources`` :ref:`支持类 <reSupport>` 创建
+   * - 每帧场景
+     - :ref:`mjv_updateScene` 填充 :ref:`mjvScene`
+     - ``ModelRenderables::Update`` 就地更新持久的 :ref:`mjrfRenderable` 对象； :ref:`mjvScene` 仅
+       用于装饰
+   * - 离屏缓冲区
+     - ``mjFB_OFFSCREEN`` ，大小由 ``mjModel.vis`` 决定
+     - :ref:`mjrfRenderTarget` ，任意大小和格式
+   * - 像素回读
+     - :ref:`mjr_readPixels`
+     - :ref:`mjrfReadRequest` ，与渲染请求一同提交
+   * - 模式与效果
+     - ``mjvScene.flags`` (:ref:`mjtRndFlag`) 和 ``mjvScene.stereo``
+     - :ref:`mjrDrawMode` 以及 :ref:`mjrfRenderRequest` 中每个请求各自的标志；立体渲染是使用
+       不同相机的两个请求
+   * - 2D 叠加层与文本
+     - :ref:`mjr_overlay`, :ref:`mjr_text`, :ref:`mjr_rectangle`, :ref:`mjr_figure`
+     - 无；标签通过回调上报，并由应用程序绘制
+
+.. _FilamentRendering:
+
+Filament 渲染
+~~~~~~~~~~~~~~~~~~
+
+MuJoCo 提供了一个基于 `Filament <https://github.com/google/filament>`__ 的渲染器，Filament 是 Google 的实时、基于物理的渲染引擎。
+Filament 运行时小巧而快速，可在 Linux、Windows、macOS、Android、iOS 和 Web 上运行，
+并支持 OpenGL、Vulkan、Metal 和 WebGL 图形后端。Filament 渲染器为 :ref:`MuJoCo Studio
+<Studio>` 和 `live.mujoco.org <https://live.mujoco.org>`__ 提供支持。
+
+Filament 渲染器是一个可选的、自包含的库，名为 ``mujoco_filament`` 。它实现了 ``mjrf``
+:ref:`类型<tyFilamentRenderStructure>` 和 :ref:`函数<FilamentRenderingApi>` ，这些类型和函数定义于 `mjrfilament.h
+<https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjrfilament.h>`__ 中。
+
+虽然 Filament 运行时非常小巧高效，但它是一个相当庞大的构建依赖项。因此，如果你打算
+:ref:`从源码构建 MuJoCo<inBuild>` ，则需要设置 CMake 的 ``MUJOCO_USE_FILAMENT`` 选项，才能
+包含 Filament 渲染器。
+
+.. _reFilamentCompat:
+
+也可以通过额外设置 ``MUJOCO_USE_FILAMENT_MJR_COMPAT`` CMake 选项，在经典的 ``mjr`` :ref:`API<OpenGLrendering>` 中使用 Filament 渲染。
+该选项实际上是将基于 OpenGL 的 ``mjr``
+函数替换为基于 Filament 的实现。这对于无需重写应用代码即可试用 Filament 渲染器很有用。
+但是，这种兼容模式不支持 Filament 运行时提供的全部定制功能和效果，并且会带来轻微的性能开销。
+
+你可以在 :ref:`render.cc <saRender>` 示例中找到使用 Filament 渲染器的例子，具体位于
+``RenderFilament()`` 函数中。
+
+.. admonition:: 光强度决定光照模型
+   :class: tip
+
+   Filament 渲染器仅凭一个属性来决定如何为 **整个场景** 打光：模型中是否有任何
+   :ref:`光源<body-light>` 具有正的 :ref:`intensity<body-light-intensity>` 。
+
+   - 如果 **没有** 任何光源具有正强度，则假定模型是为经典渲染器编写的。此时会添加默认的环境光，启用头灯，并将固定的总强度分配给模型的
+     各个光源。
+   - 如果 **任何** 光源具有正强度，则所有光源都被视为光度学光源：每个光源恰好贡献其自身的强度（因此强度保持为零的光源会变暗），头灯被关闭，并且
+     除非模型定义了 ``image`` 光源，否则没有环境照明。
+
+   因此，在单个光源上设置 ``intensity`` 会改变其他所有对象的外观。详情参见下文的 :ref:`光照
+   <reLighting>` 。
+
+.. _reProgramming:
+
+编程
+^^^^^^^^^^^
+
+Filament 渲染器分为三层。最底层是外部开发的 `Filament 库
+<https://github.com/google/filament>`__ 本身，它提供基于物理的渲染管线和图形 API
+后端。渲染器的公共接口是 ``mjrf`` C API，声明于 `mjrfilament.h
+<https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjrfilament.h>`__ 中。与每帧都重绘一个 :ref:`mjvScene` 的经典 ``mjr`` API
+不同， ``mjrf`` 是 *保留模式* 且 *异步* 的：应用程序创建长期存在的对象，对其进行增量修改，并提交成批的渲染和像素回读请求。在 C
+API 之上是 C++ :ref:`支持层 <reSupport>` ，位于 `src/render/filament/support
+<https://github.com/google-deepmind/mujoco/blob/main/src/render/filament/support>`__ （同时也绑定到 Python 的
+``mujoco.mjrf`` 下），可根据 :ref:`mjModel` 、 :ref:`mjData` 和
+:ref:`mjvOption` 自动创建和更新 ``mjrf`` 场景对象。
+
+下面是一个简化的 C++ 概要 (改编自 :ref:`render.cc <saRender>` 中的 ``RenderFilament()``)，说明这些组件如何配合完成离屏渲染：
+
+.. code-block:: C
+
+   // create Filament context and scene
+   mjrfContextConfig context_cfg;
+   mjrf_defaultContextConfig(&context_cfg);
+   auto ctx = mujoco::CreateContext(context_cfg);
+
+   mjrfSceneParams scene_params;
+   mjrf_defaultSceneParams(&scene_params);
+   auto scene = mujoco::CreateScene(ctx.get(), scene_params);
+   mjrf_configureSceneFromModel(scene.get(), m);
+
+   // create retained model components and decoration helper
+   auto model_resources   = std::make_unique<ModelResources>(m, ctx.get());
+   auto model_lights      = std::make_unique<ModelLights>(scene.get(), model_resources.get());
+   auto model_renderables = std::make_unique<ModelRenderables>(scene.get(), model_resources.get());
+   auto model_decorations = std::make_unique<ModelDecorations>(ctx.get(), scene.get(), m);
+
+   // create offscreen render target
+   mjrfRenderTargetConfig target_cfg;
+   mjrf_defaultRenderTargetConfig(&target_cfg);
+   target_cfg.width        = width;
+   target_cfg.height       = height;
+   target_cfg.color_format = mjPIXEL_FORMAT_RGB8;
+   target_cfg.depth_format = mjPIXEL_FORMAT_DEPTH32F;
+   auto render_target      = mujoco::CreateRenderTarget(ctx.get(), target_cfg);
+
+   // update retained lights, renderables, and transient decorations from mjData
+   mjrRect viewport = {0, 0, width, height};
+   model_renderables->SetOptions(opt);
+   model_lights->Update(d);
+   model_renderables->Update(d);
+   model_decorations->Update(d, &opt, nullptr, &cam, viewport);
+
+   // submit render and pixel-readback requests and wait for completion
+   mjrfRenderRequest request;
+   mjrf_defaultRenderRequest(&request);
+   request.scene               = scene.get();
+   request.camera              = mjv_camera2GLCamera(m, d, &cam);
+   request.viewport            = viewport;
+   request.target              = render_target.get();
+   request.headlight    = m->vis.headlight.active;
+   request.headlight_intensity = model_lights->GetHeadlightIntensity();
+
+   mjrfReadRequest read_request;
+   mjrf_defaultReadRequest(&read_request);
+   read_request.target    = render_target.get();
+   read_request.output    = rgb.data();
+   read_request.num_bytes = width * height * 3;
+
+   mjrfFrameHandle frame = mjrf_render(ctx.get(), &request, 1, &read_request, 1);
+   mjrf_waitForFrame(ctx.get(), frame);
+
+   // remove transient decorations before destroying the scene
+   model_decorations->Clear();
+
+.. _reConcepts:
+
+核心概念
+'''''''''''''
+
+``mjrf`` C API 围绕七种不透明对象类型展开，每种都用 ``mjrf_create*`` 函数创建，并用 ``mjrf_destroy*`` 释放：
+:ref:`mjrfContext` 、 :ref:`mjrfScene` 、 :ref:`mjrfMesh` 、 :ref:`mjrfTexture` 、
+:ref:`mjrfRenderable` 、 :ref:`mjrfLight` 和 :ref:`mjrfRenderTarget` 。创建时需要传入由
+``mjrf_default*`` 初始化的结构体，其名称编码了一条规则： ``*Config`` （上下文、纹理、网格、渲染目标）在对象的生命周期内保持固定，而 ``*Params`` （场景、光源、可渲染对象）是初始值，之后可以通过
+``mjrf_set*`` 函数更改。 :ref:`mjrfMaterial` 和 :ref:`mjrfRenderRequest` 等普通结构体描述这些对象如何配置和绘制。
+
+**上下文与场景** (:ref:`mjrfContext`, :ref:`mjrfScene`)
+   :ref:`mjrfContext` 是 Filament 渲染器的入口。与经典的 :ref:`mjrContext` 不同，它管理自己的图形上下文（OpenGL 或 Vulkan，通过
+   :ref:`mjrfContextConfig` 中的 :ref:`mjrGraphicsApi` 选择，可带可选的窗口句柄或使用无头软件渲染），并且独立于任何单个 :ref:`mjModel` 。
+   :ref:`mjrfScene` 是光源、可渲染对象和可选天空盒纹理的容器；场景级渲染选项和模型中自定义的
+   ``filament.*`` 标志通过 :ref:`mjrf_configureSceneFromModel` 应用。
+
+**网格与纹理** (:ref:`mjrfMesh`, :ref:`mjrfTexture`)
+   GPU 几何体和图像资源只创建一次，并在各帧之间保留。 :ref:`mjrfMesh` 存储通过 :ref:`mjrf_uploadMesh` 上传的顶点属性
+   （位置、打包的切线坐标系朝向、UV）和索引，以及用于视锥剔除的包围盒。 :ref:`mjrfTexture` 存储通过
+   :ref:`mjrf_uploadTexture` 上传的 2D、立方体贴图或 KTX 压缩图像数据。两个上传函数都接受一个可选的完成回调，用于在异步 GPU 传输完成后释放主机内存；
+   调用 :ref:`mjrf_flush` 会将待处理的操作刷新到渲染后端，并在下一次 :ref:`mjrf_render` 调用之前调用所有已完成的回调。
+
+**可渲染对象与材质** (:ref:`mjrfRenderable`, :ref:`mjrfMaterial`)
+   :ref:`mjrfRenderable` 是场景中持久存在的可绘制实体，组合了表面几何、材质外观
+   和 3D 变换：
+
+   - **几何：** 可渲染对象既可以引用自定义的 :ref:`mjrfMesh` (通过 :ref:`mjrf_setRenderableMesh`)，也可以引用
+     内置的几何基元，如球体、胶囊体、圆柱体、长方体或椭球体 (通过
+     :ref:`mjrf_setRenderableGeomMesh` ，它会在具有相同质量参数的可渲染对象之间缓存并共享底层网格缓冲区)。
+   - **材质：** :ref:`mjrf_setRenderableMaterial` 应用一个 :ref:`mjrfMaterial` 结构体，它可在三种
+     着色模型之间选择：金属度-粗糙度 PBR、传统的高光-光泽度 (Phong)，或用于 UI 和
+     装饰性叠加层的无光照渲染 (``decor`` ，它还会将对象放在 decor 层并禁用阴影)。材质还携带
+     纹理绑定（颜色、法线、金属度、粗糙度、遮蔽、打包的
+     ORM、自发光）、UV 缩放/偏移、选中高亮 (``selected``)，以及用于分割和求解器岛可视化的对象/岛 ID。
+   - **位姿、尺寸与阴影：** 每一帧， :ref:`mjrf_setRenderablePose` 就地更新可渲染对象的 3D 位置和
+     旋转矩阵， :ref:`mjrf_setRenderableSize` 更新其缩放（处理非均匀的基元缩放，
+     例如保持胶囊体端帽为球形）， :ref:`mjrf_setRenderableCastShadow` 切换其是否投射
+     阴影。可渲染对象通过 :ref:`mjrf_addSceneRenderable` 和
+     :ref:`mjrf_removeSceneRenderable` 添加到场景或从场景中移除。
+
+**光源** (:ref:`mjrfLight`)
+   :ref:`mjrfLight` 表示通过 :ref:`mjrf_addSceneLight` 添加到场景的平行光、聚光灯、点光源或基于图像的（IBL 环境立方体贴图）光源。
+   它们的位姿、强度（单位为坎德拉）、颜色和阴影贴图分辨率都可以动态更新。请注意，与相机对齐的 **头灯** 是在 :ref:`mjrfRenderRequest` 上指定的
+   （强度单位为勒克斯），而不是作为场景光源，因此从多个相机渲染同一场景时不会让各视图相互照亮。
+
+**渲染目标、请求与帧句柄** (:ref:`mjrfRenderTarget`, :ref:`mjrfRenderRequest`, :ref:`mjrfReadRequest`)
+   渲染通过 :ref:`mjrf_render` 成批提交。每个 :ref:`mjrfRenderRequest` 将一个 :ref:`mjrfScene`
+   与相机 (``mjrCamera``)、视口、可选的离屏 :ref:`mjrfRenderTarget` (使用原生窗口时为 ``NULL``)、绘制模式
+   (:ref:`mjrDrawMode` ，取值包括默认、无纹理、线框、深度、求解器岛，或按 ID/颜色分割) 以及每视图标志（阴影、反射、后处理、头灯）配对。
+   由于相机和绘制模式属于请求而不是场景，因此单个保留的 :ref:`mjrfScene` 可以在一次调用中从多个相机或以
+   多种绘制模式渲染。离屏像素回读与渲染请求一同通过
+   :ref:`mjrfReadRequest` 请求。 :ref:`mjrf_render` 将工作分派到专用的渲染线程，并返回一个
+   ``mjrfFrameHandle`` ，调用方通过 :ref:`mjrf_waitForFrame` 对其进行同步。尽管使用了内部渲染
+   线程， ``mjrf`` API 并不是线程安全的，所有调用都必须来自同一个线程。
+
+.. _reSupport:
+
+支持层
+'''''''''''''
+
+虽然应用程序可以直接管理底层的 ``mjrf`` 对象，但大多数 MuJoCo 应用程序使用
+`src/render/filament/support <https://github.com/google-deepmind/mujoco/blob/main/src/render/filament/support>`__ 中的支持层 (以及用于
+RAII ``UniquePtr`` 封装器的 `support/mjrf_ptr.h <https://github.com/google-deepmind/mujoco/blob/main/src/render/filament/support/mjrf_ptr.h>`__)，它同样在 Python 的 ``mujoco.mjrf`` 下公开：
+
+- ``ModelResources`` ：根据 :ref:`mjModel` 创建并拥有所有 :ref:`mjrfMesh` 资源（网格、凸包和高度场）以及
+  :ref:`mjrfTexture` 资源，并支持动态重新上传修改后的资源。
+- ``ModelLights`` ：根据 :ref:`mjModel` 和 :ref:`mjData` 填充并更新场景的 :ref:`mjrfLight` 实例，
+  并在模型未定义光度学光强时自动配置后备的环境光和平行光。由于头灯属于渲染请求， ``GetHeadlightIntensity()`` 会报告
+  应用程序应在 :ref:`mjrfRenderRequest` 中传入的强度。
+- ``ModelRenderables`` ：为所有模型的 geom、site、蒙皮、柔性体（flex）和
+  空间肌腱创建持久的 :ref:`mjrfRenderable` 实体。调用 ``Update(data)`` 会在不构建 :ref:`mjvScene` 的情况下，根据
+  :ref:`mjData` 就地更新它们的位姿、尺寸和动态材质属性，而 ``SetOptions(opt)`` 则根据 :ref:`mjvOption` 应用分组和类别可见性。
+- ``ModelDecorations`` ：桥接抽象可视化器，用于瞬态装饰几何。由于装饰性叠加层
+  （接触力箭头、惯性盒、关节/执行器轴、扰动系绳、文本标签）是每帧以程序方式生成的，而不是作为持久的模型元素存储， ``ModelDecorations`` 在内部调用
+  :ref:`mjv_updateScene` ，并且只将 ``mjCAT_DECOR`` geom（以及非蒙皮的 flex 调试线框）转换为临时的
+  decor 可渲染对象。Filament 渲染器没有 2D 文本 API；文本标签改为报告给传递给 ``Update()`` 的可选回调，由应用程序负责绘制
+  (参见 :ref:`render.cc <saRender>` 中的 ``DrawBitmapText()``)。
+
+.. _reAuthoring:
+
+场景编写
+^^^^^^^^^^^^^^^^
+
+.. _rePbr:
+
+:ref:`经典渲染器<ClassicRendering>` 实现了传统的 Phong 光照模型：表面颜色是环境光、漫反射、镜面反射和自发光各项之和，光强是凭目测调节的无量纲数值。现代
+基于物理的渲染（PBR）引擎用可经验测量的属性描述表面，用光度学单位描述光源。由于材质和光照参数都是物理量，资源在不同场景和
+光照条件下能保持其外观，并且诸如 `基于图像的光照
+<https://google.github.io/filament/Filament.html#lighting/imagebasedlights>`__ 和逼真的金属等效果成为可能。有关底层理论的介绍，参见 Filament 的 `PBR 文档
+<https://google.github.io/filament/Filament.html>`__ 。
+
+Filament 渲染器同时支持这两种模型。总体而言，我们建议使用现代 PBR（例如金属度-粗糙度）方法编写场景，以获得最佳效果。不过，我们假定许多现有模型是为经典渲染器编写的，因此默认使用
+Filament 基于 PBR 的 Phong 着色近似。这种后备模式已经过调校，可产生合理的结果，但最终图像与经典
+渲染器相比可能存在显著差异。这两个决定（如何对材质着色以及如何为场景打光）是相互独立做出的，下文将分别介绍。
+
+.. _reMaterials:
+
+材质
+'''''''''
+
+如果材质定义了任何物理属性，则使用 PBR 光照模型着色：非负的
+:ref:`metallic<asset-material-metallic>` 或 :ref:`roughness<asset-material-roughness>` 系数，或者具有 PBR 角色（金属度、粗糙度、打包的遮蔽-粗糙度-金属度、法线、
+自发光、遮蔽）的纹理 :ref:`层<material-layer>` 。没有物理属性的材质被假定为面向经典渲染器设计，
+使用 Phong 光照模型着色，其经典参数会按以下
+:ref:`自定义标志<reFlags>` 进行缩放：
+
+.. list-table::
+   :widths: 32 10 12 46
+   :header-rows: 1
+
+   * - 名称 (``filament.<name>``)
+     - 类型
+     - 默认值
+     - 描述
+   * - ``phong.specular_multiplier``
+     - real
+     - 0.2
+     - 应用于传统（Phong）材质 :ref:`specular<asset-material-specular>` 的乘数。
+   * - ``phong.shininess_multiplier``
+     - real
+     - 0.1
+     - 应用于传统（Phong）材质 :ref:`shininess<asset-material-shininess>` 的乘数。
+   * - ``phong.emissive_multiplier``
+     - real
+     - 0.3
+     - 应用于传统（Phong）材质 :ref:`emission<asset-material-emission>` 的乘数。
+
+.. _reLighting:
+
+光照
+''''''''
+
+物理光照由光源本身启用：如果模型中有任何光源具有正的
+:ref:`intensity<body-light-intensity>` ，则所有光源都被视为光度学光源，强度以
+`坎德拉 <https://en.wikipedia.org/wiki/Candela>`__ 为单位。 :ref:`type<body-light-type>` 为 ``image`` 的光源提供
+基于图像的光照：被引用的 :ref:`texture<body-light-texture>` 作为环境贴图照亮场景。光源的 :ref:`bulbradius<body-light-bulbradius>` 控制其阴影的柔和程度。在此模式下，头灯被
+禁用，也不会自动添加环境光，因此具有物理光源但没有 ``image`` 光源的模型没有
+环境照明。
+
+如果没有光源具有正强度，则模型被视为为经典渲染器编写的：会添加默认的环境光，启用头灯，并将默认的总强度平均分配给模型的各个光源。
+这些默认值由以下 :ref:`自定义标志<reFlags>` 设置：
+
+.. list-table::
+   :widths: 32 10 12 46
+   :header-rows: 1
+
+   * - 名称 (``filament.<name>``)
+     - 类型
+     - 默认值
+     - 描述
+   * - ``fallback.environment_light_intensity``
+     - real
+     - 5000
+     - 后备环境光的强度。
+   * - ``fallback.scene_light_intensity``
+     - real
+     - 80000
+     - 分配给模型各光源的总强度。
+   * - ``fallback.head_light_intensity``
+     - real
+     - 40000
+     - :ref:`头灯<visual-headlight>` 的强度，单位为勒克斯。
+
+.. _reFlags:
+
+渲染选项
+^^^^^^^^^^^^^^^^^
+
+Filament 渲染器提供了一组用于控制最终图像渲染方式的选项。其中一些选项可以如上所述直接设置在场景元素上（例如设置材质的 PBR 属性或灯光的强度），而另一些功能则由名称以 ``filament.`` 开头的 :ref:`自定义<custom>` 模型元素（例如 :ref:`numeric<custom-numeric>` 或 :ref:`text<custom-text>`）控制。随着功能集趋于稳定，重要的标志将被提升为一等的 MJCF 属性。
+
+.. code-block:: xml
+
+   <custom>
+     <numeric name="filament.clear_color" data="0.5 0.6 0.7 1"/>
+   </custom>
+
+大多数标志直接对应于 Filament 的 `渲染选项
+<https://github.com/google/filament/blob/main/filament/include/filament/Options.h>`__，并由 :ref:`mjrf_configureSceneFromModel` 读取。布尔标志是取值为 0 或 1 的 numeric。枚举标志（例如 ``filament.ao.quality``）取字符串值，对应于底层枚举的名称标识符。模型中未指定的标志使用下面列出的默认值。所有标志名称均以 ``filament.`` 开头。
+
+.. collapse:: 阴影
+
+   .. list-table::
+      :widths: 32 10 12 46
+      :header-rows: 1
+
+      * - 名称（``filament.<name>``）
+        - 类型
+        - 默认值
+        - 说明
+      * - ``shadows.type``
+        - string
+        - "pcf"
+        - `阴影算法 <https://github.com/google/filament/blob/main/filament/include/filament/Options.h>`__；"pcf"、"vsm" 或 "pcss"。
+      * - ``shadows.map_size``
+        - int
+        - min( :ref:`shadowsize<visual-quality-shadowsize>`, 2048)
+        - 阴影贴图分辨率，以纹素为单位。
+
+.. collapse:: 屏幕空间环境光遮蔽
+
+   .. list-table::
+      :widths: 32 10 12 46
+      :header-rows: 1
+
+      * - 名称（``filament.<name>``）
+        - 类型
+        - 默认值
+        - 说明
+      * - ``ao.enabled``
+        - bool
+        - 1 (true)
+        - 启用屏幕空间环境光遮蔽。
+      * - ``ao.quality``
+        - string
+        - "ultra"
+        - 采样质量；"low"、"medium"、"high" 或 "ultra"。
+      * - ``ao.low_pass_filter``
+        - string
+        - "ultra"
+        - 深度感知模糊滤波器的质量；"low"、"medium"、"high" 或 "ultra"。
+      * - ``ao.upsampling``
+        - string
+        - "ultra"
+        - 遮蔽缓冲区上采样的质量；"low"、"medium"、"high" 或 "ultra"。
+      * - ``ao.bent_normals``
+        - bool
+        - 0 (false)
+        - 为镜面遮蔽计算弯曲法线。
+      * - ``ao.ssct``
+        - bool
+        - 0 (false)
+        - 启用屏幕空间锥体追踪。
+
+.. collapse:: 泛光
+
+   .. list-table::
+      :widths: 32 10 12 46
+      :header-rows: 1
+
+      * - 名称（``filament.<name>``）
+        - 类型
+        - 默认值
+        - 说明
+      * - ``bloom.enabled``
+        - bool
+        - 0 (false)
+        - 启用泛光。
+      * - ``bloom.strength``
+        - real
+        - [filament 默认值]
+        - 泛光效果的强度，介于 0 和 1 之间。
+      * - ``bloom.quality``
+        - string
+        - "low"
+        - 泛光各通道的质量；"low"、"medium"、"high" 或 "ultra"。
+      * - ``bloom.levels``
+        - int
+        - [filament 默认值]
+        - 模糊层级数。
+
+.. collapse:: 色彩分级
+
+   参见 Filament 的 `ColorGrading.h
+   <https://github.com/google/filament/blob/main/filament/include/filament/ColorGrading.h>`__。
+
+   .. list-table::
+      :widths: 32 10 12 46
+      :header-rows: 1
+
+      * - 名称（``filament.<name>``）
+        - 类型
+        - 默认值
+        - 说明
+      * - ``cg.exposure``
+        - real
+        - 0
+        - 曝光调整，以档（stop）为单位。
+      * - ``cg.temperature``
+        - real
+        - 0
+        - 白平衡色温，介于 -1（冷）和 1（暖）之间。
+      * - ``cg.tint``
+        - real
+        - 0
+        - 白平衡色调，介于 -1（绿）和 1（品红）之间。
+      * - ``cg.slope``
+        - real(3)
+        - 1 1 1
+        - `ASC CDL <https://en.wikipedia.org/wiki/ASC_CDL>`__ 斜率。
+      * - ``cg.offset``
+        - real(3)
+        - 0 0 0
+        - `ASC CDL <https://en.wikipedia.org/wiki/ASC_CDL>`__ 偏移。
+      * - ``cg.power``
+        - real(3)
+        - 1 1 1
+        - `ASC CDL <https://en.wikipedia.org/wiki/ASC_CDL>`__ 幂。
+      * - ``cg.shadows``
+        - real(4)
+        - 1 1 1 1
+        - 阴影部分的颜色偏移；第四个分量用于偏移亮度。
+      * - ``cg.midtones``
+        - real(4)
+        - 1 1 1 1
+        - 中间调的颜色偏移；第四个分量用于偏移亮度。
+      * - ``cg.highlights``
+        - real(4)
+        - 1 1 1 1
+        - 高光部分的颜色偏移；第四个分量用于偏移亮度。
+      * - ``cg.tonal_ranges``
+        - real(4)
+        - 0 0.33 0.55 1
+        - 阴影和高光色调范围的边界。
+      * - ``cg.shadow_gamma``
+        - real(3)
+        - 1 1 1
+        - 阴影的 gamma 调整。
+      * - ``cg.mid_point``
+        - real(3)
+        - 1 1 1
+        - 阴影与高光之间的边界。
+      * - ``cg.highlight_scale``
+        - real(3)
+        - 1 1 1
+        - 高光的缩放。
+      * - ``cg.contrast``
+        - real
+        - 1
+        - 对比度，介于 0 和 2 之间。
+      * - ``cg.vibrance``
+        - real
+        - 1
+        - 自然饱和度，介于 0 和 2 之间。
+      * - ``cg.saturation``
+        - real
+        - 1
+        - 饱和度，介于 0 和 2 之间。
+      * - ``cg.tone_mapping``
+        - string
+        - "pbr_neutral"
+        - 色调映射算子；"aces"、"aces_legacy"、"filmic"、"linear" 或 "pbr_neutral"。
+      * - ``cg.output_color_space``
+        - string
+        - "srgb"
+        - 输出色彩空间；"linear" 或 "srgb"。
+
+.. collapse:: 指数高度雾
+
+   .. list-table::
+      :widths: 32 10 12 46
+      :header-rows: 1
+
+      * - 名称（``filament.<name>``）
+        - 类型
+        - 默认值
+        - 说明
+      * - ``fog.enabled``
+        - bool
+        - 0 (false)
+        - 启用雾。
+      * - ``fog.color``
+        - real(3)
+        - [filament 默认值]
+        - 雾的颜色。
+      * - ``fog.distance``
+        - real
+        - [filament 默认值]
+        - 雾开始出现处与相机的距离。
+      * - ``fog.density``
+        - real
+        - [filament 默认值]
+        - 雾的密度。
+      * - ``fog.cut_off_distance``
+        - real
+        - [filament 默认值]
+        - 超过该距离后不再应用雾。
+      * - ``fog.maximum_opacity``
+        - real
+        - [filament 默认值]
+        - 雾的最大不透明度，介于 0 和 1 之间。
+      * - ``fog.height``
+        - real
+        - [filament 默认值]
+        - 高于该高度后雾的密度开始降低。
+      * - ``fog.height_falloff``
+        - real
+        - [filament 默认值]
+        - 雾密度随高度的衰减。
+
+.. collapse:: 渐晕
+
+   .. list-table::
+      :widths: 32 10 12 46
+      :header-rows: 1
+
+      * - 名称（``filament.<name>``）
+        - 类型
+        - 默认值
+        - 说明
+      * - ``vignette.enabled``
+        - bool
+        - 0 (false)
+        - 启用渐晕。
+      * - ``vignette.midpoint``
+        - real
+        - [filament 默认值]
+        - 渐晕被限制在离角落多近的位置，介于 0 和 1 之间。
+
+.. collapse:: 材质
+
+   .. list-table::
+      :widths: 32 10 12 46
+      :header-rows: 1
+
+      * - 名称（``filament.<name>``）
+        - 类型
+        - 默认值
+        - 说明
+      * - ``material.base_color_type``
+        - string
+        - "srgb"
+        - 如何解释材质的颜色；"linear" 或 "srgb"。
+
+.. collapse:: 背景
+
+   .. list-table::
+      :widths: 32 10 12 46
+      :header-rows: 1
+
+      * - 名称（``filament.<name>``）
+        - 类型
+        - 默认值
+        - 说明
+      * - ``clear_color``
+        - real(4)
+        - 0 0 0 1
+        - 背景颜色，RGBA（见下方说明）。
+
+   渲染器库本身不会读取 ``filament.clear_color`` 标志，因为背景是渲染器的属性，而不是场景的属性：例如，可以把多个场景渲染到同一个目标上以同时显示它们。仅渲染单个场景的应用程序，例如 MuJoCo Studio 和 ``mjr`` 兼容模式，会从模型中读取该标志，并通过 :ref:`mjrf_setClearColor` 应用它。如果您自行管理渲染目标，则需要自己负责设置清除颜色。
+
+.. _ClassicRendering:
+
+OpenGL 渲染
+~~~~~~~~~~~~~~~~
+
+经典的 OpenGL 渲染器（``mjr``）接收在 :ref:`可视化 <Visualization>` 阶段填充的 :ref:`mjvScene` 数据结构并对其进行渲染。它还提供基本的二维绘制和帧缓冲区访问，因此大多数应用程序无需直接调用 OpenGL。它处于维护模式；新的应用程序应优先使用 :ref:`Filament 渲染器 <FilamentRendering>`。
+
+下面是 C 代码与注释中伪代码的混合，用于说明一个结合了仿真、抽象可视化和经典 OpenGL 渲染的应用程序的结构。这是使用 GLFW 的 :ref:`basic.cc <saBasic>` 代码示例的简化版本。
+
+.. code-block:: C
+
+   // MuJoCo data structures
+   mjModel* m = NULL;                  // MuJoCo model
+   mjData* d = NULL;                   // MuJoCo data
+   mjvCamera cam;                      // abstract camera
+   mjvOption opt;                      // visualization options
+   mjvScene scn;                       // abstract scene
+   mjrContext con;                     // custom GPU context
+
+   // ... load model and data
+
+   // init GLFW, create window, make OpenGL context current, request v-sync
+   glfwInit();
+   GLFWwindow* window = glfwCreateWindow(1200, 900, "Demo", NULL, NULL);
+   glfwMakeContextCurrent(window);
+   glfwSwapInterval(1);
+
+   // initialize visualization data structures
+   mjv_defaultCamera(&cam);
+   mjv_defaultPerturb(&pert);
+   mjv_defaultOption(&opt);
+   mjr_defaultContext(&con);
+
+   // create scene and context
+   mjv_makeScene(m, &scn, 1000);
+   mjr_makeContext(m, &con, mjFONTSCALE_100);
+
+   // ... install GLFW keyboard and mouse callbacks
+
+   // run main loop, target real-time simulation and 60 fps rendering
+   while( !glfwWindowShouldClose(window) ) {
+     // advance interactive simulation for 1/60 sec
+     //  Assuming MuJoCo can simulate faster than real-time, which it usually can,
+     //  this loop will finish on time for the next frame to be rendered at 60 fps.
+     //  Otherwise add a cpu timer and exit this loop when it is time to render.
+     mjtNum simstart = d->time;
+     while( d->time - simstart < 1.0/60.0 )
+         mj_step(m, d);
+
+     // get framebuffer viewport
+     mjrRect viewport = {0, 0, 0, 0};
+     glfwGetFramebufferSize(window, &viewport.width, &viewport.height);
+
+     // update scene and render
+     mjv_updateScene(m, d, &opt, NULL, &cam, mjCAT_ALL, &scn);
+     mjr_render(viewport, &scn, &con);
+
+     // swap OpenGL buffers (blocking call due to v-sync)
+     glfwSwapBuffers(window);
+
+     // process pending GUI events, call GLFW callbacks
+     glfwPollEvents();
+   }
+
+   // close GLFW, free visualization storage
+   glfwTerminate();
+   mjv_freeScene(&scn);
+   mjr_freeContext(&con);
+
+   // ... free MuJoCo model and data
+
+.. _reOpenGL:
+
+使用 OpenGL
+^^^^^^^^^^^^
+
+MuJoCo 使用兼容性配置文件（compatibility profile）下的 OpenGL 1.5，并带有 ``ARB_framebuffer_object`` 和 ``ARB_vertex_buffer_object`` 扩展。OpenGL 符号在首次调用 :ref:`mjr_makeContext` 函数时通过 `GLAD <https://github.com/Dav1dde/glad>`_ 加载。这意味着 MuJoCo 库本身并不显式依赖 OpenGL，只要不调用 ``mjr_`` 函数，就可以在没有 OpenGL 支持的系统上使用。
+
+使用 MuJoCo 内置渲染功能的应用程序，需要自行负责链接合适的 OpenGL 上下文创建库，并确保在运行的线程上存在一个已设为当前的 OpenGL 上下文。在 Windows 和 macOS 上，操作系统提供了标准的 OpenGL 库。在 Linux 上，MuJoCo 目前支持用于渲染到 X11 窗口的 GLX、用于无头软件渲染的 OSMesa，以及用于硬件加速无头渲染的 EGL。
+
+
+.. _reContext:
+
+上下文与 GPU 资源
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+渲染过程的第一步是创建特定于模型的 GPU 上下文 :ref:`mjrContext`。具体做法是先用函数 :ref:`mjr_defaultContext` 清空该数据结构，然后调用函数 :ref:`mjr_makeContext`。前面已经演示过这一点；相关代码如下：
+
+.. code-block:: C
+
+   mjModel* m;
+   mjrContext con;
+
+   // clear mjrContext only once before first use
+   mjr_defaultContext(&con);
+
+   // create window with OpenGL context, make it current
+   GLFWwindow* window = glfwCreateWindow(1200, 900, "Demo", NULL, NULL);
+   glfwMakeContextCurrent(window);
+
+   // ... load MuJoCo model
+
+   // make model-specific mjrContext
+   mjr_makeContext(m, &con, mjFONTSCALE_100);
+
+   // ... load another MuJoCo model
+
+   // make mjrContext for new model (old context freed automatically)
+   mjr_makeContext(m, &con, mjFONTSCALE_100);
+
+   // free context when done
+   mjr_freeContext(&con);
+
+mjrContext 与 OpenGL 上下文是什么关系？OpenGL 上下文使应用程序能够与显卡驱动通信并发送渲染命令。在调用 mjr_makeContext 之前，它必须已经存在，并且已在调用线程中设为当前。GLFW 及相关库提供了如上所示的必要函数。
+
+mjrContext 是 MuJoCo 特有的。创建之后，它包含对 mjr_makeContext 上传到 GPU 的所有资源的引用（在 OpenGL 中称为“名称”）。这些资源包括网格和纹理等特定于模型的资源，也包括通用资源，例如指定字体缩放比例下的字体位图、用于阴影映射和离屏渲染的帧缓冲对象，以及相关的渲染缓冲区。它还包含从 ``mjModel.vis`` 复制而来的与 OpenGL 相关的选项、自动发现的默认窗口帧缓冲区的能力，以及当前用于渲染的活动缓冲区；参见下面的 :ref:`缓冲区 <reBuffer>`。请注意，尽管 MuJoCo 使用固定功能的 OpenGL，但它避免了立即模式渲染，而是预先把所有资源上传到 GPU。这使它与现代着色器一样高效，甚至可能更高效，因为固定功能的 OpenGL 如今是通过由显卡驱动开发者编写并经过大量调优的内部着色器来实现的。
+
+mjrContext 的大多数字段在调用 mjr_makeContext 之后保持不变。唯一的例外是 mjrContext.currentBuffer，它在活动缓冲区改变时随之改变。部分 GPU 资源也可能发生变化，因为用户可以通过函数 :ref:`mjr_uploadTexture`、\ :ref:`mjr_uploadMesh`、\ :ref:`mjr_uploadHField` 上传修改后的资源。这可用于实现动态效果，例如把视频画面插入渲染，或者调制地形图。此类修改会影响驻留在 GPU 上的资源，但它们的 OpenGL 名称会被复用；因此，这种变化实际上在 mjrContext 中是不可见的。
+
+用户 **绝不** 应直接修改 mjrContext。MuJoCo 的渲染器假定只有它自己可以管理 mjrContext。事实上，这类对象通常是不透明的，其内部结构不会暴露给用户。我们之所以将其暴露，是因为 MuJoCo 采用开放式设计，同时也因为用户可能希望把自己的 OpenGL 代码与 MuJoCo 的渲染器交错使用，在这种情况下他们可能需要对 mjrContext 的某些字段具有读取权限。例如在 VR 应用中，用户需要把 MuJoCo 的离屏缓冲区位块传输（blit）到 VR SDK 提供的纹理上。
+
+当加载另一个 MuJoCo 模型时，必须再次调用 mjr_makeContext。另外还有函数 :ref:`mjr_freeContext`，它释放 GPU 资源，同时保留初始化标志和能力标志。应用程序即将退出时应调用该函数。mjr_makeContext 内部会自动调用它，因此在加载另一个模型时无需直接调用，尽管直接调用也不算错误。函数 mjr_defaultContext 必须在渲染开始前调用一次，用于清空为数据结构 mjrContext 分配的内存。如果在调用 mjr_makeContext 之后再调用它，它会抹去所有已分配 GPU 资源的记录，而不会释放这些资源，因此不要那样做。
+
+.. _reBuffer:
+
+渲染缓冲区
+^^^^^^^^^^^^^^^^^^^^^
+
+除默认的窗口帧缓冲区之外，OpenGL 还可以支持数量不限的帧缓冲对象（FBO）用于自定义渲染。在 MuJoCo 中，我们系统地支持两个帧缓冲区：默认的窗口帧缓冲区和一个离屏帧缓冲区。它们由枚举类型 :ref:`mjtFramebuffer` 中的常量引用，即 mjFB_WINDOW 和 mjFB_OFFSCREEN。在任一时刻，这两个缓冲区之一对 MuJoCo 渲染而言处于活动状态，也就是说所有后续命令都会被导向该缓冲区。mjrContext 中还引用了另外两个帧缓冲对象，用于阴影映射和解析多重采样缓冲区，但它们仅供内部使用，用户不应尝试直接访问。
+
+活动缓冲区通过函数 :ref:`mjr_setBuffer` 设置。它会设置 mjrContext.activeBuffer 的值，并相应地配置 OpenGL 状态。调用 mjr_makeContext 时，其内部会以参数 mjFB_WINDOW 调用 mjr_setBuffer，因此渲染默认从窗口缓冲区开始。如果指定的缓冲区不存在，mjr_setBuffer 会自动默认使用另一个缓冲区（请注意，在 Linux 上使用无头渲染时，可能没有窗口帧缓冲区）。
+
+从 OpenGL 的角度来看，窗口帧缓冲区与离屏帧缓冲区之间存在重要差异，这些差异会影响 MuJoCo 用户与渲染器的交互方式。窗口帧缓冲区由操作系统而非 OpenGL 创建和管理。因此，分辨率、双缓冲、四缓冲立体、多重采样、垂直同步等属性是在 OpenGL 之外设置的；在我们的代码示例中，这是通过 GLFW 调用完成的。OpenGL 所能做的只是检测这些属性；我们在 mjr_makeContext 中做这件事，并将结果记录在 mjrContext 的各个窗口能力字段中。这就是此类属性不属于 MuJoCo 模型的原因；它们特定于会话/软件，而不是特定于模型。相比之下，离屏帧缓冲区完全由 OpenGL 管理，因此我们可以按任意所需的属性创建该缓冲区，即采用 ``mjModel.vis`` 中指定的分辨率和多重采样属性。
+
+用户可以直接访问这两个缓冲区中的像素。这通过函数 :ref:`mjr_readPixels`、\ :ref:`mjr_drawPixels` 和 :ref:`mjr_blitBuffer` 完成。读取/绘制是在活动缓冲区与 CPU 之间传输像素。位块传输（blit）则在 GPU 上的两个缓冲区之间传输像素，因此要快得多。传输方向是从活动缓冲区到非活动缓冲区。请注意，mjr_blitBuffer 的源视口和目标视口可以具有不同的大小，从而允许在此过程中缩放图像。
+
+.. _reDraw:
+
+绘制像素
+^^^^^^^^^^^^^^
+
+主要的渲染函数是 :ref:`mjr_render`。它的参数是用于渲染的矩形视口、由抽象可视化器填充的 mjvScene，以及由 mjr_makeContext 创建的 mjrContext。视口可以是整个活动缓冲区，也可以是其一部分，以实现自定义效果。对应整个缓冲区的视口可以通过函数 :ref:`mjr_maxViewport` 获得。请注意，离屏缓冲区的大小不变，而窗口缓冲区的大小会在用户调整窗口大小或将其最大化时改变。因此用户代码不应假定视口大小固定。在代码示例 :ref:`simulate.cc <saSimulate>` 中，我们使用了一个在窗口大小改变时触发的回调，而在 :ref:`basic.cc <saBasic>` 中，我们只是在每次渲染时检查窗口大小。在某些缩放显示器上（尤其是 MacOS），窗口大小与帧缓冲区大小可能不同。因此，如果您使用 GLFW 函数获取大小，请使用 glfwGetFramebufferSize 而不是 glfwGetWindowSize。另一方面，鼠标坐标由操作系统以窗口单位而非帧缓冲区单位返回；因此 :ref:`鼠标交互函数 <viCamera>` 应使用 glfwGetWindowSize 来获取对鼠标位移数据做归一化所需的窗口高度。
+
+mjr_render 渲染列表 mjvScene.geom 中的所有 mjvGeom。抽象可视化选项 mjvOption 在这里已不再相关；它们被 mjv_updateScene 用来确定要添加哪些 geom，对 mjr_render 而言，这些选项已经固化。不过，mjvScene 中还嵌入了另一组渲染选项，它们会影响 OpenGL 渲染过程。数组 mjvScene.flags 包含以枚举类型 :ref:`mjtRndFlag` 为索引的标志，其中的选项用于启用和禁用线框模式、阴影、反射、天空盒和雾。阴影和反射需要额外的渲染通道。MuJoCo 的渲染器非常高效，但根据模型复杂度和可用 GPU 的不同，在某些情况下可能需要禁用其中一种或两种效果。
+
+参数 mjvScene.stereo 决定立体模式。其可能取值由枚举类型 :ref:`mjtStereo` 给出，如下所示：
+
+mjSTEREO_NONE
+   禁用立体渲染。使用 mjvScene 中两个 OpenGL 相机的平均值。请注意，即使不使用立体渲染，渲染器也始终要求两个相机都被正确定义。
+mjSTEREO_QUADBUFFERED
+   该模式仅在活动缓冲区是窗口、且窗口支持四缓冲 OpenGL 时才有效。这需要专业显卡。代码示例 :ref:`simulate.cc <saSimulate>` 会尝试打开这样的窗口。在此模式下，当窗口为双缓冲时，MuJoCo 的渲染器使用 GL_BACK_LEFT 和 GL_BACK_RIGHT 缓冲区渲染两个视图（由 mjvScene 中的两个 OpenGL 相机确定），否则使用 GL_FRONT_LEFT 和 GL_FRONT_RIGHT。如果窗口不支持四缓冲 OpenGL，或者活动缓冲区是离屏缓冲区，渲染器会退回到下面描述的并排模式。
+mjSTEREO_SIDEBYSIDE
+   这种立体模式不需要特殊硬件，始终可用。传给 mjr_render 的视口会被并排分成两个相等的矩形。左视图渲染在左侧，右视图渲染在右侧。原则上，用户可以通过斗鸡眼在普通显示器上看到立体效果，但这里的目标是在立体显示设备中呈现。大多数头戴式显示器都支持这种立体模式。
+
+除了主要的 mjr_render 函数之外，我们还提供了若干用于“装饰”图像的函数。这些是二维渲染函数，包括 :ref:`mjr_overlay`、\ :ref:`mjr_text`、\ :ref:`mjr_rectangle` 和 :ref:`mjr_figure`。用户可以用自己的 OpenGL 代码绘制额外的装饰。这应当在 mjr_render 之后进行，因为 mjr_render 会清空视口。
+
+我们还提供函数 :ref:`mjr_finish` 和 :ref:`mjr_getError`，分别用于与 GPU 的显式同步和 OpenGL 错误检查。它们在内部只是简单地调用 glFinish 和 glGetError。这些函数连同上面的基本二维绘制函数，旨在提供足够的功能，使大多数用户无需编写 OpenGL 代码。当然，除非为 OpenGL 的全部功能都提供封装，否则我们无法在所有情况下都做到这一点。

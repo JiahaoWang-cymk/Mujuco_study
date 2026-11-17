@@ -1,0 +1,272 @@
+﻿=============
+Unity 插件
+=============
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+简介
+----
+
+MuJoCo `Unity 插件 <https://github.com/google-deepmind/mujoco/tree/main/unity>`__\ （plug-in）使 Unity 编辑器和运行时能够使用 MuJoCo 物理引擎。用户可以导入 MJCF 文件并在编辑器中编辑模型。该插件在大多数方面依赖 Unity（资源、游戏逻辑、仿真时间），但使用 MuJoCo 来决定物体如何运动，从而让设计者可以访问 MuJoCo 的完整 API。
+
+另有一个使用 MuJoCo Unity 插件的示例项目，是一组入门教程，可在\ `独立仓库 <https://github.com/Balint-H/mj-unity-tutorial>`__\ 中获取。
+
+.. _UInstallation:
+
+安装说明
+--------
+
+`插件目录 <https://github.com/google-deepmind/mujoco/tree/main/unity>`__\ 包含一个 ``package.json`` 文件。Unity 的包管理器（Package Manager）会识别该文件，并将插件的 C# 代码库导入到您的项目中。此外，Unity 还需要 MuJoCo 的原生库，可以在对应的\ `平台压缩包 <https://github.com/google-deepmind/mujoco/releases>`__\ 中找到。如果您只想使用该插件而不想开发它，应当使用仓库中与特定版本对应的稳定提交，这些提交由 git 标签标识。请使用 git 检出已克隆仓库的相应版本（``git checkout 3.X.Y``，其中 X 和 Y 指定引擎版本）。直接使用仓库的 ``main`` 分支可能与 MuJoCo 的最新发布版二进制文件不兼容。
+
+在 Unity 2020.2 及更高版本上，导入包时包管理器会查找原生库文件并将其复制到包目录。您也可以手动将原生库复制到包目录并重命名，请参见下面各平台的具体说明。该库也可以复制到项目 Assets 目录下的任意位置。
+
+MacOS
+_____
+
+MuJoCo 应用至少需要运行一次，才能使用原生库，目的是将该库注册为受信任的二进制文件。然后，从 ``/Applications/MuJoCo.app/Contents/Frameworks/mujoco.framework/Versions/Current/libmujoco.4.0.2.dylib`` 复制动态库文件（可以通过浏览 ``MuJoCo.app`` 的内容找到它），并将其重命名为 ``mujoco.dylib``。
+
+Linux
+_____
+
+将 ``tar.gz`` 压缩包解压到 ``~/.mujoco``。然后从 ``~/.mujoco/mujoco-4.0.2/lib/libmujoco.so.4.0.2`` 复制动态库，并将其重命名为 ``libmujoco.so``。
+
+Windows
+_______
+
+将 ``zip`` 压缩包解压到用户目录下名为 ``MuJoCo`` 的目录中，并复制文件 ``MuJoCo\bin\mujoco.dll``。
+
+.. _UUsing:
+
+使用插件
+--------
+
+.. _UImporter:
+
+导入器
+______
+
+导入器通过编辑器的 *Asset* 菜单调用：点击 "Import MuJoCo Scene"，然后选择包含模型 MJCF 规范的 XML 文件。
+
+上下文菜单
+__________
+
+- 右键单击 geom 组件会提供两个选项：
+
+  - "Add mesh renderer" 会向同一游戏对象添加用于渲染该 geom 的组件：一个标准的 ``MeshRenderer`` 和一个 ``MjMeshFilter``，后者会创建一个程序化网格，当 geom 的形状属性改变时该网格会被重新创建。
+  - "Convert to free object" 会添加两个新的游戏对象：一个带有 ``MjBody`` 组件的父对象，以及一个带有 ``MjFreeJoint`` 组件的同级对象。这使得原先静止的 geom 可以在场景中自由移动。此操作仅适用于 "world" geom，即当前没有 ``MjBody`` 父对象的那些 geom。
+
+- 右键单击 Unity Collider 会提供在同一游戏对象上 "Add a matching MuJoCo geom" 的选项。请注意，这并不构成对物理的完整转换，Rigidbody、ArticulationBody 和 Joint 的配置仍然需要手动重新创建。
+
+鼠标弹簧
+________
+
+当所选游戏对象带有 ``MjBody`` 组件时，可以在 Scene 视图中通过按住 Ctrl 并向左拖动，朝鼠标光标方向对该刚体施加弹簧力。弹簧力原点的三维位置，是通过将鼠标位置投影到由相机 X 方向和世界 Y 方向定义的平面上得到的。同时按住 Shift 键会将投影平面改为与世界的 X 轴和 Z 轴平行。
+
+.. _UTips:
+
+给 Unity 用户的提示
+___________________
+
+- 如果遇到任何编译或运行时错误，系统的状态是未定义的。因此，我们建议在控制台窗口中打开 “Error Pause”。
+- 在 PhysX 中，每个 `Rigidbody` 都是“自由刚体”。相比之下，MuJoCo 要求显式指定关节才能运动。为方便起见，我们提供了一个上下文菜单，用于“释放”世界 geom（即没有任何 ``MjBody`` 祖先的 ``MjGeom`` 组件），其做法是添加一个父 ``MjBody`` 和一个同级 ``MjFreeJoint``。
+- 该插件不支持没有物理实体的碰撞检测（collision detection），因此没有内置的触发器碰撞体概念。接触力是否存在，可以通过添加 touch 传感器并读取其 ``SensorReading`` 值来获得（该值对应法向力，参见 `touch 传感器文档 <sensor-touch>`）。
+
+.. _UDesign:
+
+设计原则
+--------
+
+该插件的设计在 MJCF 元素与 Unity 组件之间提供了一一映射。为了使用 MuJoCo 仿真一个 Unity 场景（例如，用户在编辑器中点击 “play” 按钮时），插件会：
+
+1. 扫描场景中 GameObject 层级结构里的 MuJoCo 组件。
+2. 创建 MJCF 描述，并将其传递给 MuJoCo 的编译器。
+3. 通过 MuJoCo 数据结构中的相应索引，将每个组件绑定到 MuJoCo 运行时。该索引用于在仿真过程中更新 Unity 的变换。
+
+这一设计原则有若干影响：
+
+- Unity 组件的大多数字段直接对应于 MJCF 属性。因此，用户可以参阅 MuJoCo 文档了解不同取值的具体语义。
+- MuJoCo 组件在 GameObject 层级结构中的布局决定了最终 MuJoCo 模型的布局。因此，我们采用一条设计规则：\ **每个游戏对象最多只能有一个 MuJoCo 组件**\ 。
+- 我们依赖 Unity 进行空间配置，这要求对向量分量进行\ `重排 <https://en.wikipedia.org/wiki/Swizzling_(computer_graphics)>`__\ （swizzle），因为 Unity 使用左手坐标系且以 Y 为竖直轴，而 MuJoCo 使用右手坐标系且以 Z 为竖直轴。
+- Unity 的变换缩放会影响整个游戏对象子树的位置、朝向和比例。但是，MuJoCo 不支持倾斜圆柱体和胶囊体的碰撞（倾斜的球体可通过椭球图元来支持）。geom 和 site 的 gizmo 会忽略这种倾斜（与 PhysX 碰撞体类似），并始终显示该图元在物理计算中呈现的形状。
+- 在运行时，更改组件字段的值不会触发场景重建，因此不会对物理产生即时影响。不过，新值会在下一次场景重建时加载。
+
+只要可能，我们都按 Unity 的方式行事：重力从 Unity 的物理设置中读取，仿真步长从 Unity 时间管理器（Time Manager）的 `Fixed Timestep` 中读取。外观的所有方面（例如网格、材质和纹理）都由 Unity 的资源管理器（Asset Manager）处理，RGBA 规范则通过材质资源来完成。
+
+.. _UNotes:
+
+实现说明
+--------
+
+导入器工作流程
+______________
+
+当用户选择一个 MJCF 文件时，导入器首先在 MuJoCo 中加载该文件，将其保存到临时位置，然后处理生成的已保存文件。这有以下几方面的效果：
+
+- 它会验证 MJCF，我们可以保证保存的 MJCF 符合\ :ref:`模式 <CSchema>`\ 。
+- 它会验证资源（材质、网格、纹理）并将这些资源导入 Unity，同时为 geom 的 RGBA 规范创建新的材质资源。
+- 它使导入器能够处理 :ref:`\<include\> <include>` 元素，而无需复制 MuJoCo 的文件系统工作流程。
+
+在 Unity 中，没有与 MJCF 的“级联” :ref:`\<default\> <default>` 子句等价的机制。因此，Unity 中的组件反映的是应用了所有相关默认类（default class）之后相应元素的状态，原始 MJCF 中的类结构会被丢弃。
+
+MuJoCo 场景
+___________
+
+创建 MuJoCo 场景时，\ ``MjScene`` 组件首先扫描场景中 ``MjComponent`` 的所有实例。每个组件使用 Unity 场景的空间结构创建自己的 MJCF 元素，以描述模型的初始参考姿态（在 MuJoCo 中称为 ``qpos0``）。\ ``MjScene`` 按照各游戏对象的层级结构组合这些 XML 元素，并创建物理模型的单个 MJCF 描述。然后它创建运行时结构体 ``mjModel`` 和 ``mjData``，并通过识别每个组件的唯一索引将其绑定到运行时。
+
+在运行时，\ ``MjScene.FixedUpdate()`` 调用 :ref:`mj_step`，然后根据绑定时识别出的索引 ``MjComponent.MujocoId`` 同步每个游戏对象的状态。当且仅当场景中包含任何 MuJoCo 组件时，应用启动时（例如用户点击 “play” 时）会自动添加 ``MjScene`` 组件。如果您的应用初始化阶段涉及在添加游戏对象和组件的同时推进物理，可以在初始化阶段结束时调用 ``MjScene.CreateScene()``。
+
+场景重建通过以下方式保持物理和状态的连续性：
+
+1. 缓存关节的位置和速度。
+2. 重置 MuJoCo 的状态（重置为 ``qpos0``）并同步 Unity 变换。
+3. 生成新的 XML，创建一个模型，对于保留下来的关节，其 ``qpos0`` 与前一个模型相同。
+4. 从缓存中设置 MuJoCo 状态（针对保留下来的关节），并同步 Unity 变换。
+
+MuJoCo 具有动态场景编辑功能（通过 :ref:`mjSpec`），但 Unity 插件尚不支持这一点。因此，添加和移除 MuJoCo 组件会导致整个场景重建。对于大型模型或这种情况频繁发生时，这可能开销很大。我们打算在插件的未来版本中解除这一性能限制。
+
+全局设置
+________
+
+“每个元素对应一个组件”的一个例外是全局设置（Global Settings）组件。该组件负责 MJCF 中固定大小的单例全局元素所包含的所有配置选项。目前它保存与 :ref:`\<option\> <option>` 和 :ref:`\<size\> <size>` 元素对应的信息，将来如果 :ref:`\<compiler\> <compiler>` 元素中有与 Unity 插件相关的字段，也将用于该元素。
+
+在应用运行时调用导入器
+______________________
+
+导入器由类 ``MjImporterWithAssets`` 实现，它是 ``MjcfImporter`` 的子类。这个父类接受一个 MJCF 字符串并生成组件的层级结构。它可以在运行（play）时调用（不涉及编辑器功能），并且不会调用 MuJoCo 库的任何函数。当 MuJoCo 模型是以程序方式生成的（例如通过某种进化过程），和/或导入 MJCF 仅仅是为了转换（例如转换为 PhysX 或 URDF）时，这很有用。由于它无法与 Unity 的 ``AssetManager``\ （编辑器的一项功能）交互，因此该类的功能受到限制。具体而言：
+
+- 它会忽略所有资源（包括碰撞网格）。
+- 它会忽略视觉效果（包括 RGBA 规范）。
+
+MuJoCo 传感器组件
+_________________
+
+MuJoCo 定义了许多传感器，我们担心为每个传感器创建单独的 ``MjComponent`` 类会导致大量代码重复。因此，我们按照被测量属性所属的对象类型（执行器 / 刚体 / geom / 关节 / site）以及所测数据的类型（标量 / 向量 / 四元数）来创建类。
+
+下表将各类型映射到传感器：
+
++------------------------+---------------+---------------------+
+| **Mujoco Object Type** | **Data Type** | **Sensor Name**     |
++------------------------+---------------+---------------------+
+| Actuator               | Scalar        | - ``actuatorpos``   |
+|                        |               | - ``actuatorvel``   |
+|                        |               | - ``actuatorfrc``   |
++------------------------+---------------+---------------------+
+| Body                   | Vector        | - ``subtreecom``    |
+|                        |               | - ``subtreelinvel`` |
+|                        |               | - ``subtreeangmom`` |
+|                        |               | - ``framepos``      |
+|                        |               | - ``framexaxis``    |
+|                        |               | - ``frameyaxis``    |
+|                        |               | - ``framezaxis``    |
+|                        |               | - ``framelinvel``   |
+|                        |               | - ``frameangvel``   |
+|                        |               | - ``framelinacc``   |
+|                        |               | - ``frameangacc``   |
++------------------------+---------------+---------------------+
+| Body                   | Quaternion    | - ``framequat``     |
++------------------------+---------------+---------------------+
+| Geom                   | Vector        | - ``framepos``      |
+|                        |               | - ``framexaxis``    |
+|                        |               | - ``frameyaxis``    |
+|                        |               | - ``framezaxis``    |
+|                        |               | - ``framelinvel``   |
+|                        |               | - ``frameangvel``   |
+|                        |               | - ``framelinacc``   |
+|                        |               | - ``frameangacc``   |
++------------------------+---------------+---------------------+
+| Geom                   | Quaternion    | - ``framequat``     |
++------------------------+---------------+---------------------+
+| Joint                  | Scalar        | - ``jointpos``      |
+|                        |               | - ``jointvel``      |
+|                        |               | - ``jointlimitpos`` |
+|                        |               | - ``jointlimitvel`` |
+|                        |               | - ``jointlimitfrc`` |
++------------------------+---------------+---------------------+
+| Site                   | Scalar        | - ``touch``         |
+|                        |               | - ``rangefinder``   |
++------------------------+---------------+---------------------+
+| Site                   | Vector        | - ``accelerometer`` |
+|                        |               | - ``velocimeter``   |
+|                        |               | - ``force``         |
+|                        |               | - ``torque``        |
+|                        |               | - ``gyro``          |
+|                        |               | - ``magnetometer``  |
+|                        |               | - ``framepos``      |
+|                        |               | - ``framexaxis``    |
+|                        |               | - ``frameyaxis``    |
+|                        |               | - ``framezaxis``    |
+|                        |               | - ``framelinvel``   |
+|                        |               | - ``frameangvel``   |
+|                        |               | - ``framelinacc``   |
+|                        |               | - ``frameangacc``   |
++------------------------+---------------+---------------------+
+| Site                   | Quaternion    | - ``framequat``     |
++------------------------+---------------+---------------------+
+
+下面是同一张表的反向形式，将传感器映射到类：
+
+================= ===================================
+传感器名称        插件类
+================= ===================================
+``accelerometer`` SiteVector
+``actuatorfrc``   ActuatorScalar
+``actuatorpos``   ActuatorScalar
+``actuatorvel``   ActuatorScalar
+``force``         SiteVector
+``frameangacc``   \*Vector（取决于坐标系类型）
+``frameangvel``   \*Vector（取决于坐标系类型）
+``framelinacc``   \*Vector（取决于坐标系类型）
+``framelinvel``   \*Vector（取决于坐标系类型）
+``framepos``      \*Vector（取决于坐标系类型）
+``framequat``     \*Quaternion（取决于坐标系类型）
+``framexaxis``    \*Vector（取决于坐标系类型）
+``frameyaxis``    \*Vector（取决于坐标系类型）
+``framezaxis``    \*Vector（取决于坐标系类型）
+``gyro``          SiteVector
+``jointlimitfrc`` JointScalar
+``jointlimitpos`` JointScalar
+``jointlimitvel`` JointScalar
+``jointpos``      JointScalar
+``jointvel``      JointScalar
+``magnetometer``  SiteVector
+``subtreeangmom`` BodyVector
+``subtreecom``    BodyVector
+``subtreelinvel`` BodyVector
+``torque``        SiteVector
+``touch``         SiteScalar
+``velocimeter``   SiteVector
+================= ===================================
+
+以下传感器尚未实现：
+
+| ``tendonpos``
+| ``tendonvel``
+| ``ballquat``
+| ``ballangvel``
+| ``tendonlimitpos``
+| ``tendonlimitvel``
+| ``tendonlimitfrc``
+| ``user``
+
+网格形状
+________
+
+该插件允许使用任意 Unity 网格进行 MuJoCo 碰撞。在模型编译时，MuJoCo 调用 `qhull <http://www.qhull.org/>`__ 创建网格的凸包，并将其用于碰撞。目前计算出的凸包在 Unity 中不可见，但我们打算在未来版本中将其暴露出来。
+
+高度场
+______
+
+MuJoCo 的 hfield 在 Unity 中通过地形（terrain）游戏对象来表示。这使得可以使用 Unity 中提供的地形编辑工具来生成用于与 MuJoCo 碰撞的形状。在 Unity geom 组件中选择 hfield 类型时，右键上下文菜单提供了向场景添加相应 Unity 地形的实用功能。地形中的数据会与仿真动态保持同步。
+
+MuJoCo 插件
+___________
+
+当前版本的 Unity 包不支持加载使用 :ref:`MuJoCo 插件<exPlugin>`\ （例如\ `执行器 <https://github.com/google-deepmind/mujoco/tree/main/plugin/actuator#readme>`__\ ）的 MJCF 场景。为此添加基本功能将是即将发布的版本的一部分。
+
+与外部进程交互
+______________
+
+Roboti 的 `Unity 版 MuJoCo 插件 <https://roboti.us/download.html>`__\ 在外部 Python 进程中推进仿真，仅使用 Unity 进行渲染（rendering）。相比之下，我们的插件依赖 Unity 来推进仿真。在外部进程“驱动”仿真的情况下使用我们的插件应该是可行的，例如设置 ``qpos``，调用 ``mj_kinematics``，同步变换，然后使用 Unity 进行渲染或计算游戏逻辑。要与外部进程建立通信，可以使用 Unity 的 `ML-Agents <https://github.com/Unity-Technologies/ml-agents>`__ 包。

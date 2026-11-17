@@ -1,0 +1,32 @@
+﻿导入
+====
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+.. WARNING:: OpenUSD 支持目前处于实验阶段，可能会频繁变动。
+
+MuJoCo 可以从 OpenUSD 文件（ ``.usd`` 、 ``.usda`` 、 ``.usdc`` 、 ``.usdz`` ）中加载资产。这样您就可以把 USD 中定义的资产和场景纳入 MuJoCo 仿真。
+
+MJCF 中的 USD
+-----------------------------
+
+如果您已在 Python 中安装了 ``mujoco-usd`` （ ``pip install mujoco-usd`` 或 ``pip install mujoco[usd]`` ，导入 ``mujoco`` 时会自动注册 ``usd_decoder`` 插件），或者已经 :doc:`启用 USD 构建 MuJoCo <building>` ，就可以通过内容类型为 ``text/usd`` 的 ``<model`` 标签在 MJCF 中引用 USD 资产。
+
+.. code-block:: xml
+    :caption: example.xml
+
+    <mujoco>
+      <asset>
+        <model file="chair.usdz" name="chair" content_type="text/usd"/>
+      </asset>
+
+      <worldbody>
+        ...
+      </worldbody>
+    </mujoco>
+
+在这个例子中， ``<asset>`` 里的 ``<model file="chair.usdz"/>`` 一行告诉 MuJoCo 加载并处理该 USD 文件。
+

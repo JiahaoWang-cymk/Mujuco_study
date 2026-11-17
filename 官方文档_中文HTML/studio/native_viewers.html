@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html class="no-js" data-content_root="../" lang="zh-CN">
+<head><meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="light dark" name="color-scheme"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="../_static/favicons/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+<link href="../_static/favicons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="apple-touch-icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-192x192.png" rel="icon" sizes="192x192" type="image/png"/><link href="../genindex.html" rel="index" title="索引"/><link href="../search.html" rel="search" title="搜索"/><link href="architecture.html" rel="next" title="架构"/><link href="web_viewers.html" rel="prev" title="Web 查看器"/>
+<link as="image" href="../_static/banner.svg" rel="prefetch"/>
+<!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+<title>原生查看器 - MuJoCo 文档（中文）</title>
+<link href="../_static/pygments.css?v=b86133f3" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo.css?v=7bdb33bb" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css?v=05624691" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo-extensions.css?v=8dab3a3b" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides.css?v=8d83ad8c" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides_mjwarp.css?v=e08d3b36" rel="stylesheet" type="text/css"/>
+<link href="../_static/zh_overrides.css?v=ee52c62c" rel="stylesheet" type="text/css"/>
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #16213a;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #2a4fd6;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #2a4fd6;
+  --color-brand-content: #2a4fd6;
+  --color-background-secondary: #f4f6f9;
+  --color-sidebar-background: #f4f6f9;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+      }
+    }
+  }
+</style></head>
+<body>
+<script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+<symbol id="svg-toc" viewbox="0 0 24 24">
+<title>Contents</title>
+<svg fill="currentColor" stroke="currentColor" stroke-width="0" viewbox="0 0 1024 1024">
+<path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"></path>
+</svg>
+</symbol>
+<symbol id="svg-menu" viewbox="0 0 24 24">
+<title>Menu</title>
+<svg class="feather-menu" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<line x1="3" x2="21" y1="12" y2="12"></line>
+<line x1="3" x2="21" y1="6" y2="6"></line>
+<line x1="3" x2="21" y1="18" y2="18"></line>
+</svg>
+</symbol>
+<symbol id="svg-arrow-right" viewbox="0 0 24 24">
+<title>Expand</title>
+<svg class="feather-chevron-right" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</symbol>
+<symbol id="svg-sun" viewbox="0 0 24 24">
+<title>Light mode</title>
+<svg class="feather-sun" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" x2="12" y1="1" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="23"></line>
+<line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+<line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+<line x1="1" x2="3" y1="12" y2="12"></line>
+<line x1="21" x2="23" y1="12" y2="12"></line>
+<line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+<line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
+</svg>
+</symbol>
+<symbol id="svg-moon" viewbox="0 0 24 24">
+<title>Dark mode</title>
+<svg class="icon-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+</svg>
+</symbol>
+<symbol id="svg-sun-with-moon" viewbox="0 0 24 24">
+<title>Auto light/dark, in light mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z" style="opacity: 50%"></path>
+<line x1="14.5" x2="14.5" y1="3.25" y2="1.25"></line>
+<line x1="14.5" x2="14.5" y1="15.85" y2="17.85"></line>
+<line x1="10.044" x2="8.63" y1="5.094" y2="3.68"></line>
+<line x1="19" x2="20.414" y1="14.05" y2="15.464"></line>
+<line x1="8.2" x2="6.2" y1="9.55" y2="9.55"></line>
+<line x1="20.8" x2="22.8" y1="9.55" y2="9.55"></line>
+<line x1="10.044" x2="8.63" y1="14.006" y2="15.42"></line>
+<line x1="19" x2="20.414" y1="5.05" y2="3.636"></line>
+<circle cx="14.5" cy="9.55" r="3.6"></circle>
+</svg>
+</symbol>
+<symbol id="svg-moon-with-sun" viewbox="0 0 24 24">
+<title>Auto light/dark, in dark mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"></path>
+<line style="opacity: 50%" x1="18" x2="18" y1="3.705" y2="2.5"></line>
+<line style="opacity: 50%" x1="18" x2="18" y1="11.295" y2="12.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="4.816" y2="3.964"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="10.212" y2="11.063"></line>
+<line style="opacity: 50%" x1="14.205" x2="13.001" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="21.795" x2="23" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="10.184" y2="11.036"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="4.789" y2="3.937"></line>
+<circle cx="18" cy="7.5" r="2.169" style="opacity: 50%"></circle>
+</svg>
+</symbol>
+<symbol id="svg-pencil" viewbox="0 0 24 24">
+<svg class="icon-tabler-pencil-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
+<path d="M13.5 6.5l4 4"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+<symbol id="svg-eye" viewbox="0 0 24 24">
+<svg class="icon-tabler-eye-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
+<path d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+</svg>
+<input aria-label="Toggle site navigation sidebar" class="sidebar-toggle" id="__navigation" name="__navigation" type="checkbox"/>
+<input aria-label="Toggle table of contents sidebar" class="sidebar-toggle" id="__toc" name="__toc" type="checkbox"/>
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+<div class="page">
+<header class="mobile-header">
+<div class="header-left">
+<label class="nav-overlay-icon" for="__navigation">
+<span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+</label>
+</div>
+<div class="header-center">
+<a href="../index.html"><div class="brand">MuJoCo 文档（中文）</div></a>
+</div>
+<div class="header-right">
+<div class="theme-toggle-container theme-toggle-header">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-header-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+</header>
+<aside class="sidebar-drawer">
+<div class="sidebar-container">
+<div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+<div class="sidebar-logo-container">
+<img alt="Logo" class="sidebar-logo" src="../_static/banner.svg"/>
+</div>
+<span class="sidebar-brand-text">MuJoCo 文档（中文）</span>
+</a><form action="../search.html" class="sidebar-search-container" method="get" role="search">
+<input aria-label="搜索" class="sidebar-search" name="q" placeholder="搜索"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">入门教程</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">概览</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../computation/index.html">计算</a><input aria-label="Toggle navigation of 计算" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../computation/fluid.html">流体力</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computation/speculative.html">推测接触</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">建模</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../XMLreference.html">XML 参考</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../programming/index.html">编程</a><input aria-label="Toggle navigation of 编程" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../programming/simulation.html">仿真</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/visualization.html">可视化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/rendering.html">渲染</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/ui.html">用户界面</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/modeledit.html">模型编辑</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/samples.html">代码示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/extension.html">扩展</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../APIreference/index.html">API 参考</a><input aria-label="Toggle navigation of API 参考" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APItypes.html">类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIfunctions.html">函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIglobals.html">全局变量</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Studio</a><input aria-label="Toggle navigation of Studio" checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="web_viewers.html">Web 查看器</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">原生查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html">架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_plugins.html">Python 插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python.html">Python</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjx.html">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../unity.html">Unity 插件</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/building.html">构建</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcf_file_format_plugin.html">文件格式插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/importing.html">导入</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/exporting.html">导出</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">模型库</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">更新日志</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<div class="main">
+<div class="content">
+<div class="article-container">
+<a class="back-to-top muted-link" href="#">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+</svg>
+<span>Back to top</span>
+</a>
+<div class="content-icon-container">
+<div class="view-this-page">
+<a class="muted-link" href="../_sources/studio/native_viewers.rst.txt" title="View this page">
+<svg><use href="#svg-eye"></use></svg>
+<span class="visually-hidden">View this page</span>
+</a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-content-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+<article id="furo-main-content" role="main">
+<section id="studiolaunchers">
+<span id="studionativeviewers"></span><span id="id1"></span><h1 data-bi="bi-1">原生查看器<a class="headerlink" href="#studiolaunchers" title="链接到此标题。">#</a></h1><div class="en-orig en-h" data-for="bi-1" lang="en">Native Viewers</div>
+<div class="mt-notice admonition note">
+<p class="admonition-title">备注</p>
+<p>本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 <code class="docutils literal notranslate"><span class="pre">术语表.md</span></code> 。</p>
+</div>
+<p data-bi="bi-2">Studio 提供两种在原生桌面窗口中运行的方式，二者构建在同一套共享的
+<a class="reference internal" href="architecture.html#studiocppcomponents"><span class="std std-ref">C++ 组件</span></a> 之上，因此外观和行为几乎完全一致：</p><div class="en-orig" data-for="bi-2" lang="en">Studio provides two ways to run in a native desktop window, built on the same shared
+<a class="reference internal" href="architecture.html#studiocppcomponents"><span class="std std-ref">C++ components</span></a> so both look and behave nearly identically:</div>
+<ul class="simple">
+<li><p data-bi="bi-3"><strong>MuJoCo Studio 应用</strong>（C++）：预构建的独立桌面应用程序，可开箱即用地查看模型，也可用 <a class="reference internal" href="cpp.html#studiocpp"><span class="std std-ref">C++</span></a> 进行扩展，或编译为 WebAssembly 在浏览器中无服务器运行（<a class="reference internal" href="web_viewers.html#studiolive"><span class="std std-ref">MuJoCo Live</span></a>）。</p><div class="en-orig" data-for="bi-3" lang="en"><strong>MuJoCo Studio app</strong> (C++): Prebuilt standalone desktop application for inspecting models out of the box, extending
+in <a class="reference internal" href="cpp.html#studiocpp"><span class="std std-ref">C++</span></a>, or compiling to WebAssembly to run serverless in the browser
+(<a class="reference internal" href="web_viewers.html#studiolive"><span class="std std-ref">MuJoCo Live</span></a>).</div></li>
+<li><p data-bi="bi-4"><strong>Python</strong> <code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code>：驱动或附加到 Python 仿真循环，并支持
+<a class="reference internal" href="python_plugins.html#studiopythonplugins"><span class="std std-ref">Python 插件</span></a>。</p><div class="en-orig" data-for="bi-4" lang="en"><strong>Python</strong> <code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code>: Drives or attaches to a Python simulation loop and supports
+<a class="reference internal" href="python_plugins.html#studiopythonplugins"><span class="std std-ref">Python plugins</span></a>.</div></li>
+</ul>
+<p data-bi="bi-5">在使用 Python 编写脚本或进行扩展时，请选择 <code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code>；在使用 C++ 扩展或面向无服务器 WebAssembly 时，请选择 C++ 应用程序；任何需要在二者之间共享的自定义组件都应使用 C++ 编写并绑定到 Python（参见 <a class="reference internal" href="architecture.html#studiocppcomponents"><span class="std std-ref">C++ 组件</span></a>）。</p><div class="en-orig" data-for="bi-5" lang="en">Choose <code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code> when scripting or extending in Python, and the C++ application when extending in C++ or
+targeting serverless WebAssembly; any custom components meant to be shared across both should be written in C++ and
+bound to Python (see <a class="reference internal" href="architecture.html#studiocppcomponents"><span class="std std-ref">C++ Components</span></a>).</div>
+<section id="studioapp">
+<span id="id2"></span><h2 data-bi="bi-6">独立应用程序<a class="headerlink" href="#studioapp" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-6" lang="en">Standalone Application</div>
+<p data-bi="bi-7">每个 <a class="reference external" href="https://github.com/google-deepmind/mujoco/releases">GitHub 发布版本</a> 都包含一个预构建的独立 Studio
+应用程序，与 <a class="reference internal" href="../programming/samples.html#sasimulate"><span class="std std-ref">simulate</span></a> 并列，通过 <a class="reference internal" href="../programming/rendering.html#filamentrendering"><span class="std std-ref">Filament</span></a> 渲染：</p><div class="en-orig" data-for="bi-7" lang="en">Every <a class="reference external" href="https://github.com/google-deepmind/mujoco/releases">GitHub release</a> includes a prebuilt standalone Studio
+application alongside <a class="reference internal" href="../programming/samples.html#sasimulate"><span class="std std-ref">simulate</span></a>, rendered via <a class="reference internal" href="../programming/rendering.html#filamentrendering"><span class="std std-ref">Filament</span></a>:</div>
+<ul class="simple">
+<li><p data-bi="bi-8"><strong>macOS</strong>（<code class="docutils literal notranslate"><span class="pre">.dmg</span></code>）：打包为 <code class="docutils literal notranslate"><span class="pre">MuJoCoStudio.app</span></code> 应用包；可直接在磁盘映像中双击启动，或将其拖入 <code class="docutils literal notranslate"><span class="pre">/Applications</span></code> 进行安装。</p><div class="en-orig" data-for="bi-8" lang="en"><strong>macOS</strong> (<code class="docutils literal notranslate"><span class="pre">.dmg</span></code>): Packaged as the <code class="docutils literal notranslate"><span class="pre">MuJoCoStudio.app</span></code> bundle; double-click to launch directly from the disk
+image or drag it into <code class="docutils literal notranslate"><span class="pre">/Applications</span></code> to install.</div></li>
+<li><p data-bi="bi-9"><strong>Windows</strong>（<code class="docutils literal notranslate"><span class="pre">.zip</span></code>）：解压后的归档中为 <code class="docutils literal notranslate"><span class="pre">bin\mujoco_studio.exe</span></code>；可在文件资源管理器中双击，或从终端启动。</p><div class="en-orig" data-for="bi-9" lang="en"><strong>Windows</strong> (<code class="docutils literal notranslate"><span class="pre">.zip</span></code>): Packaged as <code class="docutils literal notranslate"><span class="pre">bin\mujoco_studio.exe</span></code> in the extracted archive; double-click in File Explorer
+or launch from a terminal.</div></li>
+<li><p data-bi="bi-10"><strong>Linux</strong>（<code class="docutils literal notranslate"><span class="pre">.tar.gz</span></code>）：解压后的归档中为 <code class="docutils literal notranslate"><span class="pre">bin/mujoco_studio</span></code>。</p><div class="en-orig" data-for="bi-10" lang="en"><strong>Linux</strong> (<code class="docutils literal notranslate"><span class="pre">.tar.gz</span></code>): Shipped as <code class="docutils literal notranslate"><span class="pre">bin/mujoco_studio</span></code> in the extracted archive.</div></li>
+</ul>
+<p data-bi="bi-11">打开后，可从 <strong>File</strong> 菜单加载 <code class="docutils literal notranslate"><span class="pre">.xml</span></code>、<code class="docutils literal notranslate"><span class="pre">.mjb</span></code> 或 <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> 模型，也可将其拖放到窗口上。在任何平台的终端中，还可以传入模型路径（位置参数或 <code class="docutils literal notranslate"><span class="pre">--model_file</span></code>）以及 <code class="docutils literal notranslate"><span class="pre">--gfx</span></code>
+<a class="reference internal" href="#studiobackends"><span class="std std-ref">渲染后端</span></a>：</p><div class="en-orig" data-for="bi-11" lang="en">Once open, load <code class="docutils literal notranslate"><span class="pre">.xml</span></code>, <code class="docutils literal notranslate"><span class="pre">.mjb</span></code>, or <code class="docutils literal notranslate"><span class="pre">.mjz</span></code> models from the <strong>File</strong> menu or by dragging and dropping onto the
+window. From a terminal on any platform, you can also pass a model path (positional or <code class="docutils literal notranslate"><span class="pre">--model_file</span></code>) and a <code class="docutils literal notranslate"><span class="pre">--gfx</span></code>
+<a class="reference internal" href="#studiobackends"><span class="std std-ref">rendering backend</span></a>:</div>
+<div class="highlight-Text notranslate"><div class="highlight"><pre><span></span>macOS:    /Applications/MuJoCoStudio.app/Contents/MacOS/mujoco_studio model/humanoid/humanoid.xml
+Windows:  bin\mujoco_studio model\humanoid\humanoid.xml
+Linux:    ./bin/mujoco_studio model/humanoid/humanoid.xml
+</pre></div>
+</div>
+<p data-bi="bi-12">要从源码构建 <code class="docutils literal notranslate"><span class="pre">mujoco_studio</span></code> 或链接自定义 C++ 插件，请参见 <a class="reference internal" href="cpp.html#studiocpp"><span class="std std-ref">C++</span></a> 中的
+<a class="reference internal" href="cpp.html#studiocpplauncher"><span class="std std-ref">构建与启动</span></a>。</p><div class="en-orig" data-for="bi-12" lang="en">To build <code class="docutils literal notranslate"><span class="pre">mujoco_studio</span></code> from source or link custom C++ plugins, see <a class="reference internal" href="cpp.html#studiocpplauncher"><span class="std std-ref">Build &amp; Launch</span></a> in
+<a class="reference internal" href="cpp.html#studiocpp"><span class="std std-ref">C++</span></a>.</div>
+</section>
+<section id="python-nativeviewer">
+<span id="studiopythonnative"></span><h2>Python NativeViewer<a class="headerlink" href="#python-nativeviewer" title="链接到此标题。">#</a></h2>
+<p data-bi="bi-13">在 Python 中，<code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code>（<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/native_viewer.py">native_viewer.py</a>）通过
+<a class="reference internal" href="../programming/rendering.html#filamentrendering"><span class="std std-ref">Filament</span></a> 在 SDL2 桌面窗口或离屏缓冲区中于本地渲染 3D
+场景和 <a class="reference external" href="https://github.com/ocornut/imgui">Dear ImGui</a> 界面。当由 Studio 驱动仿真循环时，使用 <strong>阻塞模式</strong>（<code class="docutils literal notranslate"><span class="pre">launch_native.run</span></code>）；当将查看器附加到您自己的 Python 循环时，使用 <strong>非阻塞模式</strong>（<code class="docutils literal notranslate"><span class="pre">launch_native.launch</span></code>）。</p><div class="en-orig" data-for="bi-13" lang="en">In Python, <code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code> (<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/native_viewer.py">native_viewer.py</a>) renders both the 3D
+scene and <a class="reference external" href="https://github.com/ocornut/imgui">Dear ImGui</a> UI locally in an SDL2 desktop window or offscreen buffer via
+<a class="reference internal" href="../programming/rendering.html#filamentrendering"><span class="std std-ref">Filament</span></a>. Use <strong>blocking mode</strong> (<code class="docutils literal notranslate"><span class="pre">launch_native.run</span></code>) when Studio drives the simulation
+loop, or <strong>non-blocking mode</strong> (<code class="docutils literal notranslate"><span class="pre">launch_native.launch</span></code>) when attaching a viewer to your own Python loop.</div>
+<section id="id3">
+<h3 data-bi="bi-14">阻塞模式<a class="headerlink" href="#id3" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-14" lang="en">Blocking Mode</div>
+<p data-bi="bi-15">要从命令行打开独立的 Studio 查看器，并可选地加载 <a class="reference internal" href="python_plugins.html#studiopythonplugins"><span class="std std-ref">插件文件</span></a> 和
+<a class="reference internal" href="python_plugins.html#studiohotreload"><span class="std std-ref">热重载</span></a>：</p><div class="en-orig" data-for="bi-15" lang="en">To open the standalone Studio viewer from the command line with optional <a class="reference internal" href="python_plugins.html#studiopythonplugins"><span class="std std-ref">plugin files</span></a> and
+<a class="reference internal" href="python_plugins.html#studiohotreload"><span class="std std-ref">hot reload</span></a>:</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>mujoco.studio.viewer<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model<span class="o">=</span>path/to/model.xml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--gfx<span class="o">=</span>opengl<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--plugins<span class="o">=</span>path/to/my_plugin.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--hot_reload<span class="o">=</span>all
+</pre></div>
+</div>
+<p data-bi="bi-16">在 Python 中，<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/launch_native.py">launch_native.run</a> 会启动 <code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code>
+并运行阻塞式仿真同步循环，直到窗口关闭。传入 <code class="docutils literal notranslate"><span class="pre">model_path=...</span></code>
+可在仿真线程上加载模型文件，从而保持界面中的 <strong>Reload</strong> 和模型 <a class="reference internal" href="python_plugins.html#studiohotreload"><span class="std std-ref">热重载</span></a> 可用；也可以传入内存中的 <code class="docutils literal notranslate"><span class="pre">model=...</span></code>，并可选地传入 <code class="docutils literal notranslate"><span class="pre">data=...</span></code>：</p><div class="en-orig" data-for="bi-16" lang="en">From Python, <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/launch_native.py">launch_native.run</a> starts <code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code>
+and runs the blocking simulation sync loop until the window closes. Pass <code class="docutils literal notranslate"><span class="pre">model_path=...</span></code>
+to load a model file on the simulation thread so UI <strong>Reload</strong> and model <a class="reference internal" href="python_plugins.html#studiohotreload"><span class="std std-ref">hot reload</span></a> stay
+enabled, or pass an in-memory <code class="docutils literal notranslate"><span class="pre">model=...</span></code> with optional <code class="docutils literal notranslate"><span class="pre">data=...</span></code>:</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span> <span class="k">as</span> <span class="n">studio_app</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">launch_native</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">viewer_protocol</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">viewer_protocol</span><span class="o">.</span><span class="n">ViewerConfig</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">'MuJoCo Studio'</span><span class="p">,</span> <span class="n">gfx</span><span class="o">=</span><span class="s1">'opengl'</span><span class="p">)</span>
+
+<span class="n">launch_native</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">,</span>
+    <span class="n">model_path</span><span class="o">=</span><span class="s1">'humanoid.xml'</span><span class="p">,</span>  <span class="c1"># Or model=model, data=data for an in-memory model.</span>
+    <span class="n">plugins</span><span class="o">=</span><span class="p">[</span><span class="n">studio_app</span><span class="o">.</span><span class="n">App</span><span class="p">(),</span> <span class="o">*</span><span class="n">studio_app</span><span class="o">.</span><span class="n">SIM_PLUGINS</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="studioexecutionmodes">
+<span id="id4"></span><h3 data-bi="bi-17">非阻塞模式<a class="headerlink" href="#studioexecutionmodes" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-17" lang="en">Non-Blocking Mode</div>
+<p data-bi="bi-18">当将 <code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code> 附加到现有的 Python 循环（例如强化学习训练循环、轨迹回放脚本或测试）时，请将 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/launch_native.py">launch_native.launch</a> 用作非阻塞的上下文管理器。它在守护线程上启动 <code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code>，并向调用线程返回一个 <code class="docutils literal notranslate"><span class="pre">ViewerHandle</span></code>（<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/viewer_handle.py">viewer_handle.py</a>）：</p><div class="en-orig" data-for="bi-18" lang="en">When attaching <code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code> to an existing Python loop—such as an RL training loop, trajectory replay script, or
+test—use <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/launch_native.py">launch_native.launch</a> as a non-blocking context
+manager. It starts <code class="docutils literal notranslate"><span class="pre">NativeViewer</span></code> on a daemon thread and returns a <code class="docutils literal notranslate"><span class="pre">ViewerHandle</span></code> (<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/studio/viewer_handle.py">viewer_handle.py</a>) to the calling thread:</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">mujoco</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span> <span class="k">as</span> <span class="n">studio_app</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mujoco.studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">launch_native</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">mujoco</span><span class="o">.</span><span class="n">MjModel</span><span class="o">.</span><span class="n">from_xml_path</span><span class="p">(</span><span class="s1">'humanoid.xml'</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">mujoco</span><span class="o">.</span><span class="n">MjData</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">launch_native</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">plugins</span><span class="o">=</span><span class="p">[</span><span class="n">studio_app</span><span class="o">.</span><span class="n">App</span><span class="p">()])</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+  <span class="k">while</span> <span class="n">handle</span><span class="o">.</span><span class="n">is_running</span><span class="p">():</span>
+    <span class="n">tick</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="n">model</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">handle</span><span class="o">.</span><span class="n">sync</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="n">mujoco</span><span class="o">.</span><span class="n">mj_step</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">opt</span><span class="o">.</span><span class="n">timestep</span> <span class="o">-</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">tick</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p data-bi="bi-19">这个最简循环省略了仿真侧插件，因此它不会记录历史，也不会镜像查看器的暂停和播放速度控制；关于如何在自定义循环中接入查看器控制，请参见 <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/sample/studio/custom_sim_loop.py">custom_sim_loop.py</a>。</p><div class="en-orig" data-for="bi-19" lang="en">This minimal loop omits simulation-side plugins, so it does not record history or mirror the viewer’s pause and
+playback-speed controls; see <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/sample/studio/custom_sim_loop.py">custom_sim_loop.py</a> for how to
+wire up viewer controls in a custom loop.</div>
+<p data-bi="bi-20">直接驱动 <code class="docutils literal notranslate"><span class="pre">ViewerHandle</span></code> 循环时的关键细节：</p><div class="en-orig" data-for="bi-20" lang="en">Key details when driving a <code class="docutils literal notranslate"><span class="pre">ViewerHandle</span></code> loop directly:</div>
+<ul class="simple">
+<li><p data-bi="bi-21"><strong>始终重新绑定</strong> <code class="docutils literal notranslate"><span class="pre">model,</span> <span class="pre">data</span> <span class="pre">=</span> <span class="pre">handle.sync(model,</span> <span class="pre">data)</span></code>，每次迭代都要这样做。如果您的脚本创建了新的模型对象，<code class="docutils literal notranslate"><span class="pre">sync()</span></code> 会发布 <code class="docutils literal notranslate"><span class="pre">model</span></code> 和
+<code class="docutils literal notranslate"><span class="pre">data</span></code>；每当界面 <strong>Reload</strong>、拖放文件或插件的 <code class="docutils literal notranslate"><span class="pre">handle.set_model()</span></code> 切换活动模型时，它会返回替换后的 <code class="docutils literal notranslate"><span class="pre">model</span></code> 和 <code class="docutils literal notranslate"><span class="pre">data</span></code> 对象。</p><div class="en-orig" data-for="bi-21" lang="en"><strong>Always rebind</strong> <code class="docutils literal notranslate"><span class="pre">model,</span> <span class="pre">data</span> <span class="pre">=</span> <span class="pre">handle.sync(model,</span> <span class="pre">data)</span></code> on every iteration. <code class="docutils literal notranslate"><span class="pre">sync()</span></code> publishes <code class="docutils literal notranslate"><span class="pre">model</span></code> and
+<code class="docutils literal notranslate"><span class="pre">data</span></code> if your script created a new model object, and returns replacement <code class="docutils literal notranslate"><span class="pre">model</span></code> and <code class="docutils literal notranslate"><span class="pre">data</span></code> objects whenever UI
+<strong>Reload</strong>, a dropped file, or a plugin’s <code class="docutils literal notranslate"><span class="pre">handle.set_model()</span></code> swaps the active model.</div></li>
+<li><p data-bi="bi-22"><strong>步进与节奏控制</strong>：<code class="docutils literal notranslate"><span class="pre">handle.sync()</span></code> 从不休眠。如果省略 <code class="docutils literal notranslate"><span class="pre">StepControl()</span></code>，则需要在 <code class="docutils literal notranslate"><span class="pre">handle.sync()</span></code> 之后自行推进 <code class="docutils literal notranslate"><span class="pre">data</span></code> 并控制循环节奏；如果包含 <code class="docutils literal notranslate"><span class="pre">*studio_app.SIM_PLUGINS</span></code>，则 <code class="docutils literal notranslate"><span class="pre">StepControl()</span></code> 会在 <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code> 期间于
+<code class="docutils literal notranslate"><span class="pre">handle.sync()</span></code> 内部推进并控制物理仿真的节奏。</p><div class="en-orig" data-for="bi-22" lang="en"><strong>Stepping and pacing</strong>: <code class="docutils literal notranslate"><span class="pre">handle.sync()</span></code> never sleeps. If you omit <code class="docutils literal notranslate"><span class="pre">StepControl()</span></code>, advance <code class="docutils literal notranslate"><span class="pre">data</span></code> and pace the
+loop yourself after <code class="docutils literal notranslate"><span class="pre">handle.sync()</span></code>; if you include <code class="docutils literal notranslate"><span class="pre">*studio_app.SIM_PLUGINS</span></code>, <code class="docutils literal notranslate"><span class="pre">StepControl()</span></code> steps and paces
+physics inside <code class="docutils literal notranslate"><span class="pre">handle.sync()</span></code> during <code class="docutils literal notranslate"><span class="pre">StepEvent</span></code>.</div></li>
+<li><p data-bi="bi-23"><strong>修改</strong>：请将 <code class="docutils literal notranslate"><span class="pre">model.opt</span></code> 的修改保留在步进事件处理程序中，以便 <code class="docutils literal notranslate"><span class="pre">ViewerHandle.sync()</span></code> 的
+<a class="reference internal" href="python_plugins.html#studiodiffsync"><span class="std std-ref">基于差异的同步</span></a> 能够检测并将其转发给查看器。</p><div class="en-orig" data-for="bi-23" lang="en"><strong>Mutations</strong>: Keep <code class="docutils literal notranslate"><span class="pre">model.opt</span></code> mutations inside step-event handlers so <code class="docutils literal notranslate"><span class="pre">ViewerHandle.sync()</span></code>’s
+<a class="reference internal" href="python_plugins.html#studiodiffsync"><span class="std std-ref">diff-based sync</span></a> detects and forwards them to the viewer.</div></li>
+<li><p data-bi="bi-24"><strong>macOS（mjpython）</strong>：AppKit 要求原生窗口必须在操作系统主线程上创建和处理。阻塞模式（<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">mujoco.studio.viewer</span></code> 和 <code class="docutils literal notranslate"><span class="pre">launch_native.run</span></code>）可在标准 <code class="docutils literal notranslate"><span class="pre">python</span></code> 下运行，而非阻塞的 <code class="docutils literal notranslate"><span class="pre">launch_native.launch</span></code> 则需要使用 <code class="docutils literal notranslate"><span class="pre">mjpython</span></code> 运行您的脚本（与可在标准 <code class="docutils literal notranslate"><span class="pre">python</span></code> 下运行的 <a class="reference internal" href="web_viewers.html#studiowebviewer"><span class="std std-ref">launch_web</span></a> 不同）。</p><div class="en-orig" data-for="bi-24" lang="en"><strong>macOS (``mjpython``)</strong>: AppKit requires native windows to be created and serviced on the OS main thread. Blocking
+mode (<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">mujoco.studio.viewer</span></code> and <code class="docutils literal notranslate"><span class="pre">launch_native.run</span></code>) works under standard <code class="docutils literal notranslate"><span class="pre">python</span></code>, whereas
+non-blocking <code class="docutils literal notranslate"><span class="pre">launch_native.launch</span></code> requires running your script with <code class="docutils literal notranslate"><span class="pre">mjpython</span></code> (unlike <a class="reference internal" href="web_viewers.html#studiowebviewer"><span class="std std-ref">launch_web</span></a>, which works under standard <code class="docutils literal notranslate"><span class="pre">python</span></code>).</div></li>
+</ul>
+</section>
+</section>
+<section id="studiobackends">
+<span id="id5"></span><h2 data-bi="bi-25">渲染后端<a class="headerlink" href="#studiobackends" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-25" lang="en">Rendering Backends</div>
+<p data-bi="bi-26">设置 <code class="docutils literal notranslate"><span class="pre">ViewerConfig.gfx</span></code> 或在命令行中传入 <code class="docutils literal notranslate"><span class="pre">--gfx</span></code>，以选择原生 <a class="reference internal" href="../programming/rendering.html#filamentrendering"><span class="std std-ref">Filament</span></a> 后端：</p><div class="en-orig" data-for="bi-26" lang="en">Set <code class="docutils literal notranslate"><span class="pre">ViewerConfig.gfx</span></code> or pass <code class="docutils literal notranslate"><span class="pre">--gfx</span></code> on the command line to select the native <a class="reference internal" href="../programming/rendering.html#filamentrendering"><span class="std std-ref">Filament</span></a> backend:</div>
+<ul class="simple">
+<li><p data-bi="bi-27"><code class="docutils literal notranslate"><span class="pre">''</span></code> <em>（默认）</em>：使用平台默认的原生 Filament 后端。</p><div class="en-orig" data-for="bi-27" lang="en"><code class="docutils literal notranslate"><span class="pre">''</span></code> <em>(default)</em>: Uses the platform default native Filament backend.</div></li>
+<li><p data-bi="bi-28"><code class="docutils literal notranslate"><span class="pre">'opengl'</span></code> / <code class="docutils literal notranslate"><span class="pre">'vulkan'</span></code>：硬件加速的 OpenGL 或 Vulkan 桌面窗口。</p><div class="en-orig" data-for="bi-28" lang="en"><code class="docutils literal notranslate"><span class="pre">'opengl'</span></code> / <code class="docutils literal notranslate"><span class="pre">'vulkan'</span></code>: Hardware-accelerated OpenGL or Vulkan desktop window.</div></li>
+<li><p data-bi="bi-29"><code class="docutils literal notranslate"><span class="pre">'opengl_headless'</span></code>：没有可见窗口的离屏 OpenGL 上下文，适用于自动化测试和离屏渲染。</p><div class="en-orig" data-for="bi-29" lang="en"><code class="docutils literal notranslate"><span class="pre">'opengl_headless'</span></code>: Offscreen OpenGL context without a visible window, suited for automated tests and offscreen
+rendering.</div></li>
+<li><p data-bi="bi-30"><code class="docutils literal notranslate"><span class="pre">'opengl_software'</span></code> / <code class="docutils literal notranslate"><span class="pre">'vulkan_software'</span></code>：软件光栅化的 OpenGL 或 Vulkan，适用于没有 GPU 的无头 CI 机器。</p><div class="en-orig" data-for="bi-30" lang="en"><code class="docutils literal notranslate"><span class="pre">'opengl_software'</span></code> / <code class="docutils literal notranslate"><span class="pre">'vulkan_software'</span></code>: Software-rasterized OpenGL or Vulkan for headless CI machines without
+GPUs.</div></li>
+</ul>
+<p data-bi="bi-31">在 Linux 上，直接窗口渲染需要 X11（在 Wayland 下 <code class="docutils literal notranslate"><span class="pre">'opengl'</span></code> 会被拒绝）。在 Wayland 会话中，省略
+<code class="docutils literal notranslate"><span class="pre">gfx</span></code> 将回退到 <code class="docutils literal notranslate"><span class="pre">'opengl_headless'</span></code>；若要直接使用 GPU 呈现，请使用 X11 会话。</p><div class="en-orig" data-for="bi-31" lang="en">On Linux, direct window rendering expects X11 (<code class="docutils literal notranslate"><span class="pre">'opengl'</span></code> is rejected under Wayland). In a Wayland session, omitting
+<code class="docutils literal notranslate"><span class="pre">gfx</span></code> falls back to <code class="docutils literal notranslate"><span class="pre">'opengl_headless'</span></code>; for direct GPU presentation, use an X11 session.</div>
+</section>
+</section>
+</article>
+</div>
+<footer>
+<div class="related-pages">
+<a class="next-page" href="architecture.html">
+<div class="page-info">
+<div class="context">
+<span>Next</span>
+</div>
+<div class="title">架构</div>
+</div>
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+</a>
+<a class="prev-page" href="web_viewers.html">
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+<div class="page-info">
+<div class="context">
+<span>Previous</span>
+</div>
+<div class="title">Web 查看器</div>
+</div>
+</a>
+</div>
+<div class="bottom-of-page">
+<div class="left-details">
+<div class="copyright">
+                Copyright © DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+</div>
+<div class="right-details">
+</div>
+</div>
+</footer>
+</div>
+<aside class="toc-drawer">
+<div class="toc-sticky toc-scroll">
+<div class="toc-title-container">
+<span class="toc-title">
+            On this page
+          </span>
+</div>
+<div class="toc-tree-container">
+<div class="toc-tree">
+<ul>
+<li><a class="reference internal" href="#">原生查看器</a><ul>
+<li><a class="reference internal" href="#studioapp">独立应用程序</a></li>
+<li><a class="reference internal" href="#python-nativeviewer">Python NativeViewer</a><ul>
+<li><a class="reference internal" href="#id3">阻塞模式</a></li>
+<li><a class="reference internal" href="#studioexecutionmodes">非阻塞模式</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#studiobackends">渲染后端</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div><script src="../_static/documentation_options.js?v=7d86a446"></script>
+<script src="../_static/doctools.js?v=fd6eb6e6"></script>
+<script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+<script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+<script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="../_static/copybutton.js?v=f281be69"></script>
+<script src="../_static/translations.js?v=540d3cec"></script>
+<script src="../_static/katex.min.js?v=5cc8ed51"></script>
+<script src="../_static/auto-render.min.js?v=af98beb9"></script>
+<script src="../_static/katex_autorenderer.js?v=ae454eff"></script>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<script src="../_static/linenumbers.js?v=ebda5d35"></script>
+<script src="../_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+<script src="../_static/bilingual.js?v=25c2633d"></script></body></html>

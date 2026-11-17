@@ -1,0 +1,549 @@
+﻿.. _Mjx:
+
+================
+MuJoCo XLA (MJX)
+================
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+.. toctree::
+    :hidden:
+
+    API <mjx_api.rst>
+
+MuJoCo XLA (MJX) 为 MuJoCo 的多种实现提供了 `JAX <https://github.com/jax-ml/jax#readme>`__ API。MJX 位于 MuJoCo 仓库的
+`mjx <https://github.com/google-deepmind/mujoco/tree/main/mjx>`__ 目录下。
+
+MJX 允许用户在 `XLA <https://www.tensorflow.org/xla>`__ 编译器支持的所有计算硬件上运行 MuJoCo。我们提供了 MuJoCo 的 JAX 重新实现（\ :ref:`MJX-JAX <MjxJAX>`\ ）。MJX-JAX
+`可运行于 <https://jax.readthedocs.io/en/latest/installation.html#supported-platforms>`__：Nvidia 和 AMD GPU、Apple Silicon 以及 `Google Cloud TPU <https://cloud.google.com/tpu>`__。MuJoCo 的 Warp 实现（\ :ref:`MJX-Warp <MjxWarp>`\ ）专门针对 NVIDIA GPU 优化性能，解决了 MJX-JAX 中存在的若干性能瓶颈。
+
+MJX 以名为 ``mujoco-mjx`` 的独立包发布在 `PyPI <https://pypi.org/project/mujoco-mjx>`__ 上。它依赖主 ``mujoco`` 包进行模型（model）编译和可视化（visualization），并且依赖 :ref:`MuJoCo Warp <MJW>` 来提供 MuJoCo 的 Warp 实现。
+
+.. _MjxInstallation:
+
+安装
+====
+
+推荐通过 `PyPI <https://pypi.org/project/mujoco-mjx/>`__ 安装此包：
+
+.. code-block:: shell
+
+   pip install mujoco-mjx
+
+要在 MJX 中使用 :ref:`MuJoCo Warp <MJW>`，请通过以下方式安装：
+
+.. code-block:: shell
+
+   pip install mujoco-mjx[warp]
+
+MuJoCo 库的副本已作为此包的依赖项提供，\ **无需**\ 单独下载或安装。
+
+.. _MjxExample:
+
+最小示例
+========
+
+安装完成后，可以通过导入 ``mujoco.mjx`` 包来使用 MJX。调用 ``mjx.put_model`` 将 MuJoCo 模型放置到设备上，调用 ``mjx.make_data`` 在设备上创建 MuJoCo 数据。然后即可使用 ``mjx.step`` 推进仿真。
+
+.. code-block:: python
+
+   # Throw a ball at 100 different velocities.
+
+   import jax
+   import mujoco
+   from mujoco import mjx
+
+   XML=r"""
+   <mujoco>
+     <worldbody>
+       <body>
+         <freejoint/>
+         <geom size=".15" mass="1" type="sphere"/>
+       </body>
+     </worldbody>
+   </mujoco>
+   """
+
+   model = mujoco.MjModel.from_xml_string(XML)
+   mjx_model = mjx.put_model(model)
+
+   @jax.vmap
+   def batched_step(vel):
+     mjx_data = mjx.make_data(mjx_model)
+     qvel = mjx_data.qvel.at[0].set(vel)
+     mjx_data = mjx_data.replace(qvel=qvel)
+     pos = mjx.step(mjx_model, mjx_data).qpos[0]
+     return pos
+
+   vel = jax.numpy.arange(0.0, 1.0, 0.01)
+   pos = jax.jit(batched_step)(vel)
+   print(pos)
+
+
+MJX 的实现
+==========
+
+MJX 目前支持 MuJoCo 的两种实现：纯 :ref:`JAX <MjxJAX>` 实现和 :ref:`Warp <MjxWarp>` 实现。
+
+.. _MjxWarp:
+
+MJX-Warp
+--------
+
+MJX-Warp 使用 :ref:`MuJoCo Warp <MJW>`，这是 MuJoCo 在硬件加速设备上功能最完整的实现。MJX-Warp 解决了 MJX-JAX 中围绕接触（contact）和约束（constraint）的关键性能瓶颈。
+
+请注意，与 MJX-JAX 不同，MJX-Warp 不支持自动微分，并且近期没有支持自动微分的计划。
+
+基本用法
+~~~~~~~~
+
+我们通过向 ``mjx.put_model`` 和 ``mjx.make_data`` 函数传入 ``impl='warp'`` 来创建模型和数据：
+
+.. code-block:: python
+
+   mj_model = mujoco.MjModel.from_xml_path(...)
+   model = mjx.put_model(mj_model, impl='warp')
+   data = mjx.make_data(mj_model, impl='warp', naconmax=naconmax, njmax=njmax)
+
+请注意，我们向 ``mjx.make_data`` 传入了两个额外的参数：
+
+* ``naconmax`` 定义所有世界（world）合计的最大接触数。
+* ``njmax`` 定义每个世界的最大约束数。如果您正在开发新的场景，应当在\ :ref:`查看器 <mjwViewer>`\ 中加载场景来调整这些参数，并在发生溢出时相应地增大数值。请将 ``naconmax`` 按您最终在 ``jax.vmap`` 中需要的环境数量进行缩放！
+
+接触
+~~~~
+
+由于 JAX 和 Warp 在接触缓冲区的实现上有所不同，接触位于私有的 ``mjx.Data._impl`` 中，而不是 ``mjx.Data.contact``。我们鼓励用户仅通过\ :ref:`接触传感器 <sensor-contact>`\ 读取接触信息。
+
+有关在实际中使用 MJX-Warp 的更多细节和示例，请参见 MuJoCo Playground 中的\ `公告 <https://github.com/google-deepmind/mujoco_playground/discussions/197>`__\ 。
+
+批量 ``Data`` 更新
+~~~~~~~~~~~~~~~~~~
+
+在 MJX-JAX 中，可以使用 `jax.tree.map(jax.numpy.where, done, reset_data, data)` 重置一批环境中的一部分。然而，由于内部实现细节，这种方法在 MJX-Warp 中无法开箱即用。
+
+为了让两种实现都支持批量 ``Data`` 更新，MJX 在 `Data` 对象上提供了统一的 `where` 方法：
+
+.. code-block:: python
+
+   data = data.where(done, reset_data)
+
+
+.. _MjxWarpGraphModes:
+
+图模式
+~~~~~~
+
+``mjx.put_model`` 函数接受 ``graph_mode`` 参数来配置 CUDA 图捕获行为，该参数由 ``mjx.warp.GraphMode`` 枚举暴露。从 JAX 调用时，CUDA 图由 Warp 外部函数接口（Foreign Function interface）捕获并缓存，以帮助提升运行时性能。更多细节请参见
+`Warp JAX 互操作文档 <https://nvidia.github.io/warp/stable/user_guide/interoperability/jax.html>`__\ 。图模式可以按如下方式配置：
+
+.. code-block:: python
+
+   import mujoco.mjx.warp as mjxw
+
+   model = mjx.put_model(mj_model, impl='warp', graph_mode=mjxw.GraphMode.WARP_STAGED)
+
+各种图模式在性能上有一定的权衡：
+
+* ``JAX``：不适用于 MuJoCo Warp，因为 Warp 实现会创建无法并入 XLA 图的子图节点。
+* ``WARP``：（默认）Warp 在内部捕获 CUDA 图，并使用来自 XLA 的缓冲区指针对其进行缓存。JAX 和 XLA 经常以意想不到的方式优化内存布局，并可能在两次调用 Warp 之间更改缓冲区指针。由于 Warp/CUDA 需要稳定的指针，如果输入和输出缓冲区指针发生变化，CUDA 图将被重新捕获。图捕获的运行开销通常很大，因此 JAX 的指针不稳定导致的过多图重新捕获会降低性能。如果您的 JAX 程序的瓶颈在于过多的图捕获，请考虑使用 ``WARP_STAGED`` 或 ``WARP_STAGED_EX``。
+* ``WARP_STAGED``：会创建暂存缓冲区（因此会增加内存占用），并将 XLA 缓冲区复制进出暂存缓冲区，使 CUDA 图获得一致的内存指针。CUDA 图捕获只会发生一次。
+* ``WARP_STAGED_EX``：与 ``WARP_STAGED`` 类似，但复制操作被移到初始图捕获之外。
+
+根据您的 JAX 程序处理内存的方式，您可能需要使用 ``WARP_STAGED`` 或 ``WARP_STAGED_EX`` 来避免过多的图捕获。
+
+下表展示了不同图模式之间权衡的一个示例。我们报告了不同配置在 Humanoid 和 Aloha Pot 场景上的每秒步数（Steps per Second，SPS）。请注意，如果我们强制每一步都重新捕获图，性能会显著下降：
+
+.. list-table:: MJX-Warp 图模式的每秒步数 (SPS)
+   :widths: 50 25 25
+   :header-rows: 1
+
+   * - 配置
+     - Humanoid
+     - Aloha Pot
+   * - 纯 Warp（无 JAX FFI）
+     - 3.35M
+     - 2.45M
+   * - JAX FFI (``WARP``)
+     - 2.96M
+     - 2.33M
+   * - JAX FFI（``WARP``，每一步都强制重新捕获）
+     - 0.80M
+     - 0.65M
+
+
+为了减少重新捕获，我们可以使用 ``WARP_STAGED`` 或 ``WARP_STAGED_EX``。由于这些模式引入了暂存缓冲区，它们的性能可能低于 ``WARP``，但如果 JAX-Warp FFI 层中存在过多的图捕获，它们的性能会明显优于 ``WARP``。
+
+.. list-table:: MJX-Warp 图模式的每秒步数 (SPS)
+   :widths: 50 25 25
+   :header-rows: 1
+
+   * - 配置
+     - Humanoid
+     - Aloha Pot
+   * - JAX FFI (``WARP_STAGED``)
+     - 2.67M
+     - 1.96M
+   * - JAX FFI（``WARP``，每一步都强制重新捕获）
+     - 0.80M
+     - 0.65M
+
+
+.. _MjxWarpBatchRendering:
+
+批量渲染
+~~~~~~~~
+
+MJX-Warp 包含一个硬件加速的批量渲染器（rendering），用于在多个并行环境中生成像素观测（例如 RGB 和深度）。
+
+要使用批量渲染器，必须先创建一个渲染上下文来分配必要的缓冲区。请注意，并行世界的数量（``nworld``）在创建上下文时就已固定。\ ``create_render_context`` 返回一个渲染上下文对象，可直接访问缓冲区元数据（相机分辨率、地址等）。调用 ``.pytree()`` 可获得轻量级的 JAX pytree，应将其传入经 ``jit``/``vmap`` 编译的函数：
+
+.. code-block:: python
+
+    from mujoco.mjx import create_render_context
+
+    rc = create_render_context(
+        mjm=m,
+        nworld=nworld,
+        cam_res=(width, height),
+        use_textures=True,
+        use_shadows=True,
+        render_rgb=[True] * ncam,
+        render_depth=[False] * ncam,
+        enabled_geom_groups=[0, 1, 2],
+    )
+
+请在程序的整个生命周期内持有 ``rc`` 的引用，并将 ``rc.pytree()`` 传给下游的 JAX 函数。该 pytree 是一个轻量级句柄，通过内部注册表指回上下文。
+
+创建上下文之后，就可以在编译后的 JAX 函数中渲染图像。这包括更新包围体层次结构（BVH）并执行光线投射器：
+
+.. code-block:: python
+
+    from mujoco.mjx import get_rgb
+
+    @jax.jit
+    def render_fn(mx, d, rc_pytree):
+        # 1. Update the BVH for the current scene state
+        d = mjx.refit_bvh(mx, d, rc_pytree)
+
+        # 2. Render all configured cameras
+        pixels, _, d = mjx.render(mx, d, rc_pytree)
+
+        # 3. Extract the RGB tensor for the first camera (index 0)
+        rgb = get_rgb(rc_pytree, 0, pixels)
+
+        return rgb, d
+
+    rgb, d = render_fn(mx, d, rc.pytree())
+
+.. NOTE::
+   :func:`~mujoco.mjx.refit_bvh` 和 :func:`~mujoco.mjx.render` 会更新 :class:`~mujoco.mjx.Data` 内部的执行令牌（``d._impl._jax_token``）。将 ``d`` 依次传递给 ``refit_bvh`` 和 ``render`` 会建立显式的数据依赖，防止 XLA 在迭代或展开的循环之间对 BVH 更新和光线投射过程重新排序。
+
+.. WARNING::
+   批量维度 ``nworld`` 在通过 :func:`~mujoco.mjx.create_render_context` 创建渲染上下文时就已固定，因为底层的 Warp 渲染上下文会为 JAX 不可见的 ``nworld`` 个环境分配缓冲区。\ :func:`~mujoco.mjx.render` 始终返回前导批量维度大小为 ``nworld`` 的输出。因此存在一个已知问题：\ :func:`~mujoco.mjx.render` 与 ``jax.vmap(jax.lax.scan)`` 不能很好地配合。
+
+使用 ``pmap`` 的多 GPU 渲染
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+要跨多个 GPU 渲染，请向 :func:`create_render_context <mujoco.mjx.create_render_context>` 传入 ``devices``，为\ **每个设备**\ 创建一个渲染上下文。
+
+.. code-block:: python
+
+    ndevices = jax.local_device_count()
+    nworld_per_device = nworld // ndevices
+
+    # Create one render context for all devices
+    rc = create_render_context(
+        mjm=m,
+        nworld=nworld_per_device,
+        devices=[f'cuda:{i}' for i in range(ndevices)],
+        cam_res=(width, height),
+    )
+
+然后使用 ``jax.pmap`` 在各设备间并行渲染。完整示例请参见
+`visualize_render.py <https://github.com/google-deepmind/mujoco/blob/main/mjx/mujoco/mjx/warp/visualize_render.py>`__\ 。
+
+.. _MjxJAX:
+
+MJX-JAX
+-------
+
+MJX-JAX 是 MuJoCo 的重新实现，使用与 MuJoCo 实现相同的算法。不过，为了充分利用 JAX，MJX 有意在少数地方偏离了 MuJoCo API（见下文）。对于需要一个在小场景上性能良好、并大致支持梯度的模拟器的用户，MJX-JAX 是一个不错的选择。其他情况下，我们建议用户使用 :ref:`MJX-Warp <MjxWarp>`。
+
+MJX-JAX 通过 `JAX <https://github.com/jax-ml/jax#readme>`__ 框架，使 MuJoCo 能够在 `XLA <https://www.tensorflow.org/xla>`__ 编译器\ `支持的 <https://jax.readthedocs.io/en/latest/installation.html#supported-platforms>`__\ 所有计算硬件上运行（AMD GPU、Apple Silicon 和 `Google Cloud TPU <https://cloud.google.com/tpu>`__）。
+
+MJX-JAX 的 API 与 MuJoCo API 中的主要仿真函数保持一致，尽管缺少一些功能。\ :ref:`API 文档 <Mainsimulation>`\ 对两个库都适用，我们会在下面的\ :ref:`说明 <MjxFeatureParity>`\ 中指出 MJX-JAX 不支持的功能。
+
+MJX-JAX 是 Google `Brax <https://github.com/google/brax>`__ 物理与强化学习库中\ `广义物理流水线 <https://github.com/google/brax/tree/main/brax/generalized>`__\ 的后继者。MJX-JAX 由 MuJoCo 和 Brax 的核心贡献者共同构建。Brax 依赖 ``mujoco-mjx`` 包，Brax 现有的\ `广义流水线 <https://github.com/google/brax/tree/main/brax/generalized>`__\ 已不再维护。
+
+.. _MjxNotebook:
+
+教程 notebook
+=============
+
+下面的 IPython notebook 演示了如何使用 MJX 结合强化学习来训练人形机器人和四足机器人行走：|colab|。
+
+.. |colab| image:: https://colab.research.google.com/assets/colab-badge.png
+           :target: https://colab.research.google.com/github/google-deepmind/mujoco/blob/main/mjx/tutorial.ipynb
+
+.. _MjxUsage:
+
+深入用法
+========
+
+.. _MjxStructs:
+
+结构体
+------
+
+在加速器设备上运行 MJX 函数之前，必须通过 ``mjx.put_model`` 和 ``mjx.put_data`` 函数将结构体复制到设备上。将 :ref:`mjModel` 放置到设备上会得到 ``mjx.Model``，将 :ref:`mjData` 放置到设备上会得到 ``mjx.Data``：
+
+.. code-block:: python
+
+   model = mujoco.MjModel.from_xml_string("...")
+   data = mujoco.MjData(model)
+   mjx_model = mjx.put_model(model)
+   mjx_data = mjx.put_data(model, data)
+
+这些 MJX 变体与对应的 MuJoCo 结构体相互映射，但有几个关键区别：
+
+#. ``mjx.Model`` 和 ``mjx.Data`` 包含被复制到设备上的 JAX 数组。
+#. ``mjx.Model`` 和 ``mjx.Data`` 中缺少一些字段，这些字段对应于特定 MuJoCo 实现私有的功能，或者\ :ref:`不受支持 <mjxFeatureParity>`\ 的功能。
+#. ``mjx.Model`` 和 ``mjx.Data`` 中的 JAX 数组支持添加批量维度。批量维度是表达域随机化（对 ``mjx.Model`` 而言）或用于强化学习的高吞吐量仿真（对 ``mjx.Data`` 而言）的自然方式。
+#. ``mjx.Model`` 和 ``mjx.Data`` 中的 Numpy 数组是控制 JIT 编译输出的结构性字段。修改这些数组会迫使 JAX 重新编译 MJX 函数。例如，\ ``jnt_limited`` 是一个从 :ref:`mjModel` 按引用传递的 numpy 数组，它决定是否应用关节限位（limit）约束。如果修改了 ``jnt_limited``，JAX 会重新编译 MJX 函数。另一方面，\ ``jnt_range`` 是可以在运行时修改的 JAX 数组，并且只会应用于 ``jnt_limited`` 字段所指定的有限位的关节。
+
+
+``mjx.Model`` 和 ``mjx.Data`` 都不应手动构造。可以通过调用 ``mjx.make_data`` 来创建 ``mjx.Data``，它对应于 MuJoCo 中的 :ref:`mj_makeData` 函数：
+
+.. code-block:: python
+
+   model = mujoco.MjModel.from_xml_string("...")
+   mjx_model = mjx.put_model(model)
+   mjx_data = mjx.make_data(model)
+
+在 ``vmap`` 内部构造批量 ``mjx.Data`` 结构时，使用 ``mjx.make_data`` 可能更为合适。
+
+.. _MjxFunctions:
+
+函数
+----
+
+MuJoCo 函数以同名的 MJX 函数形式暴露，但名称遵循符合 `PEP 8
+<https://peps.python.org/pep-0008/>`__ 的命名规范。大部分\ :ref:`主要仿真 <Mainsimulation>`\ 函数和一些用于前向仿真的\ :ref:`子组件 <Subcomponents>`\ 可从顶层 ``mjx`` 模块获得。
+
+MJX 函数默认\ *不会*\ 被 `JIT 编译 <https://jax.readthedocs.io/en/latest/jax-101/02-jitting.html>`__\ ——我们将对 MJX 函数进行 JIT 的工作留给用户，或者由用户对引用 MJX 函数的自有函数进行 JIT。请参见下面的\ :ref:`最小示例 <MjxExample>`\ 。
+
+.. _MjxEnums:
+
+枚举和常量
+----------
+
+MJX 枚举以 ``mjx.EnumType.ENUM_VALUE`` 的形式提供，例如 ``mjx.JointType.FREE``。不受支持的 MJX 功能所对应的枚举会从 MJX 枚举声明中省略。MJX 不声明任何常量，而是直接引用 MuJoCo 常量。
+
+
+.. _MjxCli:
+
+实用的命令行脚本
+----------------
+
+``mujoco-mjx`` 包附带两个命令行脚本：
+
+.. code-block:: shell
+
+   mjx-testspeed --mjcf=/PATH/TO/MJCF/ --base_path=.
+
+该命令接受 MJCF 文件的路径以及可选参数（使用 ``--help`` 获取更多信息），并计算有助于性能调优的指标。该命令会输出总仿真时间、总每秒步数和总实时因子等信息（这里的总数是指所有可用设备的合计）。
+
+.. code-block:: shell
+
+   mjx-viewer --help
+
+该命令在 simulate 查看器中启动 MJX 模型，使您可以对模型进行可视化和交互。请注意，这使用 MJX 物理（而不是 C 版 MuJoCo）来推进仿真，因此例如在调试求解器（solver）参数时会很有帮助。
+
+.. _MjxFeatureParity:
+
+功能对等
+========
+
+MJX 支持 MuJoCo 的大部分主要仿真功能，可在硬件加速设备上执行。如果要求将引用了不受支持功能的 :ref:`mjModel` 复制到设备上，MJX 会引发异常。
+
+下表比较了 MJX-Warp 和 MJX-JAX 相对于 MuJoCo 的功能支持情况：
+
+.. list-table::
+   :width: 100%
+   :align: left
+   :widths: 2 4 4
+   :header-rows: 1
+
+   * - 类别
+     - MJX-Warp
+     - MJX-JAX
+   * - 动力学
+     - :ref:`正向 <mj_forward>`\ 、\ :ref:`逆向 <mj_inverse>`
+     - :ref:`正向 <mj_forward>`\ 、\ :ref:`逆向 <mj_inverse>`
+   * - 可微性 [1]_
+     - ✗
+     - ✓
+   * - :ref:`关节 <mjtJoint>`
+     - 全部
+     - ``FREE``, ``BALL``, ``SLIDE``, ``HINGE``
+   * - :ref:`传动 <mjtTrn>`
+     - 全部
+     - ``JOINT``, ``JOINTINPARENT``, ``SITE``, ``TENDON``
+   * - :ref:`执行器动力学 <mjtDyn>`
+     - 全部
+     - ``NONE``, ``INTEGRATOR``, ``FILTER``, ``FILTEREXACT``, ``MUSCLE``
+   * - :ref:`执行器增益 <mjtGain>`
+     - 全部
+     - ``FIXED``, ``AFFINE``, ``MUSCLE``
+   * - :ref:`执行器偏置 <mjtBias>`
+     - 全部
+     - ``NONE``, ``AFFINE``, ``MUSCLE``
+   * - :ref:`Geom <mjtGeom>`
+     - 全部
+     - ``PLANE``, ``HFIELD``, ``SPHERE``, ``CAPSULE``, ``BOX``, ``MESH`` 已完全实现。\ ``ELLIPSOID`` 和
+       ``CYLINDER`` 已实现，但只与其他基本几何体发生碰撞 [3]_，请注意 ``BOX`` 是以网格的方式实现的。
+   * - :ref:`约束 <mjtConstraint>`
+     - 全部
+     - ``EQUALITY``, ``LIMIT_JOINT``, ``CONTACT_FRICTIONLESS``, ``CONTACT_PYRAMIDAL``, ``CONTACT_ELLIPTIC``,
+       ``FRICTION_DOF``, ``FRICTION_TENDON``
+   * - :ref:`等式 <mjtEq>`
+     - 全部
+     - ``CONNECT``, ``WELD``, ``JOINT``, ``TENDON``
+   * - :ref:`积分器 <mjtIntegrator>`
+     - 除 ``IMPLICITFAST`` 中点积分器功能外的全部
+     - ``EULER``, ``RK4``, ``IMPLICITFAST``\ （``IMPLICITFAST`` 不支持与\ :doc:`流体阻力 <computation/fluid>`\ 一起使用）
+   * - :ref:`锥 <mjtCone>`
+     - 全部
+     - ``PYRAMIDAL``, ``ELLIPTIC``
+   * - :ref:`Condim <coContact>`
+     - 全部
+     - 1, 3, 4, 6（1 不支持与 ``ELLIPTIC`` 一起使用）
+   * - :ref:`求解器 <mjtSolver>`
+     - 除 ``PGS``、\ ``noslip`` 外的全部
+     - ``CG``, ``NEWTON``
+   * - 流体模型
+     - 全部
+     - 仅 :ref:`flInertia`
+   * - :ref:`肌腱缠绕 <mjtWrap>`
+     - 全部
+     - ``JOINT``, ``SITE``, ``PULLEY``, ``SPHERE``, ``CYLINDER``
+   * - :ref:`肌腱 <tendon>`
+     - 全部
+     - :ref:`固定 <tendon-fixed>`\ 、\ :ref:`空间 <tendon-spatial>`
+   * - :ref:`传感器 <mjtSensor>`
+     - 除 ``PLUGIN`` 外的全部
+     - 参见下面的说明 [2]_
+   * - Flex
+     - ``VERTCOLLIDE``, ``ELASTICITY``
+     - 不支持。
+   * - 质量矩阵格式
+     - 稀疏和稠密
+     - 稀疏和稠密
+   * - 雅可比格式
+     - ``DENSE`` 和 ``SPARSE``
+     - 仅 ``DENSE``
+   * - 光源
+     - ✓
+     - 位置和方向
+   * - 光线
+     - 全部，网格、hfield 和 flex 使用 BVH
+     - 网格较慢，hfield 和 flex 未实现
+
+
+.. [1] 可微性在 MJX-JAX 中\ `基本得到支持 <https://github.com/google-deepmind/mujoco/issues/2259>`__\ ，但目前在 MJX-Warp 中\ **不**\ 可用。更多细节请参见 `Warp 可微性 <https://nvidia.github.io/warp/stable/user_guide/differentiability.html>`__。
+.. [2] **传感器**：\ ``MAGNETOMETER``, ``CAMPROJECTION``, ``RANGEFINDER``, ``JOINTPOS``, ``TENDONPOS``, ``ACTUATORPOS``,
+       ``BALLQUAT``, ``FRAMEPOS``, ``FRAMEXAXIS``, ``FRAMEYAXIS``, ``FRAMEZAXIS``, ``FRAMEQUAT``, ``SUBTREECOM``, ``CLOCK``,
+       ``VELOCIMETER``, ``GYRO``, ``JOINTVEL``, ``TENDONVEL``, ``ACTUATORVEL``, ``BALLANGVEL``, ``FRAMELINVEL``,
+       ``FRAMEANGVEL``, ``SUBTREELINVEL``, ``SUBTREEANGMOM``, ``TOUCH``, ``CONTACT``, ``ACCELEROMETER``, ``FORCE``,
+       ``TORQUE``, ``ACTUATORFRC``, ``JOINTACTFRC``, ``TENDONACTFRC``, ``FRAMELINACC``, ``FRAMEANGACC``
+       （``CONTACT``：匹配 ``none-none``、\ ``geom-geom``；归约 ``mindist``、\ ``maxforce``；数据 ``all``）
+.. [3] **不支持的 Geom**：\ ``SDF``。（``SPHERE``、\ ``BOX``、\ ``MESH``、\ ``HFIELD``）与 ``CYLINDER`` 之间的碰撞。
+       （``BOX``、\ ``MESH``、\ ``HFIELD``）与 ``ELLIPSOID`` 之间的碰撞。
+
+.. _MjxPerformance:
+
+性能调优
+========
+
+.. _MjxPerformanceWarp:
+
+MJX-Warp
+--------
+
+:ref:`MJX-Warp <MjxWarp>` 缓解了 :ref:`MJX-JAX <MjxSharpBits>` 在接触和约束数量扩展方面的性能问题。MJX-Warp 还完全支持网格碰撞。关于 MuJoCo Warp 性能调优的内容，请参见\ `此处 <https://mujoco.readthedocs.io/en/stable/mjwarp/index.html#performance-tuning>`__\ 的相应章节。
+
+.. _MjxPerformanceJAX:
+
+MJX-JAX
+-------
+
+.. note::
+
+   :ref:`MJX-Warp <MjxWarp>` 缓解了 MJX-JAX 的许多性能问题！
+
+为了让 MJX-JAX 表现良好，应当将一些配置参数从 MuJoCo 的默认值进行调整：
+
+:ref:`option/iterations<option-iterations>` 和 :ref:`option/ls_iterations<option-ls_iterations>`
+  :ref:`iterations<option-iterations>` 和 :ref:`ls_iterations<option-ls_iterations>` 属性——分别控制求解器迭代和线搜索迭代——应当降低到刚好能保持仿真稳定的程度。在强化学习中，精确的求解器力并不那么重要，因为强化学习中经常使用域随机化为物理引入噪声以实现 sim-to-real。\ ``NEWTON`` :ref:`求解器 <mjtSolver>`\ 只需很少的（通常只有一次）求解器迭代就能获得出色的收敛性，并且在 GPU 上表现良好。目前 ``CG`` 是 TPU 上更好的选择。
+
+:ref:`contact/pair<contact-pair>`
+  考虑为碰撞检测（collision detection）显式标记 geom，以减少 MJX-JAX 在每一步中必须考虑的接触数量。仅启用显式的有效接触列表，可以对 MJX-JAX 的仿真性能产生显著影响。要做好这一点，往往需要对任务有所了解——例如，\ `OpenAI Gym Humanoid <https://github.com/openai/gym/blob/master/gym/envs/mujoco/humanoid_v4.py>`__ 任务会在人形开始跌倒时重置，因此不需要与地面的完整接触。
+
+:ref:`maxhullvert<asset-mesh-maxhullvert>`
+   将 :ref:`maxhullvert<asset-mesh-maxhullvert>` 设置为 `64` 或更小，以获得更好的凸网格碰撞性能。
+
+:ref:`option/flag/eulerdamp<option-flag-eulerdamp>`
+  禁用 ``eulerdamp`` 有助于提升性能，并且通常不影响稳定性。有关该标志语义的详细信息，请阅读\ :ref:`数值积分<geIntegration>`\ 一节。
+
+:ref:`option/jacobian<option-jacobian>`
+  显式设置为 "dense" 或 "sparse" 可能会根据您的设备加速仿真。现代 TPU 具有专门用于快速处理稀疏矩阵的硬件，而 GPU 只要稠密矩阵能放进设备，往往在稠密矩阵上更快。因此，MJX-JAX 中默认 "auto" 设置的行为是：如果 ``nv >= 60``\ （60 个或更多自由度（degrees of freedom）），或者 MJX-JAX 检测到默认后端是 TPU，则使用 sparse，否则使用 "dense"。对于 TPU，在牛顿求解器中使用 "sparse" 可以将仿真加速 2 到 3 倍。对于 GPU，只要稠密矩阵能放进设备，选择 "dense" 可能带来较为温和的 10% 到 20% 的加速。
+
+粗测阶段
+  MuJoCo 开箱即用地处理粗测阶段（broadphase）剔除，而 MJX-JAX 则需要额外的参数。要使用近似版本的粗测阶段，请使用实验性的自定义 numeric 参数 ``max_contact_points`` 和 ``max_geom_pairs``。\ ``max_contact_points`` 限制针对每种 condim 类型发送给求解器的接触点数量。\ ``max_geom_pairs`` 限制针对每种 geom 类型对发送给相应碰撞函数的 geom 对总数。例如，
+  `shadow hand <https://github.com/google-deepmind/mujoco/tree/main/mjx/mujoco/mjx/test_data/shadow_hand>`__ 环境就使用了这些参数。
+
+GPU 性能
+~~~~~~~~
+
+应当设置以下环境变量：
+
+``XLA_FLAGS=--xla_gpu_triton_gemm_any=true``
+  这会对任何受支持的 GEMM 启用基于 Triton 的 GEMM（矩阵乘法）发射器。这在 NVIDIA GPU 上可带来 30% 的加速。如果您有多个 GPU，启用与\ `GPU 之间通信 <https://jax.readthedocs.io/en/latest/gpu_performance_tips.html>`__\ 相关的标志也可能使您受益。
+
+.. _MjxSharpBits:
+
+🔪 MJX-JAX 的锋利之处（The Sharp Bits） 🔪
+==========================================
+
+.. note::
+
+   :ref:`MJX-Warp <MjxWarp>` 缓解了 MJX-JAX 的许多锋利之处！
+
+GPU 和 TPU 具有独特的性能权衡，MJX-JAX 也会受其影响。MJX-JAX 专长于使用可在 `SIMD 硬件 <https://en.wikipedia.org/wiki/Single_instruction,_multiple_data>`__\ 上高效向量化的算法，模拟大批量并行的相同物理场景。这一专长对于\ `强化学习 <https://en.wikipedia.org/wiki/Reinforcement_learning>`__\ 等需要海量数据吞吐的机器学习工作负载很有用。
+
+有一些工作流不适合 MJX-JAX（MJX-Warp 完全缓解了这些问题）：
+
+单场景仿真
+  在模拟单个场景（1 个 :ref:`mjData` 实例）时，MJX-JAX 可能比 MuJoCo 慢 **10 倍**，因为 MuJoCo 已针对 CPU 进行了精心优化。MJX-JAX 在并行模拟数千或数万个场景时效果最佳。
+
+大型网格之间的碰撞
+  MJX-JAX 支持凸网格几何体之间的碰撞。不过，MJX-JAX 中的凸体碰撞算法与 MuJoCo 中的实现方式不同。MJX-JAX 使用\ `分离轴测试 <https://ubm-twvideo01.s3.amazonaws.com/o1/vault/gdc2013/slides/822403Gregorius_Dirk_TheSeparatingAxisTest.pdf>`__\ （Separating Axis Test，SAT）的无分支版本来判断几何体是否与凸网格发生碰撞，而 MuJoCo 使用 MPR 或 GJK/EPA，更多细节请参见\ :ref:`碰撞检测<coChecking>`\ 。SAT 对较小的网格效果良好，但对较大的网格在运行时间和内存方面都会吃力。
+
+  对于与凸网格和基本几何体之间的碰撞，网格的凸分解应当具有大约\ **200 个或更少的顶点**\ ，才能获得合理的性能。对于凸体与凸体之间的碰撞，凸网格应当具有大约\ **少于 32 个顶点**\ 。我们建议在 MuJoCo 编译器中使用 :ref:`maxhullvert<asset-mesh-maxhullvert>` 来获得所需的凸网格属性。经过仔细调优，MJX-JAX 可以模拟带有网格碰撞的场景——示例请参见 MJX-JAX 的 `shadow hand <https://github.com/google-deepmind/mujoco/tree/main/mjx/mujoco/mjx/test_data/shadow_hand>`__ 配置。加速网格碰撞检测（collision detection）是 MJX-JAX 正在积极开发的方向。
+
+包含大量接触的大型复杂场景
+  加速器在\ `分支代码 <https://aschrein.github.io/jekyll/update/2019/06/13/whatsup-with-my-branches-on-gpu.html#tldr>`__\ 上表现不佳。在粗测阶段（broad-phase）碰撞检测中会用到分支，用于在场景中大量刚体之间识别潜在的碰撞。MJX-JAX 自带一个简单的无分支粗测阶段算法（参见性能调优），但它不如 MuJoCo 中的算法强大。
+
+  为了说明这对仿真有何影响，让我们考虑一个物理场景，其中人形刚体的数量从 1 增加到 10。我们在 Apple M3 Max 和 64 核 AMD 3995WX 上使用 CPU 版 MuJoCo 模拟该场景，并使用 :ref:`testspeed<saTestspeed>` 计时，线程数为 ``2 x numcore``。我们在 Nvidia A100 GPU 上以 8192 的批量大小，以及在 8 芯片的
+  `v5 TPU <https://cloud.google.com/blog/products/compute/announcing-cloud-tpu-v5e-and-a3-gpus-in-ga>`__
+  机器上以 16384 的批量大小，对 MJX-JAX 仿真计时。请注意纵轴是对数刻度。
+
+  .. figure:: images/mjx/SPS.svg
+     :width: 95%
+     :align: center
+
+  这四种计时架构在单个人形（最左侧数据点）时的值依次为每秒 **650K**、\ **1.8M**、\ **950K** 和 **2.7M** 步。请注意，随着人形数量的增加（这会增加场景中潜在接触的数量），MJX-JAX 的吞吐量比 MuJoCo 下降得更快。

@@ -1,0 +1,629 @@
+﻿=========
+全局变量
+=========
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+全局变量与常量定义可分为以下几类：
+
+- 回调函数：
+
+  - :ref:`glError`。
+  - :ref:`glMemory`。
+  - :ref:`glPhysics`。
+
+- 包含精测阶段（narrow-phase）碰撞函数的 :ref:`碰撞表<glCollision>`。
+- :ref:`字符串常量<glString>`。
+- :ref:`数值常量<glNumeric>`。
+- :ref:`宏<Macros>`。
+- :ref:`X 宏<tyXMacro>`。
+
+.. _glError:
+
+错误回调
+^^^^^^^^^^^^^^^
+
+所有用户回调（即名称以 'mjcb' 开头的全局函数指针）初始时均被设为 NULL，表示禁用回调并使用默认处理。要安装回调，只需将相应的全局指针设置为类型正确的用户函数即可。请注意，这些回调是全局的，而非针对特定模型。因此，如果您并行仿真多个模型，它们将使用同一组回调。
+
+
+.. _mju_user_error:
+
+mju_user_error
+~~~~~~~~~~~~~~
+
+.. deprecated::
+   请改用 :ref:`mju_setLogHandler`。参见 :ref:`siLogHandler`。
+
+当发生致命错误时由默认日志处理器调用。如果已安装，此函数将覆盖默认的错误处理。它可以通过 ``longjmp`` 跳出，也可以直接返回。MuJoCo 的编写假定错误处理函数不会返回；如果返回，软件的行为是未定义的。
+
+如果通过 :ref:`mju_setLogHandler` 安装了自定义日志处理器，则不会再调用此回调。
+
+.. code-block:: C
+
+   extern void (*mju_user_error)(const char*);
+
+
+.. _mju_user_warning:
+
+mju_user_warning
+~~~~~~~~~~~~~~~~
+
+.. deprecated::
+   请改用 :ref:`mju_setLogHandler`。参见 :ref:`siLogHandler`。
+
+当出现警告时由默认日志处理器调用。如果通过 :ref:`mju_setLogHandler` 安装了自定义日志处理器，则不会再调用此回调。
+
+.. code-block:: C
+
+   extern void (*mju_user_warning)(const char*);
+
+
+.. _glMemory:
+
+内存回调
+^^^^^^^^^^^^^^^^
+
+内存回调的目的是允许用户安装自定义的内存分配与释放机制。我们发现其有用的一个例子是 MuJoCo 的 MATLAB 封装，其中 mex 文件需要使用 MATLAB 自身的内存机制来进行永久内存分配。
+
+
+.. _mju_user_malloc:
+
+mju_user_malloc
+~~~~~~~~~~~~~~~
+
+如果安装了此回调，MuJoCo 运行时将使用它来分配其所需的全部堆内存（而不是使用对齐的 malloc）。用户分配器必须分配按 8 字节边界对齐的内存。请注意，解析器和编译器是用 C++ 编写的，有时会使用 "new" 运算符分配内存，这会绕过此机制。
+
+.. code-block:: C
+
+   extern void* (*mju_user_malloc)(size_t);
+
+
+.. _mju_user_free:
+
+mju_user_free
+~~~~~~~~~~~~~
+
+如果安装了此回调，MuJoCo 将通过调用此函数来释放其分配的任何堆内存（而不是使用对齐的 free）。
+
+.. code-block:: C
+
+   extern void (*mju_user_free)(void*);
+
+
+.. _glPhysics:
+
+物理回调
+^^^^^^^^^^^^^^^^^
+
+除了设置各种选项之外，物理回调是修改仿真器行为的主要机制。选项控制默认流水线的运行，而回调则在明确定义的位置扩展该流水线。这使高级用户能够实现许多我们未曾想到的有趣功能，同时仍可利用默认流水线。与所有其他回调一样，这里没有自动错误检查，我们假定回调函数的作者清楚自己在做什么。
+
+自定义物理回调通常需要 MJCF 中并不标准的参数。这在很大程度上就是我们在 MJCF 中提供自定义字段以及用户数据数组的原因。其思路是通过填入必要的用户参数来对 MJCF 模型进行“插桩”，然后编写回调函数去查找这些参数并执行相应的计算。我们强烈建议用户编写的回调在访问用户参数之前先检查模型中是否存在这些参数，这样在加载常规模型时，回调会自动禁用自身，而不会导致软件崩溃。
+
+.. _mjcb_passive:
+
+mjcb_passive
+~~~~~~~~~~~~
+
+它用于在关节空间中实现自定义的被动力（passive force）；如果该力在笛卡尔空间中定义更自然，请使用末端执行器的雅可比矩阵（Jacobian）将其映射到关节空间。这里所说的“被动”并不是物理学意义上不做正功的力，而仅仅是指只依赖于位置和速度、而不依赖于控制的力。MuJoCo 中有标准的被动力，来自弹簧、阻尼器以及介质的粘性和密度。它们在调用 mjcb_passive 之前就已计算并存放在 ``mjData.qfrc_passive`` 中。用户回调应当向该向量累加，而不是覆盖它（否则标准被动力将会丢失）。
+
+.. code-block:: C
+
+   extern mjfGeneric mjcb_passive;
+
+
+.. _mjcb_control:
+
+mjcb_control
+~~~~~~~~~~~~
+
+这是最常用的回调。它通过写入控制向量 ``mjData.ctrl`` 来实现控制律，也可以写入 ``mjData.qfrc_applied`` 和 ``mjData.xfrc_applied``。写入这些向量的值可以依赖于位置、速度以及由它们导出的所有其他量，但不能依赖于接触力以及在指定控制之后才计算的其他量。如果回调访问了后一类字段，其值并不对应于当前时间步长。
+
+控制回调由 :ref:`mj_forward` 和 :ref:`mj_step` 内部调用，时机恰在需要控制和外加力之前。使用 RK 积分器时，每一步会调用 4 次。指定控制和外加力的另一种方式是在 ``mj_step`` 之前设置它们，或者使用 ``mj_step1`` 和 ``mj_step2``。后一种方法允许在 ``mj_step1`` 完成位置和速度计算之后再设置控制，从而可以利用这些结果来计算控制（类似于使用 mjcb_control）。然而，要在 RK 积分器的子步之间改变控制，唯一的办法就是定义控制回调。
+
+.. code-block:: C
+
+   extern mjfGeneric mjcb_control;
+
+.. _mjcb_contactfilter:
+
+mjcb_contactfilter
+~~~~~~~~~~~~~~~~~~
+
+此回调可用于替换 MuJoCo 默认的碰撞过滤。安装后，对于每一对已通过粗测阶段（broad-phase）测试（或者是 MJCF 中预先定义的 geom 对）并且是近场碰撞候选的 geom，都会调用此函数。默认处理使用 contype 和 conaffinity 掩码、父子过滤器，以及与焊接刚体相关的一些其他考虑来决定是否允许碰撞。此回调会替换默认处理，但请记住，被替换的是整个机制。因此，例如如果您仍想利用 contype/conaffinity，就必须在回调中重新实现它。
+
+.. code-block:: C
+
+   extern mjfConFilt mjcb_contactfilter;
+
+.. _mjcb_sensor:
+
+mjcb_sensor
+~~~~~~~~~~~
+
+此回调填充 ``mjData.sensordata`` 中与用户自定义传感器（sensor）对应的字段。如果已安装该回调且模型包含用户自定义传感器，则会调用它。它在每个计算阶段（mjSTAGE_POS、mjSTAGE_VEL、mjSTAGE_ACC）各调用一次，并且必须填写该阶段所有用户传感器的值。用户自定义传感器的维数和数据类型在 MJCF 模型中定义，回调必须遵守这些定义。
+
+.. code-block:: C
+
+   extern mjfSensor mjcb_sensor;
+
+.. _mjcb_time:
+
+mjcb_time
+~~~~~~~~~
+
+安装此回调将启用内置性能分析器，并在 ``mjData.timer`` 中保存计时统计信息。返回类型为 mjtNum，时间单位由用户决定。 :ref:`simulate.cc <saSimulate>` 以及 ``mjTOPIC_TIME_STP`` 信息性 :ref:`主题 <mjtLogTopic>` 都假定单位为 1 毫秒。为了有用，该回调应使用至少具有微秒精度的高分辨率计时器。
+
+.. code-block:: C
+
+   extern mjfTime mjcb_time;
+
+
+.. _mjcb_act_dyn:
+
+mjcb_act_dyn
+~~~~~~~~~~~~
+
+此回调实现自定义的激活动力学（activation dynamics）：它必须返回指定执行器（actuator）的 ``mjData.act_dot`` 的值，即激活状态向量 ``mjData.act`` 的时间导数。对于具有用户自定义动力学（mjDYN_USER）的模型执行器，会调用该回调。如果模型中存在这类执行器但未安装该回调，则它们的时间导数被设为 0。
+
+.. code-block:: C
+
+   extern mjfAct mjcb_act_dyn;
+
+
+.. _mjcb_act_gain:
+
+mjcb_act_gain
+~~~~~~~~~~~~~
+
+此回调实现自定义执行器增益（gain）：对于 ``mjModel.actuator_gaintype`` 设置为 mjGAIN_USER 的指定执行器，它必须返回其增益。如果模型中存在这类执行器且未安装此回调，则它们的增益被设为 1。
+
+.. code-block:: C
+
+   extern mjfAct mjcb_act_gain;
+
+
+.. _mjcb_act_bias:
+
+mjcb_act_bias
+~~~~~~~~~~~~~
+
+此回调实现自定义执行器偏置：对于 ``mjModel.actuator_biastype`` 设置为 mjBIAS_USER 的指定执行器，它必须返回其偏置。如果模型中存在这类执行器且未安装此回调，则它们的偏置被设为 0。
+
+.. code-block:: C
+
+   extern mjfAct mjcb_act_bias;
+
+
+.. _glCollision:
+
+碰撞表
+^^^^^^^^^^^^^^^
+
+.. _mjCOLLISIONFUNC:
+
+mjCOLLISIONFUNC
+~~~~~~~~~~~~~~~
+
+按 geom 类型索引的成对碰撞函数表。仅使用右上三角部分。用户可以用自定义例程替换这些函数指针，从而替换 MuJoCo 的碰撞机制。如果某个表项为 NULL，则相应的这一对 geom 类型无法发生碰撞。请注意，这些函数仅适用于近场碰撞。粗测阶段（broadphase）机制是内置的，无法修改。有关各 geom 类型对内置碰撞函数的详细信息，请参见 :ref:`成对碰撞器 <coPairwise>` 表。
+
+.. code-block:: C
+
+   extern mjfCollision mjCOLLISIONFUNC[mjNGEOMTYPES][mjNGEOMTYPES];
+
+
+.. _glString:
+
+字符串常量
+^^^^^^^^^^^^^^^^
+
+此处描述的字符串常量是为方便用户而提供的。它们对应于各选项列表的英文名称，可以在 GUI 的菜单或对话框中显示。代码示例 :ref:`simulate.cc <saSimulate>` 演示了如何使用它们。
+
+
+.. _mjDISABLESTRING:
+
+mjDISABLESTRING
+~~~~~~~~~~~~~~~
+
+由 :ref:`mjtDisableBit` 定义的禁用位的名称。
+
+.. mujoco-include:: mjDISABLESTRING
+
+
+.. _mjENABLESTRING:
+
+mjENABLESTRING
+~~~~~~~~~~~~~~
+
+由 :ref:`mjtEnableBit` 定义的启用位的名称。
+
+.. mujoco-include:: mjENABLESTRING
+
+
+.. _mjTIMERSTRING:
+
+mjTIMERSTRING
+~~~~~~~~~~~~~
+
+由 :ref:`mjtTimer` 定义的 mjData 计时器的名称。
+
+.. mujoco-include:: mjTIMERSTRING
+
+
+.. _mjTOPICSTRING:
+
+mjTOPICSTRING
+~~~~~~~~~~~~~
+
+由 :ref:`mjtLogTopic` 定义的诊断日志主题的名称。
+
+.. mujoco-include:: mjTOPICSTRING
+
+
+.. _mjLABELSTRING:
+
+mjLABELSTRING
+~~~~~~~~~~~~~
+
+由 :ref:`mjtLabel` 定义的可视化标注模式的名称。
+
+.. mujoco-include:: mjLABELSTRING
+
+
+.. _mjFRAMESTRING:
+
+mjFRAMESTRING
+~~~~~~~~~~~~~
+
+由 :ref:`mjtFrame` 定义的坐标系可视化模式的名称。
+
+.. mujoco-include:: mjFRAMESTRING
+
+
+.. _mjVISSTRING:
+
+mjVISSTRING
+~~~~~~~~~~~
+
+由 :ref:`mjtVisFlag` 定义的抽象可视化标志的描述。每个标志有三个字符串，含义如下：
+
+[0]：标志名称；
+
+[1]：字符串 "0" 或 "1"，表示该标志默认是关闭还是开启，由 :ref:`mjv_defaultOption` 设置；
+
+[2]：包含一个字符的字符串，给出建议的键盘快捷键，用于交互式查看器。
+
+.. mujoco-include:: mjVISSTRING
+
+
+.. _mjRNDSTRING:
+
+mjRNDSTRING
+~~~~~~~~~~~
+
+由 :ref:`mjtRndFlag` 定义的 OpenGL 渲染（rendering）标志的描述。每个标志的三个字符串格式与上文相同，只是这里的默认值由 :ref:`mjv_makeScene` 设置。
+
+.. mujoco-include:: mjRNDSTRING
+
+
+
+.. _glNumeric:
+
+数值常量
+^^^^^^^^^^^^^^^^^
+
+许多整数常量已在上文的基本类型中记录。此外，头文件还定义了若干其他常量，记录于此。请注意，
+`mjui.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjui.h>`_ 中还定义了一些扩展键码，下文并未列出。它们的名称格式为 ``mjKEY_XXX``，对应于 GLFW 键码。
+
+
+.. _glNumericVersion:
+
+版本
+~~~~~~~
+
+定义于 `mujoco.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mujoco.h>`_。
+
+.. list-table::
+   :widths: 2 1 8
+   :header-rows: 1
+
+   * - 符号
+     - 值
+     - 描述
+   * - ``mjVERSION_HEADER``
+     - 4000002
+     - MuJoCo 头文件的版本。这是一个整数，由版本字符串 "S.M.P" 通过公式 ``(S * 1e6) + (M * 1e3) + P`` 计算得出。例如，版本 4.2.1 表示为 4002001。API 函数 :ref:`mj_version` 返回具有相同含义的数字，但针对的是已编译的库。详情请参见
+       `VERSIONING.md <https://github.com/google-deepmind/mujoco/blob/main/VERSIONING.md>`__。
+
+
+.. _glNumericEngine:
+
+引擎常量
+~~~~~~~~~~~~~~~~
+
+除非另有说明，均定义于 `mjmodel.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjmodel.h>`_。
+
+.. list-table::
+   :widths: 2 1 8
+   :header-rows: 1
+
+   * - 符号
+     - 值
+     - 描述
+   * - ``mjMINVAL``
+     - 1E-15
+     - 任何分母中允许的最小值，以及一般而言任何不允许为 0 的数学运算中允许的最小值。在几乎所有情况下，MuJoCo 都会静默地将更小的值钳位到 mjMINVAL。
+       定义于 `mjtype.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjtype.h>`_。
+   * - ``mjPI``
+     - :math:`\pi`
+     - :math:`\pi` 的值。它用于各种三角函数，也用于编译器中将角度从度转换为弧度。
+       定义于 `mjtype.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjtype.h>`_。
+   * - ``mjMAXVAL``
+     - 1E+10
+     - mjData.qpos、mjData.qvel、mjData.qacc 中允许的最大绝对值。API 函数
+       :ref:`mj_checkPos`、\ :ref:`mj_checkVel`、\ :ref:`mj_checkAcc` 使用该常量来检测不稳定性。
+       定义于 `mjtype.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjtype.h>`_。
+   * - ``mjMINMU``
+     - 1E-5
+     - 任何摩擦系数中允许的最小值。回想一下，MuJoCo 的接触模型允许包含不同数量的摩擦维度，由 :at:`condim` 属性指定。但如果包含了某个摩擦维度，其摩擦就不允许小于此常量。更小的值会被自动钳位到此常量。
+   * - ``mjMINIMP``
+     - 0.0001
+     - 任何约束阻抗中允许的最小值。更小的值会被自动钳位到此常量。
+   * - ``mjMAXIMP``
+     - 0.9999
+     - 任何约束阻抗中允许的最大值。更大的值会被自动钳位到此常量。
+   * - ``mjMAXCONPAIR``
+     - 50
+     - 每对 geom 可生成的接触点的最大数量。MuJoCo 的内置碰撞函数遵守此限制，用户自定义函数也应遵守。这类函数在调用时会传入大小为 ``mjMAXCONPAIR`` 的返回缓冲区；尝试向缓冲区写入更多接触可能导致不可预知的行为。
+   * - ``mjMAXTREEDEPTH``
+     - 50
+     - 每个刚体和网格包围体层次结构的最大深度。如果超过这一较大的限制，将会发出警告，并且可能无法进行射线投射。对于平衡的层次结构，这意味着 1E15 个包围体。
+   * - ``mjMAXFLEXNODES``
+     - 27
+     - 三线性 flex 单元中节点的最大数量。
+   * - ``mjMINAWAKE``
+     - 10
+     - 一棵树被唤醒后，在允许其重新进入休眠之前必须经过的最少时间步数。
+
+
+.. _glNumericSizes:
+
+数组大小
+~~~~~~~~~~~
+
+定义于 `mjmodel.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjmodel.h>`_。这些常量对应于我们尚未完全确定的数组大小。将来可能出于某些原因而增大它们，以容纳更复杂计算所需的额外参数。这就是我们将它们保持为易于更改的符号常量的原因，这与例如表示四元数（quaternion）的数组大小不同，后者没有理由改变。
+
+.. list-table::
+   :widths: 2 1 8
+   :header-rows: 1
+
+   * - 符号
+     - 值
+     - 描述
+   * - ``mjNEQDATA``
+     - 12
+     - 用于定义每个等式约束的实值参数的最大数量。决定
+       ``mjModel.eq_data`` 的大小。
+   * - ``mjNDYN``
+     - 10
+     - 用于定义每个执行器激活动力学的实值参数的最大数量。
+       决定 ``mjModel.actuator_dynprm`` 的大小。
+   * - ``mjNGAIN``
+     - 10
+     - 用于定义每个执行器增益的实值参数的最大数量。
+       决定 ``mjModel.actuator_gainprm`` 的大小。
+   * - ``mjNBIAS``
+     - 10
+     - 用于定义每个执行器偏置的实值参数的最大数量。
+       决定 ``mjModel.actuator_biasprm`` 的大小。
+   * - ``mjNPOLY``
+     - 2
+     - 关节和肌腱刚度与阻尼的非线性多项式系数的数量。
+       决定 ``mjModel.{jnt,tendon}_{stiffness,damping}poly`` 的大小。参见
+       :ref:`多项式力<gePolynomial>`。
+   * - ``mjNFLUID``
+     - 12
+     - 椭球模型所需的每个 geom 的流体相互作用参数的数量。
+   * - ``mjNREF``
+     - 2
+     - 用于定义每个标量约束参考加速度的实值参数的最大数量。
+       决定所有 ``mjModel.XXX_solref`` 字段的大小。
+   * - ``mjNIMP``
+     - 5
+     - 用于定义每个标量约束阻抗的实值参数的最大数量。
+       决定所有 ``mjModel.XXX_solimp`` 字段的大小。
+   * - ``mjNSENS``
+     - 3
+     - 传感器参数的数量。
+       决定 ``mjModel.sensor_intprm`` 的大小。
+   * - ``mjNSOLVER``
+     - 200
+     - 可在 ``mjData.solver`` 中存储求解器统计信息的迭代次数。该数组用于存储约束求解器每次迭代的诊断信息。
+       实际迭代次数由 ``mjData.solver_niter`` 给出。
+   * - ``mjNISLAND``
+     - 20
+     - 可在 ``mjData.solver`` 中存储求解器统计信息的岛的数量。该数组用于存储约束求解器每次迭代的诊断信息。
+       求解器实际运行的岛的数量由 ``mjData.nsolver_island`` 给出。
+
+
+.. _glNumericVisualization:
+
+可视化
+~~~~~~~~~~~~~
+
+定义于 `mjvisualize.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjvisualize.h>`_。
+
+.. list-table::
+   :widths: 2 1 8
+   :header-rows: 1
+
+   * - 符号
+     - 值
+     - 描述
+   * - ``mjNGROUP``
+     - 6
+     - 可通过 :ref:`mjvOption` 启用和禁用渲染的 geom、site、关节、肌腱和执行器分组的数量。
+   * - ``mjMAXLIGHT``
+     - 100
+     - 场景中灯光的最大数量。
+   * - ``mjMAXOVERLAY``
+     - 500
+     - 渲染叠加文本中的最大字符数。
+   * - ``mjMAXLINE``
+     - 100
+     - 每个 2D 图表（:ref:`mjvFigure`）中的最大线条数。
+   * - ``mjMAXLINEPNT``
+     - 1001
+     - 2D 图表中每条线的最大点数。请注意，缓冲区 ``mjvFigure.linepnt`` 的长度为
+       ``2*mjMAXLINEPNT``，因为每个点有 X 和 Y 坐标。
+   * - ``mjMAXPLANEGRID``
+     - 200
+     - 渲染平面时每个维度上的最大网格线数。
+
+
+.. _glNumericRendering:
+
+渲染
+~~~~~~~~~
+
+定义于 `mjrender.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjrender.h>`_。
+
+.. list-table::
+   :widths: 2 1 8
+   :header-rows: 1
+
+   * - 符号
+     - 值
+     - 描述
+   * - ``mjNAUX``
+     - 10
+     - 可在 mjrContext 中分配的辅助缓冲区的数量。
+   * - ``mjMAXTEXTURE``
+     - 1000
+     - 允许的最大纹理数量。
+   * - ``mjMAXMATERIAL``
+     - 1000
+     - 带纹理的材质的最大数量。
+
+
+.. _glNumericUI:
+
+UI 常量
+~~~~~~~~~~~~
+
+定义于 `mjui.h <https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjui.h>`_。
+
+.. list-table::
+   :widths: 2 1 8
+   :header-rows: 1
+
+   * - 符号
+     - 值
+     - 描述
+   * - ``mjMAXUISECT``
+     - 10
+     - UI 分区的最大数量。
+   * - ``mjMAXUIITEM``
+     - 200
+     - 每个 UI 分区的最大项数。
+   * - ``mjMAXUITEXT``
+     - 300
+     - UI 字段 'edittext' 和 'other' 中的最大字符数。
+   * - ``mjMAXUINAME``
+     - 40
+     - 任何 UI 名称中的最大字符数。
+   * - ``mjMAXUIMULTI``
+     - 35
+     - UI 组中单选项和选择项的最大数量。
+   * - ``mjMAXUIEDIT``
+     - 7
+     - UI 编辑列表中的最大元素数。
+   * - ``mjMAXUIRECT``
+     - 25
+     - UI 矩形的最大数量。
+
+.. _Macros:
+
+宏
+^^^^^^
+
+
+.. _mjUSESINGLE:
+
+mjUSESINGLE
+~~~~~~~~~~~
+
+编译期标志，参见 :ref:`mjtNum`。
+
+.. _mjDISABLED:
+
+mjDISABLED
+~~~~~~~~~~
+
+.. code-block:: C
+
+   #define mjDISABLED(x) (m->opt.disableflags & (x))
+
+在假定已定义 mjModel\* m 的前提下，检查某个给定的标准功能是否已通过物理选项被禁用。x 的类型为 :ref:`mjtDisableBit`。
+
+
+.. _mjENABLED:
+
+mjENABLED
+~~~~~~~~~
+
+.. code-block:: C
+
+   #define mjENABLED(x) (m->opt.enableflags & (x))
+
+在假定已定义 mjModel\* m 的前提下，检查某个给定的可选功能是否已通过物理选项被启用。x 的类型为 :ref:`mjtEnableBit`。
+
+
+.. _mjMAX:
+
+mjMAX
+~~~~~
+
+.. code-block:: C
+
+   #define mjMAX(a,b) (((a) > (b)) ? (a) : (b))
+
+返回最大值。为避免对 mjtNum 类型重复求值，请使用函数 :ref:`mju_max`。
+
+
+.. _mjMIN:
+
+mjMIN
+~~~~~
+
+.. code-block:: C
+
+   #define mjMIN(a,b) (((a) < (b)) ? (a) : (b))
+
+返回最小值。为避免对 mjtNum 类型重复求值，请使用函数 :ref:`mju_min`。
+
+
+.. _mjPLUGIN_LIB_INIT:
+
+mjPLUGIN_LIB_INIT
+~~~~~~~~~~~~~~~~~
+
+.. code-block:: C
+
+   #define mjPLUGIN_LIB_INIT(n)                                      \
+        static void _mj_init_##n(void) __attribute__((constructor)); \
+        static void _mj_init_##n(void)
+
+在 `main()` 被调用之前注册插件（plugin）。此宏接受一个唯一标识符 `n` 作为参数，用于避免不同插件初始化函数之间的名称冲突。更多细节请参见 :ref:`插件注册<exRegistration>`。
+
+
+.. _tyXMacro:
+
+X 宏
+^^^^^^^^
+
+大多数用户项目并不需要 X 宏。它们在内部用于分配模型，也可供了解这种编程技术的用户使用。实际定义请参见头文件 `mjxmacro.h
+<https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjxmacro.h>`_ 和 `mjspecmacro.h
+<https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjspecmacro.h>`_。它们在为脚本语言编写 MuJoCo 封装时特别有用，因为这时需要以编程方式构造与 MuJoCo 数据结构相匹配的动态结构。

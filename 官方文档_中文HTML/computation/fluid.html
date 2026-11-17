@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html class="no-js" data-content_root="../" lang="zh-CN">
+<head><meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="light dark" name="color-scheme"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="../_static/favicons/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/>
+<link href="../_static/favicons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="apple-touch-icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-180x180.png" rel="icon" sizes="180x180" type="image/png"/>
+<link href="../_static/favicons/favicon-192x192.png" rel="icon" sizes="192x192" type="image/png"/><link href="../genindex.html" rel="index" title="索引"/><link href="../search.html" rel="search" title="搜索"/><link href="speculative.html" rel="next" title="推测接触"/><link href="index.html" rel="prev" title="计算"/>
+<link as="image" href="../_static/banner.svg" rel="prefetch"/>
+<!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+<title>流体力 - MuJoCo 文档（中文）</title>
+<link href="../_static/pygments.css?v=b86133f3" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo.css?v=7bdb33bb" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css?v=05624691" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/styles/furo-extensions.css?v=8dab3a3b" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides.css?v=8d83ad8c" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme_overrides_mjwarp.css?v=e08d3b36" rel="stylesheet" type="text/css"/>
+<link href="../_static/zh_overrides.css?v=ee52c62c" rel="stylesheet" type="text/css"/>
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #16213a;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #2a4fd6;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #2a4fd6;
+  --color-brand-content: #2a4fd6;
+  --color-background-secondary: #f4f6f9;
+  --color-sidebar-background: #f4f6f9;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #e5eaf3;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #e5eaf3;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 100%;
+  --font-stack: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+  --color-brand-primary: #86a2ff;
+  --color-brand-content: #86a2ff;
+  --color-background-secondary: #10182a;
+  --color-sidebar-background: #10182a;
+  
+      }
+    }
+  }
+</style></head>
+<body>
+<script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+<symbol id="svg-toc" viewbox="0 0 24 24">
+<title>Contents</title>
+<svg fill="currentColor" stroke="currentColor" stroke-width="0" viewbox="0 0 1024 1024">
+<path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"></path>
+</svg>
+</symbol>
+<symbol id="svg-menu" viewbox="0 0 24 24">
+<title>Menu</title>
+<svg class="feather-menu" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<line x1="3" x2="21" y1="12" y2="12"></line>
+<line x1="3" x2="21" y1="6" y2="6"></line>
+<line x1="3" x2="21" y1="18" y2="18"></line>
+</svg>
+</symbol>
+<symbol id="svg-arrow-right" viewbox="0 0 24 24">
+<title>Expand</title>
+<svg class="feather-chevron-right" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</symbol>
+<symbol id="svg-sun" viewbox="0 0 24 24">
+<title>Light mode</title>
+<svg class="feather-sun" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" x2="12" y1="1" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="23"></line>
+<line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+<line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+<line x1="1" x2="3" y1="12" y2="12"></line>
+<line x1="21" x2="23" y1="12" y2="12"></line>
+<line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+<line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
+</svg>
+</symbol>
+<symbol id="svg-moon" viewbox="0 0 24 24">
+<title>Dark mode</title>
+<svg class="icon-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+</svg>
+</symbol>
+<symbol id="svg-sun-with-moon" viewbox="0 0 24 24">
+<title>Auto light/dark, in light mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z" style="opacity: 50%"></path>
+<line x1="14.5" x2="14.5" y1="3.25" y2="1.25"></line>
+<line x1="14.5" x2="14.5" y1="15.85" y2="17.85"></line>
+<line x1="10.044" x2="8.63" y1="5.094" y2="3.68"></line>
+<line x1="19" x2="20.414" y1="14.05" y2="15.464"></line>
+<line x1="8.2" x2="6.2" y1="9.55" y2="9.55"></line>
+<line x1="20.8" x2="22.8" y1="9.55" y2="9.55"></line>
+<line x1="10.044" x2="8.63" y1="14.006" y2="15.42"></line>
+<line x1="19" x2="20.414" y1="5.05" y2="3.636"></line>
+<circle cx="14.5" cy="9.55" r="3.6"></circle>
+</svg>
+</symbol>
+<symbol id="svg-moon-with-sun" viewbox="0 0 24 24">
+<title>Auto light/dark, in dark mode</title>
+<svg class="icon-custom-derived-from-feather-sun-and-tabler-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"></path>
+<line style="opacity: 50%" x1="18" x2="18" y1="3.705" y2="2.5"></line>
+<line style="opacity: 50%" x1="18" x2="18" y1="11.295" y2="12.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="4.816" y2="3.964"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="10.212" y2="11.063"></line>
+<line style="opacity: 50%" x1="14.205" x2="13.001" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="21.795" x2="23" y1="7.5" y2="7.5"></line>
+<line style="opacity: 50%" x1="15.316" x2="14.464" y1="10.184" y2="11.036"></line>
+<line style="opacity: 50%" x1="20.711" x2="21.563" y1="4.789" y2="3.937"></line>
+<circle cx="18" cy="7.5" r="2.169" style="opacity: 50%"></circle>
+</svg>
+</symbol>
+<symbol id="svg-pencil" viewbox="0 0 24 24">
+<svg class="icon-tabler-pencil-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
+<path d="M13.5 6.5l4 4"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+<symbol id="svg-eye" viewbox="0 0 24 24">
+<svg class="icon-tabler-eye-code" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
+<path d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008"></path>
+<path d="M20 21l2 -2l-2 -2"></path>
+<path d="M17 17l-2 2l2 2"></path>
+</svg>
+</symbol>
+</svg>
+<input aria-label="Toggle site navigation sidebar" class="sidebar-toggle" id="__navigation" name="__navigation" type="checkbox"/>
+<input aria-label="Toggle table of contents sidebar" class="sidebar-toggle" id="__toc" name="__toc" type="checkbox"/>
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+<div class="page">
+<header class="mobile-header">
+<div class="header-left">
+<label class="nav-overlay-icon" for="__navigation">
+<span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+</label>
+</div>
+<div class="header-center">
+<a href="../index.html"><div class="brand">MuJoCo 文档（中文）</div></a>
+</div>
+<div class="header-right">
+<div class="theme-toggle-container theme-toggle-header">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-header-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+</header>
+<aside class="sidebar-drawer">
+<div class="sidebar-container">
+<div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+<div class="sidebar-logo-container">
+<img alt="Logo" class="sidebar-logo" src="../_static/banner.svg"/>
+</div>
+<span class="sidebar-brand-text">MuJoCo 文档（中文）</span>
+</a><form action="../search.html" class="sidebar-search-container" method="get" role="search">
+<input aria-label="搜索" class="sidebar-search" name="q" placeholder="搜索"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">入门教程</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">概览</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">计算</a><input aria-label="Toggle navigation of 计算" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">流体力</a></li>
+<li class="toctree-l2"><a class="reference internal" href="speculative.html">推测接触</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">建模</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../XMLreference.html">XML 参考</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../programming/index.html">编程</a><input aria-label="Toggle navigation of 编程" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../programming/simulation.html">仿真</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/visualization.html">可视化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/rendering.html">渲染</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/ui.html">用户界面</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/modeledit.html">模型编辑</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/samples.html">代码示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../programming/extension.html">扩展</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../APIreference/index.html">API 参考</a><input aria-label="Toggle navigation of API 参考" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APItypes.html">类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIfunctions.html">函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIglobals.html">全局变量</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../studio/index.html">Studio</a><input aria-label="Toggle navigation of Studio" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../studio/web_viewers.html">Web 查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/native_viewers.html">原生查看器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/architecture.html">架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/python_plugins.html">Python 插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python.html">Python</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjx.html">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../unity.html">Unity 插件</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/building.html">构建</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcf_file_format_plugin.html">文件格式插件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/importing.html">导入</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/exporting.html">导出</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">模型库</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">更新日志</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<div class="main">
+<div class="content">
+<div class="article-container">
+<a class="back-to-top muted-link" href="#">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+</svg>
+<span>Back to top</span>
+</a>
+<div class="content-icon-container">
+<div class="view-this-page">
+<a class="muted-link" href="../_sources/computation/fluid.rst.txt" title="View this page">
+<svg><use href="#svg-eye"></use></svg>
+<span class="visually-hidden">View this page</span>
+</a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+<button aria-label="Toggle Light / Dark / Auto color theme" class="theme-toggle">
+<svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+<svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+<svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+<svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+</button>
+</div>
+<label class="toc-overlay-icon toc-content-icon" for="__toc">
+<span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+</label>
+</div>
+<article id="furo-main-content" role="main">
+<section id="id1">
+<h1 data-bi="bi-1">流体力<a class="headerlink" href="#id1" title="链接到此标题。">#</a></h1><div class="en-orig en-h" data-for="bi-1" lang="en">Fluid forces</div>
+<div class="mt-notice admonition note">
+<p class="admonition-title">备注</p>
+<p>本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 <code class="docutils literal notranslate"><span class="pre">术语表.md</span></code> 。</p>
+</div>
+<p data-bi="bi-2">对流体动力学进行严格模拟超出了 MuJoCo 的范围，而且对于我们希望支持的应用来说速度也会太慢。尽管如此，我们提供了两种唯象模型，足以模拟飞行和游泳等行为。这些模型是<em>无状态的</em>，即不会为周围的流体分配额外的状态，但仍能够捕捉刚体在流体介质中运动时的主要特征。</p><div class="en-orig" data-for="bi-2" lang="en">Proper simulation of fluid dynamics is beyond the scope of MuJoCo, and would be too slow for the applications we aim to
+facilitate. Nevertheless we provide two phenomenological models which are sufficient for simulating behaviors
+such as flying and swimming. These models are <em>stateless</em>, in the sense that no additional states are assigned to the
+surrounding fluid, yet are able to capture the salient features of rigid bodies moving through a fluid medium.</div>
+<p data-bi="bi-3">这两种模型都通过将 <a class="reference internal" href="../XMLreference.html#option-density"><span class="std std-ref">density</span></a> 和 <a class="reference internal" href="../XMLreference.html#option-viscosity"><span class="std std-ref">viscosity</span></a> 属性设置为正值来启用。这些参数对应于介质的密度 <span class="math">\(\rho\)</span> 和粘度 <span class="math">\(\beta\)</span>。</p><div class="en-orig" data-for="bi-3" lang="en">Both models are enabled by setting the <a class="reference internal" href="../XMLreference.html#option-density"><span class="std std-ref">density</span></a> and <a class="reference internal" href="../XMLreference.html#option-viscosity"><span class="std std-ref">viscosity</span></a> attributes
+to positive values. These parameters correspond to the density <span class="math">\(\rho\)</span> and viscosity <span class="math">\(\beta\)</span> of the medium.</div>
+<ol class="arabic simple">
+<li><p data-bi="bi-4"><a class="reference internal" href="#flinertia"><span class="std std-ref">惯性模型</span></a>只使用粘度和密度，并根据刚体（body）的等效惯性盒推断几何形状。</p><div class="en-orig" data-for="bi-4" lang="en">The <a class="reference internal" href="#flinertia"><span class="std std-ref">Inertia-based model</span></a>, uses only viscosity and density, inferring geometry from body
+equivalent-inertia boxes.</div></li>
+<li><p data-bi="bi-5"><a class="reference internal" href="#flellipsoid"><span class="std std-ref">椭球模型</span></a>更为精细，它使用 geom 的椭球近似。除了介质的全局粘度和密度之外，该模型还为每个参与相互作用的 geom 提供 5 个可调参数。</p><div class="en-orig" data-for="bi-5" lang="en">The <a class="reference internal" href="#flellipsoid"><span class="std std-ref">Ellipsoid-based model</span></a> is more elaborate, using an ellipsoid approximation of geoms.
+In addition to the global viscosity and density of the medium, this model exposes 5 tunable parameters per
+interacting geom.</div></li>
+</ol>
+<div class="admonition tip">
+<p class="admonition-title" data-bi="bi-6">小技巧</p><div class="en-orig" data-for="bi-6" lang="en">Tip</div>
+<p data-bi="bi-7">正如<a class="reference internal" href="index.html#geintegration"><span class="std std-ref">数值积分</span></a>一节所详述，在存在与速度相关的力时，隐式积分能显著提高仿真稳定性。下面介绍的两种流体力模型都具有这一性质，因此在使用流体力时，推荐使用 <code class="docutils literal notranslate"><span class="pre">implicit</span></code> 或 <code class="docutils literal notranslate"><span class="pre">implicitfast</span></code> <a class="reference internal" href="../XMLreference.html#option-integrator"><span class="std std-ref">积分器</span></a>。这两种模型所需的解析导数均已完整实现。</p><div class="en-orig" data-for="bi-7" lang="en">As detailed in the <a class="reference internal" href="index.html#geintegration"><span class="std std-ref">Numerical Integration</span></a> section, implicit integration significantly improves
+simulation stability in the presence of velocity-dependent forces. Both of the fluid-force models described below
+exhibit this property, so the <code class="docutils literal notranslate"><span class="pre">implicit</span></code> or <code class="docutils literal notranslate"><span class="pre">implicitfast</span></code> <a class="reference internal" href="../XMLreference.html#option-integrator"><span class="std std-ref">intergrators</span></a> are
+recommended when using fluid forces. The required analytic derivatives for both models are fully implemented.</div>
+</div>
+<section id="flinertia">
+<span id="id2"></span><h2 data-bi="bi-8">惯性模型<a class="headerlink" href="#flinertia" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-8" lang="en">Inertia model</div>
+<p data-bi="bi-9">在该模型中，出于流体动力学计算的目的，每个刚体的形状被假定为<em>等效惯性盒</em>，它也可以被可视化（visualization）。对于质量为 <span class="math">\(\mathcal{M}\)</span>、惯性矩阵（inertia matrix）为 <span class="math">\(\mathcal{I}\)</span> 的刚体，其等效惯性盒的半尺寸（即半宽、半深和半高）为</p><div class="en-orig" data-for="bi-9" lang="en">In this model the shape of each body, for fluid dynamics purposes, is assumed to be the <em>equivalent inertia box</em>,
+which can also be visualized. For a body with mass <span class="math">\(\mathcal{M}\)</span> and inertia matrix <span class="math">\(\mathcal{I}\)</span>, the
+half-dimensions (i.e. half-width, half-depth and half-height) of the equivalent inertia box are</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\begin{align*}
+r_x = \sqrt{\frac{3}{2 \mathcal{M}} \left(\mathcal{I}_{yy} + \mathcal{I}_{zz} - \mathcal{I}_{xx} \right)}  \\
+r_y = \sqrt{\frac{3}{2 \mathcal{M}} \left(\mathcal{I}_{zz} + \mathcal{I}_{xx} - \mathcal{I}_{yy} \right)}  \\
+r_z = \sqrt{\frac{3}{2 \mathcal{M}} \left(\mathcal{I}_{xx} + \mathcal{I}_{yy} - \mathcal{I}_{zz} \right)}
+\end{align*}
+
+\]</div>
+</div>
+<p data-bi="bi-10">令 <span class="math">\(\mathbf{v}\)</span> 和 <span class="math">\(\boldsymbol{\omega}\)</span> 表示刚体在刚体局部坐标系（与等效惯性盒对齐）中的线速度和角速度。流体作用于固体的力 <span class="math">\(\mathbf{f}_{\text{inertia}}\)</span> 和力矩 <span class="math">\(\mathbf{g}_{\text{inertia}}\)</span> 是以下各项之和</p><div class="en-orig" data-for="bi-10" lang="en">Let <span class="math">\(\mathbf{v}\)</span> and <span class="math">\(\boldsymbol{\omega}\)</span> denote the linear and angular body velocity of the body in
+the body-local frame (aligned with the equivalent inertia box). The force <span class="math">\(\mathbf{f}_{\text{inertia}}\)</span> and
+torque <span class="math">\(\mathbf{g}_{\text{inertia}}\)</span> exerted by the fluid onto the solid are the sum of the terms</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\begin{align*}
+\mathbf{f}_{\text{inertia}} &amp;= \mathbf{f}_D + \mathbf{f}_V  \\
+\mathbf{g}_{\text{inertia}} &amp;= \mathbf{g}_D + \mathbf{g}_V
+\end{align*}
+
+\]</div>
+</div>
+<p data-bi="bi-11">这里下标 <span class="math">\(D\)</span> 和 <span class="math">\(V\)</span> 分别表示二次阻力（Drag）和粘性阻力（Viscous resistance）。</p><div class="en-orig" data-for="bi-11" lang="en">Here subscripts <span class="math">\(D\)</span> and <span class="math">\(V\)</span> denote quadratic Drag and Viscous resistance.</div>
+<p data-bi="bi-12">二次阻力项取决于流体的密度 <span class="math">\(\rho\)</span>，与刚体速度成二次方关系，在高雷诺数下是流体力的有效近似。力矩是通过对旋转产生的力在表面积上积分得到的。力和力矩的第 <span class="math">\(i\)</span> 个分量可以写为</p><div class="en-orig" data-for="bi-12" lang="en">The quadratic drag terms depend on the density <span class="math">\(\rho\)</span> of the fluid, scale quadratically with the velocity
+of the body, and are a valid approximation of the fluid forces at high Reynolds numbers.
+The torque is obtained by integrating the force resulting from the rotation over the surface area.
+The <span class="math">\(i\)</span>-th component of the force and torque can be written as</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\begin{aligned}
+f_{D, i} = \quad &amp;- 2  \rho r_j r_k |v_i| v_i \\
+g_{D, i} = \quad &amp;- {1 \over 2} \rho r_i \left(r_j^4 + r_k^4 \right) |\omega_i| \omega_i \\
+\end{aligned}
+
+\]</div>
+</div>
+<p data-bi="bi-13">粘性阻力项取决于流体粘度 <span class="math">\(\beta\)</span>，与刚体速度成线性关系，在低雷诺数下近似流体力。请注意，粘度可以独立于密度使用，以使仿真的阻尼更大。我们在低雷诺数下使用半径为 <span class="math">\(r_{eq} = (r_x + r_y + r_z) / 3\)</span> 的等效球体公式。由此得到的刚体局部坐标系下的三维力和力矩为</p><div class="en-orig" data-for="bi-13" lang="en">The viscous resistance terms depend on the fluid viscosity <span class="math">\(\beta\)</span>, scale linearly with the body velocity, and
+approximate the fluid forces at low Reynolds numbers. Note that viscosity can be used independent of density to make
+the simulation more damped. We use the formulas for the equivalent sphere with radius
+<span class="math">\(r_{eq} = (r_x + r_y + r_z) / 3\)</span>  at low Reynolds numbers. The resulting 3D force and torque in local
+body coordinates are</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\begin{aligned}
+f_{V, i} = \quad &amp;- 6 \beta \pi r_{eq} v_i \\
+g_{V, i} = \quad &amp;- 8 \beta \pi r_{eq}^3 \omega_i \\
+\end{aligned}
+
+\]</div>
+</div>
+<p data-bi="bi-14">也可以通过指定非零的 <a class="reference internal" href="../XMLreference.html#option-wind"><span class="std std-ref">wind</span></a> 来影响这些力，它是一个三维向量，在流体动力学计算中会从刚体线速度中减去。</p><div class="en-orig" data-for="bi-14" lang="en">One can also affect these forces by specifying a non-zero <a class="reference internal" href="../XMLreference.html#option-wind"><span class="std std-ref">wind</span></a>, which is a 3D vector subtracted
+from the body linear velocity in the fluid dynamics computation.</div>
+</section>
+<section id="flellipsoid">
+<span id="id3"></span><h2 data-bi="bi-15">椭球模型<a class="headerlink" href="#flellipsoid" title="链接到此标题。">#</a></h2><div class="en-orig en-h" data-for="bi-15" lang="en">Ellipsoid model</div>
+<figure class="caption-small align-right" id="id32" style="width: 50%">
+<img alt="../_images/fruitfly.png" src="../_images/fruitfly.png"/>
+<figcaption>
+<p data-bi="bi-16"><span class="caption-text">本图中具备飞行能力的黑腹果蝇（Drosophila Melanogaster）模型见 <span class="bibtex-citation" id="id4">Vaxenburg <em>et al.</em> [<a class="reference internal" href="#id31" title="Roman Vaxenburg, Igor Siwanowicz, Josh Merel, Alice A Robie, Carmen Morrow, Guido Novati, Zinovia Stefanidi, Gwyneth M Card, Michael B Reiser, Matthew M Botvinick, Kristin M Branson, Yuval Tassa, and Srinivas C Turaga. Whole-body simulation of realistic fruit fly locomotion with deep reinforcement learning. bioRxiv, 2024. doi:10.1101/2024.03.11.584515.">VSM+24</a>]</span>。</span><a class="headerlink" href="#id32" title="链接到此图片">#</a></p><div class="en-orig" data-for="bi-16" lang="en"><span class="caption-text">The flight-capable Drosophila Melanogaster model in this figure is described in <span class="bibtex-citation">Vaxenburg <em>et al.</em> [<a class="reference internal" href="#id20" title="Roman Vaxenburg, Igor Siwanowicz, Josh Merel, Alice A Robie, Carmen Morrow, Guido Novati, Zinovia Stefanidi, Gwyneth M Card, Michael B Reiser, Matthew M Botvinick, Kristin M Branson, Yuval Tassa, and Srinivas C Turaga. Whole-body simulation of realistic fruit fly locomotion with deep reinforcement learning. bioRxiv, 2024. doi:10.1101/2024.03.11.584515.">VSM+24</a>]</span>.</span></div>
+</figcaption>
+</figure>
+<p data-bi="bi-17">本节基于 geom 形状的椭球近似，描述并推导一个无状态模型，用于计算周围流体作用于运动刚体的力。与上一节的惯性模型相比，该模型能够对不同类型的流体力进行更细粒度的控制。该模型的主要应用场景是昆虫飞行，见右图。</p><div class="en-orig" data-for="bi-17" lang="en">In this section we describe and derive a stateless model of the forces exerted onto a moving rigid body by the
+surrounding fluid, based on an ellipsoidal approximation of geom shape. This model provides finer-grained control of the
+different types of fluid forces than the inertia-based model of the previous section. The motivating use-case for this
+model is insect flight, see figure on the right.</div>
+<section id="id5">
+<h3 data-bi="bi-18">概述<a class="headerlink" href="#id5" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-18" lang="en">Summary</div>
+<p data-bi="bi-19">该模型按 geom 激活：将 <a class="reference internal" href="../XMLreference.html#body-geom-fluidshape"><span class="std std-ref">fluidshape</span></a> 属性设置为 <code class="docutils literal notranslate"><span class="pre">ellipsoid</span></code>，这同时会禁用其父刚体的惯性模型。<a class="reference internal" href="../XMLreference.html#body-geom-fluidcoef"><span class="std std-ref">fluidcoef</span></a> 属性中的 5 个数值对应以下含义</p><div class="en-orig" data-for="bi-19" lang="en">The model is activated per-geom by setting the <a class="reference internal" href="../XMLreference.html#body-geom-fluidshape"><span class="std std-ref">fluidshape</span></a> attribute to <code class="docutils literal notranslate"><span class="pre">ellipsoid</span></code>, which
+also disables the inertia-based model for the parent body. The
+5 numbers in the <a class="reference internal" href="../XMLreference.html#body-geom-fluidcoef"><span class="std std-ref">fluidcoef</span></a> attribute correspond to the following semantics</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-left" style="width: 60%">
+<colgroup>
+<col style="width: 11.1%"/>
+<col style="width: 55.6%"/>
+<col style="width: 22.2%"/>
+<col style="width: 11.1%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p data-bi="bi-20">索引</p><div class="en-orig" data-for="bi-20" lang="en">Index</div></th>
+<th class="head"><p data-bi="bi-21">描述</p><div class="en-orig" data-for="bi-21" lang="en">Description</div></th>
+<th class="head"><p data-bi="bi-22">符号</p><div class="en-orig" data-for="bi-22" lang="en">Symbol</div></th>
+<th class="head"><p data-bi="bi-23">默认值</p><div class="en-orig" data-for="bi-23" lang="en">Default</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p data-bi="bi-24">钝体阻力系数</p><div class="en-orig" data-for="bi-24" lang="en">Blunt drag coefficient</div></td>
+<td><p><span class="math">\(C_{D, \text{blunt}}\)</span></p></td>
+<td><p>0.5</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p data-bi="bi-25">细长体阻力系数</p><div class="en-orig" data-for="bi-25" lang="en">Slender drag coefficient</div></td>
+<td><p><span class="math">\(C_{D, \text{slender}}\)</span></p></td>
+<td><p>0.25</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p data-bi="bi-26">角阻力系数</p><div class="en-orig" data-for="bi-26" lang="en">Angular drag coefficient</div></td>
+<td><p><span class="math">\(C_{D, \text{angular}}\)</span></p></td>
+<td><p>1.5</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p data-bi="bi-27">Kutta 升力系数</p><div class="en-orig" data-for="bi-27" lang="en">Kutta lift coefficient</div></td>
+<td><p><span class="math">\(C_K\)</span></p></td>
+<td><p>1.0</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p data-bi="bi-28">Magnus 升力系数</p><div class="en-orig" data-for="bi-28" lang="en">Magnus lift coefficient</div></td>
+<td><p><span class="math">\(C_M\)</span></p></td>
+<td><p>1.0</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p data-bi="bi-29">该模型的各个组成部分是 <span class="bibtex-citation" id="id6">Andersen <em>et al.</em> [<a class="reference internal" href="#id26" title="Anders Andersen, Umberto Pesavento, and Z Jane Wang. Analysis of transitions between fluttering, tumbling and steady descent of falling cards. Journal of Fluid Mechanics, 541:91–104, 2005.">APW05b</a>]</span> 向三维情形的推广。流体作用于固体的力 <span class="math">\(\mathbf{f}_{\text{ellipsoid}}\)</span> 和力矩 <span class="math">\(\mathbf{g}_{\text{ellipsoid}}\)</span> 是以下各项之和</p><div class="en-orig" data-for="bi-29" lang="en">Elements of the model are a generalization of <span class="bibtex-citation">Andersen <em>et al.</em> [<a class="reference internal" href="#id15" title="Anders Andersen, Umberto Pesavento, and Z Jane Wang. Analysis of transitions between fluttering, tumbling and steady descent of falling cards. Journal of Fluid Mechanics, 541:91–104, 2005.">APW05b</a>]</span> to 3 dimensions.
+The force <span class="math">\(\mathbf{f}_{\text{ellipsoid}}\)</span> and torque
+<span class="math">\(\mathbf{g}_{\text{ellipsoid}}\)</span> exerted by the fluid onto the solid are
+the sum of the terms</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\begin{align*}
+\mathbf{f}_{\text{ellipsoid}} &amp;= \mathbf{f}_A + \mathbf{f}_D + \mathbf{f}_M + \mathbf{f}_K + \mathbf{f}_V  \\
+\mathbf{g}_{\text{ellipsoid}} &amp;= \mathbf{g}_A + \mathbf{g}_D + \mathbf{g}_V
+\end{align*}
+
+\]</div>
+</div>
+<p data-bi="bi-30">其中下标 <span class="math">\(A\)</span>、<span class="math">\(D\)</span>、<span class="math">\(M\)</span>、<span class="math">\(K\)</span> 和 <span class="math">\(V\)</span> 分别表示附加质量（Added mass）、阻力（Drag）、Magnus 升力（Magnus lift）、Kutta 升力（Kutta lift）和粘性阻力（Viscous resistance）。<span class="math">\(D\)</span>、<span class="math">\(M\)</span> 和 <span class="math">\(K\)</span> 项分别由上述 <span class="math">\(C_D\)</span>、<span class="math">\(C_M\)</span> 和 <span class="math">\(C_K\)</span> 系数缩放，粘性阻力随流体粘度 <span class="math">\(\beta\)</span> 缩放，而附加质量项不可缩放。</p><div class="en-orig" data-for="bi-30" lang="en">Where subscripts <span class="math">\(A\)</span>, <span class="math">\(D\)</span>, <span class="math">\(M\)</span>, <span class="math">\(K\)</span> and  <span class="math">\(V\)</span> denote Added mass, viscous Drag, Magnus lift,
+Kutta lift and Viscous resistance, respectively. The <span class="math">\(D\)</span>, <span class="math">\(M\)</span> and <span class="math">\(K\)</span> terms are scaled by the respective
+<span class="math">\(C_D\)</span>, <span class="math">\(C_M\)</span> and <span class="math">\(C_K\)</span> coefficients above, the viscous resistance scales with the fluid viscosity
+<span class="math">\(\beta\)</span>, while the added mass term cannot be scaled.</div>
+</section>
+<section id="id7">
+<h3 data-bi="bi-31">符号说明<a class="headerlink" href="#id7" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-31" lang="en">Notation</div>
+<p data-bi="bi-32">我们描述物体在密度为 <span class="math">\(\rho\)</span> 的无粘、不可压缩静止流体中的运动。模型中，任意形状的物体用半轴为 <span class="math">\(\mathbf{r} = \{r_x, r_y, r_z\}\)</span> 的等效椭球来描述。问题在一个与椭球各边对齐、并随椭球一起运动的参考坐标系中描述。刚体的速度为 <span class="math">\(\mathbf{v} = \{v_x, v_y, v_z\}\)</span>，角速度为 <span class="math">\(\boldsymbol{\omega} = \{\omega_x, \omega_y, \omega_z\}\)</span>。我们还将使用</p><div class="en-orig" data-for="bi-32" lang="en">We describe the motion of the object in an inviscid, incompressible quiescent fluid of density <span class="math">\(\rho\)</span>. The
+arbitrarily-shaped object is described in the model as the equivalent ellipsoid of semi-axes
+<span class="math">\(\mathbf{r} = \{r_x, r_y, r_z\}\)</span>.
+The problem is described in a reference frame aligned with the sides of the ellipsoid and moving with it. The
+body has velocity <span class="math">\(\mathbf{v} = \{v_x, v_y, v_z\}\)</span> and angular velocity
+<span class="math">\(\boldsymbol{\omega} = \{\omega_x, \omega_y, \omega_z\}\)</span>. We will also use</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\begin{align*}
+    r_\text{max} &amp;= \max(r_x, r_y, r_z) \\
+    r_\text{min} &amp;= \min(r_x, r_y, r_z) \\
+    r_\text{mid} &amp;= r_x + r_y + r_z - r_\text{max} - r_\text{min}
+\end{align*}
+
+\]</div>
+</div>
+<p data-bi="bi-33">雷诺数是流动中惯性力与粘性力之比，定义为 <span class="math">\(Re=u~l/\beta\)</span>，其中 <span class="math">\(\beta\)</span> 是流体的运动粘度，<span class="math">\(u\)</span> 是流动的特征速度（或者通过变换参考系，即物体的速度），<span class="math">\(l\)</span> 是流动或物体的特征尺寸。</p><div class="en-orig" data-for="bi-33" lang="en">The Reynolds number is the ratio between inertial and viscous forces within a flow and is defined as <span class="math">\(Re=u~l/\beta\)</span>, where
+<span class="math">\(\beta\)</span> is the kinematic viscosity of the fluid, <span class="math">\(u\)</span> is the characteristic speed of the flow (or, by change of frame, the
+speed of the body), and <span class="math">\(l\)</span> is a characteristic size of the flow or the body.</div>
+<p data-bi="bi-34">我们用 <span class="math">\(\Gamma\)</span> 表示环量，即速度场沿闭合曲线的线积分 <span class="math">\(\Gamma = \oint \mathbf{v} \cdot \textrm{d} \mathbf{l}\)</span>，并且根据斯托克斯定理，<span class="math">\(\Gamma = \int_S \nabla \times \mathbf{v} \cdot \textrm{d}\mathbf{s}\)</span>。在流体动力学记号中，符号 <span class="math">\(\boldsymbol{\omega}\)</span> 通常用于表示涡量，定义为 <span class="math">\(\nabla \times \mathbf{v}\)</span>，而不是角速度。对于刚体运动，涡量是角速度的两倍。</p><div class="en-orig" data-for="bi-34" lang="en">We will use <span class="math">\(\Gamma\)</span> to denote circulation, which is the line integral of the velocity field around a closed curve
+<span class="math">\(\Gamma = \oint \mathbf{v} \cdot \textrm{d} \mathbf{l}\)</span> and, due to Stokes’ Theorem,
+<span class="math">\(\Gamma = \int_S \nabla \times \mathbf{v} \cdot \textrm{d}\mathbf{s}\)</span>.
+In fluid dynamics notation the symbol <span class="math">\(\boldsymbol{\omega}\)</span> is often used for the
+vorticity, defined as <span class="math">\(\nabla \times \mathbf{v}\)</span>, rather than the angular velocity. For a rigid-body motion, the
+vorticity is twice the angular velocity.</div>
+<p data-bi="bi-35">最后，我们用下标 <span class="math">\(i, j, k\)</span> 表示对 <span class="math">\(x, y, z\)</span> 对称成立的一组三个方程。例如 <span class="math">\(a_i = b_j + b_k\)</span> 是以下 3 个方程的简写</p><div class="en-orig" data-for="bi-35" lang="en">Finally, we use the subscripts <span class="math">\(i, j, k\)</span> to denote triplets of equations that apply symmetrically to
+<span class="math">\(x, y, z\)</span>. For example <span class="math">\(a_i = b_j + b_k\)</span> is shorthand for the 3 equations</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\begin{align*}
+    a_x &amp;= b_y + b_z \\
+    a_y &amp;= b_x + b_z \\
+    a_z &amp;= b_x + b_y
+\end{align*}
+
+\]</div>
+</div>
+</section>
+<section id="flprojection">
+<span id="id8"></span><h3 data-bi="bi-36">椭球投影<a class="headerlink" href="#flprojection" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-36" lang="en">Ellipsoid projection</div>
+<p data-bi="bi-37">我们给出如下结论。</p><div class="en-orig" data-for="bi-37" lang="en">We present the following result.</div>
+<div class="note admonition">
+<p class="admonition-title" data-bi="bi-38">引理</p><div class="en-orig" data-for="bi-38" lang="en">Lemma</div>
+<p data-bi="bi-39">给定一个半轴为 <span class="math">\((r_x, r_y, r_z)\)</span> 且与坐标轴 <span class="math">\((x, y, z)\)</span> 对齐的椭球，以及一个单位向量 <span class="math">\(\mathbf{u} = (u_x, u_y, u_z)\)</span>，该椭球在法向为 <span class="math">\(\mathbf{u}\)</span> 的平面上的投影面积为</p><div class="en-orig" data-for="bi-39" lang="en">Given an ellipsoid with semi-axes <span class="math">\((r_x, r_y, r_z)\)</span> aligned with the coordinate axes <span class="math">\((x, y, z)\)</span>, and a
+unit vector <span class="math">\(\mathbf{u} = (u_x, u_y, u_z)\)</span>, the area projected by the ellipsoid onto the plane normal to
+<span class="math">\(\mathbf{u}\)</span> is</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[A^{\mathrm{proj}}_{\mathbf{u}} = \pi \sqrt{\frac{r_y^4 r_z^4 u_x^2 + r_z^4 r_x^4 u_y^2 + r_x^4 r_y^4 u_z^2}{r_y^2 r_z^2 u_x^2 + r_z^2 r_x^2 u_y^2 + r_x^2 r_y^2 u_z^2}}
+
+\]</div>
+</div>
+</div>
+<details class="summary-">
+<summary>展开查看推导</summary><div class="tip admonition">
+<p class="admonition-title" data-bi="bi-40">引理的推导</p><div class="en-orig" data-for="bi-40" lang="en">Derivation of lemma</div>
+<dl>
+<dt data-bi="bi-41"><strong>椭圆的面积</strong><div class="en-orig" data-for="bi-41" lang="en"><strong>Area of an ellipse</strong></div></dt><dd><p data-bi="bi-42">任何以原点为中心的椭圆都可以用二次型 <span class="math">\(\mathbf{x}^T Q \mathbf{x} = 1\)</span> 来描述，其中 <span class="math">\(Q\)</span> 是实对称正定 2x2 矩阵，决定了椭圆的方向和半轴长度，<span class="math">\(\mathbf{x} = (x, y)\)</span> 是椭圆上的点。椭圆的面积为</p><div class="en-orig" data-for="bi-42" lang="en">Any ellipse centered at the origin can be described in terms of a quadratic form a
+<span class="math">\(\mathbf{x}^T Q \mathbf{x} = 1\)</span>, where <span class="math">\(Q\)</span> is a real, symmetric, positive-definite 2x2 matrix that
+defines the orientation and  semi-axis lengths of the ellipse, and <span class="math">\(\mathbf{x} = (x, y)\)</span> are points on the
+ellipse. The area of the ellipse is given by</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[A = \frac{\pi}{\sqrt{\det Q}} .
+
+\]</div>
+</div>
+</dd>
+<dt data-bi="bi-43"><strong>椭球的截面</strong><div class="en-orig" data-for="bi-43" lang="en"><strong>Ellipsoid cross-section</strong></div></dt><dd><p data-bi="bi-44">我们首先计算以原点为中心的椭球与过原点、单位法向量为 <span class="math">\(\mathbf{n} = (n_x, n_y, n_z)\)</span> 的平面 <span class="math">\(\Pi_{\mathbf{n}}\)</span> 相交所形成的椭圆的面积。设 <span class="math">\((r_x, r_y, r_z)\)</span> 为椭球的半轴长度。不失一般性，可以假设椭球的轴与坐标轴对齐。于是椭球可以描述为 <span class="math">\(\mathbf{x}^T Q \mathbf{x} = 1\)</span>，其中
+<span class="math">\(Q = \textrm{diag}\mathopen{}\left( \left. 1 \middle/ r_x^2 \right., \left. 1 \middle/ r_y^2 \right., \left. 1 \middle/ r_z^2 \right. \right)\mathclose{}\)</span>，<span class="math">\(\mathbf{x} = (x, y, z)\)</span> 是椭球上的点。</p><div class="en-orig" data-for="bi-44" lang="en">We begin by computing the area of the ellipse formed by intersecting an ellipsoid centered at the origin with the
+plane <span class="math">\(\Pi_{\mathbf{n}}\)</span> through the origin with unit normal <span class="math">\(\mathbf{n} = (n_x, n_y, n_z)\)</span>. Let
+<span class="math">\((r_x, r_y, r_z)\)</span> be the semi-axis lengths of the ellipsoid. Without loss of generality, it is sufficient to
+assume that the axes of the ellipsoid are aligned with the coordinate axes. The ellipsoid can then be described as
+<span class="math">\(\mathbf{x}^T Q \mathbf{x} = 1\)</span>, where
+<span class="math">\(Q = \textrm{diag}\mathopen{}\left( \left. 1 \middle/ r_x^2 \right., \left. 1 \middle/ r_y^2 \right., \left. 1 \middle/ r_z^2 \right. \right)\mathclose{}\)</span>
+and <span class="math">\(\mathbf{x} = (x, y, z)\)</span> are the points on the ellipsoid.</div>
+<p data-bi="bi-45">接下来，我们将平面 <span class="math">\(\Pi_{\mathbf{n}}\)</span> 连同椭球一起旋转，使旋转后平面的法向指向 <span class="math">\(z\)</span> 轴。这样，只需令 <span class="math">\(z\)</span> 坐标为零就能得到所需的交线。记 <span class="math">\(\mathbf{\hat{z}}\)</span> 为沿 <span class="math">\(z\)</span> 轴的单位向量，则有</p><div class="en-orig" data-for="bi-45" lang="en">We proceed by rotating the plane <span class="math">\(\Pi_{\mathbf{n}}\)</span> together with the ellipsoid so that the normal of the
+rotated plane points along the <span class="math">\(z\)</span> axis. This would then allow us to get the desired intersection by setting
+the <span class="math">\(z\)</span> coordinate to zero. Writing <span class="math">\(\mathbf{\hat{z}}\)</span> for the unit vector along the <span class="math">\(z\)</span> axis, we
+have</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\begin{align*}
+\mathbf{n} \times \mathbf{\hat{z}} &amp;= \sin\theta \, \mathbf{m}, \\
+\mathbf{n} \cdot \mathbf{\hat{z}} &amp;= \cos\theta ,
+\end{align*}
+
+\]</div>
+</div>
+<p data-bi="bi-46">其中 <span class="math">\(\mathbf{m}\)</span> 是定义旋转轴的单位向量，<span class="math">\(\theta\)</span> 是旋转角。我们可以重新整理这些式子，得到构造旋转四元数（quaternion）所需的量，即</p><div class="en-orig" data-for="bi-46" lang="en">where <span class="math">\(\mathbf{m}\)</span> is the unit vector that defines the rotation axis and <span class="math">\(\theta\)</span> is the rotation
+angle. We can rearrange these to get quantities that we need to form a rotation quaternion, namely</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\begin{align*}
+\cos\frac{\theta}{2}
+&amp;= \sqrt{\frac{1+\cos\theta}{2}}
+&amp;= \sqrt{\frac{1 + \mathbf{n} \cdot \mathbf{\hat{z}}}{2}}, \\
+\sin\frac{\theta}{2}\,\mathbf{m}
+&amp;= \frac{\mathbf{n} \times \mathbf{\hat{z}}}{2\cos\frac{\theta}{2}}
+&amp;= \frac{\mathbf{n} \times \mathbf{\hat{z}}}{\sqrt{2 (1 + \mathbf{n} \cdot \mathbf{\hat{z}})}} .
+\end{align*}
+
+\]</div>
+</div>
+<p data-bi="bi-47">因此旋转四元数 <span class="math">\(q = q_r + q_x \mathbf{i} + q_y \mathbf{j} + q_z \mathbf{k}\)</span> 为</p><div class="en-orig" data-for="bi-47" lang="en">The rotation quaternion <span class="math">\(q = q_r + q_x \mathbf{i} + q_y \mathbf{j} + q_z \mathbf{k}\)</span> is therefore given by</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[q_r = \sqrt{\frac{1 + n_z}{2}}, \quad
+q_x = \frac{n_y}{\sqrt{2 \left(1+n_z\right)}},  \quad
+q_y = \frac{-n_x}{\sqrt{2 \left(1+n_z\right)}}, \quad
+q_z = 0 .
+
+\]</div>
+</div>
+<p data-bi="bi-48">由此，旋转矩阵为</p><div class="en-orig" data-for="bi-48" lang="en">From this, the rotation matrix is given by</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\def\arraystretch{1.33}
+\begin{align*}
+R &amp;= \begin{pmatrix}
+1 - 2 q_y^2 - 2 q_z^2 &amp; 2 \left(q_x q_y - q_r q_z\right) &amp; 2 \left(q_x q_z + q_r q_y\right) \\
+2 \left(q_x q_y + q_r q_z\right) &amp; 1 - 2 q_x^2 - 2 q_z^2 &amp; 2 \left(q_y q_z - q_r q_x\right) \\
+2 \left(q_x q_z - q_r q_y\right) &amp; 2 \left(q_y q_z + q_r q_x\right) &amp; 1 - 2 q_x^2 - 2 q_y^2
+\end{pmatrix} \\
+&amp;= \begin{pmatrix}
+1 - \left. n_x^2 \middle/ \left( 1+n_z \right) \right. &amp; \left. -n_x n_y \middle/ \left( 1+n_z \right) \right. &amp; -n_x \\
+\left. -n_x n_y \middle/ \left( 1+n_z \right) \right. &amp; 1 - \left. n_y^2 \middle/ \left( 1+n_z \right) \right. &amp; -n_y \\
+n_x &amp; n_y &amp; 1 - \left. \left( n_x^2 + n_y^2 \right) \middle/ \left( \vphantom{n_x^2} 1+n_z \right) \right.
+\end{pmatrix},
+\end{align*}
+
+\]</div>
+</div>
+<p data-bi="bi-49">旋转后的椭球通过变换后的二次型来描述</p><div class="en-orig" data-for="bi-49" lang="en">and the rotated ellipsoid is described via the transformed quadratic form</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\mathbf{x}^T Q' \mathbf{x} = \mathbf{x}^T \left( R^T Q R \right) \mathbf{x} = 1 .
+
+\]</div>
+</div>
+<p data-bi="bi-50">根据上面的椭圆面积公式，要得到 <span class="math">\(z=0\)</span> 处椭圆的面积，我们需要</p><div class="en-orig" data-for="bi-50" lang="en">From the formula for ellipse area above, for the area of the ellipse at <span class="math">\(z=0\)</span>, we need</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\begin{align*}
+Q'_{xx} &amp;= \frac{1}{r_x^2} R_{xx}^2 + \frac{1}{r_y^2} R_{yx}^2 + \frac{1}{r_z^2} R_{zx}^2 , \\
+Q'_{yy} &amp;= \frac{1}{r_x^2} R_{xy}^2 + \frac{1}{r_y^2} R_{yy}^2 + \frac{1}{r_z^2} R_{zy}^2 , \\
+Q'_{xy} &amp;= \frac{1}{r_x^2} R_{xx} R_{xy} + \frac{1}{r_y^2} R_{yx} R_{yy} + \frac{1}{r_z^2} R_{zx} R_{zy} ,
+\end{align*}
+
+\]</div>
+</div>
+<p data-bi="bi-51">所需的面积为</p><div class="en-orig" data-for="bi-51" lang="en">and the desired area is given by</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[A^{\cap}_{\mathbf{n}}
+= \frac{\pi}{\sqrt{\vphantom{Q'^2_{xy}} \det Q'}}
+= \frac{\pi}{\sqrt{Q'_{xx} Q'_{yy} - Q'^2_{xy}}}
+= \frac{\pi r_x r_y r_z}{\sqrt{r_x^2 n_x^2 + r_y^2 n_y^2 + r_z^2 n_z^2}},
+
+\]</div>
+</div>
+<p data-bi="bi-52">其中上标 <span class="math">\(\cap\)</span> 表示该面积对应于与 <span class="math">\(\Pi_{\mathbf{n}}\)</span> <em>相交</em>所得的椭圆。</p><div class="en-orig" data-for="bi-52" lang="en">where the superscript <span class="math">\(\cap\)</span> denotes that the area pertains to the ellipse at the <em>intersection</em>
+with <span class="math">\(\Pi_{\mathbf{n}}\)</span>.</div>
+</dd>
+<dt data-bi="bi-53"><strong>投影椭圆</strong><div class="en-orig" data-for="bi-53" lang="en"><strong>Projected ellipse</strong></div></dt><dd><p data-bi="bi-54">设 <span class="math">\(\mathbf{u} = (u_x, u_y, u_z)\)</span> 为某个单位向量（在我们的场景中，它是冲击椭球的流体速度方向），并设 <span class="math">\(\Pi_{\mathbf{u}}\)</span> 为法向为 <span class="math">\(\mathbf{u}\)</span> 的平面。一般而言，将椭球 <span class="math">\(\mathcal{E}\)</span> 投影到 <span class="math">\(\Pi_{\mathbf{u}}\)</span> 上形成的椭圆（记作 <span class="math">\(\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}\)</span>）与 <span class="math">\(\mathcal{E}\)</span> 和 <span class="math">\(\Pi_{\mathbf{u}}\)</span> 相交形成的椭圆（记作 <span class="math">\(\mathcal{E}^{\cap}_{\mathbf{u}}\)</span>）是不同的。</p><div class="en-orig" data-for="bi-54" lang="en">Let <span class="math">\(\mathbf{u} = (u_x, u_y, u_z)\)</span> be some unit vector (in our context, it is the direction of the velocity
+of the fluid impinging on an ellipsoid) and let <span class="math">\(\Pi_{\mathbf{u}}\)</span> be the plane normal to <span class="math">\(\mathbf{u}\)</span>.
+In general, the ellipse formed by projecting an ellipsoid <span class="math">\(\mathcal{E}\)</span> onto <span class="math">\(\Pi_{\mathbf{u}}\)</span>
+(denoted <span class="math">\(\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}\)</span>) is different from the one formed by intersecting
+<span class="math">\(\mathcal{E}\)</span> with <span class="math">\(\Pi_{\mathbf{u}}\)</span> (denoted <span class="math">\(\mathcal{E}^{\cap}_{\mathbf{u}}\)</span>).</div>
+<p data-bi="bi-55"><span class="math">\(\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}\)</span> 的一个重要性质是：在 <span class="math">\(\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}\)</span> 上的每一点，<span class="math">\(\mathbf{u}\)</span> 都与椭球 <span class="math">\(\mathcal{E}\)</span> 相切。</p><div class="en-orig" data-for="bi-55" lang="en">An important property of <span class="math">\(\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}\)</span> is that <span class="math">\(\mathbf{u}\)</span> is tangent
+to the ellipsoid <span class="math">\(\mathcal{E}\)</span> at every point on <span class="math">\(\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}\)</span>.</div>
+<p data-bi="bi-56">我们可以把 <span class="math">\(\mathcal{E}\)</span> 看作单位球 <span class="math">\(\mathcal{S}\)</span> 在拉伸变换 <span class="math">\(T = \mathrm{diag}(r_x, r_y, r_z)\)</span> 下的像。此外，如果 <span class="math">\(\mathbf{\tilde{u}}\)</span> 是与 <span class="math">\(\mathcal{S}\)</span> 相切的向量，那么它的像 <span class="math">\(\mathbf{u}=T\mathbf{\tilde{u}}=(r_x \tilde{u}_x, r_y \tilde{u}_y, r_z \tilde{u}_z)\)</span> 与椭球相切。因此，椭圆 <span class="math">\(\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}\)</span> 是 <span class="math">\(\mathcal{S}\)</span> 与 <span class="math">\(\Pi_{\mathbf{\tilde{u}}}\)</span> 相交处的圆 <span class="math">\(\mathcal{C}^{\cap}_{\mathbf{\tilde{u}}}\)</span> 在 <span class="math">\(T\)</span> 下的像（对于球体，<span class="math">\(\mathcal{C}^{\cap}\)</span> 和 <span class="math">\(\mathcal{C}^{\mathrm{proj}}\)</span> 是重合的）。</p><div class="en-orig" data-for="bi-56" lang="en">We can regard <span class="math">\(\mathcal{E}\)</span> as the image of the unit sphere <span class="math">\(\mathcal{S}\)</span> under a stretching
+transformation <span class="math">\(T = \mathrm{diag}(r_x, r_y, r_z)\)</span>. Furthermore, if <span class="math">\(\mathbf{\tilde{u}}\)</span> is a vector
+tangent to <span class="math">\(\mathcal{S}\)</span>, then its image
+<span class="math">\(\mathbf{u}=T\mathbf{\tilde{u}}=(r_x \tilde{u}_x, r_y \tilde{u}_y, r_z \tilde{u}_z)\)</span> is tangent to the
+ellipsoid. The ellipse <span class="math">\(\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}\)</span> is therefore the image
+under <span class="math">\(T\)</span> of the circle <span class="math">\(\mathcal{C}^{\cap}_{\mathbf{\tilde{u}}}\)</span> at the intersection between
+<span class="math">\(\mathcal{S}\)</span> and <span class="math">\(\Pi_{\mathbf{\tilde{u}}}\)</span> (for spheres <span class="math">\(\mathcal{C}^{\cap}\)</span> and
+<span class="math">\(\mathcal{C}^{\mathrm{proj}}\)</span> do coincide).</div>
+<p data-bi="bi-57">设 <span class="math">\(\mathbf{\tilde{v}}\)</span> 和 <span class="math">\(\mathbf{\tilde{w}}\)</span> 是平面 <span class="math">\(\Pi_{\mathbf{\tilde{u}}}\)</span> 内的某一对正交向量，则 <span class="math">\(\mathbf{\tilde{u}} = \mathbf{\tilde{v}} \times \mathbf{\tilde{w}}\)</span>。它们在 <span class="math">\(T\)</span> 下的像分别为 <span class="math">\(\mathbf{v} = (r_x \tilde{v}_x, r_y \tilde{v}_y, r_z \tilde {v}_z)\)</span> 和 <span class="math">\(\mathbf{w} = (r_x \tilde{w}_x, r_y \tilde{w}_y, r_z \tilde {w}_z)\)</span>，它们仍是 <span class="math">\(\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}\)</span> 所在平面内的正交向量。因此椭圆 <span class="math">\(\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}\)</span> 的一个（非单位）法向量为</p><div class="en-orig" data-for="bi-57" lang="en">Let <span class="math">\(\mathbf{\tilde{v}}\)</span> and <span class="math">\(\mathbf{\tilde{w}}\)</span> be some orthogonal pair of vectors in the plane
+<span class="math">\(\Pi_{\mathbf{\tilde{u}}}\)</span>, then <span class="math">\(\mathbf{\tilde{u}} = \mathbf{\tilde{v}} \times \mathbf{\tilde{w}}\)</span>.
+Their images under <span class="math">\(T\)</span> are <span class="math">\(\mathbf{v} = (r_x \tilde{v}_x, r_y \tilde{v}_y, r_z \tilde {v}_z)\)</span> and
+<span class="math">\(\mathbf{w} = (r_x \tilde{w}_x, r_y \tilde{w}_y, r_z \tilde {w}_z)\)</span> respectively, and they remain orthogonal
+vectors in the plane of <span class="math">\(\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}\)</span>. A (non-unit) normal to the ellipse
+<span class="math">\(\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}}\)</span> is therefore given by</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\mathbf{N} = \mathbf{v} \times \mathbf{w}
+= (r_y r_z \tilde{u}_x, r_z r_x \tilde{u}_y, r_x r_y \tilde{u}_z)
+= \left( \frac{r_y r_z}{r_x} u_x, \frac{r_z r_x}{r_y} u_y, \frac{r_x r_y}{r_z} u_z \right).
+
+\]</div>
+</div>
+<p data-bi="bi-58">这表明 <span class="math">\(\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}} = \mathcal{E}^{\cap}_{\mathbf{n}}\)</span>，其中 <span class="math">\(\mathbf{n} = \mathbf{N} / \left\Vert\mathbf{N}\right\Vert\)</span>。其面积由上一节推导的公式给出，从而得到上述结论。</p><div class="en-orig" data-for="bi-58" lang="en">This shows that <span class="math">\(\mathcal{E}^{\mathrm{proj}}_{\mathbf{u}} = \mathcal{E}^{\cap}_{\mathbf{n}}\)</span>, where
+<span class="math">\(\mathbf{n} = \mathbf{N} / \left\Vert\mathbf{N}\right\Vert\)</span>. Its area is given by the formula derived in the
+previous section, leading to the result stated above.</div>
+</dd>
+</dl>
+</div>
+</details></section>
+<section id="id9">
+<h3 data-bi="bi-59">附加质量<a class="headerlink" href="#id9" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-59" lang="en">Added mass</div>
+<p data-bi="bi-60">对于在流体中运动的物体，附加质量（added mass）或虚拟质量衡量的是因物体运动而被带动的流体的惯性。它可以由势流理论推导得出（即对无粘流动同样存在）。</p><div class="en-orig" data-for="bi-60" lang="en">For a body moving in a fluid, added mass or virtual mass measures the inertia of the fluid that is moved due to the
+body’s motion. It can be derived from potential flow theory (i.e. it is present also for inviscid flows).</div>
+<p data-bi="bi-61">按照 <span class="bibtex-citation" id="id10">Lamb [<a class="reference internal" href="#id21" title="Horace Lamb. Hydrodynamics. Sixth edition. Cambridge University Press, 1932.">Lam32</a>]</span> 第 5 章，流体由静止开始产生运动时，作用于运动物体的力 <span class="math">\(\mathbf{f}_{V}\)</span> 和力矩 <span class="math">\(\mathbf{g}_{V}\)</span> 可以写为：</p><div class="en-orig" data-for="bi-61" lang="en">Following Chapter 5 of <span class="bibtex-citation">Lamb [<a class="reference internal" href="#id10" title="Horace Lamb. Hydrodynamics. Sixth edition. Cambridge University Press, 1932.">Lam32</a>]</span>, the forces <span class="math">\(\mathbf{f}_{V}\)</span> and torques <span class="math">\(\mathbf{g}_{V}\)</span> exerted
+onto a moving body due to generation of motion in the fluid from rest can be written as:</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\begin{align*}
+    \mathbf{f}_{A} &amp;= - \frac{\textrm{d}}{\textrm{d} t} \nabla_{\mathbf{v}} \mathcal{T} + \nabla_{\mathbf{v}} \mathcal{T} \times \boldsymbol{\omega} \\
+    \mathbf{g}_{A} &amp;= - \frac{\textrm{d}}{\textrm{d} t} \nabla_{\boldsymbol{\omega}} \mathcal{T} + \nabla_{\mathbf{v}} \mathcal{T} \times \mathbf{v} + \boldsymbol{\omega} \times \nabla_{\boldsymbol{\omega}} \mathcal{T}
+\end{align*}
+
+\]</div>
+</div>
+<p data-bi="bi-62">其中 <span class="math">\(\mathcal{T}\)</span> 是流体自身的动能。这些力通常被称为附加质量或虚拟质量，因为它们源于被加速物体所推动或偏转的流体的惯性。事实上，对于线速度恒定的物体，这些力会降为零。我们假定物体具有三个对称平面，因为在这一假设下动能大大简化，可以写为：</p><div class="en-orig" data-for="bi-62" lang="en">where <span class="math">\(\mathcal{T}\)</span> is the kinetic energy of the fluid alone. These forces are often described as added or
+virtual mass because they are due to the inertia of the fluid that is to moved or deflected by the accelerating body. In
+fact, for a body with constant linear velocity these forces reduce to zero. We consider the body as having three planes
+of symmetry because under this assumption the kinetic energy greatly simplifies and can be written as:</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[2 \mathcal{T} = m_{A, x} v_x^2 + m_{A, y} v_y^2 + m_{A, z} v_z^2 +
+              I_{A, x} \omega_x^2 + I_ {A, y} \omega_y^2 + I_{A, z} \omega_z^2
+
+\]</div>
+</div>
+<p data-bi="bi-63">为方便起见，我们引入附加质量向量 <span class="math">\(\mathbf{m}_A = \{m_{A, x}, m_{A, y}, m_{A, z}\}\)</span> 和附加转动惯量向量 <span class="math">\(\mathbf{I}_A = \{I_{A, x}, I_{A, y}, I_{A, z}\}\)</span>。这些量中的每一个都应当估计物体沿相应方向运动时被带动流体的惯性，并且对于一些简单几何形状，可以由势流理论推导得出。</p><div class="en-orig" data-for="bi-63" lang="en">For convenience we introduce the added-mass vector <span class="math">\(\mathbf{m}_A = \{m_{A, x}, m_{A, y}, m_{A, z}\}\)</span> and added-moment of
+inertia vector <span class="math">\(\mathbf{I}_A = \{I_{A, x}, I_{A, y}, I_{A, z}\}\)</span>. Each of these quantities should estimate the inertia
+of the moved fluid due the motion of the body in the corresponding direction and can be derived from potential flow
+theory for some simple geometries.</div>
+<p data-bi="bi-64">对于具有三个对称平面的物体，我们可以将附加惯性产生的力和力矩写成紧凑形式：</p><div class="en-orig" data-for="bi-64" lang="en">For a body with three planes of symmetry, we can write in compact form the forces and torques due to added inertia:</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\begin{align*}
+    \mathbf{f}_{A} &amp;= - \mathbf{m}_A \circ \dot{\mathbf{v}} + \left(\mathbf{m}_A \circ \mathbf{v} \right) \times \boldsymbol{\omega} \\
+    \mathbf{g}_{A} &amp;= - \mathbf{I}_A \circ \dot{\boldsymbol{\omega}} + \left(\mathbf{m}_A \circ \mathbf{v} \right) \times \mathbf{v} + \left(\mathbf{I}_A \circ \boldsymbol{\omega} \right) \times \boldsymbol{\omega}
+\end{align*}
+
+\]</div>
+</div>
+<p data-bi="bi-65">这里 <span class="math">\(\circ\)</span> 表示逐元素乘积，<span class="math">\(\dot{\mathbf{v}}\)</span> 是线加速度，<span class="math">\(\dot{\boldsymbol{\omega}}\)</span> 是角加速度。<span class="math">\(\mathbf{m}_A \circ \mathbf{v}\)</span> 和 <span class="math">\(\mathbf{I}_A \circ \boldsymbol{\omega}\)</span> 分别是虚拟线动量和虚拟角动量。</p><div class="en-orig" data-for="bi-65" lang="en">Here <span class="math">\(\circ\)</span> denotes an element-wise product, <span class="math">\(\dot{\mathbf{v}}\)</span> is the linear acceleration and
+<span class="math">\(\dot{\boldsymbol{\omega}}\)</span> is the angular acceleration. <span class="math">\(\mathbf{m}_A \circ \mathbf{v}\)</span> and
+<span class="math">\(\mathbf{I}_A \circ \boldsymbol{\omega}\)</span> are the virtual linear and angular momentum respectively.</div>
+<p data-bi="bi-66">对于半轴为 <span class="math">\(\mathbf{r} = \{r_x, r_y, r_z\}\)</span>、体积为 <span class="math">\(V = 4 \pi r_x r_y r_z / 3\)</span> 的椭球，虚拟惯性系数由 <span class="bibtex-citation" id="id11">Tuckerman [<a class="reference internal" href="#id23" title="LB Tuckerman. Inertia factors of ellipsoids for use in airship design. US Government Printing Office, 1925.">Tuc25</a>]</span> 推导得出。令：</p><div class="en-orig" data-for="bi-66" lang="en">For an ellipsoid of semi-axis <span class="math">\(\mathbf{r} = \{r_x, r_y, r_z\}\)</span> and volume <span class="math">\(V = 4 \pi r_x r_y r_z / 3\)</span>, the
+virtual inertia coefficients were derived by <span class="bibtex-citation">Tuckerman [<a class="reference internal" href="#id12" title="LB Tuckerman. Inertia factors of ellipsoids for use in airship design. US Government Printing Office, 1925.">Tuc25</a>]</span>. Let:</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\kappa_i = \int_0^\infty \frac{r_i r_j r_k}{\sqrt{(r_i^2 + \lambda)^3 (r_j^2 + \lambda) (r_k^2 + \lambda)}} \textrm{d} \lambda
+
+\]</div>
+</div>
+<p data-bi="bi-67">需要注意，这些系数是无量纲的（即如果所有半轴都乘以同一个标量，系数保持不变）。椭球的虚拟质量为：</p><div class="en-orig" data-for="bi-67" lang="en">It should be noted that these coefficients are non-dimensional (i.e. if all semi-axes are multiplied by the same scalar
+the coefficients remain the same). The virtual masses of the ellipsoid are:</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[m_{A, i} = \rho V \frac{\kappa_i}{2 - \kappa_i}
+
+\]</div>
+</div>
+<p data-bi="bi-68">虚拟转动惯量为：</p><div class="en-orig" data-for="bi-68" lang="en">And the virtual moments of inertia are:</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[I_{A, i} = \frac{\rho V}{5} \frac{(r_j^2 - r_k^2)^2 (\kappa_k-\kappa_j)}{2(r_j^2 - r_k^2) + (r_j^2 + r_k^2) (\kappa_j-\kappa_k)}
+
+\]</div>
+</div>
+</section>
+<section id="id12">
+<h3 data-bi="bi-69">粘性阻力<a class="headerlink" href="#id12" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-69" lang="en">Viscous drag</div>
+<p data-bi="bi-70">阻力的作用是阻碍物体相对于周围流动的运动。我们发现，粘性力还有助于降低包含流体动力学项的运动方程的刚性。出于这一原因，我们选择偏保守的做法，采用可能高估耗散的粘性项近似。</p><div class="en-orig" data-for="bi-70" lang="en">The drag force acts to oppose the motion of the body relative to the surrounding flow. We found that viscous forces
+serve also to reduce the stiffness of the equations of motion extended with the fluid dynamic terms. For this reason, we
+opted to err on the conservative side and chose approximations of the viscous terms that may overestimate dissipation.</div>
+<p data-bi="bi-71">尽管阻力最终由粘性耗散引起，但在高雷诺数下它与粘度无关，并与速度的二次方成正比。它可以写为：</p><div class="en-orig" data-for="bi-71" lang="en">Despite being ultimately caused by viscous dissipation, for high Reynolds numbers the drag is independent of the
+viscosity and scales with the second power of the velocity. It can be written as:</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\begin{align*}
+\mathbf{f}_\text{D} = - C_D~\rho~ A_D ~ \|\mathbf{v}\|~ \mathbf{v}\\
+\mathbf{g}_\text{D} = - C_D \rho~ I_D ~ \|\boldsymbol{\omega}\| ~ \boldsymbol{\omega}
+\end{align*}
+
+\]</div>
+</div>
+<p data-bi="bi-72">其中 <span class="math">\(C_D\)</span> 是阻力系数，<span class="math">\(A_D\)</span> 是参考表面积（例如物体在法向为流动方向的平面上的投影面积的某种度量），<span class="math">\(I_D\)</span> 是参考转动惯量。</p><div class="en-orig" data-for="bi-72" lang="en">Where <span class="math">\(C_D\)</span> is a drag coefficient, and <span class="math">\(A_D\)</span> is a reference surface area (e.g. a measure of the projected
+area on the plane normal to the flow), and <span class="math">\(I_D\)</span> a reference moment of inertia.</div>
+<div class="video_wrapper align-right" style="padding-bottom: 28.125000%; padding-top: 30px; position: relative; text-align: right; width: 50%">
+<iframe allowfullscreen="true" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/nljr0X79vI0" style="border: 0; height: 100%; left: 0; position: absolute; top: 0; width: 100%">
+</iframe></div><p data-bi="bi-73">即使对于简单形状，<span class="math">\(C_D\)</span>、<span class="math">\(A_D\)</span> 和 <span class="math">\(I_D\)</span> 这几项也需要根据具体问题的物理特性和动力学尺度进行调整 <span class="bibtex-citation" id="id13">[<a class="reference internal" href="#id30" title="Zhipeng Duan, Boshu He, and Yuanyuan Duan. Sphere drag and heat transfer. Scientific reports, 5(1):1–7, 2015.">DHD15</a>]</span>。例如，阻力系数 <span class="math">\(C_D\)</span> 通常随雷诺数增大而减小，而且对于高度不规则或细长的物体，单一的参考面积 <span class="math">\(A_D\)</span> 可能不足以体现表面摩擦阻力。再如，实验拟合来自从下落的扑克牌 <span class="bibtex-citation" id="id14">[<a class="reference internal" href="#id25" title="A Andersen, U Pesavento, and Z Jane Wang. Unsteady aerodynamics of fluttering and tumbling plates. Journal of Fluid Mechanics, 541:65–90, 2005.">APW05a</a>, <a class="reference internal" href="#id26" title="Anders Andersen, Umberto Pesavento, and Z Jane Wang. Analysis of transitions between fluttering, tumbling and steady descent of falling cards. Journal of Fluid Mechanics, 541:91–104, 2005.">APW05b</a>, <a class="reference internal" href="#id24" title="Z Jane Wang, James M Birch, and Michael H Dickinson. Unsteady forces and flows in low reynolds number hovering flight: two-dimensional computations vs robotic wing experiments. Journal of Experimental Biology, 207(3):449–460, 2004.">WBD04</a>]</span> 到颗粒输运 <span class="bibtex-citation" id="id15">[<a class="reference internal" href="#id29" title="Gholamhossein Bagheri and Costanza Bonadonna. On the drag of freely falling non-spherical particles. Powder Technology, 301:526–544, 2016.">BB16</a>, <a class="reference internal" href="#id28" title="E Loth. Drag of non-spherical solid particles of regular and irregular shape. Powder Technology, 182(3):342–353, 2008.">Lot08</a>]</span> 等各类问题。参见右侧
+<a class="reference external" href="https://github.com/deepmind/mujoco/blob/main/model/cards/cards.xml">cards.xml</a> 模型的屏幕截图。</p><div class="en-orig" data-for="bi-73" lang="en">Even for simple shapes, the terms <span class="math">\(C_D\)</span>, <span class="math">\(A_D\)</span> and <span class="math">\(I_D\)</span> need to be tuned to the problem-specific
+physics and dynamical scales <span class="bibtex-citation">[<a class="reference internal" href="#id19" title="Zhipeng Duan, Boshu He, and Yuanyuan Duan. Sphere drag and heat transfer. Scientific reports, 5(1):1–7, 2015.">DHD15</a>]</span>. For example, the drag coefficient <span class="math">\(C_D\)</span> generally decreases with
+increasing Reynolds numbers, and a single reference area <span class="math">\(A_D\)</span> may not be sufficient to account for the skin
+drag for highly irregular or slender bodies. For example, experimental fits are derived from problems ranging from
+falling playing cards <span class="bibtex-citation">[<a class="reference internal" href="#id14" title="A Andersen, U Pesavento, and Z Jane Wang. Unsteady aerodynamics of fluttering and tumbling plates. Journal of Fluid Mechanics, 541:65–90, 2005.">APW05a</a>, <a class="reference internal" href="#id15" title="Anders Andersen, Umberto Pesavento, and Z Jane Wang. Analysis of transitions between fluttering, tumbling and steady descent of falling cards. Journal of Fluid Mechanics, 541:91–104, 2005.">APW05b</a>, <a class="reference internal" href="#id13" title="Z Jane Wang, James M Birch, and Michael H Dickinson. Unsteady forces and flows in low reynolds number hovering flight: two-dimensional computations vs robotic wing experiments. Journal of Experimental Biology, 207(3):449–460, 2004.">WBD04</a>]</span> to particle transport <span class="bibtex-citation">[<a class="reference internal" href="#id18" title="Gholamhossein Bagheri and Costanza Bonadonna. On the drag of freely falling non-spherical particles. Powder Technology, 301:526–544, 2016.">BB16</a>, <a class="reference internal" href="#id17" title="E Loth. Drag of non-spherical solid particles of regular and irregular shape. Powder Technology, 182(3):342–353, 2008.">Lot08</a>]</span>. See screen capture of the
+<a class="reference external" href="https://github.com/deepmind/mujoco/blob/main/model/cards/cards.xml">cards.xml</a> model on the right.</div>
+<p data-bi="bi-74">我们基于两个表面积 <span class="math">\(A^\text{proj}_\mathbf{v}\)</span> 和 <span class="math">\(A_\text{max}\)</span> 推导 <span class="math">\(\mathbf{f}_\text{D}\)</span> 的公式。第一个 <span class="math">\(A^\text{proj}_\mathbf{v}\)</span> 是物体沿法向为速度 <span class="math">\(\mathbf{v}\)</span> 的平面的柱面投影。第二个是最大投影面积 <span class="math">\(A_\text{max} = \pi r_{max} r_{mid}\)</span>。</p><div class="en-orig" data-for="bi-74" lang="en">We derive a formula for <span class="math">\(\mathbf{f}_\text{D}\)</span> based on two surfaces <span class="math">\(A^\text{proj}_\mathbf{v}\)</span> and
+<span class="math">\(A_\text{max}\)</span>. The first, <span class="math">\(A^\text{proj}_\mathbf{v}\)</span>, is the cylindrical projection of the body onto a
+plane normal to the velocity <span class="math">\(\mathbf{v}\)</span>. The second is the maximum projected surface
+<span class="math">\(A_\text{max} = \pi r_{max} r_{mid}\)</span>.</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\mathbf{f}_\text{D} = - \rho~ \big[  C_{D, \text{blunt}} ~ A^\text{proj}_\mathbf{v} ~ +
+C_{D, \text{slender}}\left(A_\text{max} - A^\text{proj}_\mathbf{v} \right) \big] ~ \|\mathbf{v}\|~ \mathbf{v}
+
+\]</div>
+</div>
+<p data-bi="bi-75"><span class="math">\(A^\text{proj}_\mathbf{v}\)</span> 的公式及推导见上文的<a class="reference internal" href="#flprojection"><span class="std std-ref">引理</span></a>。</p><div class="en-orig" data-for="bi-75" lang="en">The formula and derivation for <span class="math">\(A^\text{proj}_\mathbf{v}\)</span> is given in the <a class="reference internal" href="#flprojection"><span class="std std-ref">lemma</span></a> above.</div>
+<p data-bi="bi-76">我们为角阻力提出一个类似的模型。对于每个笛卡尔坐标轴，我们考虑物体绕该轴旋转所得到的最大扫掠椭球的转动惯量。转动惯量的对角元素为：</p><div class="en-orig" data-for="bi-76" lang="en">We propose an analogous model for the angular drag. For each Cartesian axis we consider the moment of inertia of the
+maximum swept ellipsoid obtained by the rotation of the body around the axis. The resulting diagonal entries of the
+moment of inertia are:</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\mathbf{I}_{D,ii} = \frac{8\pi}{15} ~r_i ~\max(r_j, ~r_k)^4 .
+
+\]</div>
+</div>
+<p data-bi="bi-77">给定该参考转动惯量，角阻力矩计算为：</p><div class="en-orig" data-for="bi-77" lang="en">Given this reference moment of inertia, the angular drag torque is computed as:</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\mathbf{g}_\text{D} = - \rho ~ \boldsymbol{\omega} ~ \Big( \big[ C_{D, \text{angular}} ~ \mathbf{I}_D ~ +
+C_{D, \text{slender}} \left(\mathbf{I}_\text{max} - \mathbf{I}_D \right) \big] \cdot \boldsymbol{\omega} \Big)
+
+\]</div>
+</div>
+<p data-bi="bi-78">这里 <span class="math">\(\mathbf{I}_\text{max}\)</span> 是一个向量，其每个元素都等于 <span class="math">\(\mathbf{I}_D\)</span> 的最大分量。</p><div class="en-orig" data-for="bi-78" lang="en">Here <span class="math">\(\mathbf{I}_\text{max}\)</span> is a vector with each entry equal to the maximal component of <span class="math">\(\mathbf{I}_D\)</span>.</div>
+<p data-bi="bi-79">最后，粘性阻力项也称为线性阻力，在雷诺数约为 <span class="math">\(O(10)\)</span> 或更低时能很好地近似流体力。它们按照斯托克斯定律针对等效球体计算 <span class="bibtex-citation" id="id16">[<a class="reference internal" href="#id21" title="Horace Lamb. Hydrodynamics. Sixth edition. Cambridge University Press, 1932.">Lam32</a>, <a class="reference internal" href="#id27" title="GG Stokes. On the effect of internal friction of fluids on the motion of pendulums. Trans. Camb. phi1. S0c, 9(8):106, 1850.">Sto50</a>]</span>：</p><div class="en-orig" data-for="bi-79" lang="en">Finally the viscous resistance terms, also known as linear drag, well approvimate the fluid forces for Reynolds
+numbers around or below <span class="math">\(O(10)\)</span>. These are computed for the equivalent sphere with Stokes’ law
+<span class="bibtex-citation">[<a class="reference internal" href="#id10" title="Horace Lamb. Hydrodynamics. Sixth edition. Cambridge University Press, 1932.">Lam32</a>, <a class="reference internal" href="#id16" title="GG Stokes. On the effect of internal friction of fluids on the motion of pendulums. Trans. Camb. phi1. S0c, 9(8):106, 1850.">Sto50</a>]</span>:</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\begin{align*}
+\mathbf{f}_\text{V} &amp;= - 6 \pi r_D \beta \mathbf{v}\\
+\mathbf{g}_\text{V} &amp;= - 8 \pi r_D^3 \beta \boldsymbol{\omega}
+\end{align*}
+
+\]</div>
+</div>
+<p data-bi="bi-80">这里 <span class="math">\(r_D = (r_x + r_y + r_z)/3\)</span> 是等效球体的半径，<span class="math">\(\beta\)</span> 是介质的运动粘度（例如，常温空气为 <span class="math">\(1.48~\times 10^{-5}~m^2/s\)</span>，水为 <span class="math">\(0.89 \times 10^{-4}~m^2/s\)</span>）。举一个定量的例子：对于室温空气，当 <span class="math">\(u\cdot l \lesssim 2 \times 10^{-4}~m^2/s\)</span> 时，斯托克斯定律是准确的，其中 <span class="math">\(u\)</span> 是速度，<span class="math">\(l\)</span> 是物体的特征长度。</p><div class="en-orig" data-for="bi-80" lang="en">Here, <span class="math">\(r_D = (r_x + r_y + r_z)/3\)</span> is the radius of the equivalent sphere and <span class="math">\(\beta\)</span> is the kinematic
+viscosity of the medium (e.g. <span class="math">\(1.48~\times 10^{-5}~m^2/s\)</span> for ambient-temperature air and
+<span class="math">\(0.89 \times 10^{-4}~m^2/s\)</span> for water). To make a quantitative example, Stokes’ law become accurate for
+room-temperature air if <span class="math">\(u\cdot l \lesssim 2 \times 10^{-4}~m^2/s\)</span>, where <span class="math">\(u\)</span> is the speed and
+<span class="math">\(l\)</span> a characteristic length of the body.</div>
+</section>
+<section id="id17">
+<h3 data-bi="bi-81">粘性升力<a class="headerlink" href="#id17" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-81" lang="en">Viscous lift</div>
+<p data-bi="bi-82">库塔-茹科夫斯基定理将在均匀流中以速度 <code class="docutils literal notranslate"><span class="pre">u</span></code> 平移的二维物体的升力 <span class="math">\(L\)</span> 计算为 <span class="math">\(L = \rho u \Gamma\)</span>。这里 <span class="math">\(\Gamma\)</span> 是绕物体的环量。在接下来的小节中，我们定义两种环量来源以及由此产生的升力。</p><div class="en-orig" data-for="bi-82" lang="en">The Kutta-Joukowski theorem calculates the lift <span class="math">\(L\)</span> of a two-dimensional body translating in a uniform flow with
+speed <code class="docutils literal notranslate"><span class="pre">u</span></code> as <span class="math">\(L = \rho u \Gamma\)</span>. Here, <span class="math">\(\Gamma\)</span> is the circulation around the body. In the next
+subsections we define two sources of circulation and the resulting lift forces.</div>
+<section id="magnus">
+<h4 data-bi="bi-83">Magnus 力<a class="headerlink" href="#magnus" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-83" lang="en">Magnus force</div>
+<figure class="caption-small align-right" id="id33" style="width: 45%">
+<img alt="../_images/magnus.png" src="../_images/magnus.png"/>
+<figcaption>
+<p data-bi="bi-84"><span class="caption-text">绕旋转圆柱流动的烟雾流场可视化（WikiMedia Commons，CC BY-SA 4.0）。由于粘性，旋转圆柱使来流向上偏转，并受到向下的力（红色箭头）。</span><a class="headerlink" href="#id33" title="链接到此图片">#</a></p><div class="en-orig" data-for="bi-84" lang="en"><span class="caption-text">Smoke flow visualization of the flow past a rotating cylinder (WikiMedia Commons, CC BY-SA 4.0). Due to viscosity,
+the rotating cylinder deflects the incoming flow upward and receives a downwards force (red arrow).</span></div>
+</figcaption>
+</figure>
+<p data-bi="bi-85">Magnus 效应描述的是旋转物体在流体中运动时的行为。通过粘性效应，旋转的物体会带动周围流体旋转。这种旋转使流经物体的流体轨迹发生偏转（即产生线性加速度），而物体则受到大小相等、方向相反的反作用力。对于圆柱，单位长度圆柱上的 Magnus 力可以计算为 <span class="math">\(F_\text{M} / L = \rho v \Gamma\)</span>，其中 <span class="math">\(\Gamma\)</span> 是旋转引起的流动环量，<span class="math">\(v\)</span> 是物体的速度。对于任意形状的物体，我们将该力估计为：</p><div class="en-orig" data-for="bi-85" lang="en">The Magnus effect describes the motion of a rotating object moving through a fluid. Through viscous effects, a spinning
+object induces rotation in the surrounding fluid. This rotation deflects the trajectory of the fluid past the object
+(i.e. it causes linear acceleration), and the object receives an equal an opposite reaction. For a cylinder, the Magnus
+force per unit length of the cylinder can be computed as <span class="math">\(F_\text{M} / L = \rho v \Gamma\)</span>, where <span class="math">\(\Gamma\)</span>
+is the circulation of the flow caused by the rotation and <span class="math">\(v\)</span> the velocity of the object. We estimate this force
+for an arbitrary body as:</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\mathbf{f}_{\text{M}} = C_M ~\rho~ V~ \boldsymbol{\omega}\times\mathbf{v} ,
+
+\]</div>
+</div>
+<p data-bi="bi-86">其中 <span class="math">\(V\)</span> 是物体的体积，<span class="math">\(C_M\)</span> 是该力的系数，通常设为 1。</p><div class="en-orig" data-for="bi-86" lang="en">where <span class="math">\(V\)</span> is the volume of the body and <span class="math">\(C_M\)</span> is a coefficient for the force, typically set to 1.</div>
+<p data-bi="bi-87">不妨举一个例子。为了减少变量数量，假设物体仅绕一个方向旋转，例如 <span class="math">\(\boldsymbol{\omega} = \{0, 0, \omega_z\}\)</span>，并沿另外两个方向平移，例如 <span class="math">\(\mathbf{v} = \{v_x, v_y, 0\}\)</span>。附加质量力与 Magnus 效应产生的力沿（例如）<span class="math">\(x\)</span> 方向之和为：</p><div class="en-orig" data-for="bi-87" lang="en">It’s worth making an example. To reduce the number of variables, suppose a body rotating in only one direction, e.g.
+<span class="math">\(\boldsymbol{\omega} = \{0, 0, \omega_z\}\)</span>, translating along the other two, e.g. <span class="math">\(\mathbf{v} = \{v_x, v_y, 0\}\)</span>. The
+sum of the force due to added mass and the force due to the Magnus effect along, for example, <span class="math">\(x\)</span> is:</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\frac{f}{\pi \rho r_z} = v_y \omega_z \left(2 r_x \min\{r_x, r_z\} - (r_x + r_z)^2\right)
+
+\]</div>
+</div>
+<p data-bi="bi-88">请注意这两项符号相反。</p><div class="en-orig" data-for="bi-88" lang="en">Note that the two terms have opposite signs.</div>
+</section>
+<section id="kutta-condition">
+<h4 data-bi="bi-89">库塔条件（Kutta condition）<a class="headerlink" href="#kutta-condition" title="链接到此标题。">#</a></h4><div class="en-orig en-h" data-for="bi-89" lang="en">Kutta condition</div>
+<p data-bi="bi-90">驻点（stagnation point）是流场中速度为零的位置。对于在流动中运动的物体（在二维情形下，取随物体一起运动的坐标系），有两个驻点：一个在前方，流线在此分开并流向物体两侧；另一个在后方，流线在此重新汇合。带有尖锐后缘（尾缘）的运动物体，会在周围流动中产生强度足以把后驻点固定在后缘的环量。这就是库塔条件，一种流体动力学现象，可以在带有尖角的固体上观察到，例如细长物体或翼型的后缘。</p><div class="en-orig" data-for="bi-90" lang="en">A stagnation point is a location in the flow field where the velocity is zero. For a body moving in a flow (in 2D, in
+the frame moving with the body) there are two stagnation points: in the front, where the stream-lines separate to either
+sides of the body, and in the rear, where they reconnect. A moving body with a sharp trailing (rear) edge will generate
+in the surrounding flow a circulation of sufficient strength to hold the rear stagnation point at the trailing edge.
+This is the Kutta condition, a fluid dynamic phenomenon that can be observed for solid bodies with sharp corners, such
+as slender bodies or the trailing edges of airfoils.</div>
+<figure class="align-left" style="width: 95%">
+<img alt="../_images/kutta_cond_plate.svg" class="only-light" src="../_images/kutta_cond_plate.svg"/>
+</figure>
+<figure class="caption-small align-left" id="id34" style="width: 95%">
+<img alt="../_images/kutta_cond_plate_dark.svg" class="only-dark" src="../_images/kutta_cond_plate_dark.svg"/>
+<figcaption>
+<p data-bi="bi-91"><span class="caption-text">库塔条件示意图。蓝线为流线，两个品红色的点为驻点。连接两个驻点的分流线（dividing streamline）以绿色标出。分流线与物体围成一个区域，其中的流动被称为“分离”的，并在其内部再循环。这一环量对平板产生一个向上的力。</span><a class="headerlink" href="#id34" title="链接到此图片">#</a></p><div class="en-orig" data-for="bi-91" lang="en"><span class="caption-text">Sketch of the Kutta condition. Blue lines are streamlines and the two magenta points are the stagnation points. The
+dividing streamline, which connects the two stagnation points, is marked in green. The dividing streamline and the
+body inscribe an area where the flow is said to be “separated” and recirculates within. This circulation produces an
+upward force acting on the plate.</span></div>
+</figcaption>
+</figure>
+<p data-bi="bi-92">对于上图所示的二维流动，由库塔条件产生的环量可以估算为：<span class="math">\(\Gamma_\text{K} = C_K ~ r_x ~ \| \mathbf{v}\| ~ \sin(2\alpha)\)</span>，其中 <span class="math">\(C_K\)</span> 是升力系数，<span class="math">\(\alpha\)</span> 是速度矢量与其在表面上的投影之间的夹角。单位长度的升力可以由库塔-茹科夫斯基定理（Kutta–Joukowski theorem）计算为
+<span class="math">\(\mathbf{f}_K / L = \rho \Gamma_\text{K} \times \mathbf{v}\)</span>。</p><div class="en-orig" data-for="bi-92" lang="en">For a two-dimensional flow sketched in the figure above, the circulation due to the Kutta condition can be estimated as:
+<span class="math">\(\Gamma_\text{K} = C_K ~ r_x ~ \| \mathbf{v}\| ~ \sin(2\alpha)\)</span>,
+where <span class="math">\(C_K\)</span> is a lift coefficient, and <span class="math">\(\alpha\)</span> is the angle between the velocity vector and its projection
+onto the surface. The lift force per unit length can be computed with the Kutta–Joukowski theorem as
+<span class="math">\(\mathbf{f}_K / L = \rho \Gamma_\text{K} \times \mathbf{v}\)</span>.</div>
+<p data-bi="bi-93">为了把升力方程推广到三维运动，我们考虑物体横截面的法向量
+<span class="math">\(\mathbf{n}_{s, \mathbf{v}} = \{\frac{r_y r_z}{r_x}v_x, \frac{r_z r_x}{r_y}v_y, \frac{r_x r_y}{r_z}v_z\}\)</span>，该横截面产生物体在垂直于速度的平面上的投影 <span class="math">\(A^\text{proj}_\mathbf{v}\)</span> （见上文的 <a class="reference internal" href="#flprojection"><span class="std std-ref">引理</span></a>），以及相应的单位向量
+<span class="math">\(\hat{\mathbf{n}}_{s, \mathbf{v}}\)</span>。我们利用这一方向把速度分解为 <span class="math">\(\mathbf{v} = \mathbf{v}_\parallel ~+~ \mathbf{v}_\perp\)</span>，其中
+<span class="math">\(\mathbf{v}_\perp = \left(\mathbf{v} \cdot \hat{\mathbf{n}}_{s, \mathbf{v}}\right) \hat{\mathbf{n}}_{s, \mathbf{v}}\)</span>。升力写为：</p><div class="en-orig" data-for="bi-93" lang="en">In order to extend the lift force equation to three-dimensional motions, we consider the normal
+<span class="math">\(\mathbf{n}_{s, \mathbf{v}} = \{\frac{r_y r_z}{r_x}v_x, \frac{r_z r_x}{r_y}v_y, \frac{r_x r_y}{r_z}v_z\}\)</span>
+to the cross-section of the body which generates the body’s projection <span class="math">\(A^\text{proj}_\mathbf{v}\)</span> onto a plane
+normal to the velocity given in the <a class="reference internal" href="#flprojection"><span class="std std-ref">lemma</span></a> above and the corresponding unit vector
+<span class="math">\(\hat{\mathbf{n}}_{s, \mathbf{v}}\)</span>.
+We use this direction to decompose <span class="math">\(\mathbf{v} = \mathbf{v}_\parallel ~+~ \mathbf{v}_\perp\)</span> with
+<span class="math">\(\mathbf{v}_\perp = \left(\mathbf{v} \cdot \hat{\mathbf{n}}_{s, \mathbf{v}}\right) \hat{\mathbf{n}}_{s, \mathbf{v}}\)</span>.
+We write the lift force as:</div>
+<div class="math-wrapper docutils container">
+<div class="math">
+\[\begin{align*}
+    \mathbf{f}_\text{K} &amp;= \frac{C_K~\rho~ A^\text{proj}_\mathbf{v}}{\|\mathbf{v}\|}
+                              \left( \mathbf{v} \times \mathbf{v}_\parallel\right)\times \mathbf{v} \\
+    &amp;= C_K~\rho~ A^\text{proj}_\mathbf{v} \left(\hat{\mathbf{v}} \cdot \hat{\mathbf{n}}_{s, \mathbf{v}}\right)
+                              \left( \hat{\mathbf{n}}_{s, \mathbf{v}} \times \mathbf{v} \right)\times \mathbf{v}
+\end{align*}
+
+\]</div>
+</div>
+<p data-bi="bi-94">这里，<span class="math">\(\hat{\mathbf{v}}\)</span> 是沿 <span class="math">\(\mathbf{v}\)</span> 的单位法向量。请注意，<span class="math">\(\hat{\mathbf{n}}_{s,
+\mathbf{v}}\)</span> 的方向仅在物体半轴不相等的平面上与 <span class="math">\(\hat{\mathbf{v}}\)</span> 不同。因此，例如对于球形物体，<span class="math">\(\hat{\mathbf{n}}_{s, \mathbf{v}} \equiv \hat{\mathbf{v}}\)</span>，并且按构造有
+<span class="math">\(\mathbf{f}_\text{K} = 0\)</span>。</p><div class="en-orig" data-for="bi-94" lang="en">Here, <span class="math">\(\hat{\mathbf{v}}\)</span> is the unit-normal along <span class="math">\(\mathbf{v}\)</span>. Note that the direction of <span class="math">\(\hat{\mathbf{n}}_{s,
+\mathbf{v}}\)</span> differs from <span class="math">\(\hat{\mathbf{v}}\)</span> only on the planes where the semi-axes of the body are unequal. So for
+example, for spherical bodies <span class="math">\(\hat{\mathbf{n}}_{s, \mathbf{v}} \equiv \hat{\mathbf{v}}\)</span> and by construction
+<span class="math">\(\mathbf{f}_\text{K} = 0\)</span>.</div>
+<p data-bi="bi-95">我们用一个例子来解释这一关系。假设一个物体满足 <span class="math">\(r_x = r_y\)</span> 且 <span class="math">\(r_z \ll r_x\)</span>。请注意，向量
+<span class="math">\(\hat{\mathbf{n}}_{s, \mathbf{v}} \times \hat{\mathbf{v}}\)</span> 给出了由固体物体使流动发生偏转所诱导的环量的方向。沿 <span class="math">\(z\)</span> 方向，环量将正比于 <span class="math">\(\frac{r_y r_z}{r_x}v_x v_y
+- \frac{r_z r_x}{r_y}v_x v_y = 0\)</span> （由于 <span class="math">\(r_x = r_y\)</span>）。因此，在固体呈钝形的平面上，该运动不产生环量。</p><div class="en-orig" data-for="bi-95" lang="en">Let’s unpack the relation with an example. Suppose a body with <span class="math">\(r_x = r_y\)</span> and <span class="math">\(r_z \ll r_x\)</span>. Note that the vector
+<span class="math">\(\hat{\mathbf{n}}_{s, \mathbf{v}} \times \hat{\mathbf{v}}\)</span> gives the direction of the circulation induced by the
+deflection of the flow by the solid body. Along <span class="math">\(z\)</span>, the circulation will be proportional to <span class="math">\(\frac{r_y r_z}{r_x}v_x v_y
+- \frac{r_z r_x}{r_y}v_x v_y = 0\)</span> (due to <span class="math">\(r_x = r_y\)</span>). Therefore, on the plane where the solid is blunt, the motion
+produces no circulation.</div>
+<p data-bi="bi-96">现在，为简单起见，令 <span class="math">\(v_x = 0\)</span>。这时沿 <span class="math">\(y\)</span> 方向的环量（正比于
+<span class="math">\(\frac{r_y r_z}{r_x}v_x v_z - \frac{r_y r_x}{r_y}v_x v_z\)</span>）同样为零。环量唯一的非零分量沿 <span class="math">\(x\)</span> 方向，并且正比于 <span class="math">\(\left(\frac{r_x r_z}{r_y} - \frac{r_x r_y}{r_z}\right) v_y v_z \approx
+\frac{r_x^2}{r_z} v_y v_z\)</span>。</p><div class="en-orig" data-for="bi-96" lang="en">Now, for simplicity, let <span class="math">\(v_x = 0\)</span>. In this case also the circulation along <span class="math">\(y\)</span>, proportional
+to <span class="math">\(\frac{r_y r_z}{r_x}v_x v_z - \frac{r_y r_x}{r_y}v_x v_z\)</span>, is zero. The only non-zero component of the circulation
+will be along <span class="math">\(x\)</span> and be proportional to <span class="math">\(\left(\frac{r_x r_z}{r_y} - \frac{r_x r_y}{r_z}\right) v_y v_z \approx
+\frac{r_x^2}{r_z} v_y v_z\)</span>.</div>
+<p data-bi="bi-97">此时有 <span class="math">\(\mathbf{v}_\parallel = \{v_x, 0, v_z\}\)</span> 以及
+<span class="math">\(\Gamma \propto \{r_z v_y v_z, ~ 0,~ - r_x v_x v_y \} / \|\mathbf{v}\|\)</span>。该运动在固体呈钝形的平面上不产生环量，而在另外两个平面上，环量为
+<span class="math">\(\Gamma \propto r_\Gamma ~ \|\mathbf{v}\|~ \sin(2 \alpha) ~ = ~2 r_\Gamma ~\|\mathbf{v}\| ~\sin(\alpha)~\cos(\alpha)\)</span>，其中 <span class="math">\(\alpha\)</span> 是速度与其在该平面上物体投影之间的夹角（例如，在与 <span class="math">\(x\)</span> 正交的平面上，有 <span class="math">\(\sin(\alpha) = v_y/\|\mathbf{v}\|\)</span> 和
+<span class="math">\(\cos(\alpha) = v_z/\|\mathbf{v}\|\)</span>），而 <span class="math">\(r_\Gamma\)</span> 是该平面上的升力面（例如，与 <span class="math">\(x\)</span> 正交的平面上为 <span class="math">\(r_z\)</span>）。此外，环量的方向由叉积给出（因为固体边界会把来流速度“旋转”到其在物体上的投影方向）。</p><div class="en-orig" data-for="bi-97" lang="en">We would have <span class="math">\(\mathbf{v}_\parallel = \{v_x, 0, v_z\}\)</span> and
+<span class="math">\(\Gamma \propto \{r_z v_y v_z, ~ 0,~ - r_x v_x v_y \} / \|\mathbf{v}\|\)</span>.
+The motion produces no circulation on the plane where the solid is blunt, and on the other two planes
+the circulation is
+<span class="math">\(\Gamma \propto r_\Gamma ~ \|\mathbf{v}\|~ \sin(2 \alpha) ~ = ~2 r_\Gamma ~\|\mathbf{v}\| ~\sin(\alpha)~\cos(\alpha)\)</span>
+with <span class="math">\(\alpha\)</span> the angle between the velocity and its projection on the body on the plane (e.g. on the plane
+orthogonal to <span class="math">\(x\)</span> we have <span class="math">\(\sin(\alpha) = v_y/\|\mathbf{v}\|\)</span> and
+<span class="math">\(\cos(\alpha) = v_z/\|\mathbf{v}\|\)</span>), and <span class="math">\(r_\Gamma\)</span>, the lift surface on the plane (e.g. <span class="math">\(r_z\)</span> for
+the plane orthogonal to <span class="math">\(x\)</span>). Furthermore, the direction of the circulation is given by the cross product (because
+the solid boundary “rotates” the incoming flow velocity towards its projection on the body).</div>
+</section>
+</section>
+<section id="id18">
+<h3 data-bi="bi-98">致谢<a class="headerlink" href="#id18" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-98" lang="en">Acknowledgements</div>
+<p data-bi="bi-99">本节中模型的设计与实现由 Guido Novati 完成。</p><div class="en-orig" data-for="bi-99" lang="en">The design and implementation of the model in this section are the work of Guido Novati.</div>
+</section>
+<section id="id19">
+<h3 data-bi="bi-100">参考文献<a class="headerlink" href="#id19" title="链接到此标题。">#</a></h3><div class="en-orig en-h" data-for="bi-100" lang="en">References</div>
+<div class="docutils container" id="id20">
+<div class="citation-list" role="list">
+<div class="citation" id="id25" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a href="#id14" role="doc-backlink">APW05a</a><span class="fn-bracket">]</span></span>
+<p>A Andersen, U Pesavento, and Z Jane Wang. Unsteady aerodynamics of fluttering and tumbling plates. <em>Journal of Fluid Mechanics</em>, 541:65–90, 2005.</p>
+</div>
+<div class="citation" id="id26" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>APW05b<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a href="#id6" role="doc-backlink">1</a>,<a href="#id14" role="doc-backlink">2</a>)</span>
+<p>Anders Andersen, Umberto Pesavento, and Z Jane Wang. Analysis of transitions between fluttering, tumbling and steady descent of falling cards. <em>Journal of Fluid Mechanics</em>, 541:91–104, 2005.</p>
+</div>
+<div class="citation" id="id29" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a href="#id15" role="doc-backlink">BB16</a><span class="fn-bracket">]</span></span>
+<p>Gholamhossein Bagheri and Costanza Bonadonna. On the drag of freely falling non-spherical particles. <em>Powder Technology</em>, 301:526–544, 2016.</p>
+</div>
+<div class="citation" id="id30" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a href="#id13" role="doc-backlink">DHD15</a><span class="fn-bracket">]</span></span>
+<p>Zhipeng Duan, Boshu He, and Yuanyuan Duan. Sphere drag and heat transfer. <em>Scientific reports</em>, 5(1):1–7, 2015.</p>
+</div>
+<div class="citation" id="id21" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>Lam32<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a href="#id10" role="doc-backlink">1</a>,<a href="#id16" role="doc-backlink">2</a>)</span>
+<p>Horace Lamb. <em>Hydrodynamics. Sixth edition.</em> Cambridge University Press, 1932.</p>
+</div>
+<div class="citation" id="id28" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a href="#id15" role="doc-backlink">Lot08</a><span class="fn-bracket">]</span></span>
+<p>E Loth. Drag of non-spherical solid particles of regular and irregular shape. <em>Powder Technology</em>, 182(3):342–353, 2008.</p>
+</div>
+<div class="citation" id="id27" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a href="#id16" role="doc-backlink">Sto50</a><span class="fn-bracket">]</span></span>
+<p>GG Stokes. On the effect of internal friction of fluids on the motion of pendulums. <em>Trans. Camb. phi1. S0c</em>, 9(8):106, 1850.</p>
+</div>
+<div class="citation" id="id23" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a href="#id11" role="doc-backlink">Tuc25</a><span class="fn-bracket">]</span></span>
+<p>LB Tuckerman. <em>Inertia factors of ellipsoids for use in airship design</em>. US Government Printing Office, 1925.</p>
+</div>
+<div class="citation" id="id31" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a href="#id4" role="doc-backlink">VSM+24</a><span class="fn-bracket">]</span></span>
+<p>Roman Vaxenburg, Igor Siwanowicz, Josh Merel, Alice A Robie, Carmen Morrow, Guido Novati, Zinovia Stefanidi, Gwyneth M Card, Michael B Reiser, Matthew M Botvinick, Kristin M Branson, Yuval Tassa, and Srinivas C Turaga. Whole-body simulation of realistic fruit fly locomotion with deep reinforcement learning. <em>bioRxiv</em>, 2024. <a class="reference external" href="https://doi.org/10.1101/2024.03.11.584515">doi:10.1101/2024.03.11.584515</a>.</p>
+</div>
+<div class="citation" id="id24" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a href="#id14" role="doc-backlink">WBD04</a><span class="fn-bracket">]</span></span>
+<p>Z Jane Wang, James M Birch, and Michael H Dickinson. Unsteady forces and flows in low reynolds number hovering flight: two-dimensional computations vs robotic wing experiments. <em>Journal of Experimental Biology</em>, 207(3):449–460, 2004.</p>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+</article>
+</div>
+<footer>
+<div class="related-pages">
+<a class="next-page" href="speculative.html">
+<div class="page-info">
+<div class="context">
+<span>Next</span>
+</div>
+<div class="title">推测接触</div>
+</div>
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+</a>
+<a class="prev-page" href="index.html">
+<svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+<div class="page-info">
+<div class="context">
+<span>Previous</span>
+</div>
+<div class="title">计算</div>
+</div>
+</a>
+</div>
+<div class="bottom-of-page">
+<div class="left-details">
+<div class="copyright">
+                Copyright © DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+</div>
+<div class="right-details">
+</div>
+</div>
+</footer>
+</div>
+<aside class="toc-drawer">
+<div class="toc-sticky toc-scroll">
+<div class="toc-title-container">
+<span class="toc-title">
+            On this page
+          </span>
+</div>
+<div class="toc-tree-container">
+<div class="toc-tree">
+<ul>
+<li><a class="reference internal" href="#">流体力</a><ul>
+<li><a class="reference internal" href="#flinertia">惯性模型</a></li>
+<li><a class="reference internal" href="#flellipsoid">椭球模型</a><ul>
+<li><a class="reference internal" href="#id5">概述</a></li>
+<li><a class="reference internal" href="#id7">符号说明</a></li>
+<li><a class="reference internal" href="#flprojection">椭球投影</a></li>
+<li><a class="reference internal" href="#id9">附加质量</a></li>
+<li><a class="reference internal" href="#id12">粘性阻力</a></li>
+<li><a class="reference internal" href="#id17">粘性升力</a><ul>
+<li><a class="reference internal" href="#magnus">Magnus 力</a></li>
+<li><a class="reference internal" href="#kutta-condition">库塔条件（Kutta condition）</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id18">致谢</a></li>
+<li><a class="reference internal" href="#id19">参考文献</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div><script src="../_static/documentation_options.js?v=7d86a446"></script>
+<script src="../_static/doctools.js?v=fd6eb6e6"></script>
+<script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+<script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+<script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="../_static/copybutton.js?v=f281be69"></script>
+<script src="../_static/translations.js?v=540d3cec"></script>
+<script src="../_static/katex.min.js?v=5cc8ed51"></script>
+<script src="../_static/auto-render.min.js?v=af98beb9"></script>
+<script src="../_static/katex_autorenderer.js?v=ae454eff"></script>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<script src="../_static/linenumbers.js?v=ebda5d35"></script>
+<script src="../_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+<script src="../_static/bilingual.js?v=25c2633d"></script></body></html>

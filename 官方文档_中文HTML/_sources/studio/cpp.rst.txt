@@ -1,0 +1,148 @@
+﻿.. _StudioCpp:
+
+===
+C++
+===
+
+.. note::
+   :class: mt-notice
+
+   本页由 AI（Claude Sonnet）根据 MuJoCo 官方英文文档（2026-11-16 版）翻译，仅供学习参考；如有出入，以英文原版为准。术语对照见资料包中的 ``术语表.md`` 。
+
+.. _StudioCppLauncher:
+
+构建与启动
+==============
+
+原生 C++ Studio 应用程序位于 `studio/
+<https://github.com/google-deepmind/mujoco/tree/main/studio>`__，并已预编译包含在 MuJoCo 二进制发行版中（参见 :ref:`独立应用程序 <StudioApp>`）。若要在仓库根目录构建并启动 ``mujoco_studio``，请使用 `.github/workflows/build_steps.sh
+<https://github.com/google-deepmind/mujoco/blob/main/.github/workflows/build_steps.sh>`__ 中的 ``build_studio_cpp_viewer`` 步骤（先决条件参见工作流的 `README
+<https://github.com/google-deepmind/mujoco/blob/main/.github/workflows/README.md>`__），或运行
+`studio/build.sh <https://github.com/google-deepmind/mujoco/blob/main/studio/build.sh>`__\ （它同样支持 Windows 上的 Git Bash、\ ``debug``/``configure``/``build`` 参数以及 ``CMAKE_ARGS``）：
+
+.. code-block:: shell
+
+   bash .github/workflows/build_steps.sh build_studio_cpp_viewer
+   ./build_host/bin/mujoco_studio model/humanoid/humanoid.xml
+
+若要不借助辅助脚本，手动配置一个独立的 CMake 构建树：
+
+.. code-block:: shell
+
+   cmake -B build-studio \
+     -DCMAKE_BUILD_TYPE=Release \
+     -DUSE_STATIC_LIBCXX=OFF \
+     -DBUILD_SHARED_LIB=OFF \
+     -DMUJOCO_USE_FILAMENT=ON \
+     -DMUJOCO_BUILD_EXAMPLES=OFF \
+     -DMUJOCO_BUILD_SIMULATE=OFF \
+     -DMUJOCO_BUILD_TESTS=OFF \
+     -DMUJOCO_TEST_PYTHON_UTIL=OFF \
+     -DMUJOCO_WITH_USD=OFF \
+     -DMUJOCO_BUILD_STUDIO=ON \
+     -DFILAMENT_SKIP_SAMPLES=ON \
+     -DCMAKE_CXX_FLAGS=-Wno-error=deprecated-declarations \
+     -DFILAMENT_SHORTEN_MSVC_COMPILATION=OFF
+   cmake --build build-studio --config Release --target mujoco_studio --parallel
+   ./build-studio/bin/mujoco_studio model/humanoid/humanoid.xml
+
+``mujoco_studio`` 会相对于可执行文件所在目录解析其暂存的字体和 Filament 资源，并支持以下 ``--gfx`` 图形模式（`graphics_mode.h
+<https://github.com/google-deepmind/mujoco/blob/main/studio/hal/graphics_mode.h>`__）：
+
+- ``opengl`` / ``opengl_headless`` / ``opengl_software``：\ :ref:`Filament <FilamentRendering>` OpenGL 桌面窗口、离屏无头上下文（在 C++ 应用中被块传输到软件 SDL2 窗口），或软件光栅化器。
+- ``vulkan`` / ``vulkan_software``：Filament Vulkan 桌面窗口或软件光栅化器。
+
+在 Linux 上，直接窗口渲染（rendering）需要 X11（在 Wayland 下 ``--gfx=opengl`` 会被拒绝）。在 Wayland 会话中，省略 ``--gfx`` 时会回退到 ``opengl_headless``；若要直接使用 GPU 呈现，请使用 X11 会话。
+
+自定义 C++ 可执行文件可以在调用 ``absl::ParseCommandLine`` 之后，通过 `launcher.h
+<https://github.com/google-deepmind/mujoco/blob/main/studio/launcher.h>`__ 中声明的 ``mujoco::studio::LaunchStudio`` 来嵌入并启动 Studio。\ ``LaunchStudio`` 接受一个 ``LauncherConfig``，并负责管理资源提供者的注册、\ ``mujoco::studio::App``\ （`app.h <https://github.com/google-deepmind/mujoco/blob/main/studio/app.h>`__）的初始化、桌面构建中的后台物理线程，以及主 UI/渲染循环。
+
+.. _StudioCppPlugins:
+
+C++ 插件
+===========
+
+.. note::
+   C++ 插件（plugin）目前使用一种 POD 回调结构体接口，它有别于 :ref:`Python 插件 <StudioPythonPlugins>` 所使用的消息处理器 API；后续工作将统一这两套插件系统。
+
+在 C++ 中，Studio 插件是在 `ux/plugin.h
+<https://github.com/google-deepmind/mujoco/blob/main/studio/ux/plugin.h>`__ 中定义的、带有函数指针的朴素数据（POD）结构体。插件通过 ``mujoco::studio::RegisterPlugin(plugin)`` 按值复制到全局注册表中。请勿对它们进行子类化；自定义状态应存放在 ``void* data`` 字段中：
+
+.. list-table::
+   :widths: 24 34 42
+   :header-rows: 1
+
+   * - 结构体（``mujoco::studio``）
+     - 回调
+     - 用途
+   * - ``GuiPlugin``
+     - ``update(GuiPlugin* self)``
+     - 在 Plugins 主菜单中注册一个可切换的窗口，并在 ``active`` 为 ``true`` 时构建自定义的 ``ImGui::`` 控件。
+   * - ``ScenePlugin``
+     - ``enhance_scene(ScenePlugin* self, const mjModel* model, mjData* data, mjvScene* scene)``
+     - 在渲染之前，向 :ref:`mjvScene` 追加自定义的 :ref:`mjvGeom` 对象。
+   * - ``ModelPlugin``
+     - ``get_model_to_load``, ``post_model_loaded``, ``do_update``, ``pre_step``, ``post_step``
+     - 从自定义来源提供模型，并挂接到物理更新和 :ref:`mj_step` 调用中。
+   * - ``KeyHandlerPlugin``
+     - ``on_key_pressed(KeyHandlerPlugin* self)``
+     - 当按下已配置的 ImGui ``key_chord`` 时调用一个回调。
+   * - ``SpecEditorPlugin``
+     - ``pre_compile``, ``post_compile``
+     - 在编译之前修改 :ref:`mjSpec`；\ ``pre_compile`` 返回 ``true`` 会触发重新编译及 ``post_compile``。
+
+插件注册
+-------------------
+
+C++ 插件可以在链接的库或翻译单元内，通过 :ref:`mjPLUGIN_LIB_INIT` 自行注册（它在 ``main()`` 之前运行，无需修改启动器），也可以在调用 ``LaunchStudio`` 之前于 ``main()`` 中显式注册：
+
+.. code-block:: C++
+
+   #include "absl/flags/parse.h"
+   #include <imgui.h>
+   #include <mujoco/mujoco.h>
+   #include "studio/launcher.h"
+   #include "studio/ux/plugin.h"
+
+   struct TelemetryState {
+     float gain = 1.0f;
+   };
+
+   void RegisterTelemetryPlugin() {
+     static TelemetryState state;
+
+     mujoco::studio::GuiPlugin gui_plugin;
+     gui_plugin.name = "Telemetry";
+     gui_plugin.active = true;
+     gui_plugin.data = &state;
+     gui_plugin.update = [](mujoco::studio::GuiPlugin* self) {
+       auto* s = static_cast<TelemetryState*>(self->data);
+       ImGui::SliderFloat("Gain", &s->gain, 0.0f, 10.0f);
+     };
+     mujoco::studio::RegisterPlugin(gui_plugin);
+   }
+
+   // Option A: Register automatically when linked or loaded as a plugin library.
+   mjPLUGIN_LIB_INIT(telemetry_plugin) {
+     RegisterTelemetryPlugin();
+   }
+
+   // Option B: Register explicitly in a custom executable before LaunchStudio.
+   int main(int argc, char** argv) {
+     absl::ParseCommandLine(argc, argv);
+     RegisterTelemetryPlugin();
+
+     mujoco::studio::LauncherConfig config;
+     config.title = "Custom Studio";
+     config.model_file = "path/to/robot.xml";
+     return mujoco::studio::LaunchStudio(argc, argv, config);
+   }
+
+.. _StudioLiveCpp:
+
+WebAssembly 构建
+=================
+
+:ref:`MuJoCo Live <StudioLive>` Web 应用程序（`live.mujoco.org <https://live.mujoco.org>`__）通过 Emscripten 将 ``mujoco::studio::App`` 编译为 WebAssembly（`emscripten.cc
+<https://github.com/google-deepmind/mujoco/blob/main/studio/emscripten.cc>`__）。JavaScript 通过 Embind 绑定——``init``、\ ``loadFile``、\ ``loadUrl``、\ ``loadKeyframe``、\ ``renderFrame`` 和 ``deinit``——来驱动应用程序循环，而 ``emscripten.cc`` 会为 ``http:``、\ ``https:`` 和 ``github:`` URL 注册自定义的 :ref:`mjpResourceProvider` 处理器，这些处理器由异步 ``fetch`` 缓存支撑。例如，点击 `MuJoCo Menagerie
+<https://github.com/google-deepmind/mujoco_menagerie>`__ 页面上的任意机器人缩略图，即可通过其 ``github:`` 模型 URL 直接在 ``live.mujoco.org`` 中打开该机器人。有关浏览器用法、拖放归档文件以及 ``?model=`` URL 参数，请参见 :ref:`Web 查看器 <StudioWebViewers>` 中的 :ref:`MuJoCo Live <StudioLive>`。

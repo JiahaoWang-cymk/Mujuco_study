@@ -1,0 +1,1430 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link sizes="16x16" href="../_static/favicons/favicon-16x16.png" rel="icon" type="image/png">
+    <link sizes="32x32" href="../_static/favicons/favicon-32x32.png" rel="icon" type="image/png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../_static/favicons/favicon-180x180.png" type="image/png">
+    <link sizes="180x180" href="../_static/favicons/favicon-180x180.png" rel="icon" type="image/png">
+    <link sizes="192x192" href="../_static/favicons/favicon-192x192.png" rel="icon" type="image/png"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="User Interface" href="ui.html"><link rel="prev" title="Visualization" href="visualization.html">
+        <link rel="prefetch" href="../_static/banner.svg" as="image">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Rendering - MuJoCo Documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/katex/katex.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/katex-math.css?v=05624691" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=8d83ad8c" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides_mjwarp.css?v=e08d3b36" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-visited: var(--color-brand-content);
+  --font-stack--monospace: Inconsolata,Consolas,ui-monospace,monospace;
+  --at-color: #830b2b;
+  --at-val-color: #bc103e;
+  --body-color: #14234b;
+  --color-highlight-on-target: #e5e8ed;
+  --primary-header-color: #0053d6;
+  --row-odd-background-color: #f0f3f7;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #123693;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 130%;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #a8caff;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #458dff;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 130%;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-visited: var(--color-brand-content);
+  --at-color: #ffaab7;
+  --at-val-color: #ff95a6;
+  --body-color: #14234b;
+  --color-admonition-background: #1e1e21;
+  --color-highlight-on-target: #3d4045;
+  --primary-header-color: #a8caff;
+  --row-odd-background-color: #222326;
+  --rst-content-a-color: #2980b9;
+  --secondary-header-color: #458dff;
+  --wy-menu-vertical-background-color: #0053d6;
+  --wy-menu-vertical-color: white;
+  --wy-nav-side-background-color: #0053d6;
+  --admonition-font-size: 1rem;
+  --admonition-title-font-size: 1rem;
+  --sidebar-item-font-size: 130%;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">MuJoCo Documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/banner.svg" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">MuJoCo Documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../computation/index.html">Computation</a><input aria-label="Toggle navigation of Computation" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../computation/fluid.html">Fluid forces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computation/speculative.html">Speculative contacts</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../XMLreference.html">XML Reference</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Programming</a><input aria-label="Toggle navigation of Programming" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="simulation.html">Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html">Visualization</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Rendering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui.html">User Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modeledit.html">Model Editing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="samples.html">Code samples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension.html">Extensions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../APIreference/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APItypes.html">Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIfunctions.html">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../APIreference/APIglobals.html">Globals</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../studio/index.html">Studio</a><input aria-label="Toggle navigation of Studio" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../studio/web_viewers.html">Web Viewers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/native_viewers.html">Native Viewers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/architecture.html">Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/python_plugins.html">Python Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../studio/cpp.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python.html">Python</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjx.html">MuJoCo XLA</a><input aria-label="Toggle navigation of MuJoCo XLA" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjx_api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mjwarp/index.html">MuJoCo Warp</a><input aria-label="Toggle navigation of MuJoCo Warp" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mjwarp/api.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../unity.html">Unity Plug-in</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../OpenUSD/index.html">OpenUSD</a><input aria-label="Toggle navigation of OpenUSD" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/building.html">Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcPhysics.html">mjcPhysics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/mjcf_file_format_plugin.html">File Format Plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/importing.html">Importing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../OpenUSD/exporting.html">Exporting</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">Model Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/google-deepmind/mujoco">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mujoco.org">mujoco.org</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/programming/rendering.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="rendering">
+<span id="id1"></span><h1>Rendering<a class="headerlink" href="#rendering" title="Link to this heading">#</a></h1>
+<p>MuJoCo provides two built-in 3D rendering backends that support both interactive onscreen viewers and headless offscreen
+rendering:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#filamentrendering"><span class="std std-ref">Filament rendering</span></a> (<code class="docutils literal notranslate"><span class="pre">mjrf</span></code>): A modern, physically-based rendering (PBR) engine supporting
+OpenGL, Vulkan, Metal, and WebGL. It uses a <strong>retained-mode</strong>, asynchronous architecture in which meshes, textures,
+lights, and <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">renderables</span></a> are created once from <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> and updated in place from
+<a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> each frame. Filament powers <a class="reference internal" href="../studio/index.html#studio"><span class="std std-ref">MuJoCo Studio</span></a> and is the recommended renderer for new
+applications.</p></li>
+<li><p><a class="reference internal" href="#classicrendering"><span class="std std-ref">OpenGL rendering</span></a> (<code class="docutils literal notranslate"><span class="pre">mjr</span></code>): The classic fixed-function OpenGL 1.5 renderer, now in
+maintenance mode. It uses an <strong>immediate-mode</strong> scene architecture in which <a class="reference internal" href="../APIreference/APIfunctions.html#mjv-updatescene"><span class="std std-ref">mjv_updateScene</span></a> populates an
+<a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> with all geometric objects and lights on every frame, and <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-render"><span class="std std-ref">mjr_render</span></a> draws it. It powers the
+classic <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> and <a class="reference internal" href="samples.html#sabasic"><span class="std std-ref">basic.cc</span></a> samples.</p></li>
+</ul>
+<p>Both renderers share the graphics-independent <a class="reference internal" href="visualization.html#visualization"><span class="std std-ref">Visualization</span></a> (<code class="docutils literal notranslate"><span class="pre">mjv</span></code>) layer for camera control
+(<a class="reference internal" href="../APIreference/APItypes.html#mjvcamera"><span class="std std-ref">mjvCamera</span></a>), visualization options (<a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a>), object picking (<a class="reference internal" href="../APIreference/APIfunctions.html#mjv-select"><span class="std std-ref">mjv_select</span></a>), and interactive
+perturbations (<a class="reference internal" href="../APIreference/APItypes.html#mjvperturb"><span class="std std-ref">mjvPerturb</span></a>). While the classic OpenGL renderer relies on <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> for the entire scene, the
+Filament renderer updates model geometry directly from <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> and uses <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> only for transient
+decorative overlays (<code class="docutils literal notranslate"><span class="pre">mjCAT_DECOR</span></code>). The table below maps the main concepts of the two renderers onto each other:</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 22.0%" />
+<col style="width: 39.0%" />
+<col style="width: 39.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>OpenGL (<code class="docutils literal notranslate"><span class="pre">mjr</span></code>)</p></th>
+<th class="head"><p>Filament (<code class="docutils literal notranslate"><span class="pre">mjrf</span></code>)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>GPU context</p></td>
+<td><p><a class="reference internal" href="../APIreference/APItypes.html#mjrcontext"><span class="std std-ref">mjrContext</span></a>, requires an externally created OpenGL context</p></td>
+<td><p><a class="reference internal" href="../APIreference/APItypes.html#mjrfcontext"><span class="std std-ref">mjrfContext</span></a>, owns its graphics context (OpenGL or Vulkan, windowed or headless)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Model resources</p></td>
+<td><p>Uploaded by <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-makecontext"><span class="std std-ref">mjr_makeContext</span></a></p></td>
+<td><p><a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a> and <a class="reference internal" href="../APIreference/APItypes.html#mjrftexture"><span class="std std-ref">mjrfTexture</span></a>, created by the <code class="docutils literal notranslate"><span class="pre">ModelResources</span></code> <a class="reference internal" href="#resupport"><span class="std std-ref">support class</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>Per-frame scene</p></td>
+<td><p><a class="reference internal" href="../APIreference/APIfunctions.html#mjv-updatescene"><span class="std std-ref">mjv_updateScene</span></a> fills <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ModelRenderables::Update</span></code> updates persistent <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">mjrfRenderable</span></a> objects in place; <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> only
+for decorations</p></td>
+</tr>
+<tr class="row-odd"><td><p>Offscreen buffer</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mjFB_OFFSCREEN</span></code>, sized by <code class="docutils literal notranslate"><span class="pre">mjModel.vis</span></code></p></td>
+<td><p><a class="reference internal" href="../APIreference/APItypes.html#mjrfrendertarget"><span class="std std-ref">mjrfRenderTarget</span></a>, any size and format</p></td>
+</tr>
+<tr class="row-even"><td><p>Pixel readback</p></td>
+<td><p><a class="reference internal" href="../APIreference/APIfunctions.html#mjr-readpixels"><span class="std std-ref">mjr_readPixels</span></a></p></td>
+<td><p><a class="reference internal" href="../APIreference/APItypes.html#mjrfreadrequest"><span class="std std-ref">mjrfReadRequest</span></a>, submitted together with the render request</p></td>
+</tr>
+<tr class="row-odd"><td><p>Modes and effects</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mjvScene.flags</span></code> (<a class="reference internal" href="../APIreference/APItypes.html#mjtrndflag"><span class="std std-ref">mjtRndFlag</span></a>) and <code class="docutils literal notranslate"><span class="pre">mjvScene.stereo</span></code></p></td>
+<td><p><a class="reference internal" href="../APIreference/APItypes.html#mjrdrawmode"><span class="std std-ref">mjrDrawMode</span></a> and per-request flags in <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a>; stereo is two requests with
+different cameras</p></td>
+</tr>
+<tr class="row-even"><td><p>2D overlays and text</p></td>
+<td><p><a class="reference internal" href="../APIreference/APIfunctions.html#mjr-overlay"><span class="std std-ref">mjr_overlay</span></a>, <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-text"><span class="std std-ref">mjr_text</span></a>, <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-rectangle"><span class="std std-ref">mjr_rectangle</span></a>, <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-figure"><span class="std std-ref">mjr_figure</span></a></p></td>
+<td><p>None; labels are reported through a callback and drawn by the application</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<section id="filament-rendering">
+<span id="filamentrendering"></span><h2>Filament rendering<a class="headerlink" href="#filament-rendering" title="Link to this heading">#</a></h2>
+<p>MuJoCo provides a renderer based on <a class="reference external" href="https://github.com/google/filament">Filament</a>, Google’s real-time physically
+based rendering engine. Filament has a small and fast runtime, runs on Linux, Windows, macOS, Android, iOS and the Web,
+and supports the OpenGL, Vulkan, Metal and WebGL graphics backends. The Filament renderer powers <a class="reference internal" href="../studio/index.html#studio"><span class="std std-ref">MuJoCo Studio</span></a> and <a class="reference external" href="https://live.mujoco.org">live.mujoco.org</a>.</p>
+<p>The Filament renderer is an optional, self-contained library named <code class="docutils literal notranslate"><span class="pre">mujoco_filament</span></code>. It implements the <code class="docutils literal notranslate"><span class="pre">mjrf</span></code>
+<a class="reference internal" href="../APIreference/APItypes.html#tyfilamentrenderstructure"><span class="std std-ref">types</span></a> and <a class="reference internal" href="../APIreference/APIfunctions.html#filamentrenderingapi"><span class="std std-ref">functions</span></a> defined in <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjrfilament.h">mjrfilament.h</a>.</p>
+<p>While the filament runtime is very small and efficient, it is a rather large build dependency. As such, if you intend to
+<a class="reference internal" href="index.html#inbuild"><span class="std std-ref">build MuJoCo from source</span></a>, you will need to set the CMake <code class="docutils literal notranslate"><span class="pre">MUJOCO_USE_FILAMENT</span></code> option in order to
+include the Filament renderer.</p>
+<p id="refilamentcompat">It is also possible to use Filament rendering with the classic <code class="docutils literal notranslate"><span class="pre">mjr</span></code> <a class="reference internal" href="../APIreference/APIfunctions.html#openglrendering"><span class="std std-ref">API</span></a> by additionally
+setting the <code class="docutils literal notranslate"><span class="pre">MUJOCO_USE_FILAMENT_MJR_COMPAT</span></code> CMake option. This option effectively replaces the OpenGL-based <code class="docutils literal notranslate"><span class="pre">mjr</span></code>
+functions with Filament-based implementations. This is useful for experimenting with the Filament renderer without
+having to rewrite application code. However, this compatibility mode does not support the full range of customization
+and effects available in the Filament runtime and comes with a slight performance overhead.</p>
+<p>You can find an example of using the Filament renderer in the <a class="reference internal" href="samples.html#sarender"><span class="std std-ref">render.cc</span></a> sample and, specifically, in
+the <code class="docutils literal notranslate"><span class="pre">RenderFilament()</span></code> function.</p>
+<div class="tip admonition">
+<p class="admonition-title">Light intensity switches the lighting model</p>
+<p>The Filament renderer decides how to light the <strong>entire scene</strong> from a single property: whether any
+<a class="reference internal" href="../XMLreference.html#body-light"><span class="std std-ref">light</span></a> in the model has a positive <a class="reference internal" href="../XMLreference.html#body-light-intensity"><span class="std std-ref">intensity</span></a>.</p>
+<ul class="simple">
+<li><p>If <strong>no</strong> light has positive intensity, the model is assumed to be authored for the classic renderer. A default
+environment light is added, the headlight is enabled, and a fixed total intensity is distributed among the model’s
+lights.</p></li>
+<li><p>If <strong>any</strong> light has positive intensity, all lights are treated as photometric: each light contributes exactly its
+own intensity (so lights left at zero go dark), the headlight is turned off, and there is no ambient illumination
+unless the model defines an <code class="docutils literal notranslate"><span class="pre">image</span></code> light.</p></li>
+</ul>
+<p>Setting <code class="docutils literal notranslate"><span class="pre">intensity</span></code> on a single light therefore changes the appearance of everything else. See <a class="reference internal" href="#relighting"><span class="std std-ref">Lighting</span></a> below for details.</p>
+</div>
+<section id="programming">
+<span id="reprogramming"></span><h3>Programming<a class="headerlink" href="#programming" title="Link to this heading">#</a></h3>
+<p>The Filament renderer is organized in three layers. At the base is the externally developed <a class="reference external" href="https://github.com/google/filament">Filament library</a> itself, which provides the physically-based rendering pipeline and graphics API
+backends. The public interface to the renderer is the <code class="docutils literal notranslate"><span class="pre">mjrf</span></code> C API, declared in <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/include/mujoco/mjrfilament.h">mjrfilament.h</a>. Unlike the classic <code class="docutils literal notranslate"><span class="pre">mjr</span></code> API,
+which redraws an <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> every frame, <code class="docutils literal notranslate"><span class="pre">mjrf</span></code> is <em>retained-mode</em> and <em>asynchronous</em>: applications create
+long-lived objects, mutate them incrementally, and submit batches of render and pixel-readback requests. On top of the C
+API, the C++ <a class="reference internal" href="#resupport"><span class="std std-ref">support layer</span></a> in <a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/render/filament/support">src/render/filament/support</a> (also bound in Python under
+<code class="docutils literal notranslate"><span class="pre">mujoco.mjrf</span></code>) automates creating and updating <code class="docutils literal notranslate"><span class="pre">mjrf</span></code> scene objects from <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a>, and
+<a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a>.</p>
+<p>Below is a simplified C++ outline (adapted from <code class="docutils literal notranslate"><span class="pre">RenderFilament()</span></code> in <a class="reference internal" href="samples.html#sarender"><span class="std std-ref">render.cc</span></a>) illustrating how
+these components fit together for offscreen rendering:</p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="c1">// create Filament context and scene</span>
+<span class="n">mjrfContextConfig</span><span class="w"> </span><span class="n">context_cfg</span><span class="p">;</span>
+<span class="n">mjrf_defaultContextConfig</span><span class="p">(</span><span class="o">&amp;</span><span class="n">context_cfg</span><span class="p">);</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mujoco</span><span class="o">::</span><span class="n">CreateContext</span><span class="p">(</span><span class="n">context_cfg</span><span class="p">);</span>
+
+<span class="n">mjrfSceneParams</span><span class="w"> </span><span class="n">scene_params</span><span class="p">;</span>
+<span class="n">mjrf_defaultSceneParams</span><span class="p">(</span><span class="o">&amp;</span><span class="n">scene_params</span><span class="p">);</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">scene</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mujoco</span><span class="o">::</span><span class="n">CreateScene</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">scene_params</span><span class="p">);</span>
+<span class="n">mjrf_configureSceneFromModel</span><span class="p">(</span><span class="n">scene</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">m</span><span class="p">);</span>
+
+<span class="c1">// create retained model components and decoration helper</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">model_resources</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">ModelResources</span><span class="o">&gt;</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">ctx</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">model_lights</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">ModelLights</span><span class="o">&gt;</span><span class="p">(</span><span class="n">scene</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">model_resources</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">model_renderables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">ModelRenderables</span><span class="o">&gt;</span><span class="p">(</span><span class="n">scene</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">model_resources</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">model_decorations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">ModelDecorations</span><span class="o">&gt;</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">scene</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">m</span><span class="p">);</span>
+
+<span class="c1">// create offscreen render target</span>
+<span class="n">mjrfRenderTargetConfig</span><span class="w"> </span><span class="n">target_cfg</span><span class="p">;</span>
+<span class="n">mjrf_defaultRenderTargetConfig</span><span class="p">(</span><span class="o">&amp;</span><span class="n">target_cfg</span><span class="p">);</span>
+<span class="n">target_cfg</span><span class="p">.</span><span class="n">width</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">width</span><span class="p">;</span>
+<span class="n">target_cfg</span><span class="p">.</span><span class="n">height</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="n">height</span><span class="p">;</span>
+<span class="n">target_cfg</span><span class="p">.</span><span class="n">color_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjPIXEL_FORMAT_RGB8</span><span class="p">;</span>
+<span class="n">target_cfg</span><span class="p">.</span><span class="n">depth_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjPIXEL_FORMAT_DEPTH32F</span><span class="p">;</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">render_target</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">mujoco</span><span class="o">::</span><span class="n">CreateRenderTarget</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">target_cfg</span><span class="p">);</span>
+
+<span class="c1">// update retained lights, renderables, and transient decorations from mjData</span>
+<span class="n">mjrRect</span><span class="w"> </span><span class="n">viewport</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="p">};</span>
+<span class="n">model_renderables</span><span class="o">-&gt;</span><span class="n">SetOptions</span><span class="p">(</span><span class="n">opt</span><span class="p">);</span>
+<span class="n">model_lights</span><span class="o">-&gt;</span><span class="n">Update</span><span class="p">(</span><span class="n">d</span><span class="p">);</span>
+<span class="n">model_renderables</span><span class="o">-&gt;</span><span class="n">Update</span><span class="p">(</span><span class="n">d</span><span class="p">);</span>
+<span class="n">model_decorations</span><span class="o">-&gt;</span><span class="n">Update</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">opt</span><span class="p">,</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">cam</span><span class="p">,</span><span class="w"> </span><span class="n">viewport</span><span class="p">);</span>
+
+<span class="c1">// submit render and pixel-readback requests and wait for completion</span>
+<span class="n">mjrfRenderRequest</span><span class="w"> </span><span class="n">request</span><span class="p">;</span>
+<span class="n">mjrf_defaultRenderRequest</span><span class="p">(</span><span class="o">&amp;</span><span class="n">request</span><span class="p">);</span>
+<span class="n">request</span><span class="p">.</span><span class="n">scene</span><span class="w">               </span><span class="o">=</span><span class="w"> </span><span class="n">scene</span><span class="p">.</span><span class="n">get</span><span class="p">();</span>
+<span class="n">request</span><span class="p">.</span><span class="n">camera</span><span class="w">              </span><span class="o">=</span><span class="w"> </span><span class="n">mjv_camera2GLCamera</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">cam</span><span class="p">);</span>
+<span class="n">request</span><span class="p">.</span><span class="n">viewport</span><span class="w">            </span><span class="o">=</span><span class="w"> </span><span class="n">viewport</span><span class="p">;</span>
+<span class="n">request</span><span class="p">.</span><span class="n">target</span><span class="w">              </span><span class="o">=</span><span class="w"> </span><span class="n">render_target</span><span class="p">.</span><span class="n">get</span><span class="p">();</span>
+<span class="n">request</span><span class="p">.</span><span class="n">headlight</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">m</span><span class="o">-&gt;</span><span class="n">vis</span><span class="p">.</span><span class="n">headlight</span><span class="p">.</span><span class="n">active</span><span class="p">;</span>
+<span class="n">request</span><span class="p">.</span><span class="n">headlight_intensity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">model_lights</span><span class="o">-&gt;</span><span class="n">GetHeadlightIntensity</span><span class="p">();</span>
+
+<span class="n">mjrfReadRequest</span><span class="w"> </span><span class="n">read_request</span><span class="p">;</span>
+<span class="n">mjrf_defaultReadRequest</span><span class="p">(</span><span class="o">&amp;</span><span class="n">read_request</span><span class="p">);</span>
+<span class="n">read_request</span><span class="p">.</span><span class="n">target</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">render_target</span><span class="p">.</span><span class="n">get</span><span class="p">();</span>
+<span class="n">read_request</span><span class="p">.</span><span class="n">output</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">rgb</span><span class="p">.</span><span class="n">data</span><span class="p">();</span>
+<span class="n">read_request</span><span class="p">.</span><span class="n">num_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">height</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
+
+<span class="n">mjrfFrameHandle</span><span class="w"> </span><span class="n">frame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mjrf_render</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="o">&amp;</span><span class="n">request</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">read_request</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="n">mjrf_waitForFrame</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">frame</span><span class="p">);</span>
+
+<span class="c1">// remove transient decorations before destroying the scene</span>
+<span class="n">model_decorations</span><span class="o">-&gt;</span><span class="n">Clear</span><span class="p">();</span>
+</pre></div>
+</div>
+<section id="core-concepts">
+<span id="reconcepts"></span><h4>Core concepts<a class="headerlink" href="#core-concepts" title="Link to this heading">#</a></h4>
+<p>The <code class="docutils literal notranslate"><span class="pre">mjrf</span></code> C API revolves around seven opaque object types, each created with an <code class="docutils literal notranslate"><span class="pre">mjrf_create*</span></code> function and freed
+with <code class="docutils literal notranslate"><span class="pre">mjrf_destroy*</span></code>: <a class="reference internal" href="../APIreference/APItypes.html#mjrfcontext"><span class="std std-ref">mjrfContext</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrfscene"><span class="std std-ref">mjrfScene</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrftexture"><span class="std std-ref">mjrfTexture</span></a>,
+<a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">mjrfRenderable</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrflight"><span class="std std-ref">mjrfLight</span></a>, and <a class="reference internal" href="../APIreference/APItypes.html#mjrfrendertarget"><span class="std std-ref">mjrfRenderTarget</span></a>. Creation takes a struct initialized by
+<code class="docutils literal notranslate"><span class="pre">mjrf_default*</span></code>, whose name encodes a rule: a <code class="docutils literal notranslate"><span class="pre">*Config</span></code> (context, texture, mesh, render target) is fixed for the
+lifetime of the object, while <code class="docutils literal notranslate"><span class="pre">*Params</span></code> (scene, light, renderable) are initial values that can later be changed with
+<code class="docutils literal notranslate"><span class="pre">mjrf_set*</span></code> functions. Plain structs such as <a class="reference internal" href="../APIreference/APItypes.html#mjrfmaterial"><span class="std std-ref">mjrfMaterial</span></a> and <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a> describe how these
+objects are configured and drawn.</p>
+<dl class="simple">
+<dt><strong>Context and scene</strong> (<a class="reference internal" href="../APIreference/APItypes.html#mjrfcontext"><span class="std std-ref">mjrfContext</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrfscene"><span class="std std-ref">mjrfScene</span></a>)</dt><dd><p><a class="reference internal" href="../APIreference/APItypes.html#mjrfcontext"><span class="std std-ref">mjrfContext</span></a> is the entry point to the Filament renderer. Unlike the classic <a class="reference internal" href="../APIreference/APItypes.html#mjrcontext"><span class="std std-ref">mjrContext</span></a>, it manages its
+own graphics context (OpenGL or Vulkan, selected via <a class="reference internal" href="../APIreference/APItypes.html#mjrgraphicsapi"><span class="std std-ref">mjrGraphicsApi</span></a> in <a class="reference internal" href="../APIreference/APItypes.html#mjrfcontextconfig"><span class="std std-ref">mjrfContextConfig</span></a>, with optional
+window handle or headless software rendering) and is independent of any single <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>. A <a class="reference internal" href="../APIreference/APItypes.html#mjrfscene"><span class="std std-ref">mjrfScene</span></a> is
+a container of lights, renderables, and an optional skybox texture; scene-level rendering options and custom
+<code class="docutils literal notranslate"><span class="pre">filament.*</span></code> flags from a model are applied via <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-configurescenefrommodel"><span class="std std-ref">mjrf_configureSceneFromModel</span></a>.</p>
+</dd>
+<dt><strong>Meshes and textures</strong> (<a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrftexture"><span class="std std-ref">mjrfTexture</span></a>)</dt><dd><p>GPU geometry and image assets are created once and retained across frames. <a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a> stores vertex attributes
+(positions, packed tangent-frame orientations, UVs) and indices uploaded via <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-uploadmesh"><span class="std std-ref">mjrf_uploadMesh</span></a>, along with
+bounding boxes used for frustum culling. <a class="reference internal" href="../APIreference/APItypes.html#mjrftexture"><span class="std std-ref">mjrfTexture</span></a> stores 2D, cubemap, or KTX-compressed image data uploaded
+via <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-uploadtexture"><span class="std std-ref">mjrf_uploadTexture</span></a>. Both upload functions accept an optional completion callback for freeing host memory
+once the asynchronous GPU transfer finishes; calling <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-flush"><span class="std std-ref">mjrf_flush</span></a> flushes pending operations to the rendering
+backend and invokes any completed callbacks before the next <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-render"><span class="std std-ref">mjrf_render</span></a> call.</p>
+</dd>
+<dt><strong>Renderables and materials</strong> (<a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">mjrfRenderable</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrfmaterial"><span class="std std-ref">mjrfMaterial</span></a>)</dt><dd><p>An <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">mjrfRenderable</span></a> is a persistent drawable entity in a scene, combining surface geometry, material appearance,
+and a 3D transform:</p>
+<ul class="simple">
+<li><p><strong>Geometry</strong>: A renderable can reference either a custom <a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a> (via <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablemesh"><span class="std std-ref">mjrf_setRenderableMesh</span></a>) or a
+built-in geometric primitive such as a sphere, capsule, cylinder, box, or ellipsoid (via
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablegeommesh"><span class="std std-ref">mjrf_setRenderableGeomMesh</span></a>, which caches and shares underlying mesh buffers across renderables with matching
+quality parameters).</p></li>
+<li><p><strong>Material</strong>: <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablematerial"><span class="std std-ref">mjrf_setRenderableMaterial</span></a> applies an <a class="reference internal" href="../APIreference/APItypes.html#mjrfmaterial"><span class="std std-ref">mjrfMaterial</span></a> struct, which selects between three
+shading models: metallic-roughness PBR, legacy specular-glossiness (Phong), or unlit rendering for UI and
+decorative overlays (<code class="docutils literal notranslate"><span class="pre">decor</span></code>, which also places the object on the decor layer and disables shadows). The
+material also carries texture bindings (color, normal, metallic, roughness, occlusion, packed
+ORM, emissive), UV scale/offset, selection highlighting (<code class="docutils literal notranslate"><span class="pre">selected</span></code>), and object/island IDs for segmentation and
+solver-island visualization.</p></li>
+<li><p><strong>Pose, size, and shadows</strong>: On each frame, <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablepose"><span class="std std-ref">mjrf_setRenderablePose</span></a> updates the renderable’s 3D position and
+rotation matrix in place, <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablesize"><span class="std std-ref">mjrf_setRenderableSize</span></a> updates its scale (handling non-uniform primitive scaling
+such as keeping capsule end-caps spherical), and <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setrenderablecastshadow"><span class="std std-ref">mjrf_setRenderableCastShadow</span></a> toggles whether it casts
+shadows. Renderables are added to or removed from a scene with <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-addscenerenderable"><span class="std std-ref">mjrf_addSceneRenderable</span></a> and
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-removescenerenderable"><span class="std std-ref">mjrf_removeSceneRenderable</span></a>.</p></li>
+</ul>
+</dd>
+<dt><strong>Lights</strong> (<a class="reference internal" href="../APIreference/APItypes.html#mjrflight"><span class="std std-ref">mjrfLight</span></a>)</dt><dd><p><a class="reference internal" href="../APIreference/APItypes.html#mjrflight"><span class="std std-ref">mjrfLight</span></a> represents directional, spot, point, or image-based (IBL environment cubemap) light sources added to
+a scene via <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-addscenelight"><span class="std std-ref">mjrf_addSceneLight</span></a>. Their poses, intensities (in candela), colors, and shadow map resolutions
+can be updated dynamically. Note that the camera-aligned <strong>headlight</strong> is specified on <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a>
+(with intensity in lux) rather than as a scene light, so rendering the same scene from multiple cameras does not
+cross-illuminate views.</p>
+</dd>
+<dt><strong>Render targets, requests, and frame handles</strong> (<a class="reference internal" href="../APIreference/APItypes.html#mjrfrendertarget"><span class="std std-ref">mjrfRenderTarget</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a>, <a class="reference internal" href="../APIreference/APItypes.html#mjrfreadrequest"><span class="std std-ref">mjrfReadRequest</span></a>)</dt><dd><p>Rendering is submitted in batches via <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-render"><span class="std std-ref">mjrf_render</span></a>. Each <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a> pairs an <a class="reference internal" href="../APIreference/APItypes.html#mjrfscene"><span class="std std-ref">mjrfScene</span></a>
+with a camera (<code class="docutils literal notranslate"><span class="pre">mjrCamera</span></code>), viewport, optional offscreen <a class="reference internal" href="../APIreference/APItypes.html#mjrfrendertarget"><span class="std std-ref">mjrfRenderTarget</span></a> (or <code class="docutils literal notranslate"><span class="pre">NULL</span></code> for the native
+window), draw mode (<a class="reference internal" href="../APIreference/APItypes.html#mjrdrawmode"><span class="std std-ref">mjrDrawMode</span></a>: default, no-textures, wireframe, depth, solver islands, or segmentation by
+ID/color), and per-view flags (shadows, reflections, post-processing, headlight). Because camera and draw mode belong
+to the request rather than the scene, a single retained <a class="reference internal" href="../APIreference/APItypes.html#mjrfscene"><span class="std std-ref">mjrfScene</span></a> can be rendered from multiple cameras or in
+multiple draw modes in one call. Offscreen pixel readbacks are requested alongside render requests via
+<a class="reference internal" href="../APIreference/APItypes.html#mjrfreadrequest"><span class="std std-ref">mjrfReadRequest</span></a>. <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-render"><span class="std std-ref">mjrf_render</span></a> dispatches work to a dedicated render thread and returns an
+<code class="docutils literal notranslate"><span class="pre">mjrfFrameHandle</span></code>, which the caller synchronizes on with <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-waitforframe"><span class="std std-ref">mjrf_waitForFrame</span></a>. Despite using an internal render
+thread, the <code class="docutils literal notranslate"><span class="pre">mjrf</span></code> API is not thread-safe and all calls must be made from a single thread.</p>
+</dd>
+</dl>
+</section>
+<section id="support-layer">
+<span id="resupport"></span><h4>Support layer<a class="headerlink" href="#support-layer" title="Link to this heading">#</a></h4>
+<p>While applications can manage low-level <code class="docutils literal notranslate"><span class="pre">mjrf</span></code> objects directly, most MuJoCo applications use the support layer in
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/render/filament/support">src/render/filament/support</a> (and
+<a class="reference external" href="https://github.com/google-deepmind/mujoco/blob/main/src/render/filament/support/mjrf_ptr.h">support/mjrf_ptr.h</a> for
+RAII <code class="docutils literal notranslate"><span class="pre">UniquePtr</span></code> wrappers), which is also exposed in Python under <code class="docutils literal notranslate"><span class="pre">mujoco.mjrf</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ModelResources</span></code>: Creates and owns all <a class="reference internal" href="../APIreference/APItypes.html#mjrfmesh"><span class="std std-ref">mjrfMesh</span></a> (meshes, convex hulls, and heightfields) and
+<a class="reference internal" href="../APIreference/APItypes.html#mjrftexture"><span class="std std-ref">mjrfTexture</span></a> resources from an <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a>, and supports re-uploading modified assets dynamically.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ModelLights</span></code>: Populates and updates the scene’s <a class="reference internal" href="../APIreference/APItypes.html#mjrflight"><span class="std std-ref">mjrfLight</span></a> instances from <a class="reference internal" href="../APIreference/APItypes.html#mjmodel"><span class="std std-ref">mjModel</span></a> and <a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a>,
+and automatically configures fallback environment and directional lighting when a model does not define photometric
+light intensities. Since the headlight belongs to the render request, <code class="docutils literal notranslate"><span class="pre">GetHeadlightIntensity()</span></code> reports the
+intensity that the application should pass in <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderrequest"><span class="std std-ref">mjrfRenderRequest</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ModelRenderables</span></code>: Creates persistent <a class="reference internal" href="../APIreference/APItypes.html#mjrfrenderable"><span class="std std-ref">mjrfRenderable</span></a> entities for all model geoms, sites, skins, flexes, and
+spatial tendons. Calling <code class="docutils literal notranslate"><span class="pre">Update(data)</span></code> updates their poses, sizes, and dynamic material properties in place from
+<a class="reference internal" href="../APIreference/APItypes.html#mjdata"><span class="std std-ref">mjData</span></a> without constructing an <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a>, while <code class="docutils literal notranslate"><span class="pre">SetOptions(opt)</span></code> applies group and category visibility
+from <a class="reference internal" href="../APIreference/APItypes.html#mjvoption"><span class="std std-ref">mjvOption</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ModelDecorations</span></code>: Bridges the abstract visualizer for transient decorative geometry. Because decorative overlays
+(contact force arrows, inertia boxes, joint/actuator axes, perturbation tethers, text labels) are generated
+procedurally each frame rather than stored as persistent model elements, <code class="docutils literal notranslate"><span class="pre">ModelDecorations</span></code> internally calls
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjv-updatescene"><span class="std std-ref">mjv_updateScene</span></a> and converts only the <code class="docutils literal notranslate"><span class="pre">mjCAT_DECOR</span></code> geoms (and non-skin flex debug wireframes) into temporary
+decor renderables. The Filament renderer has no 2D text API; text labels are instead reported to an optional callback
+passed to <code class="docutils literal notranslate"><span class="pre">Update()</span></code>, and the application is responsible for drawing them (see <code class="docutils literal notranslate"><span class="pre">DrawBitmapText()</span></code> in
+<a class="reference internal" href="samples.html#sarender"><span class="std std-ref">render.cc</span></a>).</p></li>
+</ul>
+</section>
+</section>
+<section id="authoring-scenes">
+<span id="reauthoring"></span><h3>Authoring scenes<a class="headerlink" href="#authoring-scenes" title="Link to this heading">#</a></h3>
+<p id="repbr">The <a class="reference internal" href="#classicrendering"><span class="std std-ref">classic renderer</span></a> implements a traditional Phong lighting model: surface color is a sum of
+ambient, diffuse, specular and emissive terms, and light intensities are dimensionless values tuned by eye. Modern
+physically-based rendering (PBR) engines describe surfaces with empirically measurable properties and lights with
+photometric units. Because material and lighting parameters are physical, assets retain their appearance across scenes
+and lighting conditions, and effects like <a class="reference external" href="https://google.github.io/filament/Filament.html#lighting/imagebasedlights">image-based lighting</a> and realistic metals become possible. For
+an introduction to the underlying theory, see Filament’s <a class="reference external" href="https://google.github.io/filament/Filament.html">PBR documentation</a>.</p>
+<p>The Filament renderer supports both models. In general, we recommend that scenes are authored with modern PBR
+(e.g. metallic-roughness) methods to produce the best results. However, we assume that many existing models are authored
+for the classic renderer and so we default to using Filament’s PBR-based approximation of Phong shading. This fallback
+mode has been tuned to produce reasonable results, but the final image can vary significantly compared to the classic
+renderer. The two decisions, how to shade materials and how to light the scene, are made independently and are described
+below.</p>
+<section id="materials">
+<span id="rematerials"></span><h4>Materials<a class="headerlink" href="#materials" title="Link to this heading">#</a></h4>
+<p>A material is shaded with the PBR lighting model if it defines any physical property: a non-negative
+<a class="reference internal" href="../XMLreference.html#asset-material-metallic"><span class="std std-ref">metallic</span></a> or <a class="reference internal" href="../XMLreference.html#asset-material-roughness"><span class="std std-ref">roughness</span></a> coefficient, or texture
+<a class="reference internal" href="../XMLreference.html#material-layer"><span class="std std-ref">layers</span></a> with PBR roles (metallic, roughness, packed occlusion-roughness-metallic, normal,
+emissive, occlusion). Materials with no physical properties are assumed to be designed with the classic renderer in mind
+and are shaded with a Phong lighting model, whose classic parameters are rescaled by the following
+<a class="reference internal" href="#reflags"><span class="std std-ref">custom flags</span></a>:</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%" />
+<col style="width: 10.0%" />
+<col style="width: 12.0%" />
+<col style="width: 46.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">phong.specular_multiplier</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0.2</p></td>
+<td><p>Multiplier applied to legacy (Phong) material <a class="reference internal" href="../XMLreference.html#asset-material-specular"><span class="std std-ref">specular</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">phong.shininess_multiplier</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0.1</p></td>
+<td><p>Multiplier applied to legacy (Phong) material <a class="reference internal" href="../XMLreference.html#asset-material-shininess"><span class="std std-ref">shininess</span></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">phong.emissive_multiplier</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0.3</p></td>
+<td><p>Multiplier applied to legacy (Phong) material <a class="reference internal" href="../XMLreference.html#asset-material-emission"><span class="std std-ref">emission</span></a>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="lighting">
+<span id="relighting"></span><h4>Lighting<a class="headerlink" href="#lighting" title="Link to this heading">#</a></h4>
+<p>Physical lighting is enabled by the lights themselves: if any light in the model has positive
+<a class="reference internal" href="../XMLreference.html#body-light-intensity"><span class="std std-ref">intensity</span></a>, all lights are assumed to be photometric, with intensities measured in
+<a class="reference external" href="https://en.wikipedia.org/wiki/Candela">candela</a>. Lights of <a class="reference internal" href="../XMLreference.html#body-light-type"><span class="std std-ref">type</span></a> <code class="docutils literal notranslate"><span class="pre">image</span></code> provide
+image-based lighting: the referenced <a class="reference internal" href="../XMLreference.html#body-light-texture"><span class="std std-ref">texture</span></a> illuminates the scene as an environment map. A
+light’s <a class="reference internal" href="../XMLreference.html#body-light-bulbradius"><span class="std std-ref">bulbradius</span></a> controls the softness of its shadows. In this mode the headlight is
+disabled and no environment light is added automatically, so a model with physical lights but no <code class="docutils literal notranslate"><span class="pre">image</span></code> light has no
+ambient illumination.</p>
+<p>If no light has positive intensity, the model is treated as authored for the classic renderer: a default environment
+light is added, the headlight is enabled, and a default total intensity is distributed equally among the model’s lights.
+These defaults are set by the following <a class="reference internal" href="#reflags"><span class="std std-ref">custom flags</span></a>:</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%" />
+<col style="width: 10.0%" />
+<col style="width: 12.0%" />
+<col style="width: 46.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fallback.environment_light_intensity</span></code></p></td>
+<td><p>real</p></td>
+<td><p>5000</p></td>
+<td><p>Intensity of the fallback environment light.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fallback.scene_light_intensity</span></code></p></td>
+<td><p>real</p></td>
+<td><p>80000</p></td>
+<td><p>Total intensity distributed among the model’s lights.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fallback.head_light_intensity</span></code></p></td>
+<td><p>real</p></td>
+<td><p>40000</p></td>
+<td><p>Intensity of the <a class="reference internal" href="../XMLreference.html#visual-headlight"><span class="std std-ref">headlight</span></a>, in lux.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="rendering-options">
+<span id="reflags"></span><h3>Rendering options<a class="headerlink" href="#rendering-options" title="Link to this heading">#</a></h3>
+<p>The Filament renderer provides a set of options for controlling how the final image is rendered. While some of these
+options can be set directly on the scene elements as described above (e.g. setting the PBR properties of the material or
+the intensities of the lights), some features are controlled by <a class="reference internal" href="../XMLreference.html#custom"><span class="std std-ref">custom</span></a> model elements (e.g.
+<a class="reference internal" href="../XMLreference.html#custom-numeric"><span class="std std-ref">numeric</span></a> or <a class="reference internal" href="../XMLreference.html#custom-text"><span class="std std-ref">text</span></a>) whose names begin with <code class="docutils literal notranslate"><span class="pre">filament.</span></code> As the feature set
+stabilizes, important flags will be promoted to first-class MJCF attributes.</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;custom&gt;</span>
+<span class="w">  </span><span class="nt">&lt;numeric</span><span class="w"> </span><span class="na">name=</span><span class="s">"filament.clear_color"</span><span class="w"> </span><span class="na">data=</span><span class="s">"0.5 0.6 0.7 1"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/custom&gt;</span>
+</pre></div>
+</div>
+<p>Most flags correspond directly to Filament’s <a class="reference external" href="https://github.com/google/filament/blob/main/filament/include/filament/Options.h">rendering options</a> and are read by
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-configurescenefrommodel"><span class="std std-ref">mjrf_configureSceneFromModel</span></a>. Boolean flags are numerics taking values 0 or 1. Enum flags (e.g.
+<code class="docutils literal notranslate"><span class="pre">filament.ao.quality</span></code>) take string values that correspond to the underlying enum’s name identifier. Flags not
+specified in the model use the defaults listed below. All flag names begin with <code class="docutils literal notranslate"><span class="pre">filament.</span></code></p>
+<details class="summary-shadows">
+<summary>Shadows</summary><div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%" />
+<col style="width: 10.0%" />
+<col style="width: 12.0%" />
+<col style="width: 46.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">shadows.type</span></code></p></td>
+<td><p>string</p></td>
+<td><p>“pcf”</p></td>
+<td><p><a class="reference external" href="https://github.com/google/filament/blob/main/filament/include/filament/Options.h">Shadow algorithm</a>; “pcf”, “vsm”, or “pcss”.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">shadows.map_size</span></code></p></td>
+<td><p>int</p></td>
+<td><p>min( <a class="reference internal" href="../XMLreference.html#visual-quality-shadowsize"><span class="std std-ref">shadowsize</span></a>, 2048)</p></td>
+<td><p>Shadow map resolution, in texels.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</details><details class="summary-screen-space-ambient-occlusion">
+<summary>Screen-space ambient occlusion</summary><div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%" />
+<col style="width: 10.0%" />
+<col style="width: 12.0%" />
+<col style="width: 46.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ao.enabled</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>1 (true)</p></td>
+<td><p>Enable screen-space ambient occlusion.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ao.quality</span></code></p></td>
+<td><p>string</p></td>
+<td><p>“ultra”</p></td>
+<td><p>Sampling quality; “low”, “medium”, “high”, or “ultra”.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ao.low_pass_filter</span></code></p></td>
+<td><p>string</p></td>
+<td><p>“ultra”</p></td>
+<td><p>Quality of the depth-aware blur filter; “low”, “medium”, “high”, or “ultra”.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ao.upsampling</span></code></p></td>
+<td><p>string</p></td>
+<td><p>“ultra”</p></td>
+<td><p>Quality of the occlusion buffer upsampling; “low”, “medium”, “high”, or “ultra”.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ao.bent_normals</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>0 (false)</p></td>
+<td><p>Compute bent normals for specular occlusion.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ao.ssct</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>0 (false)</p></td>
+<td><p>Enable screen-space cone tracing.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</details><details class="summary-bloom">
+<summary>Bloom</summary><div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%" />
+<col style="width: 10.0%" />
+<col style="width: 12.0%" />
+<col style="width: 46.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">bloom.enabled</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>0 (false)</p></td>
+<td><p>Enable bloom.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">bloom.strength</span></code></p></td>
+<td><p>real</p></td>
+<td><p>[filament default]</p></td>
+<td><p>Strength of the bloom effect, between 0 and 1.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">bloom.quality</span></code></p></td>
+<td><p>string</p></td>
+<td><p>“low”</p></td>
+<td><p>Quality of the bloom passes; “low”, “medium”, “high”, or “ultra”.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">bloom.levels</span></code></p></td>
+<td><p>int</p></td>
+<td><p>[filament default]</p></td>
+<td><p>Number of blur levels.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</details><details class="summary-color-grading">
+<summary>Color grading</summary><p>See Filament’s <a class="reference external" href="https://github.com/google/filament/blob/main/filament/include/filament/ColorGrading.h">ColorGrading.h</a>.</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%" />
+<col style="width: 10.0%" />
+<col style="width: 12.0%" />
+<col style="width: 46.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.exposure</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0</p></td>
+<td><p>Exposure adjustment, in stops.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.temperature</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0</p></td>
+<td><p>White balance temperature, between -1 (cool) and 1 (warm).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.tint</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0</p></td>
+<td><p>White balance tint, between -1 (green) and 1 (magenta).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.slope</span></code></p></td>
+<td><p>real(3)</p></td>
+<td><p>1 1 1</p></td>
+<td><p><a class="reference external" href="https://en.wikipedia.org/wiki/ASC_CDL">ASC CDL</a> slope.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.offset</span></code></p></td>
+<td><p>real(3)</p></td>
+<td><p>0 0 0</p></td>
+<td><p><a class="reference external" href="https://en.wikipedia.org/wiki/ASC_CDL">ASC CDL</a> offset.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.power</span></code></p></td>
+<td><p>real(3)</p></td>
+<td><p>1 1 1</p></td>
+<td><p><a class="reference external" href="https://en.wikipedia.org/wiki/ASC_CDL">ASC CDL</a> power.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.shadows</span></code></p></td>
+<td><p>real(4)</p></td>
+<td><p>1 1 1 1</p></td>
+<td><p>Shadow color shift; the fourth component shifts luminance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.midtones</span></code></p></td>
+<td><p>real(4)</p></td>
+<td><p>1 1 1 1</p></td>
+<td><p>Midtone color shift; the fourth component shifts luminance.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.highlights</span></code></p></td>
+<td><p>real(4)</p></td>
+<td><p>1 1 1 1</p></td>
+<td><p>Highlight color shift; the fourth component shifts luminance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.tonal_ranges</span></code></p></td>
+<td><p>real(4)</p></td>
+<td><p>0 0.33 0.55 1</p></td>
+<td><p>Boundaries of the shadow and highlight tonal ranges.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.shadow_gamma</span></code></p></td>
+<td><p>real(3)</p></td>
+<td><p>1 1 1</p></td>
+<td><p>Gamma adjustment of shadows.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.mid_point</span></code></p></td>
+<td><p>real(3)</p></td>
+<td><p>1 1 1</p></td>
+<td><p>Boundary between shadows and highlights.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.highlight_scale</span></code></p></td>
+<td><p>real(3)</p></td>
+<td><p>1 1 1</p></td>
+<td><p>Scale of highlights.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.contrast</span></code></p></td>
+<td><p>real</p></td>
+<td><p>1</p></td>
+<td><p>Contrast, between 0 and 2.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.vibrance</span></code></p></td>
+<td><p>real</p></td>
+<td><p>1</p></td>
+<td><p>Vibrance, between 0 and 2.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.saturation</span></code></p></td>
+<td><p>real</p></td>
+<td><p>1</p></td>
+<td><p>Saturation, between 0 and 2.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cg.tone_mapping</span></code></p></td>
+<td><p>string</p></td>
+<td><p>“pbr_neutral”</p></td>
+<td><p>Tone mapping operator; “aces”, “aces_legacy”, “filmic”, “linear”, or “pbr_neutral”.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cg.output_color_space</span></code></p></td>
+<td><p>string</p></td>
+<td><p>“srgb”</p></td>
+<td><p>Output color space; “linear” or “srgb”.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</details><details class="summary-exponential-height-fog">
+<summary>Exponential height fog</summary><div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%" />
+<col style="width: 10.0%" />
+<col style="width: 12.0%" />
+<col style="width: 46.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fog.enabled</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>0 (false)</p></td>
+<td><p>Enable fog.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fog.color</span></code></p></td>
+<td><p>real(3)</p></td>
+<td><p>[filament default]</p></td>
+<td><p>Fog color.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fog.distance</span></code></p></td>
+<td><p>real</p></td>
+<td><p>[filament default]</p></td>
+<td><p>Distance from the camera at which the fog starts.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fog.density</span></code></p></td>
+<td><p>real</p></td>
+<td><p>[filament default]</p></td>
+<td><p>Fog density.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fog.cut_off_distance</span></code></p></td>
+<td><p>real</p></td>
+<td><p>[filament default]</p></td>
+<td><p>Distance beyond which fog is not applied.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fog.maximum_opacity</span></code></p></td>
+<td><p>real</p></td>
+<td><p>[filament default]</p></td>
+<td><p>Maximum opacity of the fog, between 0 and 1.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fog.height</span></code></p></td>
+<td><p>real</p></td>
+<td><p>[filament default]</p></td>
+<td><p>Height above which the fog density decreases.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fog.height_falloff</span></code></p></td>
+<td><p>real</p></td>
+<td><p>[filament default]</p></td>
+<td><p>Falloff of fog density with height.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</details><details class="summary-vignette">
+<summary>Vignette</summary><div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%" />
+<col style="width: 10.0%" />
+<col style="width: 12.0%" />
+<col style="width: 46.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">vignette.enabled</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>0 (false)</p></td>
+<td><p>Enable vignette.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">vignette.midpoint</span></code></p></td>
+<td><p>real</p></td>
+<td><p>[filament default]</p></td>
+<td><p>How close to the corners the vignette is restricted, between 0 and 1.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</details><details class="summary-material">
+<summary>Material</summary><div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%" />
+<col style="width: 10.0%" />
+<col style="width: 12.0%" />
+<col style="width: 46.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">material.base_color_type</span></code></p></td>
+<td><p>string</p></td>
+<td><p>“srgb”</p></td>
+<td><p>How to interpret the color of a material; “linear” or “srgb”.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</details><details class="summary-background">
+<summary>Background</summary><div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32.0%" />
+<col style="width: 10.0%" />
+<col style="width: 12.0%" />
+<col style="width: 46.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name (<code class="docutils literal notranslate"><span class="pre">filament.&lt;name&gt;</span></code>)</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">clear_color</span></code></p></td>
+<td><p>real(4)</p></td>
+<td><p>0 0 0 1</p></td>
+<td><p>Background color, RGBA (see the note below).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">filament.clear_color</span></code> flag is not read by the renderer library itself, because the background is a property
+of the renderer rather than of a scene: multiple scenes can, for example, be rendered to the same target to display
+them simultaneously. Applications that render a single scene, such as MuJoCo Studio and the <code class="docutils literal notranslate"><span class="pre">mjr</span></code> compatibility
+mode, read this flag from the model and apply it with <a class="reference internal" href="../APIreference/APIfunctions.html#mjrf-setclearcolor"><span class="std std-ref">mjrf_setClearColor</span></a>. If you are managing your own render
+targets, you are responsible for setting the clear color yourself.</p>
+</details></section>
+</section>
+<section id="opengl-rendering">
+<span id="classicrendering"></span><h2>OpenGL rendering<a class="headerlink" href="#opengl-rendering" title="Link to this heading">#</a></h2>
+<p>The classic OpenGL renderer (<code class="docutils literal notranslate"><span class="pre">mjr</span></code>) takes the <a class="reference internal" href="../APIreference/APItypes.html#mjvscene"><span class="std std-ref">mjvScene</span></a> data structure populated in the
+<a class="reference internal" href="visualization.html#visualization"><span class="std std-ref">Visualization</span></a> stage and renders it. It also provides basic 2D drawing and framebuffer access, so
+that most applications do not need to call OpenGL directly. It is in maintenance mode; new applications should prefer
+the <a class="reference internal" href="#filamentrendering"><span class="std std-ref">Filament renderer</span></a>.</p>
+<p>Below is a mixture of C code and pseudo-code in comments, illustrating the structure of an application that combines
+simulation, abstract visualization, and classic OpenGL rendering. This is a short version of the <a class="reference internal" href="samples.html#sabasic"><span class="std std-ref">basic.cc</span></a> code sample using GLFW.</p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="c1">// MuJoCo data structures</span>
+<span class="n">mjModel</span><span class="o">*</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w">                  </span><span class="c1">// MuJoCo model</span>
+<span class="n">mjData</span><span class="o">*</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w">                   </span><span class="c1">// MuJoCo data</span>
+<span class="n">mjvCamera</span><span class="w"> </span><span class="n">cam</span><span class="p">;</span><span class="w">                      </span><span class="c1">// abstract camera</span>
+<span class="n">mjvOption</span><span class="w"> </span><span class="n">opt</span><span class="p">;</span><span class="w">                      </span><span class="c1">// visualization options</span>
+<span class="n">mjvScene</span><span class="w"> </span><span class="n">scn</span><span class="p">;</span><span class="w">                       </span><span class="c1">// abstract scene</span>
+<span class="n">mjrContext</span><span class="w"> </span><span class="n">con</span><span class="p">;</span><span class="w">                     </span><span class="c1">// custom GPU context</span>
+
+<span class="c1">// ... load model and data</span>
+
+<span class="c1">// init GLFW, create window, make OpenGL context current, request v-sync</span>
+<span class="n">glfwInit</span><span class="p">();</span>
+<span class="n">GLFWwindow</span><span class="o">*</span><span class="w"> </span><span class="n">window</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glfwCreateWindow</span><span class="p">(</span><span class="mi">1200</span><span class="p">,</span><span class="w"> </span><span class="mi">900</span><span class="p">,</span><span class="w"> </span><span class="s">"Demo"</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="n">glfwMakeContextCurrent</span><span class="p">(</span><span class="n">window</span><span class="p">);</span>
+<span class="n">glfwSwapInterval</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+<span class="c1">// initialize visualization data structures</span>
+<span class="n">mjv_defaultCamera</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cam</span><span class="p">);</span>
+<span class="n">mjv_defaultPerturb</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pert</span><span class="p">);</span>
+<span class="n">mjv_defaultOption</span><span class="p">(</span><span class="o">&amp;</span><span class="n">opt</span><span class="p">);</span>
+<span class="n">mjr_defaultContext</span><span class="p">(</span><span class="o">&amp;</span><span class="n">con</span><span class="p">);</span>
+
+<span class="c1">// create scene and context</span>
+<span class="n">mjv_makeScene</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">scn</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">);</span>
+<span class="n">mjr_makeContext</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">con</span><span class="p">,</span><span class="w"> </span><span class="n">mjFONTSCALE_100</span><span class="p">);</span>
+
+<span class="c1">// ... install GLFW keyboard and mouse callbacks</span>
+
+<span class="c1">// run main loop, target real-time simulation and 60 fps rendering</span>
+<span class="k">while</span><span class="p">(</span><span class="w"> </span><span class="o">!</span><span class="n">glfwWindowShouldClose</span><span class="p">(</span><span class="n">window</span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// advance interactive simulation for 1/60 sec</span>
+<span class="w">  </span><span class="c1">//  Assuming MuJoCo can simulate faster than real-time, which it usually can,</span>
+<span class="w">  </span><span class="c1">//  this loop will finish on time for the next frame to be rendered at 60 fps.</span>
+<span class="w">  </span><span class="c1">//  Otherwise add a cpu timer and exit this loop when it is time to render.</span>
+<span class="w">  </span><span class="n">mjtNum</span><span class="w"> </span><span class="n">simstart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d</span><span class="o">-&gt;</span><span class="n">time</span><span class="p">;</span>
+<span class="w">  </span><span class="k">while</span><span class="p">(</span><span class="w"> </span><span class="n">d</span><span class="o">-&gt;</span><span class="n">time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">simstart</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">1.0</span><span class="o">/</span><span class="mf">60.0</span><span class="w"> </span><span class="p">)</span>
+<span class="w">      </span><span class="n">mj_step</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// get framebuffer viewport</span>
+<span class="w">  </span><span class="n">mjrRect</span><span class="w"> </span><span class="n">viewport</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">};</span>
+<span class="w">  </span><span class="n">glfwGetFramebufferSize</span><span class="p">(</span><span class="n">window</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">viewport</span><span class="p">.</span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">viewport</span><span class="p">.</span><span class="n">height</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// update scene and render</span>
+<span class="w">  </span><span class="n">mjv_updateScene</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">opt</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">cam</span><span class="p">,</span><span class="w"> </span><span class="n">mjCAT_ALL</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">scn</span><span class="p">);</span>
+<span class="w">  </span><span class="n">mjr_render</span><span class="p">(</span><span class="n">viewport</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">scn</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">con</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// swap OpenGL buffers (blocking call due to v-sync)</span>
+<span class="w">  </span><span class="n">glfwSwapBuffers</span><span class="p">(</span><span class="n">window</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// process pending GUI events, call GLFW callbacks</span>
+<span class="w">  </span><span class="n">glfwPollEvents</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="c1">// close GLFW, free visualization storage</span>
+<span class="n">glfwTerminate</span><span class="p">();</span>
+<span class="n">mjv_freeScene</span><span class="p">(</span><span class="o">&amp;</span><span class="n">scn</span><span class="p">);</span>
+<span class="n">mjr_freeContext</span><span class="p">(</span><span class="o">&amp;</span><span class="n">con</span><span class="p">);</span>
+
+<span class="c1">// ... free MuJoCo model and data</span>
+</pre></div>
+</div>
+<section id="using-opengl">
+<span id="reopengl"></span><h3>Using OpenGL<a class="headerlink" href="#using-opengl" title="Link to this heading">#</a></h3>
+<p>MuJoCo uses OpenGL 1.5 in the compatibility profile with the <code class="docutils literal notranslate"><span class="pre">ARB_framebuffer_object</span></code> and <code class="docutils literal notranslate"><span class="pre">ARB_vertex_buffer_object</span></code>
+extensions. OpenGL symbols are loaded via <a class="reference external" href="https://github.com/Dav1dde/glad">GLAD</a> the first time the
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjr-makecontext"><span class="std std-ref">mjr_makeContext</span></a> function is called. This means that the MuJoCo library itself does not have an explicit
+dependency on OpenGL and can be used on systems without OpenGL support, as long as <code class="docutils literal notranslate"><span class="pre">mjr_</span></code> functions are not called.</p>
+<p>Applications that use MuJoCo’s built-in rendering functionalities are responsible for linking against an appropriate
+OpenGL context creation library and for ensuring that there is an OpenGL context that is made current on the running
+thread. On Windows and macOS, there is a canonical OpenGL library provided by the operating system. On Linux, MuJoCo
+currently supports GLX for rendering to an X11 window, OSMesa for headless software rendering, and EGL for hardware
+accelerated headless rendering.</p>
+</section>
+<section id="context-and-gpu-resources">
+<span id="recontext"></span><h3>Context and GPU resources<a class="headerlink" href="#context-and-gpu-resources" title="Link to this heading">#</a></h3>
+<p>The first step in the rendering process is to create the model-specific GPU context <a class="reference internal" href="../APIreference/APItypes.html#mjrcontext"><span class="std std-ref">mjrContext</span></a>. This is done by
+first clearing the data structure with the function <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-defaultcontext"><span class="std std-ref">mjr_defaultContext</span></a>, and then calling the function
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjr-makecontext"><span class="std std-ref">mjr_makeContext</span></a>. This was already illustrated earlier; the relevant code is:</p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">mjModel</span><span class="o">*</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<span class="n">mjrContext</span><span class="w"> </span><span class="n">con</span><span class="p">;</span>
+
+<span class="c1">// clear mjrContext only once before first use</span>
+<span class="n">mjr_defaultContext</span><span class="p">(</span><span class="o">&amp;</span><span class="n">con</span><span class="p">);</span>
+
+<span class="c1">// create window with OpenGL context, make it current</span>
+<span class="n">GLFWwindow</span><span class="o">*</span><span class="w"> </span><span class="n">window</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glfwCreateWindow</span><span class="p">(</span><span class="mi">1200</span><span class="p">,</span><span class="w"> </span><span class="mi">900</span><span class="p">,</span><span class="w"> </span><span class="s">"Demo"</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="n">glfwMakeContextCurrent</span><span class="p">(</span><span class="n">window</span><span class="p">);</span>
+
+<span class="c1">// ... load MuJoCo model</span>
+
+<span class="c1">// make model-specific mjrContext</span>
+<span class="n">mjr_makeContext</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">con</span><span class="p">,</span><span class="w"> </span><span class="n">mjFONTSCALE_100</span><span class="p">);</span>
+
+<span class="c1">// ... load another MuJoCo model</span>
+
+<span class="c1">// make mjrContext for new model (old context freed automatically)</span>
+<span class="n">mjr_makeContext</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">con</span><span class="p">,</span><span class="w"> </span><span class="n">mjFONTSCALE_100</span><span class="p">);</span>
+
+<span class="c1">// free context when done</span>
+<span class="n">mjr_freeContext</span><span class="p">(</span><span class="o">&amp;</span><span class="n">con</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>How is mjrContext related to an OpenGL context? An OpenGL context is what enables the application to talk to the video
+driver and send rendering commands. It must exist and must be current in the calling thread before mjr_makeContext is
+called. GLFW and related libraries provide the necessary functions as shown above.</p>
+<p>mjrContext is specific to MuJoCo. After creation, it contains references (called “names” in OpenGL) to all the
+resources that were uploaded to the GPU by mjr_makeContext. These include model-specific resources such as meshes and
+textures, as well as generic resources such as font bitmaps for the specified font scale, framebuffer objects for
+shadow mapping and offscreen rendering, and associated renderbuffers. It also contains OpenGL-related options copied
+from <code class="docutils literal notranslate"><span class="pre">mjModel.vis</span></code>, capabilities of the default window framebuffer that are discovered automatically, and the
+currently active buffer for rendering; see <a class="reference internal" href="#rebuffer"><span class="std std-ref">buffers</span></a> below. Note that even though MuJoCo uses
+fixed-function OpenGL, it avoids immediate mode rendering and instead uploads all resources to the GPU upfront. This
+makes it as efficient as a modern shader, and possibly more efficient, because fixed-function OpenGL is now implemented
+via internal shaders that have been written by the video driver developers and tuned extensively.</p>
+<p>Most of the fields of mjrContext remain constant after the call to mjr_makeContext. The only exception is
+mjrContext.currentBuffer which changes whenever the active buffer changes. Some of the GPU resources may also change
+because the user can upload modified resources with the functions <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-uploadtexture"><span class="std std-ref">mjr_uploadTexture</span></a>, <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-uploadmesh"><span class="std std-ref">mjr_uploadMesh</span></a>,
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjr-uploadhfield"><span class="std std-ref">mjr_uploadHField</span></a>. This can be used to achieve dynamic effects such as inserting a video feed into the
+rendering, or modulating a terrain map. Such modifications affect the resources residing on the GPU, but their OpenGL
+names are reused; thus, the change is not actually visible in mjrContext.</p>
+<p>The user should <strong>never</strong> make changes to mjrContext directly. MuJoCo’s renderer assumes that only it can manage
+mjrContext. In fact this kind of object would normally be opaque and its internal structure would not be exposed to
+the user. We are exposing it because MuJoCo has an open design and also because users may want to interleave their own
+OpenGL code with MuJoCo’s renderer, in which case they may need read access to some fields of mjrContext. For example
+in VR applications the user needs to blit from MuJoCo’s offscreen buffer to a texture provided by a VR SDK.</p>
+<p>When a different MuJoCo model is loaded, mjr_makeContext must be called again. There is also the function
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjr-freecontext"><span class="std std-ref">mjr_freeContext</span></a> which frees the GPU resources while preserving the initialization and capabilities flags. This
+function should be called when the application is about to exit. It is called automatically from within
+mjr_makeContext, so you do not need to call it directly when a different model is loaded, although it is not an error
+to do so. The function mjr_defaultContext must be called once before rendering starts, to clear the memory allocated
+for the data structure mjrContext. If you call it after calling mjr_makeContext, it will wipe out any record that GPU
+resources were allocated without freeing those resources, so don’t do that.</p>
+</section>
+<section id="buffers-for-rendering">
+<span id="rebuffer"></span><h3>Buffers for rendering<a class="headerlink" href="#buffers-for-rendering" title="Link to this heading">#</a></h3>
+<p>In addition to the default window framebuffer, OpenGL can support unlimited framebuffer objects (FBOs) for custom
+rendering. In MuJoCo we provide systematic support for two framebuffers: the default window framebuffer, and one
+offscreen framebuffer. They are referred to by the constants in the enum type <a class="reference internal" href="../APIreference/APItypes.html#mjtframebuffer"><span class="std std-ref">mjtFramebuffer</span></a>, namely
+mjFB_WINDOW and mjFB_OFFSCREEN. At any time, one of these two buffers is active for the purposes of MuJoCo rendering,
+meaning that all subsequent commands are directed to it. There are two additional framebuffer objects referenced in
+mjrContext, needed for shadow mapping and resolving multi-sample buffers, but these are used internally and the user
+should not attempt to access them directly.</p>
+<p>The active buffer is set with the function <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-setbuffer"><span class="std std-ref">mjr_setBuffer</span></a>. This sets the value of mjrContext.activeBuffer and
+configures the OpenGL state accordingly. When mjr_makeContext is called, internally it calls mjr_setBuffer with
+argument mjFB_WINDOW, so that rendering starts in the window buffer by default. If the specified buffer does not
+exist, mjr_setBuffer automatically defaults to the other buffer (note that when using headless rendering on Linux,
+there may be no window framebuffer).</p>
+<p>From the perspective of OpenGL, there are important differences between the window framebuffer and offscreen
+framebuffer, and these differences affect how the MuJoCo user interacts with the renderer. The window framebuffer is
+created and managed by the operating system and not by OpenGL. As a result, properties such as resolution,
+double-buffering, quad-buffered stereo, multi-samples, v-sync are set outside OpenGL; this is done by GLFW calls in our
+code samples. All OpenGL can do is detect these properties; we do this in mjr_makeContext and record the results in the
+various window capabilities fields of mjrContext. This is why such properties are not part of the MuJoCo model; they are
+session/software-specific and not model-specific. In contrast, the offscreen framebuffer is managed entirely by OpenGL,
+and so we can create that buffer with whatever properties we want, namely with the resolution and multi-sample
+properties specified in <code class="docutils literal notranslate"><span class="pre">mjModel.vis</span></code>.</p>
+<p>The user can directly access the pixels in the two buffers. This is done with the functions <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-readpixels"><span class="std std-ref">mjr_readPixels</span></a>,
+<a class="reference internal" href="../APIreference/APIfunctions.html#mjr-drawpixels"><span class="std std-ref">mjr_drawPixels</span></a> and <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-blitbuffer"><span class="std std-ref">mjr_blitBuffer</span></a>. Read/draw transfer pixels from/to the active buffer to/from the CPU.
+Blit transfers pixels between the two buffers on the GPU and is therefore much faster. The direction is from the
+active buffer to the buffer that is not active. Note that mjr_blitBuffer has source and destination viewports that can
+have different size, allowing the image to be scaled in the process.</p>
+</section>
+<section id="drawing-pixels">
+<span id="redraw"></span><h3>Drawing pixels<a class="headerlink" href="#drawing-pixels" title="Link to this heading">#</a></h3>
+<p>The main rendering function is <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-render"><span class="std std-ref">mjr_render</span></a>. Its arguments are a rectangular viewport for rendering, the mjvScene
+which was populated by the abstract visualizer, and the mjrContext which was created by mjr_makeContext. The viewport
+can be the entire active buffer, or part of it for custom effects. A viewport corresponding to the entire buffer can
+be obtained with the function <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-maxviewport"><span class="std std-ref">mjr_maxViewport</span></a>. Note that while the offscreen buffer size does not change, the
+window buffer size changes whenever the user resizes or maximizes the window. Therefore user code should not assume
+fixed viewport size. In the code sample <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> we use a callback which is triggered whenever
+the window size changes, while in <a class="reference internal" href="samples.html#sabasic"><span class="std std-ref">basic.cc</span></a> we simply check the window size every time we render. On
+certain scaled displays (notably on MacOS) the window size and framebuffer size can be different. So if you are
+getting the size with GLFW functions, use glfwGetFramebufferSize rather than glfwGetWindowSize. On the other hand,
+mouse coordinates are returned by the operating system in window rather than framebuffer units; thus the
+<a class="reference internal" href="visualization.html#vicamera"><span class="std std-ref">mouse interaction functions</span></a> should use glfwGetWindowSize to obtain the window height needed to
+normalize the mouse displacement data.</p>
+<p>mjr_render renders all mjvGeoms from the list mjvScene.geom. The abstract visualization options mjvOption are no
+longer relevant here; they are used by mjv_updateScene to determine which geoms to add, and as far as mjr_render is
+concerned these options are already baked-in. There is however another set of rendering options that are embedded in
+mjvScene, and these affect the OpenGL rendering process. The array mjvScene.flags contains flags indexed by the enum
+type <a class="reference internal" href="../APIreference/APItypes.html#mjtrndflag"><span class="std std-ref">mjtRndFlag</span></a> and include options for enabling and disabling wireframe mode, shadows, reflections, skyboxes
+and fog. Shadows and reflections involve additional rendering passes. MuJoCo’s renderer is very efficient, but
+depending on the model complexity and available GPU, it may be necessary to disable one or both of these effects in
+some cases.</p>
+<p>The parameter mjvScene.stereo determines the stereo mode. The possible values are given by the enum type
+<a class="reference internal" href="../APIreference/APItypes.html#mjtstereo"><span class="std std-ref">mjtStereo</span></a> and are as follows:</p>
+<dl class="simple">
+<dt>mjSTEREO_NONE</dt><dd><p>Stereo rendering is disabled. The average of the two OpenGL cameras in mjvScene is used. Note that the renderer
+always expects both cameras to be properly defined, even if stereo is not used.</p>
+</dd>
+<dt>mjSTEREO_QUADBUFFERED</dt><dd><p>This mode works only when the active buffer is the window, and the window supports quad-buffered OpenGL. This
+requires a professional video card. The code sample <a class="reference internal" href="samples.html#sasimulate"><span class="std std-ref">simulate.cc</span></a> attempts to open such a window.
+In this mode MuJoCo’s renderer uses the GL_BACK_LEFT and GL_BACK_RIGHT buffers to render the two views (as determined
+by the two OpenGL cameras in mjvScene) when the window is double-buffered, and GL_FRONT_LEFT and GL_FRONT_RIGHT
+otherwise. If the window does not support quad-buffered OpenGL or the active buffer is the offscreen buffer, the
+renderer reverts to the side-by-side mode described next.</p>
+</dd>
+<dt>mjSTEREO_SIDEBYSIDE</dt><dd><p>This stereo mode does not require special hardware and is always available. The viewport given to mjr_render is split
+in two equal rectangles side-by-side. The left view is rendered on the left side and the right view on the right
+side. In principle users can cross their eyes and see stereo on a regular monitor, but the goal here is to show it in
+a stereoscopic device. Most head-mounted displays support this stereo mode.</p>
+</dd>
+</dl>
+<p>In addition to the main mjr_render function, we provide several functions for “decorating” the image. These are 2D
+rendering functions and include <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-overlay"><span class="std std-ref">mjr_overlay</span></a>, <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-text"><span class="std std-ref">mjr_text</span></a>, <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-rectangle"><span class="std std-ref">mjr_rectangle</span></a>, and <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-figure"><span class="std std-ref">mjr_figure</span></a>. The
+user can draw additional decorations with their own OpenGL code. This should be done after mjr_render, because
+mjr_render clears the viewport.</p>
+<p>We also provide the functions <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-finish"><span class="std std-ref">mjr_finish</span></a> and <a class="reference internal" href="../APIreference/APIfunctions.html#mjr-geterror"><span class="std std-ref">mjr_getError</span></a> for explicit synchronization with the GPU and
+for OpenGL error checking. They simply call glFinish and glGetError internally. This together with the basic 2d
+drawing functions above is meant to provide enough functionality so that most users will not need to write OpenGL
+code. Of course we cannot achieve this in all cases, short of providing wrappers for all of OpenGL.</p>
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="ui.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">User Interface</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="visualization.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Visualization</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; DeepMind Technologies Limited
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Rendering</a><ul>
+<li><a class="reference internal" href="#filament-rendering">Filament rendering</a><ul>
+<li><a class="reference internal" href="#programming">Programming</a><ul>
+<li><a class="reference internal" href="#core-concepts">Core concepts</a></li>
+<li><a class="reference internal" href="#support-layer">Support layer</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#authoring-scenes">Authoring scenes</a><ul>
+<li><a class="reference internal" href="#materials">Materials</a></li>
+<li><a class="reference internal" href="#lighting">Lighting</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rendering-options">Rendering options</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#opengl-rendering">OpenGL rendering</a><ul>
+<li><a class="reference internal" href="#using-opengl">Using OpenGL</a></li>
+<li><a class="reference internal" href="#context-and-gpu-resources">Context and GPU resources</a></li>
+<li><a class="reference internal" href="#buffers-for-rendering">Buffers for rendering</a></li>
+<li><a class="reference internal" href="#drawing-pixels">Drawing pixels</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/katex.min.js?v=5cc8ed51"></script>
+    <script src="../_static/auto-render.min.js?v=af98beb9"></script>
+    <script src="../_static/katex_autorenderer.js?v=ae454eff"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/linenumbers.js?v=ebda5d35"></script>
+    <script src="../_static/onthispage_mjwarp.js?v=7109a5a0"></script>
+    </body>
+</html>
