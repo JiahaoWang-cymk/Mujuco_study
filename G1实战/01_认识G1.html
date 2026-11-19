@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 1 课　认识 G1：打开它，读懂它 · G1 实战</title>
+<link rel="stylesheet" href="katex/katex.min.css"><style>
+:root { --ink:#16213a; --muted:#5a6880; --line:#d5dbe4; --accent:#2a4fd6; --bg:#ffffff; --code-bg:#f4f6f9; --quote:#eef3ff; }
+@media (prefers-color-scheme: dark) {
+  :root { --ink:#e5eaf3; --muted:#97a3b8; --line:#2c3a53; --accent:#86a2ff; --bg:#121a29; --code-bg:#1a2438; --quote:#1a2540; }
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); color: var(--ink); font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif; }
+body { margin: 0; line-height: 1.75; font-size: 16px; }
+main { max-width: 860px; margin: 0 auto; padding: 24px 20px 64px; }
+nav.top { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; padding: 10px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+nav.top a, nav.pager a { color: var(--accent); text-decoration: none; }
+nav.top a:hover, nav.pager a:hover { text-decoration: underline; }
+nav.pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 15px; }
+h1 { font-size: 30px; line-height: 1.3; margin: 24px 0 16px; }
+h2 { font-size: 22px; margin: 40px 0 12px; padding-left: 12px; border-left: 5px solid var(--accent); }
+h3 { font-size: 18px; margin: 28px 0 8px; }
+a { color: var(--accent); }
+code { font-family: Consolas, "Microsoft YaHei", monospace; font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; line-height: 1.5; }
+pre code { background: none; padding: 0; font-size: 14px; }
+table { border-collapse: collapse; margin: 12px 0; display: block; overflow-x: auto; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; vertical-align: top; }
+th { background: var(--code-bg); text-align: left; }
+blockquote { margin: 14px 0; padding: 8px 16px; background: var(--quote); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; }
+blockquote p { margin: 6px 0; }
+hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
+details { margin: 24px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
+details summary { cursor: pointer; }
+img { max-width: 100%; }
+.katex-display { overflow-x: auto; overflow-y: hidden; }
+</style>
+<script defer src="katex/katex.min.js"></script><script defer src="katex/contrib/auto-render.min.js"></script>
+</head><body><main>
+<nav class="top"><a href="../index.html">资料包首页</a><a href="index.html">G1 实战目录</a><a href="00_装好环境.html">第 0 课</a><a href="01_认识G1.html">第 1 课</a><a href="02_站着与倒下.html">第 2 课</a><a href="03_吊起来挥手.html">第 3 课</a><a href="04_它感觉到了什么.html">第 4 课</a><a href="05_扛住推力.html">第 5 课</a><a href="06_省力地站.html">第 6 课</a><a href="07_伸手碰球.html">第 7 课</a><a href="08_单腿平衡.html">第 8 课</a><a href="09_让它走起来.html">第 9 课</a><a href="10_录视频与批量实验.html">第 10 课</a><a href="11_附录_往后学什么.html">第 11 课</a></nav>
+<h1 id="1-g1">第 1 课　认识 G1：打开它，读懂它</h1>
+<p><strong>对应入门教程</strong>：1、3.1、3.2、3.4、4.1–4.7、5.1–5.4、6.1–6.3、8.1</p>
+<p><strong>本课目标</strong></p>
+<ul>
+<li>在查看器里打开 G1，学会看它的外观、碰撞体和关节。</li>
+<li>读懂一个真实机器人的 MJCF 文件：body 树、关节、两类 geom、default 类、执行器、关键帧。</li>
+<li>用 Python 清点模型，搞清楚 <code>qpos</code> 和 <code>qvel</code> 里每个数字对应什么。</li>
+</ul>
+<p><strong>预计用时</strong>：1.5–2 小时　<strong>前置</strong>：第 0 课（环境已装好）</p>
+<hr />
+<h2 id="11">1.1 文件在哪里</h2>
+<pre><code class="language-text">G1实战/
+├── models/
+│   ├── unitree_g1/            ← 本课主角（来自 MuJoCo Menagerie）
+│   │   ├── scene.xml          ← 场景：地面 + 灯光 + include 机器人
+│   │   ├── g1.xml             ← 机器人本体，29 个关节
+│   │   ├── g1_with_hands.xml  ← 带灵巧手的版本（本教程不用）
+│   │   ├── g1_mjx.xml         ← 为 GPU 训练简化过碰撞体的版本（附录第 11 课对照用）
+│   │   └── assets/            ← 51 个 STL 网格（g1.xml 用其中 35 个）
+│   └── unitree_rl_gym_g1/     ← 第 9 课用
+└── code/
+    └── 01_inspect.py          ← 本课脚本
+</code></pre>
+<blockquote>
+<p>为什么要分 <code>scene.xml</code> 和 <code>g1.xml</code>？机器人本体和环境分开写，同一个机器人可以放进不同场景（平地、楼梯、桌子前），只需要换场景文件。这是 Menagerie 所有模型的统一写法。</p>
+</blockquote>
+<h2 id="12-mujoco-studio">1.2 先看一眼：用 MuJoCo Studio 打开</h2>
+<p>MuJoCo 4 的新一代查看器叫 <strong>MuJoCo Studio</strong>。它是旧的 <code>simulate</code> 和 <code>mujoco.viewer</code> 的下一代，既能开桌面窗口，也能在浏览器里显示。在 <code>G1实战</code> 目录下，任选一种方式运行：</p>
+<pre><code class="language-bash"># 方式 A：桌面窗口（首选）
+python -m mujoco.studio.viewer --model=models/unitree_g1/scene.xml
+
+# 方式 B：浏览器显示。仿真仍在本机 Python 里跑，终端会打印网址（默认从 8080 端口起找空闲端口），
+#         用浏览器打开即可。远程桌面、虚拟机里桌面窗口打不开时用它
+python -m mujoco.studio.viewer --model=models/unitree_g1/scene.xml --gfx=web
+</code></pre>
+<blockquote>
+<p><strong>方式 C：不装 Python 也能看。</strong> 资料包里带了离线版 <strong>MuJoCo Live</strong>（整个 MuJoCo 编译成 WebAssembly，在浏览器里运行）。双击资料包根目录的 <code>启动官方文档.bat</code>，在首页点“MuJoCo Live”，默认打开的就是 G1。它适合先睹为快；后面课程里的代码仍要用方式 A 或 B 运行。</p>
+<p>旧查看器 <code>python -m mujoco.viewer --mjcf=...</code> 仍然可用。如果 Studio 在你的电脑上显示异常，可以退回用它，操作基本相同。</p>
+</blockquote>
+<p>用 <code>python -m mujoco.studio.viewer</code> 打开的 Studio 窗口分三块：</p>
+<ul>
+<li><strong>左侧 Options 面板</strong>：最上面的 Simulation 区有 Reset（重置）、运行/暂停、调速和 <strong>Keyframe 下拉框</strong>；下面还有 Physics Settings、Rendering Settings、Visibility Groups（显示分组）、Visualization（可视化开关）。在下拉框里选中关键帧后，点 Reset 就会重置到这个关键帧。</li>
+<li><strong>右侧 Inspector 面板</strong>：Joints（每个关节一个滑块）、Controls（每个执行器一个滑块）、Sensors（传感器读数），还有 Watch 和 State。</li>
+<li><strong>底部状态栏</strong>：Logs / Warnings / Errors 计数。模型有问题时先看这里。</li>
+</ul>
+<p>（MuJoCo Live 是 C++ 版的 Studio，面板布局和这里略有不同，按钮名字基本一样。）</p>
+<p>常用的鼠标和键盘操作（Studio 与旧查看器一致）：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>左键拖动 / 右键拖动 / 滚轮</td>
+<td>旋转视角 / 平移视角 / 缩放</td>
+</tr>
+<tr>
+<td><code>Space</code></td>
+<td>暂停 / 继续</td>
+</tr>
+<tr>
+<td><code>Backspace</code></td>
+<td>重置到模型的初始状态 <code>qpos0</code>（不管下拉框里选了哪个关键帧）</td>
+</tr>
+<tr>
+<td>数字键 <code>0</code>–<code>5</code></td>
+<td>显示 / 隐藏第 0–5 组 geom</td>
+</tr>
+<tr>
+<td><code>Shift</code> + 数字键</td>
+<td>显示 / 隐藏第 0–5 组 site</td>
+</tr>
+<tr>
+<td>左键双击某个部件</td>
+<td>选中它所在的 body</td>
+</tr>
+<tr>
+<td>选中后 <code>Ctrl</code> + 右键拖动</td>
+<td>拖着它平移，相当于施加一个推力</td>
+</tr>
+<tr>
+<td>选中后 <code>Ctrl</code> + 左键拖动</td>
+<td>让它转动，相当于施加一个力矩</td>
+</tr>
+<tr>
+<td><code>C</code> / <code>F</code></td>
+<td>显示接触点 / 接触力</td>
+</tr>
+<tr>
+<td><code>Ctrl</code> + 右键双击</td>
+<td>镜头跟踪这个 body（<code>Esc</code> 恢复自由视角）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_1">先猜一猜</h3>
+<ol>
+<li>一打开，仿真就开始运行。你觉得 G1 会稳稳站着、慢慢倒下，还是像布娃娃一样瘫软？</li>
+<li>脚掌和地面接触的部分，你猜在仿真里是什么形状？</li>
+</ol>
+<h3 id="_2">动手观察</h3>
+<ol>
+<li>观察 10 秒，记下 G1 的表现。</li>
+<li>按 <code>2</code> 隐藏外观几何，再按 <code>3</code> 显示碰撞几何。脚底剩下了什么？身体哪些部位<strong>没有</strong>碰撞体？</li>
+<li>按 <code>C</code> 显示接触点。站立时一共有几个接触点？</li>
+<li>按 <code>Backspace</code> 重置，双击选中躯干，再按住 <code>Ctrl</code> 用右键往侧面拖。用多大劲能把它推倒？推倒以后它会自己爬起来吗？</li>
+<li>在左侧 Simulation 区的 Keyframe 下拉框里选 <code>stand</code>，再点 Reset。和刚打开时的姿势相比，哪里不一样？</li>
+<li>按 <code>Space</code> 暂停，展开右侧 Inspector → Joints，把 <code>left_knee_joint</code> 的滑块拖到两头，看看膝盖最多能弯到多少、能不能反向弯。等读完 1.3 节，再回来对照 XML 里的 <code>range</code> 看一遍。</li>
+</ol>
+<p><strong>观察记录</strong>：＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+<p>（第 4 题的答案留到第 2 课揭晓。）</p>
+<h2 id="13-g1xml">1.3 读懂 g1.xml</h2>
+<p>用编辑器打开 <code>models/unitree_g1/g1.xml</code>，共 343 行。下面按从上到下的顺序分块讲。</p>
+<h3 id="1">① 编译选项和物理选项</h3>
+<pre><code class="language-xml">&lt;compiler angle=&quot;radian&quot; meshdir=&quot;assets&quot;/&gt;
+&lt;option integrator=&quot;implicitfast&quot;/&gt;
+</code></pre>
+<ul>
+<li><code>angle=&quot;radian&quot;</code>：文件里的角度都用弧度。MJCF 默认用<strong>角度制</strong>，从 URDF 转过来的模型经常要显式改成弧度，漏写这一行是常见 bug。</li>
+<li><code>meshdir=&quot;assets&quot;</code>：网格文件到 <code>assets/</code> 目录里找。</li>
+<li><code>implicitfast</code>：隐式积分器，对执行器阻尼这类“速度相关的力”更稳定，官方文档推荐大多数模型用它。注意 MuJoCo 的<strong>默认</strong>积分器其实是 <code>Euler</code>，所以这里要显式写出来。时间步长没写，用默认的 2 ms。</li>
+</ul>
+<h3 id="2-default">② default 类：把重复的属性提出来</h3>
+<pre><code class="language-xml">&lt;default&gt;
+  &lt;default class=&quot;g1&quot;&gt;
+    &lt;site rgba=&quot;1 0 0 1&quot; size=&quot;0.01&quot; group=&quot;5&quot;/&gt;
+    &lt;joint armature=&quot;0.01&quot; frictionloss=&quot;0.3&quot;/&gt;
+    &lt;position kp=&quot;500&quot; dampratio=&quot;1&quot; inheritrange=&quot;1&quot;/&gt;
+    &lt;default class=&quot;visual&quot;&gt;
+      &lt;geom group=&quot;2&quot; type=&quot;mesh&quot; contype=&quot;0&quot; conaffinity=&quot;0&quot; density=&quot;0&quot; material=&quot;metal&quot;/&gt;
+    &lt;/default&gt;
+    &lt;default class=&quot;collision&quot;&gt;
+      &lt;geom group=&quot;3&quot; type=&quot;mesh&quot;/&gt;
+      &lt;default class=&quot;foot&quot;&gt;
+        &lt;geom type=&quot;sphere&quot; size=&quot;0.005&quot; priority=&quot;1&quot; friction=&quot;0.6&quot; condim=&quot;3&quot;/&gt;
+      &lt;/default&gt;
+    &lt;/default&gt;
+  &lt;/default&gt;
+&lt;/default&gt;
+</code></pre>
+<p>default 类可以嵌套，子类继承父类再覆盖，结构是：</p>
+<pre><code class="language-text">g1 ──────────── 所有关节：armature=0.01、frictionloss=0.3；所有执行器：kp=500
+ ├─ visual ──── 外观 geom：第 2 组，不参与碰撞，不算质量
+ └─ collision ─ 碰撞 geom：第 3 组
+     └─ foot ── 脚底小球：半径 5 mm，摩擦 0.6
+</code></pre>
+<p>骨盆的 <code>&lt;body name=&quot;pelvis&quot; ... childclass=&quot;g1&quot;&gt;</code> 让它和所有后代默认使用 <code>g1</code> 类，这样后面的关节、执行器都不用重复写这些属性。</p>
+<p>几个值得注意的属性：</p>
+<ul>
+<li><strong><code>armature</code>（转子惯量）</strong>：电机转子经减速器放大后的等效惯量。真实关节电机都有，它还能让仿真更稳定。</li>
+<li><strong><code>frictionloss</code>（干摩擦）</strong>：关节里的静摩擦，最多能抵消 0.3 N·m 的力矩，推力比这小时关节基本不动。</li>
+<li><strong><code>contype=&quot;0&quot; conaffinity=&quot;0&quot;</code></strong>：这两个掩码都是 0，表示外观几何<strong>完全不参与碰撞</strong>。</li>
+<li><strong><code>density=&quot;0&quot;</code></strong>：外观几何不贡献质量。实际上每个 body 都写了 <code>&lt;inertial&gt;</code>，有了它，geom 本来就不参与质量计算。</li>
+</ul>
+<h3 id="3-body">③ body 树：机器人的骨架</h3>
+<p>G1 有 30 个 body，按父子关系组成一棵树：</p>
+<pre><code class="language-text">world
+└─ pelvis（骨盆，freejoint 让它在空间自由移动）
+   ├─ left_hip_pitch → left_hip_roll → left_hip_yaw → left_knee → left_ankle_pitch → left_ankle_roll
+   ├─ right_hip_pitch → … → right_ankle_roll（同左腿）
+   └─ waist_yaw → waist_roll → torso（躯干，带头部和 logo）
+      ├─ left_shoulder_pitch → left_shoulder_roll → left_shoulder_yaw → left_elbow
+      │    → left_wrist_roll → left_wrist_pitch → left_wrist_yaw（带橡胶手）
+      └─ right_shoulder_pitch → … → right_wrist_yaw（同左臂）
+</code></pre>
+<p>这是典型的<strong>浮动基</strong>机器人：根节点 pelvis 不固定在世界上，而是通过 <code>freejoint</code> 获得 6 个自由度（3 个平移、3 个转动）。机械臂的底座焊在地上，人形机器人则要靠脚和地面的接触力“站”住。这是两者最本质的区别，也是人形机器人难控制的根源。</p>
+<p>挑左膝看一个 body 的完整写法：</p>
+<pre><code class="language-xml">&lt;body name=&quot;left_knee_link&quot; pos=&quot;-0.078273 0.0021489 -0.17734&quot; quat=&quot;0.996179 0 0.0873386 0&quot;&gt;
+  &lt;inertial pos=&quot;0.005457 0.003964 -0.12074&quot; quat=&quot;...&quot; mass=&quot;1.932&quot; diaginertia=&quot;...&quot;/&gt;
+  &lt;joint name=&quot;left_knee_joint&quot; axis=&quot;0 1 0&quot; range=&quot;-0.087267 2.8798&quot;/&gt;
+  &lt;geom class=&quot;visual&quot; mesh=&quot;left_knee_link&quot;/&gt;
+  &lt;geom class=&quot;collision&quot; mesh=&quot;left_knee_link&quot;/&gt;
+  &lt;body name=&quot;left_ankle_pitch_link&quot; ...&gt; ... &lt;/body&gt;
+&lt;/body&gt;
+</code></pre>
+<ul>
+<li><code>pos</code> / <code>quat</code>：这个 body 坐标系<strong>相对父 body</strong> 的位置和姿态。<code>quat</code> 的顺序是 <strong>w x y z</strong>，实部在前。</li>
+<li><code>&lt;inertial&gt;</code>：质心位置、质量 1.932 kg、主惯量。这些数据来自厂商的 CAD。</li>
+<li><code>&lt;joint&gt;</code>：绕自身 y 轴转（<code>axis=&quot;0 1 0&quot;</code>），范围 −0.087 到 2.88 rad，即 −5° 到 165°，可以弯曲，但几乎不能反向。</li>
+<li>同一个网格用了两次：一次 <code>visual</code> 负责显示，一次 <code>collision</code> 负责碰撞。并不是每个部件都这样：肩部的碰撞体是简单的圆柱，腰部两个小连杆干脆没有碰撞体。</li>
+</ul>
+<h3 id="4">④ 脚：为什么是四个小球</h3>
+<pre><code class="language-xml">&lt;geom class=&quot;foot&quot; pos=&quot;-0.05  0.025 -0.03&quot;/&gt;
+&lt;geom class=&quot;foot&quot; pos=&quot;-0.05 -0.025 -0.03&quot;/&gt;
+&lt;geom class=&quot;foot&quot; pos=&quot; 0.12  0.03  -0.03&quot;/&gt;
+&lt;geom class=&quot;foot&quot; pos=&quot; 0.12 -0.03  -0.03&quot;/&gt;
+</code></pre>
+<p>每只脚用 4 个半径 5 mm 的小球代表脚掌的四个角，而不是直接用脚的网格碰撞。原因有三点：</p>
+<ul>
+<li>接触点<strong>数量固定、位置明确</strong>，接触力好分析，第 4 课会用到。</li>
+<li>球和平面的碰撞检测最便宜、最稳定。</li>
+<li>网格和平面接触时，接触点会随姿态跳来跳去，容易引起抖动。</li>
+</ul>
+<p>另外几个属性：<code>priority=&quot;1&quot;</code> 让脚和其他物体接触时使用脚的摩擦参数；<code>condim=&quot;3&quot;</code> 表示只有滑动摩擦，没有扭转摩擦和滚动摩擦。</p>
+<blockquote>
+<p>对照一下 <code>g1_mjx.xml</code>：那里的脚换成了 box 和 capsule，碰撞对也是手工指定的。GPU 训练要求碰撞尽量简单。这就是同一台机器人会有多个模型版本的原因。</p>
+</blockquote>
+<h3 id="5-29">⑤ 执行器：29 个“位置伺服”</h3>
+<pre><code class="language-xml">&lt;position class=&quot;g1&quot; name=&quot;left_knee_joint&quot; joint=&quot;left_knee_joint&quot; forcerange=&quot;-139 139&quot;/&gt;
+...
+&lt;position class=&quot;g1&quot; name=&quot;left_wrist_pitch_joint&quot; joint=&quot;left_wrist_pitch_joint&quot; forcerange=&quot;-5 5&quot;/&gt;
+</code></pre>
+<p><code>position</code> 执行器相当于一个 PD 控制器：<code>ctrl</code> 给的是<strong>目标角度</strong>，它输出的力矩大约是</p>
+<p><div class="math">\[\tau = k_p\,(\text{ctrl} - q) - k_v\,\dot q,\qquad \text{再截断到 forcerange}\]</div></p>
+<ul>
+<li><code>kp=500</code>：刚度，来自 default 类。</li>
+<li><code>dampratio=&quot;1&quot;</code>：不直接给 kv，而是让 MuJoCo 按“临界阻尼”自动算出每个关节的 kv。</li>
+<li><code>inheritrange=&quot;1&quot;</code>：控制量范围 <code>ctrlrange</code> 自动等于关节范围，目标角度不会超出关节限位。</li>
+<li><code>forcerange</code>：每个关节电机的最大力矩，单位 N·m。膝和髋 roll 是 139，髋 pitch/yaw 是 88，手腕 pitch/yaw 只有 5。这是第 6 课的重要线索。</li>
+</ul>
+<p>README 里写着“Added joint position actuators (needs tuning)”，意思是这组增益是给仿真用的经验值，并非真机参数。第 2 课会亲手改它。</p>
+<h3 id="6">⑥ 传感器和关键帧</h3>
+<pre><code class="language-xml">&lt;sensor&gt;
+  &lt;gyro site=&quot;imu_in_torso&quot; .../&gt;          &lt;!-- 躯干 IMU：角速度 --&gt;
+  &lt;accelerometer site=&quot;imu_in_torso&quot; .../&gt; &lt;!-- 躯干 IMU：加速度 --&gt;
+  &lt;gyro site=&quot;imu_in_pelvis&quot; .../&gt;
+  &lt;accelerometer site=&quot;imu_in_pelvis&quot; .../&gt;
+&lt;/sensor&gt;
+
+&lt;keyframe&gt;
+  &lt;key name=&quot;stand&quot; qpos=&quot;0 0 0.79 1 0 0 0  0 0 0 0 0 0 ...&quot; ctrl=&quot;...&quot;/&gt;
+&lt;/keyframe&gt;
+</code></pre>
+<ul>
+<li>两个 IMU 装在 <code>site</code> 上。site 是一个“没有物理作用的坐标系标记”，专门给传感器、末端点用。</li>
+<li>关键帧 <code>stand</code> 存了一套 <code>qpos</code>（姿势）和 <code>ctrl</code>（目标），第 2 课会用到。</li>
+</ul>
+<h2 id="14-python">1.4 用 Python 清点模型</h2>
+<h3 id="_3">先猜一猜</h3>
+<p>根据上面读到的内容，先写下你的预测，再运行脚本：</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>含义</th>
+<th>你的预测</th>
+<th>实际</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>nbody</code></td>
+<td>body 数（含 world）</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>njnt</code></td>
+<td>关节数</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>nq</code></td>
+<td>位置坐标 <code>qpos</code> 的长度</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>nv</code></td>
+<td>速度坐标 <code>qvel</code> 的长度</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>nu</code></td>
+<td>执行器数</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>ngeom</code></td>
+<td>geom 数（含地面）</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>nsensordata</code></td>
+<td>传感器输出的数字总数</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>提示：freejoint 的位置用 3 个坐标加一个四元数表示，速度用 3 个线速度加 3 个角速度表示。</p>
+<h3 id="88">脚本 <code>code/01_inspect.py</code></h3>
+<pre><code class="language-python">&quot;&quot;&quot;第 1 课：清点 G1 模型。&quot;&quot;&quot;
+import pathlib
+
+import mujoco
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+XML = ROOT / &quot;models&quot; / &quot;unitree_g1&quot; / &quot;scene.xml&quot;
+
+m = mujoco.MjModel.from_xml_path(str(XML))
+d = mujoco.MjData(m)
+
+print(f&quot;MuJoCo 版本 {mujoco.__version__}&quot;)
+print(f&quot;nbody={m.nbody}  njnt={m.njnt}  ngeom={m.ngeom}  nsite={m.nsite}  nmesh={m.nmesh}&quot;)
+print(f&quot;nq={m.nq}  nv={m.nv}  nu={m.nu}  nsensor={m.nsensor}  nsensordata={m.nsensordata}&quot;)
+print(f&quot;总质量 {m.body_subtreemass[0]:.2f} kg&quot;)
+
+# ---------- 1. body 树 ----------
+def print_tree(b=0, depth=0):
+    print(&quot;  &quot; * depth + m.body(b).name)
+    for child in range(1, m.nbody):
+        if m.body_parentid[child] == b:
+            print_tree(child, depth + 1)
+
+print(&quot;\n=== body 树 ===&quot;)
+print_tree()
+
+# ---------- 2. 关节表：每个关节在 qpos / qvel 里的位置 ----------
+JOINT_TYPE = {0: &quot;free&quot;, 1: &quot;ball&quot;, 2: &quot;slide&quot;, 3: &quot;hinge&quot;}
+print(&quot;\n=== 关节 ===&quot;)
+print(f&quot;{'id':&gt;2}  {'名字':&lt;28}{'类型':&lt;7}{'qpos':&gt;5}{'qvel':&gt;5}   范围(rad)&quot;)
+for j in range(m.njnt):
+    lo, hi = m.jnt_range[j]
+    rng = f&quot;[{lo:+.3f}, {hi:+.3f}]&quot; if m.jnt_limited[j] else &quot;无限制&quot;
+    print(f&quot;{j:&gt;2}  {m.joint(j).name:&lt;28}{JOINT_TYPE[m.jnt_type[j]]:&lt;7}&quot;
+          f&quot;{m.jnt_qposadr[j]:&gt;5}{m.jnt_dofadr[j]:&gt;5}   {rng}&quot;)
+
+# ---------- 3. 执行器表：谁驱动谁，参数是多少 ----------
+print(&quot;\n=== 执行器 ===&quot;)
+for a in range(m.nu):
+    j = m.actuator_trnid[a, 0]               # 这个执行器驱动的关节 id
+    kp = m.actuator_gainprm[a, 0]
+    bias = m.actuator_biasprm[a, :3]
+    flo, fhi = m.actuator_forcerange[a]
+    print(f&quot;{a:&gt;2}  {m.actuator(a).name:&lt;28} 关节 {j:&gt;2}  kp={kp:5.0f}  &quot;
+          f&quot;biasprm=[{bias[0]:.1f}, {bias[1]:.1f}, {bias[2]:.2f}]  力矩 ±{fhi:.0f} N·m&quot;)
+
+# ---------- 4. 加载关键帧，看看各部件在哪 ----------
+key = m.key(&quot;stand&quot;)
+mujoco.mj_resetDataKeyframe(m, d, key.id)
+mujoco.mj_forward(m, d)                      # 只算运动学等，不推进时间
+print(&quot;\n=== stand 关键帧 ===&quot;)
+print(&quot;骨盆位置    &quot;, d.body(&quot;pelvis&quot;).xpos.round(3))
+print(&quot;躯干 IMU 位置&quot;, d.site(&quot;imu_in_torso&quot;).xpos.round(3))
+print(&quot;左脚 site   &quot;, d.site(&quot;left_foot&quot;).xpos.round(3))
+print(&quot;整机质心    &quot;, d.subtree_com[0].round(3))
+</code></pre>
+<h3 id="_4">观察记录</h3>
+<ol>
+<li>对照“先猜一猜”的表格，哪几个猜错了？为什么 <code>nq</code> 和 <code>nv</code> 不相等？</li>
+<li>看执行器表里的 <code>biasprm</code>。根据 1.3 ⑤ 里的公式，<code>biasprm[1]</code> 和 <code>biasprm[2]</code> 分别对应什么？各关节的 kv 一样吗？为什么？</li>
+<li>整机质心的 x、y 坐标，是否落在两只脚之间？质心高度大约是身高的几分之几？</li>
+</ol>
+<h2 id="15-qpos-qvel">1.5 小结：qpos 和 qvel 的排布</h2>
+<p>本课最重要的产出是下面这张表，后面每一课都要用它取数据。</p>
+<table>
+<thead>
+<tr>
+<th><code>qpos</code> 下标</th>
+<th><code>qvel</code> 下标</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–2</td>
+<td>0–2</td>
+<td>骨盆位置 x y z（世界坐标，m）/ 线速度</td>
+</tr>
+<tr>
+<td>3–6</td>
+<td>3–5</td>
+<td>骨盆姿态四元数 w x y z / 角速度</td>
+</tr>
+<tr>
+<td>7–12</td>
+<td>6–11</td>
+<td>左腿：hip pitch, hip roll, hip yaw, knee, ankle pitch, ankle roll</td>
+</tr>
+<tr>
+<td>13–18</td>
+<td>12–17</td>
+<td>右腿（顺序同上）</td>
+</tr>
+<tr>
+<td>19–21</td>
+<td>18–20</td>
+<td>腰：yaw, roll, pitch</td>
+</tr>
+<tr>
+<td>22–28</td>
+<td>21–27</td>
+<td>左臂：shoulder pitch/roll/yaw, elbow, wrist roll/pitch/yaw</td>
+</tr>
+<tr>
+<td>29–35</td>
+<td>28–34</td>
+<td>右臂（顺序同上）</td>
+</tr>
+</tbody>
+</table>
+<p>执行器 <code>ctrl[0:29]</code> 的顺序和 <code>qpos[7:36]</code> 的关节顺序一致。注意这一点只对这个模型成立，并不是规律。可靠的做法是按名字取，比如 <code>d.actuator(&quot;left_knee_joint&quot;).ctrl</code> 和 <code>d.joint(&quot;left_knee_joint&quot;).qpos</code>。</p>
+<h2 id="_5">练习</h2>
+<ol>
+<li><strong>改个站姿。</strong> 复制 <code>scene.xml</code> 为 <code>scene_my.xml</code>（放在同一目录），在里面加一个关键帧 <code>elbows_zero</code>：在 <code>stand</code> 的基础上把两个肘关节都改成 0。注意 <code>qpos</code> 和 <code>ctrl</code> 要一起改。先猜：肘关节角为 0 时，手臂是伸直的吗？然后在查看器里打开 <code>scene_my.xml</code>，选这个关键帧再点 Reset，看看效果。如果只改 <code>qpos</code> 不改 <code>ctrl</code>，又会怎样？</li>
+<li><strong>找最弱的关节。</strong> 写几行代码，把 29 个执行器按 <code>forcerange</code> 从小到大排序，打印最弱的 5 个。想一想：为什么人形机器人的手腕电机可以这么小？</li>
+<li><strong>单位换算。</strong> 关节表里左膝的范围是多少度？左右髋 roll 的范围为什么不对称？（提示：想一想“腿往外张”和“腿往里收”）</li>
+</ol>
+<h2 id="_6">如果报错</h2>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>可能原因</th>
+<th>解决</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ValueError: Error: Error opening file &#x27;....STL&#x27;</code></td>
+<td>网格找不到；运行目录不对或 <code>assets</code> 没一起拷贝</td>
+<td>确认 <code>unitree_g1/assets/</code> 完整；脚本里用 <code>__file__</code> 推算绝对路径</td>
+</tr>
+<tr>
+<td><code>ModuleNotFoundError: No module named &#x27;mujoco&#x27;</code></td>
+<td>环境没激活</td>
+<td>回第 0 课，激活虚拟环境</td>
+</tr>
+<tr>
+<td>Studio 窗口一闪就退出，或报图形 / OpenGL 错误</td>
+<td>远程桌面或虚拟机里显卡驱动不支持</td>
+<td>加 <code>--gfx=web</code> 改在浏览器里显示；仍不行就退回旧查看器 <code>python -m mujoco.viewer --mjcf=...</code></td>
+</tr>
+<tr>
+<td><code>No module named &#x27;mujoco.studio&#x27;</code></td>
+<td>只装了 <code>mujoco-core</code>，没装 <code>mujoco-studio</code></td>
+<td>回第 0 课，补装 <code>mujoco-studio</code> 和 <code>mujoco-studio-wasm</code> 两个 wheel</td>
+</tr>
+<tr>
+<td>MuJoCo Live 页面一直转圈或空白</td>
+<td>直接双击了 html 文件（file:// 下加载不了 WebAssembly）</td>
+<td>必须通过 <code>启动官方文档.bat</code> 打开（地址以 <code>http://localhost</code> 开头）</td>
+</tr>
+<tr>
+<td>中文打印成乱码</td>
+<td>终端编码</td>
+<td>PowerShell 里先运行 <code>chcp 65001</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="_7">延伸阅读</h2>
+<ul>
+<li><a href="../官方文档_中文HTML/overview.html#elements">概述：模型元素（body、joint、geom、site 的含义）</a></li>
+<li><a href="../官方文档_中文HTML/overview.html#floating">概述：浮动基与 freejoint</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#body">XML 参考：body</a>、<a href="../官方文档_中文HTML/XMLreference.html#body-joint">joint</a>、<a href="../官方文档_中文HTML/XMLreference.html#body-geom">geom</a>、<a href="../官方文档_中文HTML/XMLreference.html#body-site">site</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#default">XML 参考：default 类</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#actuator-position">XML 参考：position 执行器</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#keyframe">XML 参考：keyframe</a></li>
+<li><a href="../官方文档_中文HTML/studio/index.html">MuJoCo Studio 概览</a>、<a href="../官方文档_中文HTML/studio/native_viewers.html">桌面查看器</a>、<a href="../官方文档_中文HTML/studio/web_viewers.html">网页查看器与 MuJoCo Live</a></li>
+<li><a href="../官方文档_中文HTML/programming/samples.html#sasimulateshortcuts">快捷键完整列表</a>（写的是旧查看器 simulate，Studio 沿用了同一套按键）</li>
+<li><a href="../官方文档_中文HTML/python.html#pynamed">Python 按名字访问</a></li>
+</ul>
+<hr />
+<details>
+<summary><b>参考答案（跑完再看）</b></summary>
+
+<strong>1.2 先猜一猜 / 动手观察</strong>（数字来自用 Python 按同样的初始状态仿真的结果）：
+
+- 第 1 题：稳稳站着。刚打开时是模型的初始状态 <code>qpos0</code>：骨盆高 0.793 m，所有关节角都是 0；<code>ctrl</code> 也全是 0，也就是“保持所有关节在 0”。执行器的目标正好等于当前姿势，所以它站得住。仿真 10 秒后骨盆高度 0.792 m，几乎没动。
+- 第 2 题：每只脚底是 4 个半径 5 mm 的小球，不是脚的网格（见 1.3 ④）。没有碰撞体的是腰部的 <code>waist_yaw_link</code> 和 <code>waist_roll_link</code> 两个小连杆；另外，肩部两节（shoulder pitch / roll）的碰撞体是圆柱，不是网格。
+- 第 3 题：8 个接触点，正好是两只脚的 8 个小球。
+- 第 5 题：区别全在手臂上。刚打开时肘关节是 0，两只小臂向前平举；<code>stand</code> 里两肘是 1.28 rad（约 73°），小臂垂下来，手臂接近伸直；肩 pitch 是 0.2、肩 roll 是 ±0.2，上臂稍稍向后、向外张开。骨盆高度写的是 0.79 m（初始状态是 0.793 m），腿和腰的关节角两者都是 0。
+- 第 6 题：膝盖只能在约 −5° 到 165° 之间转，几乎不能反向弯。
+
+<strong>1.4 先猜一猜</strong>：<code>nbody=31</code>（30 个 + world），<code>njnt=30</code>（29 个铰链 + 1 个 freejoint），<code>nq=36</code>（7 + 29），<code>nv=35</code>（6 + 29），<code>nu=29</code>，<code>ngeom=72</code>（35 个外观网格 + 28 个碰撞体〔24 个网格 + 4 个肩部圆柱〕+ 8 个脚底球 + 1 块地面），<code>nsensordata=12</code>（4 个传感器 × 3 轴）。总质量约 33.34 kg。
+
+<strong>为什么 nq ≠ nv</strong>：姿态用四元数表示，有 4 个数，但转动只有 3 个自由度。所以 freejoint 在 <code>qpos</code> 里占 7 个位置，在 <code>qvel</code> 里只占 6 个。直接用 <code>qpos[7:] - 某值</code> 处理关节是对的，但对整个 <code>qpos</code> 做差就不对了，要用 <code>mj_differentiatePos</code>。
+
+<strong>biasprm</strong>：<code>biasprm[1] = -kp</code>，<code>biasprm[2] = -kv</code>。由于用了 <code>dampratio</code>，kv 按每个关节在 <code>qpos0</code> 处的“等效惯量” m 计算：kv = 2 × dampratio × √(kp·m)。带动的惯量越大，kv 越大，所以各关节的 kv 不同，从手腕的约 4.5 到腰 roll 的 16.2 不等。
+
+<strong>整机质心</strong>：stand 下质心在 (0.003, 0, 0.692)。8 个脚底球的 x 在 −0.05 到 0.12 m 之间，y 在 −0.149 到 0.149 m 之间，质心的 x、y 正好落在两脚围成的区域中间。G1 站立时最高点约 1.32 m（用网格顶点算出），质心高度约占身高的 0.52，差不多一半。
+
+<strong>练习 1</strong>：在 <code>scene_my.xml</code> 的 <code>&lt;/mujoco&gt;</code> 前加一段（和 <code>scene.xml</code> 放在同一目录，<code>include</code> 和网格路径才找得到）：
+
+
+<pre><code class="language-xml">&lt;keyframe&gt;
+  &lt;key name=&quot;elbows_zero&quot;
+    qpos=&quot;0 0 0.79 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0.2 0 0 0 0 0 0.2 -0.2 0 0 0 0 0&quot;
+    ctrl=&quot;0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0.2 0 0 0 0 0 0.2 -0.2 0 0 0 0 0&quot;/&gt;
+&lt;/keyframe&gt;
+</code></pre>
+
+
+肘关节在 <code>qpos</code> 里的下标是 25、32，在 <code>ctrl</code> 里是 18、25，两处都从 1.28 改成 0。<code>g1.xml</code> 里已经有一个 <code>&lt;keyframe&gt;</code>，再写一个没关系，关键帧会合并，下拉框里会出现 <code>stand</code> 和 <code>elbows_zero</code> 两项。
+
+肘关节角为 0 时手臂<strong>不是</strong>伸直的：小臂向前平举，大约和地面平行，像端着托盘（和刚打开时的姿势很像，只是肩部角度不同）。反倒是 <code>stand</code> 里的 1.28 rad 让小臂自然下垂、整条手臂接近伸直。关节角的 0 点由建模时的参考姿势决定，不等于“伸直”，用任何模型之前都要先看一眼 0 位是什么样子。
+
+实测仿真 2 秒后骨盆高度仍是 0.792 m，肘关节停在 0.004 rad 附近，照样站得住。只改 <code>qpos</code> 不改 <code>ctrl</code> 的话，执行器会把小臂拉回 1.28 rad（实测 2 秒后肘关节回到 1.280 rad）。
+
+<strong>练习 2</strong>：最弱的是 4 个手腕 pitch/yaw 电机（±5 N·m），其次是手臂（±25）。手腕只带动很轻的手，所以力矩小。
+
+<strong>练习 3</strong>：左膝范围是 −5° 到 165°。髋 roll 不对称，是因为腿往外张的空间大，往里收很快就会碰到另一条腿。左右腿的范围正好镜像。
+
+</details>
+<nav class="pager"><span><a href="00_装好环境.html">← 第 0 课 装好环境：离线安装与版本核对</a></span><span><a href="02_站着与倒下.html">第 2 课 它为什么站着、为什么会倒 →</a></span></nav>
+</main>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".math").forEach(function (el) {
+    renderMathInElement(el, {delimiters: [{left: "\\[", right: "\\]", display: true}, {left: "\\(", right: "\\)", display: false}]});
+  });
+});
+</script>
+</body></html>

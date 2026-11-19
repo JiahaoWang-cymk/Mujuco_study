@@ -108,7 +108,7 @@
   <section class="hero">
     <div>
       <h1>MuJoCo<span class="sub">离线学习资料包</span></h1>
-      <p>MuJoCo 学习资料：中文入门教程、完整官方文档（中英两版）、示例模型和官方 notebook。</p>
+      <p>MuJoCo 学习资料：中文入门教程、以宇树 G1 人形机器人为案例的实战课程、完整官方文档（中英两版）、示例模型和官方 notebook。</p>
       <ul class="facts">
         <li><b>4.0.1</b>对应版本</li>
         <li><b>32 万字</b>中文官方文档</li>
@@ -146,12 +146,13 @@
   <h3 class="sec">建议的上手顺序</h3>
   <ol class="path">
     <li><strong><a href="官方文档_中文HTML/tutorial/index.html" style="text-decoration:none">读入门教程前 7 章</a></strong><span>装好环境，跑通第一个模型，搞清 MjModel / MjData / mj_step。</span></li>
+    <li><strong><a href="G1实战/index.html" style="text-decoration:none">跟着 G1 实战动手</a></strong><span>从站立、挥手、抗推到运行行走策略，第 0–10 课加附录，每课都有能直接运行的脚本。</span></li>
     <li><strong>对照中文文档查细节</strong><span>遇到 XML 属性或函数，查“XML 参考”和“API 参考”。</span></li>
-    <li><strong>改示例模型和 notebook</strong><span>从 <code>model\</code> 里的现成模型开始改，比从零写快。</span></li>
   </ol>
 
   <h3 class="sec">其他资料</h3>
   <ul class="res">
+    <li><a href="G1实战/index.html">G1 实战课程</a><span>以宇树 Unitree G1 人形机器人为案例，第 0–10 课加附录。课程脚本在 <code>G1实战\code\</code>，模型在 <code>G1实战\models\</code>；每课也有 Markdown 版。</span></li>
     <li><a class="live-link" href="MuJoCo_Live/index.html">MuJoCo Live · 浏览器仿真</a><span>免装 Python，整个 MuJoCo 在浏览器里运行（官方 live.mujoco.org 的离线版）。默认打开 G1 人形机器人；也可以直接打开
       <a class="live-link" href="MuJoCo_Live/index.html?model=../官方仓库_模型与教程/model/humanoid/humanoid.xml">humanoid</a>、
       <a class="live-link" href="MuJoCo_Live/index.html?model=../官方仓库_模型与教程/model/car/car.xml">car</a>、

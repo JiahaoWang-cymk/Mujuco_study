@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 9 课　让它走起来：运行宇树的预训练行走策略 · G1 实战</title>
+<link rel="stylesheet" href="katex/katex.min.css"><style>
+:root { --ink:#16213a; --muted:#5a6880; --line:#d5dbe4; --accent:#2a4fd6; --bg:#ffffff; --code-bg:#f4f6f9; --quote:#eef3ff; }
+@media (prefers-color-scheme: dark) {
+  :root { --ink:#e5eaf3; --muted:#97a3b8; --line:#2c3a53; --accent:#86a2ff; --bg:#121a29; --code-bg:#1a2438; --quote:#1a2540; }
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); color: var(--ink); font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif; }
+body { margin: 0; line-height: 1.75; font-size: 16px; }
+main { max-width: 860px; margin: 0 auto; padding: 24px 20px 64px; }
+nav.top { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; padding: 10px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+nav.top a, nav.pager a { color: var(--accent); text-decoration: none; }
+nav.top a:hover, nav.pager a:hover { text-decoration: underline; }
+nav.pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 15px; }
+h1 { font-size: 30px; line-height: 1.3; margin: 24px 0 16px; }
+h2 { font-size: 22px; margin: 40px 0 12px; padding-left: 12px; border-left: 5px solid var(--accent); }
+h3 { font-size: 18px; margin: 28px 0 8px; }
+a { color: var(--accent); }
+code { font-family: Consolas, "Microsoft YaHei", monospace; font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; line-height: 1.5; }
+pre code { background: none; padding: 0; font-size: 14px; }
+table { border-collapse: collapse; margin: 12px 0; display: block; overflow-x: auto; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; vertical-align: top; }
+th { background: var(--code-bg); text-align: left; }
+blockquote { margin: 14px 0; padding: 8px 16px; background: var(--quote); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; }
+blockquote p { margin: 6px 0; }
+hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
+details { margin: 24px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
+details summary { cursor: pointer; }
+img { max-width: 100%; }
+.katex-display { overflow-x: auto; overflow-y: hidden; }
+</style>
+<script defer src="katex/katex.min.js"></script><script defer src="katex/contrib/auto-render.min.js"></script>
+</head><body><main>
+<nav class="top"><a href="../index.html">资料包首页</a><a href="index.html">G1 实战目录</a><a href="00_装好环境.html">第 0 课</a><a href="01_认识G1.html">第 1 课</a><a href="02_站着与倒下.html">第 2 课</a><a href="03_吊起来挥手.html">第 3 课</a><a href="04_它感觉到了什么.html">第 4 课</a><a href="05_扛住推力.html">第 5 课</a><a href="06_省力地站.html">第 6 课</a><a href="07_伸手碰球.html">第 7 课</a><a href="08_单腿平衡.html">第 8 课</a><a href="09_让它走起来.html">第 9 课</a><a href="10_录视频与批量实验.html">第 10 课</a><a href="11_附录_往后学什么.html">第 11 课</a></nav>
+<h1 id="9">第 9 课　让它走起来：运行宇树的预训练行走策略</h1>
+<p><strong>对应入门教程</strong>：7.1、7.4、8.6、10.4</p>
+<p><strong>本课目标</strong></p>
+<ul>
+<li>认识宇树 unitree_rl_gym 带的 12 自由度 G1 模型，说出它和 Menagerie 版的主要区别（motor 执行器、没有手臂关节）。</li>
+<li>逐行读懂官方部署脚本 <code>deploy_mujoco.py</code>：观测向量怎么拼、为什么要缩放、策略 50 Hz 和仿真 500 Hz 怎么配合、PD 力矩怎么算。</li>
+<li>先用“零动作”把整条管线跑通并逐项核对，再换上真正的策略，看 G1 走起来。</li>
+<li>改速度指令、推它、换滑地面，记录它什么时候会摔倒。</li>
+</ul>
+<p><strong>预计用时</strong>：2.5–3 小时　<strong>前置</strong>：第 2 课（position 执行器与 PD）、第 4 课（IMU 与重力方向）、第 5 课（<code>xfrc_applied</code> 推力、摩擦）</p>
+<hr />
+<h2 id="91">9.1 文件在哪里</h2>
+<pre><code class="language-text">G1实战/
+├── models/
+│   ├── unitree_g1/                 ← 第 1–8、10 课用的 Menagerie 版
+│   └── unitree_rl_gym_g1/          ← 本课主角（来自宇树 unitree_rl_gym）
+│       ├── deploy_mujoco.py        ← 官方部署脚本，原样保留，用来对照阅读
+│       ├── g1.yaml                 ← 部署配置：增益、缩放系数、默认关节角……
+│       ├── motion.pt               ← 训练好的策略（TorchScript 格式，约 146 KB）
+│       └── g1_description/
+│           ├── scene.xml           ← 地面 + include 机器人
+│           ├── g1_12dof.xml        ← 12 自由度的 G1
+│           └── meshes/
+└── code/
+    ├── 09_compare_models.py        ← 对比两个 G1 模型
+    └── 09_walk.py                  ← 本课主脚本
+</code></pre>
+<p>这套东西的来历：宇树先在 GPU 物理引擎（Isaac Gym）里用强化学习训练出行走策略，再拿到 MuJoCo 里验证。换一个仿真器再跑一遍，叫 <strong>sim2sim</strong>。两个仿真器的接触模型、积分方法都不一样，策略在 MuJoCo 里也能走，说明它没有“钻某个仿真器的空子”，上真机的把握就更大。</p>
+<p>官方的 <code>deploy_mujoco.py</code> 不能直接运行：它要 <code>import legged_gym</code>（整个训练框架）和 <code>torch</code>，配置里的路径也写成了 <code>{LEGGED_GYM_ROOT_DIR}/...</code>。<code>code/09_walk.py</code> 把它改写成在课程目录下能直接跑的版本，<strong>计算步骤一行不差</strong>，另外加了改指令、推力、摩擦、摔倒判定和记录。</p>
+<h2 id="92-g112">9.2 换了一台“新” G1：12 自由度模型</h2>
+<h3 id="_1">先猜一猜</h3>
+<ol>
+<li>宇树训练行走策略用的模型只有 12 个关节（两条腿各 6 个）。那腰和手臂去哪了？机器人总质量会变吗？</li>
+<li>第 2 课里 Menagerie 版用的是 <code>position</code> 执行器。行走策略输出的也是“目标关节角”，你猜 12 自由度模型用的是什么执行器？</li>
+</ol>
+<h3 id="25">运行 <code>code/09_compare_models.py</code></h3>
+<pre><code class="language-bash">python code/09_compare_models.py
+</code></pre>
+<p>脚本把两个模型都加载进来，按同样的项目各打一行。实际输出：</p>
+<pre><code class="language-text">                                        Menagerie g1.xml                      rl_gym g1_12dof.xml
+nq / nv / nu                            36 / 35 / 29                          19 / 18 / 12
+nbody / njnt                            31 / 30                               14 / 13
+总质量 (kg)                             33.34                                 32.11
+参与碰撞的 geom 数                      36                                    32
+左脚碰撞 geom                           4 个 sphere，半径 0.005，摩擦 0.6     4 个 sphere，半径 0.005，摩擦 1
+timestep / 积分器                       0.002 / mjINT_IMPLICITFAST            0.002 / mjINT_EULER
+左膝执行器                              position（kp = 500，kv = 9.08）       motor（力 = 1 × ctrl）
+左膝力矩上限 (N·m)                      执行器 forcerange ±139                关节 actuatorfrcrange ±139
+左膝 armature / damping / frictionloss  0.01 / 0 / 0.3                        0.01 / 0.001 / 0.1
+传感器数 / 关键帧数                     4 / 1                                 0 / 0
+
+12dof 的 12 个关节在 Menagerie 里都有：True；关节范围一致：True
+Menagerie 多出的 17 个关节：腰 3 个，手臂 14 个
+g1.yaml default_angles 左腿： [-0.1  0.   0.   0.3 -0.2  0. ]
+Menagerie stand 关键帧 左腿： [0. 0. 0. 0. 0. 0.]
+</code></pre>
+<p>逐条看：</p>
+<ul>
+<li><strong>腰和手臂被“焊死”了。</strong> 打开 <code>g1_12dof.xml</code>，躯干、头、两条手臂的 geom 全都直接挂在 <code>pelvis</code> 下面，没有关节。所以 <code>nq = 7 + 12 = 19</code>，<code>nv = 6 + 12 = 18</code>。手臂没被删掉，它们的质量并进了骨盆：12 自由度模型的 <code>pelvis</code> 一个 body 就有 17.73 kg。两个模型的腿完全一样重（两条腿合计都是 14.37 kg），总质量差的 1.2 kg 全在上半身：Menagerie 版骨盆、腰、躯干、手臂加起来是 18.97 kg。</li>
+<li><strong>执行器是 <code>motor</code>。</strong> <code>motor</code> 的 <code>ctrl</code> 就是力矩本身（gear 默认为 1），MuJoCo 不替你做任何反馈。PD 公式要在 Python 里自己算，见 9.3 ③。</li>
+<li><strong>力矩上限写在关节上。</strong> Menagerie 写在执行器的 <code>forcerange</code> 里；这里写成关节属性 <code>actuatorfrcrange=&quot;-139 139&quot;</code>，意思是“所有作用到这个关节上的执行器力，合起来截断到 ±139”。效果一样，写法不同。</li>
+<li><strong>积分器是默认的 Euler。</strong> Menagerie 用 <code>implicitfast</code>，是为了把 <code>position</code> 执行器里的 <code>kv·q̇</code> 这一项隐式处理，大增益时更稳。这里的 PD 是在 Python 里算好再写进 <code>ctrl</code> 的，MuJoCo 只看到一个常数力矩，根本不知道它和速度有关，换成 <code>implicitfast</code> 也帮不上这一项。好在这组 kd 很小（2～4），显式积分没问题。</li>
+<li><strong>脚还是 4 个小球</strong>，位置、半径都和 Menagerie 一样，只是摩擦用默认的 1，而不是 0.6。</li>
+<li><strong>没有传感器。</strong> 策略需要的角速度和重力方向，部署脚本直接从 <code>qpos</code>、<code>qvel</code> 里取。仿真里这样做没问题；真机上这两个量来自 IMU，会带噪声和偏差。</li>
+<li><strong>默认站姿不同。</strong> Menagerie 的 <code>stand</code> 关键帧是直腿；行走策略的默认姿势是屈髋 0.1、屈膝 0.3、踝 −0.2（单位 rad），重心更低，更像随时准备迈步。</li>
+</ul>
+<blockquote>
+<p>腿部 12 个关节的名字和范围两边完全一致，所以第 1 课那张 <code>qpos</code> 排布表在这里依然适用，只是腿后面没有腰和手臂了：<code>qpos[7:13]</code> 是左腿，<code>qpos[13:19]</code> 是右腿。</p>
+</blockquote>
+<h2 id="93-deploy_mujocopy">9.3 逐行拆解 deploy_mujoco.py</h2>
+<p>先把官方脚本的骨架抽出来（省掉了读文件和查看器的部分）：</p>
+<pre><code class="language-python">action = np.zeros(num_actions)            # 上一次策略输出
+target_dof_pos = default_angles.copy()    # 当前的目标关节角
+counter = 0
+while ...:
+    tau = pd_control(target_dof_pos, d.qpos[7:], kps, np.zeros_like(kds), d.qvel[6:], kds)
+    d.ctrl[:] = tau                       # ① 每个仿真步：PD 算力矩
+    mujoco.mj_step(m, d)
+    counter += 1
+    if counter % control_decimation == 0: # ② 每 10 步：组观测 → 策略 → 新目标
+        obs = ...（47 维）
+        action = policy(obs)
+        target_dof_pos = action * action_scale + default_angles
+</code></pre>
+<p>下面分块讲。</p>
+<h3 id="1-g1yaml">① 配置：g1.yaml 里有什么</h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>simulation_dt</code></td>
+<td>0.002</td>
+<td>仿真步长，500 Hz</td>
+</tr>
+<tr>
+<td><code>control_decimation</code></td>
+<td>10</td>
+<td>每 10 个仿真步跑一次策略，50 Hz</td>
+</tr>
+<tr>
+<td><code>kps</code></td>
+<td>髋 100、膝 150、踝 40</td>
+<td>PD 的比例增益（N·m/rad）</td>
+</tr>
+<tr>
+<td><code>kds</code></td>
+<td>髋 2、膝 4、踝 2</td>
+<td>PD 的微分增益（N·m·s/rad）</td>
+</tr>
+<tr>
+<td><code>default_angles</code></td>
+<td><code>[-0.1, 0, 0, 0.3, -0.2, 0] × 2</code></td>
+<td>默认关节角，动作和观测都以它为零点</td>
+</tr>
+<tr>
+<td><code>ang_vel_scale</code> / <code>dof_pos_scale</code> / <code>dof_vel_scale</code></td>
+<td>0.25 / 1.0 / 0.05</td>
+<td>观测缩放</td>
+</tr>
+<tr>
+<td><code>action_scale</code></td>
+<td>0.25</td>
+<td>动作缩放</td>
+</tr>
+<tr>
+<td><code>cmd_scale</code></td>
+<td><code>[2.0, 2.0, 0.25]</code></td>
+<td>速度指令缩放</td>
+</tr>
+<tr>
+<td><code>num_actions</code> / <code>num_obs</code></td>
+<td>12 / 47</td>
+<td>动作、观测的维数</td>
+</tr>
+<tr>
+<td><code>cmd_init</code></td>
+<td><code>[0.5, 0, 0]</code></td>
+<td>初始指令：向前 0.5 m/s</td>
+</tr>
+</tbody>
+</table>
+<p>这些数字<strong>都是训练时定下的</strong>，部署时一个都不能改。策略只认识训练时见过的那种输入：缩放系数改了，在它眼里就像换了一个世界。</p>
+<h3 id="2-50-hz-500-hz">② 控制分频：策略 50 Hz，仿真 500 Hz</h3>
+<pre><code class="language-text">仿真步  1   2   3  …  10  11  12  …  20  21 …
+PD     ●   ●   ●  …   ●   ●   ●  …   ●   ●       每步都按最新的 q、dq 重算力矩
+策略                  ▲                  ▲         每 10 步更新一次 target_dof_pos
+</code></pre>
+<p>真机也是这样分层的：电机驱动器里的 PD 环跑得很快（kHz 级），上层的策略网络慢一些。入门教程 7.4 节说过，<strong>控制周期要和真实系统一致</strong>；这个策略是按 0.02 s 一拍训练的，部署也必须 0.02 s 一拍。</p>
+<p>几个细节：</p>
+<ul>
+<li>第一次调用策略是在 <code>counter = 10</code>，也就是 t = 0.02 s。在此之前目标角就是 <code>default_angles</code>。</li>
+<li>官方脚本<strong>没有</strong>把初始姿势设成默认角：机器人从 <code>qpos0</code>（直腿、骨盆高 0.793 m）开始，一落地就被 PD 拉向屈膝的默认姿势。</li>
+<li>相位用 <code>counter * simulation_dt</code> 计算，也就是仿真时间，与墙钟无关。</li>
+</ul>
+<h3 id="3-pd-motor">③ PD 力矩：motor 执行器 + 自己算</h3>
+<pre><code class="language-python">def pd_control(target_q, q, kp, target_dq, dq, kd):
+    return (target_q - q) * kp + (target_dq - dq) * kd
+</code></pre>
+<p>调用时 <code>target_dq</code> 传的是全零，所以就是</p>
+<p><div class="math">\[\tau = k_p\,(q^* - q) - k_d\,\dot q\]</div></p>
+<p>和第 2 课 <code>position</code> 执行器的公式是同一个东西，只是这回由 Python 每步算一次再写进 <code>ctrl</code>。为什么不直接用 <code>position</code> 执行器？一来真机的接口就是“发目标角 + kp/kd 给电机驱动器”，部署脚本照着真机写更直接；二来增益是训练时定的，每个关节不同，写在 yaml 里比改 XML 方便。练习 3 会让你验证两种写法是等价的。</p>
+<p>算出来的力矩不需要自己截断：关节上的 <code>actuatorfrcrange</code> 会把它限制在 ±88 / ±139 / ±50 N·m 以内。<code>09_walk.py</code> 会统计 PD 力矩超出上限、被截断的次数。</p>
+<h3 id="4-47">④ 观测向量：47 个数，各是什么</h3>
+<pre><code class="language-python">qj = (d.qpos[7:] - default_angles) * dof_pos_scale
+dqj = d.qvel[6:] * dof_vel_scale
+gravity_orientation = get_gravity_orientation(d.qpos[3:7])
+omega = d.qvel[3:6] * ang_vel_scale
+phase = counter * simulation_dt % 0.8 / 0.8
+obs[:3]   = omega
+obs[3:6]  = gravity_orientation
+obs[6:9]  = cmd * cmd_scale
+obs[9:21] = qj
+obs[21:33] = dqj
+obs[33:45] = action
+obs[45:47] = [sin(2π·phase), cos(2π·phase)]
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>下标</th>
+<th>维数</th>
+<th>内容</th>
+<th>从哪来</th>
+<th>缩放</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–2</td>
+<td>3</td>
+<td>骨盆角速度</td>
+<td><code>qvel[3:6]</code></td>
+<td>× 0.25</td>
+</tr>
+<tr>
+<td>3–5</td>
+<td>3</td>
+<td>重力方向在骨盆坐标系里的投影</td>
+<td>由四元数 <code>qpos[3:7]</code> 算</td>
+<td>不缩放（本身是单位向量）</td>
+</tr>
+<tr>
+<td>6–8</td>
+<td>3</td>
+<td>速度指令 vx、vy、wz</td>
+<td>用户给定</td>
+<td>× 2, 2, 0.25</td>
+</tr>
+<tr>
+<td>9–20</td>
+<td>12</td>
+<td>关节角 − 默认角</td>
+<td><code>qpos[7:19]</code></td>
+<td>× 1</td>
+</tr>
+<tr>
+<td>21–32</td>
+<td>12</td>
+<td>关节角速度</td>
+<td><code>qvel[6:18]</code></td>
+<td>× 0.05</td>
+</tr>
+<tr>
+<td>33–44</td>
+<td>12</td>
+<td>上一步的动作</td>
+<td>上次策略输出</td>
+<td>不缩放</td>
+</tr>
+<tr>
+<td>45–46</td>
+<td>2</td>
+<td>步态相位 sin、cos</td>
+<td>仿真时间，周期 0.8 s</td>
+<td>不缩放</td>
+</tr>
+</tbody>
+</table>
+<p>3 + 3 + 3 + 12 × 3 + 2 = 47，正好等于 <code>num_obs</code>。</p>
+<p>逐项说几句：</p>
+<ul>
+<li><strong>角速度 <code>qvel[3:6]</code> 是在骨盆自己的坐标系里表示的。</strong> 这是 freejoint 的约定：线速度 <code>qvel[0:3]</code> 用世界坐标，角速度 <code>qvel[3:6]</code> 用局部坐标。真机的 IMU 测的也是机身坐标系下的角速度，两边对得上。</li>
+<li><strong>重力投影</strong>告诉策略“哪边是下”，相当于人的前庭感觉。站直时是 (0, 0, −1)；身体前倾时 x 分量变正，向左歪时 y 分量变正。<code>get_gravity_orientation</code> 那三行公式，其实就是 <span class="math">\(R^\top (0,0,-1)^\top\)</span>，<span class="math">\(R\)</span> 是骨盆的旋转矩阵。脚本运行时会用 <code>mju_quat2Mat</code> 现算一遍来核对。注意四元数顺序是 <strong>w x y z</strong>（第 1 课）。</li>
+<li><strong>为什么要缩放？</strong> 让每一项的数值大致落在 ±1 附近。关节速度动不动就十几 rad/s，乘 0.05 才和其他量差不多大。神经网络对输入的量级很敏感。</li>
+<li><strong>上一步动作</strong>让策略知道自己刚才“想干什么”，输出更平滑。</li>
+<li><strong>相位</strong>是一个周期 0.8 s 的“节拍器”。sin、cos 一起给，是为了让 0 和 1 这两个相位在输入上连续。策略据此安排左右脚交替：前半个周期一只脚着地，后半个周期换另一只。</li>
+<li><strong>注意观测里没有骨盆位置和线速度。</strong> 真机上这两个量很难测准，所以训练时就不给。机器人得“凭感觉”走出指令要的速度。</li>
+</ul>
+<h3 id="5">⑤ 动作 → 目标角</h3>
+<pre><code class="language-python">target_dof_pos = action * action_scale + default_angles
+</code></pre>
+<p>策略输出 12 个数，乘 0.25 再加上默认角，就是新的目标关节角。动作为 0，就意味着“回到默认姿势”。</p>
+<h3 id="6-motionpt">⑥ 策略本身：motion.pt 里是什么</h3>
+<p><code>.pt</code> 文件其实是个 zip 包。用 Python 自带的 <code>zipfile</code> 打开就能看到里面有网络结构的源码（<code>code/</code> 目录）和权重（<code>data/</code> 目录）。读源码可知它的结构是：</p>
+<pre><code class="language-text">47 维观测 ──► LSTM（隐状态 64 维）──► Linear 64→32 ──► ELU ──► Linear 32→12 ──► 12 维动作
+                  ▲      │
+                  └──────┘  隐状态 h、c 每次调用后保留
+</code></pre>
+<p>一共约 3.1 万个参数，非常小。关键在 <strong>LSTM</strong>：它带“记忆”，每次调用都会更新内部的隐状态。所以同一个观测，在不同时刻喂进去，输出可能不同；换一次实验就要重新加载策略，让记忆清零。</p>
+<p>官方脚本用 <code>torch.jit.load</code> 加载它，需要安装 PyTorch。没有 PyTorch 也不要紧：<code>09_walk.py</code> 里的 <code>NumpyPolicy</code> 从 zip 包里把权重读出来，用 numpy 按同样的结构手写了前向计算（LSTM 的四个门、ELU、两个全连接层），一共二十来行。<code>--policy</code> 参数选择后端：</p>
+<table>
+<thead>
+<tr>
+<th><code>--policy</code></th>
+<th>做法</th>
+<th>需要</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>auto</code>（默认）</td>
+<td>有 PyTorch 就用 torch，否则用 numpy</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>torch</code></td>
+<td>和官方一样，<code>torch.jit.load</code></td>
+<td>PyTorch</td>
+</tr>
+<tr>
+<td><code>numpy</code></td>
+<td>手写前向计算</td>
+<td>只要 numpy</td>
+</tr>
+</tbody>
+</table>
+<p>另外还有一个 <code>--dummy-policy</code>：不用网络，动作恒为 0。它是下一节的主角。</p>
+<h2 id="94">9.4 先用零动作把管线跑通</h2>
+<p>部署一个策略，最常见的毛病不在网络里，而在网络外面：观测顺序拼错、缩放写错、四元数顺序弄反、分频不对……这些错误不会报错，只会让机器人莫名其妙地摔倒。所以先把策略换成“零动作”，把网络以外的部分逐项核对一遍。</p>
+<h3 id="_2">先猜一猜</h3>
+<ol>
+<li>动作恒为 0，意味着 PD 一直把关节拉向默认姿势，机器人像一尊屈膝的“雕像”。它能站住吗？如果会倒，往哪边倒？</li>
+<li>跑 10 s 仿真，策略应该被调用几次？</li>
+</ol>
+<h3 id="_3">运行</h3>
+<pre><code class="language-bash">python code/09_walk.py --dummy-policy
+</code></pre>
+<p>实际输出：</p>
+<pre><code class="language-text">仿真步长 0.002 s（500 Hz），策略每 10 步算一次（50 Hz）
+观测向量布局：
+  obs[ 0: 3]   3 维  角速度 omega
+  obs[ 3: 6]   3 维  重力投影 gravity
+  obs[ 6: 9]   3 维  速度指令 cmd
+  obs[ 9:21]  12 维  关节位置偏差 q-q0
+  obs[21:33]  12 维  关节速度 dq
+  obs[33:45]  12 维  上一步动作 action
+  obs[45:47]   2 维  步态相位 sin,cos
+  合计 47 维，g1.yaml 里 num_obs = 47  →  一致
+策略：dummy（零动作）
+速度指令 cmd = [vx +0.50 m/s, vy +0.00 m/s, wz +0.00 rad/s]
+
+仿真 10.00 s，共 5000 个仿真步，策略调用 500 次（5000/10 = 500），用时 0.5 s
+第一次组观测在 t = 0.020 s：
+  omega×0.25 = [-0.     0.169 -0.   ]
+  gravity  = [ 0.012 -0.    -1.   ]
+  cmd×scale= [1. 0. 0.]
+  q-q0     = [ 0.042 -0.001 -0.003 -0.174  0.124  0.     0.042  0.001  0.003 -0.174
+  0.124 -0.   ]
+  相位     = [0.156 0.988]
+  重力投影公式与旋转矩阵算出的结果最大相差 1.1e-16
+各关节 |PD 力矩| 最大值 (N·m)：[16.  0.  1. 45. 19.  1. 16.  0.  1. 45. 19.  1.]
+PD 力矩超出关节力矩上限、被截断的次数：0（共 60000 个关节·步）
+脚与地面接触的实际摩擦系数：1.00
+结果：摔倒，t = 1.16 s，判据：躯干倾角 45.1° &gt; 45°，向前倒
+终点骨盆位置 x = +0.82 m，y = -0.00 m，z = 0.31 m
+已保存 09_walk_dummy.csv、09_walk_dummy.png 到 ...\G1实战\output
+</code></pre>
+<p>（“用时”一项取决于电脑快慢，其余数字每次运行都一样。）</p>
+<p>逐项核对：</p>
+<table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>怎么看</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>观测维数</td>
+<td>布局合计 47，与 <code>num_obs</code> 一致</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>分频</td>
+<td>5000 步调用 500 次，第一次在 t = 0.020 s</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>速度指令缩放</td>
+<td>0.5 × 2 = 1</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>重力投影</td>
+<td>刚开始几乎直立，接近 (0, 0, −1)；与旋转矩阵结果相差 1e-16</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>关节偏差的符号</td>
+<td>膝从 0 开始往 0.3 走，此刻 q − q0 = −0.174，即膝角约 0.126</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>相位</td>
+<td>0.02 / 0.8 = 0.025 个周期，sin(2π×0.025) = 0.156</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>PD 力矩</td>
+<td>最大 45 N·m（膝），远小于上限，没有截断</td>
+<td>✓</td>
+</tr>
+</tbody>
+</table>
+<p><strong>它为什么会倒？</strong> 粗算一下：默认姿势下整机质心离地约 0.69 m，在踝关节上方约 0.64 m。把整个人看成绕脚踝转动的倒立摆，前倾 1 rad 时重力产生的力矩约为 <span class="math">\(mgh ≈ 32.1 × 9.81 × 0.64 ≈ 201\)</span> N·m；而两个踝 pitch 的 PD 刚度加起来只有 2 × 40 = 80 N·m/rad。弹簧比重力“软”，一旦有点前倾就扶不回来。真策略的工作，就是不停地调整目标角把重心“接住”。</p>
+<p>这次摔倒正好用来检验摔倒判定。脚本用了三条判据，满足任一条就记为摔倒：骨盆高度 &lt; 0.5 m、躯干倾角 &gt; 45°、脚以外的部位碰到地面。倒向由骨盆坐标系里的重力方向判断。</p>
+<h3 id="_4">再验证推力</h3>
+<pre><code class="language-bash">python code/09_walk.py --dummy-policy --push-time 0.3 --push-fy 300 --tag push
+</code></pre>
+<p>在 0.3 s 时，从右往左（+y 方向）推骨盆 0.1 s：</p>
+<pre><code class="language-text">推力实际作用了 50 个仿真步 = 0.100 s，冲量 ≈ 30.0 N·s
+脚与地面接触的实际摩擦系数：1.00
+结果：摔倒，t = 0.88 s，判据：躯干倾角 45.2° &gt; 45°，向左倒
+终点骨盆位置 x = +0.17 m，y = +1.08 m，z = 0.06 m
+</code></pre>
+<p>推力恰好作用 50 步，倒向从“向前”变成了“向左”，比不推时更早倒下。推力这条管线也通了。推力的写法和第 5 课一样：</p>
+<pre><code class="language-python">if args.push_time is not None:
+    d.xfrc_applied[pelvis] = 0
+    if args.push_time &lt;= d.time &lt; args.push_time + args.push_dur:
+        d.xfrc_applied[pelvis, 0] = args.push_fx      # 世界坐标，作用在骨盆质心
+        d.xfrc_applied[pelvis, 1] = args.push_fy
+</code></pre>
+<h3 id="_5">观察记录</h3>
+<ol>
+<li>打开 <code>output/09_walk_dummy.png</code>，看骨盆高度和倾角曲线。从开始倾倒到倾角超过 45°，大约用了多久？</li>
+<li>用 <code>--dummy-policy --friction 0.3</code> 再跑一次，“实际摩擦系数”一行变成多少？</li>
+</ol>
+<h2 id="95">9.5 换上真策略</h2>
+<pre><code class="language-bash">python code/09_walk.py                  # 默认指令 vx = 0.5 m/s，跑 10 s
+python code/09_walk.py --view           # 打开查看器实时看（默认跑 60 s，可以关窗口提前结束）
+</code></pre>
+<p><code>--view</code> 用的是 <code>mujoco.viewer.launch_passive</code>：仿真循环仍在我们的脚本里，每步调用一次 <code>viewer.sync()</code> 刷新画面，再 <code>sleep</code> 到和墙钟同步。镜头设成跟踪骨盆。查看器里也可以像第 1 课那样，双击选中躯干后按住 <code>Ctrl</code> 用右键拖动，亲手推它（脚本只在设了 <code>--push-time</code> 时才会改 <code>xfrc_applied</code>，所以不会把你的推力清掉）。</p>
+<h3 id="_6">先猜一猜</h3>
+<ol>
+<li>指令是 0.5 m/s，你觉得 10 s 后它实际走了多远？比 5 m 多还是少？</li>
+<li>观测里没有骨盆位置。它能一直走成直线吗？</li>
+</ol>
+<h3 id="_7">观察记录</h3>
+<p>运行后，从终端输出和 <code>output/09_walk_policy.png</code> 里填写：</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>你的结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>是否摔倒</td>
+<td></td>
+</tr>
+<tr>
+<td>2 s 以后平均 vx（m/s）</td>
+<td></td>
+</tr>
+<tr>
+<td>终点 x、y（m）</td>
+<td></td>
+</tr>
+<tr>
+<td>各关节最大 PD 力矩，哪个关节最大</td>
+<td></td>
+</tr>
+<tr>
+<td>骨盆高度大致在什么范围波动</td>
+<td></td>
+</tr>
+<tr>
+<td>速度曲线的波动周期约多少秒？和相位周期 0.8 s 什么关系</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>用 <code>--policy numpy</code> 和 <code>--policy torch</code>（如果你的电脑装了 PyTorch）各跑一次，比较结果。两者算的是同一个网络，但浮点运算的顺序不同，误差会在长时间仿真里慢慢放大，轨迹不一定逐位相同。</p>
+</blockquote>
+<h2 id="96">9.6 鲁棒性实验：改指令、推它、换滑地面</h2>
+<p><code>09_walk.py</code> 的实验参数：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--vx</code> <code>--vy</code> <code>--wz</code></td>
+<td>速度指令：前进 m/s、侧移 m/s、转向 rad/s</td>
+<td><code>--vx 0.8 --wz 0.3</code></td>
+</tr>
+<tr>
+<td><code>--push-time</code> <code>--push-fx</code> <code>--push-fy</code> <code>--push-dur</code></td>
+<td>在某时刻推骨盆，力单位 N，默认推 0.1 s</td>
+<td><code>--push-time 4 --push-fy 150</code></td>
+</tr>
+<tr>
+<td><code>--friction</code></td>
+<td>地面和脚底的滑动摩擦系数</td>
+<td><code>--friction 0.3</code></td>
+</tr>
+<tr>
+<td><code>--decimation</code></td>
+<td>改控制分频（练习 1 用）</td>
+<td><code>--decimation 20</code></td>
+</tr>
+<tr>
+<td><code>--duration</code></td>
+<td>仿真时长 s</td>
+<td><code>--duration 20</code></td>
+</tr>
+<tr>
+<td><code>--tag</code></td>
+<td>输出文件名后缀，不同实验不互相覆盖</td>
+<td><code>--tag mu03</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>改摩擦时要注意</strong>：两个 geom 接触时，摩擦系数取两者中<strong>较大</strong>的那个（优先级相同时，入门教程 8.2 节）。只把地面改滑，脚底还是 1，接触摩擦仍是 1，等于没改。所以脚本把所有 geom 的滑动摩擦一起改了：</p>
+<pre><code class="language-python">m.geom_friction[:, 0] = args.friction
+</code></pre>
+<p>脚本还会打印“脚与地面接触的实际摩擦系数”，直接从 <code>d.contact.friction</code> 里读出来，改没改成一看便知。</p>
+<h3 id="_8">先猜一猜</h3>
+<ol>
+<li>指令 1.0 m/s 时，实际速度能跟上吗？</li>
+<li>在第 4 s 从侧面推 0.1 s，多大的力会让它摔倒？从前后方向推呢？</li>
+<li>摩擦系数降到多少，它会开始打滑摔倒？</li>
+</ol>
+<h3 id="_9">观察记录</h3>
+<p>每行跑一次，填写结果（“摔倒时刻”没摔就写“未倒”）：</p>
+<table>
+<thead>
+<tr>
+<th>命令参数</th>
+<th>2 s 后平均速度</th>
+<th>摔倒时刻 / 倒向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--vx 0</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>--vx 0.3</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>--vx 0.8</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>--vx 1.0</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>--vx -0.3</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>--vx 0 --vy 0.3</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>--wz 0.5</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>--push-time 4 --push-fy 150</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>--push-time 4 --push-fy 300</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>--push-time 4 --push-fy 500</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>--push-time 4 --push-fx 300</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>--friction 0.5</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>--friction 0.3</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>--friction 0.1</code></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>（每次运行都会覆盖 <code>output/09_walk_policy.*</code>；想保留曲线就加 <code>--tag</code>。一次推一次地试很慢，第 10 课会以站立的 G1 为例，把推力实验批量化、统计摔倒率，同样的办法也能用在行走策略上。）</p>
+<p>想一想：</p>
+<ol>
+<li>侧推和前推，哪个方向它更扛得住？为什么？（提示：想一想走路时两脚的前后间距和左右间距。）</li>
+<li>摩擦很低时，各关节 PD 力矩被截断的次数有什么变化？</li>
+</ol>
+<h2 id="_10">练习</h2>
+<ol>
+<li><strong>改分频。</strong> 用 <code>--decimation 20</code>（25 Hz）、<code>--decimation 5</code>（100 Hz）和 <code>--decimation 40</code>（12.5 Hz）各跑一次。分频变了，策略看到的“上一步动作”和相位推进节奏都和训练时不一样了。哪种情况会摔？</li>
+<li><strong>只改地面的摩擦。</strong> 把 <code>09_walk.py</code> 里改摩擦那一行换成只改地面：<code>m.geom_friction[floor, 0] = args.friction</code>，用 <code>--dummy-policy --friction 0.3</code> 运行，看“实际摩擦系数”是多少。改完记得改回来。</li>
+<li><strong>换成 position 执行器。</strong> 用 MjSpec 把 12 个 <code>motor</code> 换成 <code>position</code> 执行器，kp、kv 取 g1.yaml 的 <code>kps</code>、<code>kds</code>，主循环里改成直接 <code>d.ctrl[:] = target_dof_pos</code>。和原来的写法比，10 s 后骨盆位置有区别吗？（提示：<code>spec.actuators[i].set_to_position(kp=..., kv=...)</code>。）</li>
+<li><strong>观测打乱会怎样？</strong> 把 <code>obs[3:6]</code> 的重力投影故意写成 <code>-gravity_orientation</code>（相当于告诉策略“天在下面”），用真策略跑一次，看多久摔倒。这就是 9.4 节说的“不报错、只摔倒”的部署 bug。</li>
+<li><strong>思考题。</strong> 观测里没有骨盆位置和线速度，策略怎么知道自己走得快了还是慢了？LSTM 的“记忆”在这里起什么作用？</li>
+</ol>
+<h2 id="_11">如果报错</h2>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>可能原因</th>
+<th>解决</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>直接运行 <code>deploy_mujoco.py</code> 报 <code>ModuleNotFoundError: No module named &#x27;legged_gym&#x27;</code></td>
+<td>官方脚本依赖整个训练框架</td>
+<td>它只用来对照阅读；运行用 <code>code/09_walk.py</code></td>
+</tr>
+<tr>
+<td><code>没有安装 PyTorch，请改用 --policy numpy</code></td>
+<td>指定了 <code>--policy torch</code> 但没装 PyTorch</td>
+<td>用默认的 <code>auto</code> 或 <code>--policy numpy</code></td>
+</tr>
+<tr>
+<td><code>AssertionError: 模型和配置的关节数对不上</code></td>
+<td>把模型路径改成了 Menagerie 的 <code>unitree_g1/scene.xml</code></td>
+<td>行走策略只能配 <code>g1_12dof.xml</code>：它是按 12 个关节训练的</td>
+</tr>
+<tr>
+<td>自己写的脚本 <code>import yaml</code> 报 <code>ModuleNotFoundError: No module named &#x27;yaml&#x27;</code></td>
+<td>环境里没有 PyYAML（<code>09_walk.py</code> 不受影响：没装时自动改用内置的小解析器）</td>
+<td>参考 <code>load_config</code> 的写法，或离线安装 PyYAML 的 wheel</td>
+</tr>
+<tr>
+<td>真策略一开始就摔倒</td>
+<td>改过观测顺序、缩放、默认角或分频；四元数顺序写成了 x y z w</td>
+<td>用 <code>--dummy-policy</code> 对照 9.4 节的核对表逐项检查</td>
+</tr>
+<tr>
+<td>同一组参数，第二次实验结果和第一次不一样</td>
+<td>在同一个 Python 进程里连续实验，没重新加载策略，LSTM 记忆没清零</td>
+<td>每次实验都重新创建策略对象</td>
+</tr>
+<tr>
+<td><code>--view</code> 窗口打不开或报 OpenGL 错误</td>
+<td>远程桌面、虚拟机里显卡驱动不支持</td>
+<td>去掉 <code>--view</code> 无界面运行，看 PNG 曲线；视频留到第 10 课用离屏渲染录</td>
+</tr>
+<tr>
+<td>中文打印成乱码</td>
+<td>终端编码</td>
+<td>PowerShell 里先运行 <code>chcp 65001</code>，或设环境变量 <code>PYTHONUTF8=1</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="_12">延伸阅读</h2>
+<ul>
+<li><a href="../官方文档_中文HTML/XMLreference.html#actuator-motor">XML 参考：motor 执行器</a>、<a href="../官方文档_中文HTML/XMLreference.html#body-joint-actuatorfrcrange">joint 的 actuatorfrcrange</a></li>
+<li><a href="../官方文档_中文HTML/modeling.html#cactuators">建模：执行器</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#option-timestep">XML 参考：option 的 timestep</a>、<a href="../官方文档_中文HTML/XMLreference.html#option-integrator">integrator</a></li>
+<li><a href="../官方文档_中文HTML/computation/index.html#geintegration">计算：数值积分</a></li>
+<li><a href="../官方文档_中文HTML/modeling.html#ccontact">建模：接触参数（摩擦如何组合）</a>、<a href="../官方文档_中文HTML/XMLreference.html#body-geom-friction">geom 的 friction</a>、<a href="../官方文档_中文HTML/XMLreference.html#body-geom-priority">priority</a></li>
+<li><a href="../官方文档_中文HTML/python.html#pyviewerpassive">Python：被动式查看器 launch_passive</a></li>
+<li><a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mju-quat2mat">API：mju_quat2Mat</a>、<a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mj-objectvelocity">mj_objectVelocity</a></li>
+<li>入门教程 10.4 节（Gymnasium 与强化学习）：本课是“部署”训练好的策略；训练本身需要 GPU，见附录（<code>11_附录_往后学什么.md</code>）。</li>
+</ul>
+<hr />
+<details>
+<summary><b>参考答案（跑完再看）</b></summary>
+
+> 说明：标“以实际运行为准”的是真策略的行走表现。下面的数字是编写时用 <code>--policy numpy</code> 在本机跑出来的；用 torch 后端、或在别的电脑上，长时间仿真的轨迹可能略有不同。其余数字（模型对比、零动作管线）每次运行都相同。
+
+<strong>9.2 先猜一猜</strong>：腰和手臂没有关节，几何体直接固定在骨盆上。总质量 32.11 kg，Menagerie 版 33.34 kg。执行器是 <code>motor</code>，ctrl 直接就是力矩，PD 在 Python 里算。
+
+<strong>9.4 先猜一猜</strong>：站不住，t = 1.16 s 倾角超过 45°，向前倒。原因见正文的倒立摆估算：踝 PD 刚度 80 N·m/rad 小于重力力矩约 201 N·m/rad。10 s 仿真调用策略 5000 / 10 = 500 次。
+
+<strong>9.4 观察记录</strong>：
+
+1. 从曲线看，前 0.5 s 倾角一直在 3° 左右（机器人落地、屈膝），之后越倒越快：0.7 s 约 9°，1.0 s 约 28°，1.16 s 越过 45°。从开始倾倒到越过 45°，大约 0.6 s。
+2. <code>--dummy-policy --friction 0.3</code> 时“实际摩擦系数”为 0.30（零动作下 t = 1.15 s 向前倒，和不改摩擦几乎一样：它本来就是自己倒的，不是滑倒的）。
+
+<strong>9.5 先猜一猜</strong>：比 5 m 少，终点 x 约 4.59 m：起步要时间，稳态速度也略低于指令。走不成严格的直线，见下面的 y 漂移。
+
+<strong>9.5 观察记录</strong>（以实际运行为准）：默认指令 vx = 0.5 m/s 时 10 s 内未摔倒；2 s 后平均 vx = +0.476 m/s，略低于指令；终点 x = +4.59 m，y = −0.39 m，有轻微侧向漂移，因为策略看不到自己的位置，没法纠正累积的偏差。各关节最大 PD 力矩 <code>[18 28 21 45 31 8 20 26 17 45 31 8]</code> N·m，膝最大，没有截断。骨盆高度约在 0.76–0.78 m 之间波动。速度曲线每约 0.4 s 起伏一次，即每迈一步一次，一个 0.8 s 的相位周期里左右脚各迈一步。
+
+<strong>9.6 观察记录</strong>（以实际运行为准）：
+
+| 命令参数 | 2 s 后平均速度 | 摔倒时刻 / 倒向 |
+|---|---|---|
+| <code>--vx 0</code> | vx = +0.013 | 未倒（原地踏步） |
+| <code>--vx 0.3</code> | vx = +0.293 | 未倒 |
+| <code>--vx 0.8</code> | vx = +0.757 | 未倒 |
+| <code>--vx 1.0</code> | vx = +0.915 | 未倒 |
+| <code>--vx -0.3</code> | vx = −0.261 | 未倒 |
+| <code>--vx 0 --vy 0.3</code> | vy = +0.216 | 未倒 |
+| <code>--wz 0.5</code> | vx = +0.470，wz = +0.437 | 未倒 |
+| <code>--push-time 4 --push-fy 150</code> | — | 未倒 |
+| <code>--push-time 4 --push-fy 300</code> | — | 4.92 s，向左倒 |
+| <code>--push-time 4 --push-fy 500</code> | — | 4.37 s，向左倒 |
+| <code>--push-time 4 --push-fx 300</code> | — | 未倒 |
+| <code>--friction 0.5</code> | vx = +0.470 | 未倒 |
+| <code>--friction 0.3</code> | vx = +0.469 | 未倒 |
+| <code>--friction 0.1</code> | vx = +0.315 | 6.83 s，向右倒 |
+
+想一想 1：前后方向更扛得住。走路时一只脚在前、一只在后，支撑区域前后长；左右方向两脚间距窄，侧推时又要靠下一步把脚迈到外侧去“接住”，更难。
+
+想一想 2：<code>--friction 0.1</code> 时截断次数为 547（正常摩擦下为 0）：脚打滑，策略拼命调整，力矩打到上限。
+
+<strong>练习 1</strong>（以实际运行为准）：<code>--decimation 20</code> 未倒（vx = +0.485），<code>--decimation 5</code> 未倒（vx = +0.471），<code>--decimation 40</code> 在 1.77 s 向前倒。策略对分频有一定容忍度，但慢到 12.5 Hz 就跟不上了。分频的打印也可以顺便核对：<code>--decimation 20</code> 时 5000 步调用 250 次。
+
+<strong>练习 2</strong>：只改地面时，“实际摩擦系数”仍是 1.00（零动作下照样在 1.16 s 向前倒，和不改一模一样）。脚底的摩擦是 1，取两者较大值，还是 1。
+
+<strong>练习 3</strong>：改法如下（其余部分和 <code>09_walk.py</code> 相同）：
+
+
+<pre><code class="language-python">spec = mujoco.MjSpec.from_file(str(XML))
+for i, a in enumerate(spec.actuators):
+    a.set_to_position(kp=kps[i], kv=kds[i])
+m = spec.compile()
+...
+d.ctrl[:] = target_dof_pos            # 代替 pd_control
+</code></pre>
+
+
+编写时用 numpy 后端实测：motor + 手算 PD 与 position 执行器跑 10 s，骨盆终点都是 (4.586, −0.390, 0.768) m，三位小数完全相同。编译后左髋 pitch 执行器的 <code>biasprm</code> 前三项是 <code>[0, -100, -2]</code>、左膝是 <code>[0, -150, -4]</code>，<code>gainprm[0]</code> 等于 kp，合起来正是 <span class="math">\(k_p\,\mathrm{ctrl} - k_p q - k_v \dot q\)</span>。两种写法在 Euler 积分器下每步算出的力矩相同：Euler 只对关节自身的 <code>damping</code> 做隐式处理，执行器的 <code>kv</code> 项和 Python 里的 D 项一样是显式算的。如果顺手把积分器换成 <code>implicitfast</code>，<code>kv</code> 项会被隐式处理，两种写法就不再一致了：编写时实测 position 版的终点变成 (4.595, −0.390, 0.768) m。
+
+<strong>练习 4</strong>（以实际运行为准）：编写时实测 t = 0.62 s 就向前倒了，比零动作（1.16 s）还快。策略以为自己倒过来了，拼命做“纠正”动作，反而把自己掀翻。
+
+<strong>练习 5</strong>：策略只能从关节角、关节速度、角速度这些“本体感觉”推断自己的速度，就像人闭着眼走路也大致知道自己走多快。单个时刻的观测信息不够，LSTM 把过去若干拍的观测“记”在隐状态里，相当于积累了一段历史，这样才能估计出速度、地面软硬这类看不见的量。这也是 9.5 节里机器人会慢慢偏离直线的原因：它估计的是速度，不是位置，误差会累积。
+
+</details>
+<nav class="pager"><span><a href="08_单腿平衡.html">← 第 8 课 单腿平衡：把官方 LQR 搬到 G1 上</a></span><span><a href="10_录视频与批量实验.html">第 10 课 录视频、批量做实验 →</a></span></nav>
+</main>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".math").forEach(function (el) {
+    renderMathInElement(el, {delimiters: [{left: "\\[", right: "\\]", display: true}, {left: "\\(", right: "\\)", display: false}]});
+  });
+});
+</script>
+</body></html>

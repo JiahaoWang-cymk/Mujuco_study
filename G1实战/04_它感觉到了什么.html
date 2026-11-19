@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 4 课　它“感觉”到了什么 · G1 实战</title>
+<link rel="stylesheet" href="katex/katex.min.css"><style>
+:root { --ink:#16213a; --muted:#5a6880; --line:#d5dbe4; --accent:#2a4fd6; --bg:#ffffff; --code-bg:#f4f6f9; --quote:#eef3ff; }
+@media (prefers-color-scheme: dark) {
+  :root { --ink:#e5eaf3; --muted:#97a3b8; --line:#2c3a53; --accent:#86a2ff; --bg:#121a29; --code-bg:#1a2438; --quote:#1a2540; }
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); color: var(--ink); font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif; }
+body { margin: 0; line-height: 1.75; font-size: 16px; }
+main { max-width: 860px; margin: 0 auto; padding: 24px 20px 64px; }
+nav.top { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; padding: 10px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+nav.top a, nav.pager a { color: var(--accent); text-decoration: none; }
+nav.top a:hover, nav.pager a:hover { text-decoration: underline; }
+nav.pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 15px; }
+h1 { font-size: 30px; line-height: 1.3; margin: 24px 0 16px; }
+h2 { font-size: 22px; margin: 40px 0 12px; padding-left: 12px; border-left: 5px solid var(--accent); }
+h3 { font-size: 18px; margin: 28px 0 8px; }
+a { color: var(--accent); }
+code { font-family: Consolas, "Microsoft YaHei", monospace; font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; line-height: 1.5; }
+pre code { background: none; padding: 0; font-size: 14px; }
+table { border-collapse: collapse; margin: 12px 0; display: block; overflow-x: auto; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; vertical-align: top; }
+th { background: var(--code-bg); text-align: left; }
+blockquote { margin: 14px 0; padding: 8px 16px; background: var(--quote); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; }
+blockquote p { margin: 6px 0; }
+hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
+details { margin: 24px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
+details summary { cursor: pointer; }
+img { max-width: 100%; }
+.katex-display { overflow-x: auto; overflow-y: hidden; }
+</style>
+<script defer src="katex/katex.min.js"></script><script defer src="katex/contrib/auto-render.min.js"></script>
+</head><body><main>
+<nav class="top"><a href="../index.html">资料包首页</a><a href="index.html">G1 实战目录</a><a href="00_装好环境.html">第 0 课</a><a href="01_认识G1.html">第 1 课</a><a href="02_站着与倒下.html">第 2 课</a><a href="03_吊起来挥手.html">第 3 课</a><a href="04_它感觉到了什么.html">第 4 课</a><a href="05_扛住推力.html">第 5 课</a><a href="06_省力地站.html">第 6 课</a><a href="07_伸手碰球.html">第 7 课</a><a href="08_单腿平衡.html">第 8 课</a><a href="09_让它走起来.html">第 9 课</a><a href="10_录视频与批量实验.html">第 10 课</a><a href="11_附录_往后学什么.html">第 11 课</a></nav>
+<h1 id="4">第 4 课　它“感觉”到了什么</h1>
+<p><strong>对应入门教程</strong>：3.3、3.5、5.7、7.2</p>
+<p><strong>本课目标</strong></p>
+<ul>
+<li>读懂 G1 自带的两个 IMU：陀螺仪测什么，加速度计静止时为什么读到 +9.81。</li>
+<li>用 MjSpec 给模型补上关节传感器，并和 <code>qpos</code>、<code>qvel</code>、<code>actuator_force</code> 逐个对账。</li>
+<li>遍历 <code>d.contact</code>，算出左右脚各自承受多大的力，验证“脚底合力 = 体重”。</li>
+<li>算出整机质心和支撑多边形，判断质心投影在不在支撑区里；再推它一下，看所有读数怎么变。</li>
+</ul>
+<p><strong>预计用时</strong>：1.5–2 小时　<strong>前置</strong>：第 1 课（qpos/qvel 排布）、第 2 课（position 执行器、<code>stand</code> 关键帧）、第 3 课（MjSpec 入门）</p>
+<hr />
+<h2 id="41">4.1 本课要做的事</h2>
+<p>真机上的控制器看不到“上帝视角”的 <code>qpos</code>，它只能靠传感器知道自己的状态。机器人能用的信息主要有三类：</p>
+<table>
+<thead>
+<tr>
+<th>来源</th>
+<th>是什么</th>
+<th>仿真里怎么拿</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>惯性测量单元 IMU</td>
+<td>陀螺仪 + 加速度计，模型在躯干和骨盆各装了一个</td>
+<td><code>g1.xml</code> 里已经定义好的 4 个传感器</td>
+</tr>
+<tr>
+<td>关节编码器、电机电流</td>
+<td>每个关节的角度、角速度、力矩</td>
+<td>自己加 <code>jointpos</code>、<code>jointvel</code>、<code>actuatorfrc</code> 传感器，或直接读 <code>MjData</code></td>
+</tr>
+<tr>
+<td>足底力</td>
+<td>很多人形机器人脚底没有力传感器，只能从关节力矩、IMU 间接估计</td>
+<td>仿真里可以直接读接触力，当作“标准答案”</td>
+</tr>
+</tbody>
+</table>
+<p>本课脚本 <code>code/04_senses.py</code> 分三段：</p>
+<pre><code class="language-text">A. 站立 1 s 后，把所有“感觉”读一遍：IMU、关节、接触力、质心与支撑区
+B. 把机器人抬高 1 m 让它自由下落 0.1 s，再读一次加速度计
+C. 从 t = 1.0 s 起，往机器人左侧推躯干 30 N，持续 0.2 s，记录 3 s 内的全部读数并画图
+</code></pre>
+<p>运行：</p>
+<pre><code class="language-bash">python code/04_senses.py                    # 无界面，打印结果，图和 CSV 存到 output/
+python code/04_senses.py --force 60         # 换一个推力（N）
+python code/04_senses.py --dir backward     # 换个方向推：left / right / forward / backward
+python code/04_senses.py --view             # 打开查看器实时看 C 段（显示接触力和质心）
+</code></pre>
+<p>每次运行都会覆盖 <code>output/</code> 里的 <code>04_senses.png</code>、<code>04_support.png</code>、<code>04_push_log.csv</code>。想保留某次结果，先把文件改个名再换参数跑。</p>
+<h2 id="42-imu">4.2 IMU：陀螺仪和加速度计</h2>
+<p>G1 的 <code>g1.xml</code> 末尾有这样一段：</p>
+<pre><code class="language-xml">&lt;sensor&gt;
+  &lt;gyro site=&quot;imu_in_torso&quot; name=&quot;imu-torso-angular-velocity&quot; cutoff=&quot;34.9&quot; noise=&quot;0.0005&quot;/&gt;
+  &lt;accelerometer site=&quot;imu_in_torso&quot; name=&quot;imu-torso-linear-acceleration&quot; cutoff=&quot;157&quot; noise=&quot;0.01&quot;/&gt;
+  &lt;gyro site=&quot;imu_in_pelvis&quot; name=&quot;imu-pelvis-angular-velocity&quot; cutoff=&quot;34.9&quot; noise=&quot;0.0005&quot;/&gt;
+  &lt;accelerometer site=&quot;imu_in_pelvis&quot; name=&quot;imu-pelvis-linear-acceleration&quot; cutoff=&quot;157&quot; noise=&quot;0.01&quot;/&gt;
+&lt;/sensor&gt;
+</code></pre>
+<ul>
+<li><strong>gyro（陀螺仪）</strong>：site 坐标系下的角速度，单位 rad/s。</li>
+<li><strong>accelerometer（加速度计）</strong>：site 坐标系下的线加速度，单位 m/s²，<strong>包含重力的影响</strong>。</li>
+<li>两者都在 <strong>site 自己的坐标系</strong>里表示，不是世界坐标系。机器人歪了，读数的分量就跟着变。</li>
+<li><code>cutoff</code>：输出的绝对值上限。加速度计最多读到 157 m/s²（约 16 g），陀螺仪最多 34.9 rad/s，和真实 IMU 的量程一样会“顶格”。</li>
+<li><code>noise</code>：<strong>不会给读数加噪声</strong>。MuJoCo 从 3.1.4 起就去掉了自动加噪声的功能（4.0.1 也一样），这个属性现在只是个“备注栏”，存一下标准差（编译后在 <code>m.sensor_noise</code> 里）留给用户自己用。想要带噪声的读数，要自己在 Python 里加。</li>
+</ul>
+<p>按名字读取：</p>
+<pre><code class="language-python">acc = d.sensor(&quot;imu-torso-linear-acceleration&quot;).data   # 长度 3 的数组
+gyr = d.sensor(&quot;imu-torso-angular-velocity&quot;).data
+</code></pre>
+<h3 id="_1">先猜一猜</h3>
+<ol>
+<li>G1 稳稳站在地上不动，躯干加速度计的三个分量大约是多少？是 <code>[0, 0, 0]</code>、<code>[0, 0, -9.81]</code> 还是 <code>[0, 0, +9.81]</code>？</li>
+<li>把机器人抬到空中松手，自由下落时加速度计读多少？</li>
+<li>静止时陀螺仪读多少？</li>
+</ol>
+<h3 id="_2">原理：加速度计测的是“比力”</h3>
+<p>加速度计内部是一块挂在弹簧上的小质量块。它测的是<strong>弹簧拉着小质量块的力</strong>，除以质量，也就是</p>
+<p><div class="math">\[a_{\text{读数}} = R^\mathsf{T}\,(a - g),\qquad g = (0,\ 0,\ -9.81)\]</div></p>
+<p>其中 <span class="math">\(a\)</span> 是 site 在世界坐标系里的真实加速度，<span class="math">\(R\)</span> 是 site 的姿态矩阵（<code>d.site(...).xmat</code>），<span class="math">\(R^\mathsf{T}\)</span> 把世界坐标下的向量转到 site 坐标系。</p>
+<ul>
+<li><strong>静止</strong>：<span class="math">\(a = 0\)</span>，读数 <span class="math">\(= R^\mathsf{T}(0, 0, +9.81)\)</span>。地面通过脚、腿、骨盆一路把躯干<strong>往上托</strong>，弹簧里的力是向上的，所以读到 <strong>+9.81 向上</strong>。</li>
+<li><strong>自由下落</strong>：<span class="math">\(a = g\)</span>，读数 <span class="math">\(= 0\)</span>。没有任何东西托着它，这就是“失重”。</li>
+</ul>
+<p>这也是 IMU 能估计倾角的原因：静止时读数就是“竖直向上”在 site 坐标系里的方向，看它偏了多少，就知道身体歪了多少。</p>
+<h3 id="ab">运行结果（A、B 段）</h3>
+<pre><code class="language-text">=== A. 静止站立 t = 1.00 s ===
+torso  加速度计 [ 0.028 -0.001  9.81 ]  |a| = 9.810   陀螺仪 [-0.     0.001  0.   ]
+pelvis 加速度计 [ 0.011 -0.     9.81 ]  |a| = 9.810   陀螺仪 [-0.     0.001  0.   ]
+把 -gravity 转到躯干 IMU 坐标系： [ 0.028 -0.001  9.81 ]
+躯干 IMU 的 z 轴偏离竖直 0.16°
+...
+=== B. 自由下落 0.1 s ===
+躯干加速度计 [-0. -0.  0.]  |a| = 0.000  接触数 0
+</code></pre>
+<ul>
+<li>躯干加速度计 x 分量是 0.028 而不是 0，因为躯干微微往后仰了约 0.16°（IMU 的 x 轴朝前，往后仰时 x 轴稍稍朝上，重力的“反作用”就在 x 上分到一个正分量）：<span class="math">\(9.81 \times \sin 0.16° \approx 0.03\)</span>。把 <code>-gravity</code> 用 <code>R.T</code> 转到躯干坐标系，得到的也是 <code>[0.028, -0.001, 9.81]</code>，和传感器读数在三位小数上一致。再往后的微小差别，来自机器人还在极轻微地晃动（<span class="math">\(a\)</span> 不完全是 0）。</li>
+<li>骨盆 IMU 的 x 分量只有 0.011，说明骨盆比躯干仰得少。两个 IMU 装在不同的 body 上，中间隔着三个腰关节，读数不必相同。</li>
+<li>自由下落时三个分量都是 0，验证了上面的公式。</li>
+</ul>
+<h2 id="43-mjspec">4.3 关节传感器：用 MjSpec 补上</h2>
+<p><code>g1.xml</code> 只定义了 IMU。关节角度、角速度、电机力矩这些“编码器读数”要自己加。第 3 课学过 MjSpec，这里不改原文件，在脚本里加：</p>
+<pre><code class="language-python">def build_model():
+    spec = mujoco.MjSpec.from_file(str(XML))
+    S, O = mujoco.mjtSensor, mujoco.mjtObj
+    spec.add_sensor(name=&quot;knee_L_pos&quot;, type=S.mjSENS_JOINTPOS,
+                    objtype=O.mjOBJ_JOINT, objname=&quot;left_knee_joint&quot;)
+    spec.add_sensor(name=&quot;knee_L_vel&quot;, type=S.mjSENS_JOINTVEL,
+                    objtype=O.mjOBJ_JOINT, objname=&quot;left_knee_joint&quot;)
+    spec.add_sensor(name=&quot;knee_L_frc&quot;, type=S.mjSENS_ACTUATORFRC,
+                    objtype=O.mjOBJ_ACTUATOR, objname=&quot;left_knee_joint&quot;)
+    spec.add_sensor(name=&quot;com&quot;, type=S.mjSENS_SUBTREECOM,
+                    objtype=O.mjOBJ_BODY, objname=&quot;pelvis&quot;)
+    return spec.compile()
+</code></pre>
+<p>等价的 XML 写法是在 <code>&lt;sensor&gt;</code> 里加：</p>
+<pre><code class="language-xml">&lt;jointpos    name=&quot;knee_L_pos&quot; joint=&quot;left_knee_joint&quot;/&gt;
+&lt;jointvel    name=&quot;knee_L_vel&quot; joint=&quot;left_knee_joint&quot;/&gt;
+&lt;actuatorfrc name=&quot;knee_L_frc&quot; actuator=&quot;left_knee_joint&quot;/&gt;
+&lt;subtreecom  name=&quot;com&quot; body=&quot;pelvis&quot;/&gt;
+</code></pre>
+<p>加完后传感器从 4 个变成 8 个，<code>nsensordata</code> 从 12 变成 18（3 个标量 + 1 个三维）。</p>
+<h3 id="_3">先猜一猜</h3>
+<ol start="4">
+<li>站立 1 s 后，<code>jointpos</code> 传感器的读数和 <code>d.joint(&quot;left_knee_joint&quot;).qpos</code> 会完全相等吗？</li>
+<li>左膝的目标角 <code>ctrl</code> 和实际角 <code>qpos</code> 差多少？电机在出力吗？</li>
+</ol>
+<h3 id="_4">运行结果</h3>
+<pre><code class="language-text">左膝 jointpos 传感器 -0.000488   qpos -0.000488
+左膝 jointvel 传感器 -0.000308   qvel -0.000309
+左膝 actuatorfrc 传感器 0.2466   actuator_force 0.2466
+ctrl - qpos = 0.00049 rad，kp = 500，kv = 9.08
+mj_step 之后  传感器 - 状态：pos 6.2e-07  vel 9.4e-07  frc - kp(ctrl-q)+kv*qd -3.2e-04
+mj_forward 后 传感器 - 状态：pos 0.0e+00  vel 0.0e+00  frc - kp(ctrl-q)+kv*qd 0.0e+00
+</code></pre>
+<p>两个要点：</p>
+<ul>
+<li><strong>刚 <code>mj_step</code> 完，传感器和状态差一点点。</strong> 这是因为 <code>mj_step</code> 先算传感器，再积分推进 <code>qpos</code>、<code>qvel</code>（入门教程 3.5 的第 6 步）。所以传感器反映的是<strong>这一步积分之前</strong>的状态，比当前的 <code>qpos</code> 慢了一个时间步。调用一次 <code>mj_forward</code>，用当前状态重算，差值就变成 0。</li>
+<li><strong><code>actuatorfrc</code> 就是 <code>actuator_force</code></strong>，也就是第 2 课的 PD 公式 <span class="math">\(k_p(\text{ctrl}-q) - k_v\dot q\)</span>（未触到 <code>forcerange</code> 时）。左膝有 0.00049 rad 的稳态误差，乘以 kp = 500，电机出力约 0.25 N·m。<code>stand</code> 姿势的膝盖几乎是直的，膝关节基本不用出力。</li>
+</ul>
+<blockquote>
+<p>既然 <code>qpos</code> 随手就能读，为什么还要传感器？三个理由：① 写控制器时只读 <code>sensordata</code>，能强迫自己只用“真机也有”的信息；② 可以集中设 <code>cutoff</code>、加延迟（<code>delay</code>）等，模拟真实传感器的缺陷；③ Studio 和 MuJoCo Live 能直接画传感器曲线。</p>
+</blockquote>
+<h2 id="44">4.4 脚底接触力：左右脚各扛多少</h2>
+<p>第 1 课讲过，每只脚底有 4 个半径 5 mm 的小球。站稳时应该正好有 8 个接触。读接触力分三步：</p>
+<ol>
+<li>遍历 <code>d.contact[0:d.ncon]</code>，根据 <code>geom1</code>、<code>geom2</code> 所属的 body 判断这是不是脚、是哪只脚。</li>
+<li>用 <code>mj_contactForce</code> 取出这个接触的力。它给的是<strong>接触坐标系</strong>下的 <code>[法向, 切向1, 切向2]</code>。</li>
+<li>用 <code>contact.frame</code> 把力转到世界坐标，按脚累加。</li>
+</ol>
+<pre><code class="language-python">def foot_contacts(m, d):
+    foot_ids = {m.body(name).id: name for name in FEET}
+    total = {name: np.zeros(3) for name in FEET}
+    points = []
+    f6 = np.zeros(6)
+    for i in range(d.ncon):
+        c = d.contact[i]
+        b1, b2 = m.geom_bodyid[c.geom1], m.geom_bodyid[c.geom2]
+        if b2 in foot_ids:            # 力作用在 geom2 上，方向不变
+            name, sign = foot_ids[b2], 1.0
+        elif b1 in foot_ids:          # 脚是 geom1，作用在脚上的力要反号
+            name, sign = foot_ids[b1], -1.0
+        else:
+            continue
+        mujoco.mj_contactForce(m, d, i, f6)       # 接触坐标系：[法向, 切向1, 切向2]
+        frame = c.frame.reshape(3, 3)             # 每一行是接触坐标系的一根轴
+        f_world = frame.T @ f6[:3]                # 换到世界坐标
+        total[name] += sign * f_world
+        points.append(c.pos[:2].copy())
+    return total, np.array(points)
+</code></pre>
+<p>几个容易踩的坑：</p>
+<ul>
+<li><strong><code>frame</code> 按行存轴</strong>。<code>frame[0:3]</code> 是法向（接触坐标系的 x 轴），<code>frame[3:6]</code>、<code>frame[6:9]</code> 是两个切向。reshape 成 3×3 后，每一<strong>行</strong>是一根轴，所以“接触坐标 → 世界坐标”要乘 <code>frame.T</code>。</li>
+<li><strong>力的方向</strong>。法向从 geom1 指向 geom2，<code>mj_contactForce</code> 得到的是作用在 geom2 上的力。平面和别的 geom 相撞时，MuJoCo 总把平面排在 geom1，所以这里地面 <code>floor</code> 总是 geom1、脚总是 geom2，<code>sign</code> 都是 +1。写成通用代码时别忘了反号的情况。</li>
+<li><strong><code>condim</code></strong>。G1 脚底球是 <code>condim=&quot;3&quot;</code>，只有法向和两个切向，后 3 个力矩分量都是 0。</li>
+</ul>
+<h3 id="_5">先猜一猜</h3>
+<ol start="6">
+<li>站稳时，左右脚的竖直力加起来应该等于多少？左右脚会各占一半吗？</li>
+<li>8 个脚底球里，前掌的 4 个和后跟的 4 个，哪边承重更多？（提示：第 1 课里质心 x 坐标在哪？脚底球的 x 坐标分别是 −0.05 和 0.12。）</li>
+</ol>
+<h3 id="_6">运行结果</h3>
+<pre><code class="language-text">总质量 33.34 kg，体重 m*g = 327.1 N，时间步长 0.002 s
+...
+接触点 8 个，其中脚底 8 个
+左脚合力 [  0.    -0.45 163.66] N
+右脚合力 [  0.     0.45 163.42] N
+前掌 4 个球合计 102.1 N，后跟 4 个球合计 225.0 N
+竖直合力 327.1 N   体重 327.1 N   比值 1.0000
+</code></pre>
+<ul>
+<li>竖直合力和体重之比是 1.0000，两者在四位有效数字内相等。这就是牛顿第二定律：静止时，地面支持力正好平衡重力。</li>
+<li>左右脚各约 163.5 N，基本对半分。</li>
+<li>后跟分到 225.0 N，前掌只有 102.1 N，后跟是前掌的 2.2 倍。</li>
+<li>左脚的横向力是 −0.45 N（指向 −y，即往身体中线），右脚是 +0.45 N（也指向中线），一左一右正好抵消。两条腿微微往外撑，地面靠摩擦力把两只脚往里推。</li>
+</ul>
+<h2 id="45">4.5 质心与支撑多边形</h2>
+<p><strong>质心</strong>：<code>d.subtree_com[i]</code> 是以 body i 为根的子树的质心（世界坐标）。<code>subtree_com[0]</code> 是整个场景（这里就是整台机器人）的质心。也可以用 <code>subtreecom</code> 传感器读，结果一样。</p>
+<p><strong>支撑多边形</strong>：所有着地接触点在地面上的<strong>凸包</strong>。一个静止的物体，质心的竖直投影必须落在支撑多边形里面，否则重力会产生一个把它掀翻的力矩。</p>
+<p>脚本用单调链算法求凸包（<code>convex_hull</code>），再算质心投影到凸包边界的<strong>有符号距离</strong>（<code>margin</code>）：在里面为正，在外面为负。凸包退化成一个点或一条线段（比如只剩脚掌一条侧棱着地）时，支撑区没有“面积”，质心不可能在“里面”，距离记为负。</p>
+<h3 id="_7">运行结果</h3>
+<pre><code class="language-text">整机质心 subtree_com[0] = [0.003 0.    0.693]
+subtreecom 传感器(pelvis) = [0.003 0.    0.693]
+支撑多边形 4 个顶点，x 方向 17.0 cm，y 方向 29.7 cm
+顶点 (x, y) cm： (-5.0, -14.4)  (12.0, -14.9)  (12.0, 14.9)  (-5.0, 14.4)
+质心投影离支撑区边界 5.31 cm（正 = 在里面）
+两脚中心横向间距 23.7 cm，躯干质心离地 1.02 m（推力就加在这里）
+</code></pre>
+<p>打开 <code>output/04_support.png</code> 看俯视图：8 个蓝点是脚底接触点，浅蓝色是支撑多边形。</p>
+<ul>
+<li>8 个点只有 4 个是凸包顶点：两只脚<strong>外侧</strong>的前掌和后跟。内侧的 4 个点被包在里面。</li>
+<li>质心在 x = 0.3 cm 处，离后跟那条边（x = −5.0 cm）只有 <strong>5.31 cm</strong>，离前掌（x = 12.0 cm）有 11.7 cm，离左右两边各有 14 cm 以上。<strong>最危险的方向是往后倒</strong>。</li>
+<li>支撑区左右宽 29.7 cm、前后只有 17.0 cm。人形机器人前后方向的“底盘”很浅。</li>
+</ul>
+<h2 id="46">4.6 推它一下</h2>
+<p>C 段从 t = 1.0 s 起，在躯干上加一个 30 N、朝 +y（机器人左侧）的力，持续 0.2 s：</p>
+<pre><code class="language-python">d.xfrc_applied[torso, :3] = push if pushing else 0
+</code></pre>
+<p><code>xfrc_applied</code> 是施加在 body 质心上的世界坐标外力，第 5 课会专门讲。这里只当作“轻轻推一下”。每一步都记下 IMU、左右脚竖直力、质心和裕度，存到 <code>output/04_push_log.csv</code>，并画成 <code>output/04_senses.png</code>。</p>
+<h3 id="_8">先猜一猜</h3>
+<ol start="8">
+<li>往左推时，哪只脚的力会变大？会不会有一只脚离地？</li>
+<li>陀螺仪三个分量里，哪个反应最大？正还是负？</li>
+<li>推完以后，左右脚的力会立刻恢复成各一半吗？</li>
+</ol>
+<h3 id="_9">运行结果</h3>
+<pre><code class="language-text">=== C. t = 1.0 s 起往 left 推躯干 30 N，持续 0.2 s ===
+陀螺仪 x 轴（侧倾）峰值 0.116 rad/s
+加速度计 y 分量范围 [-1.96, 1.49] m/s²
+左脚竖直力 92.9 ~ 296.9 N，右脚 30.4 ~ 234.1 N
+左脚离地 0.000 s，右脚离地 0.000 s
+质心水平最大偏移 1.33 cm
+质心离边界最近 5.29 cm（t = 1.632 s，此刻脚底接触点 7 个）
+质心 x 范围 [0.3, 0.3] cm，y 范围 [-0.5, 1.3] cm
+左膝力矩 0.2 ~ 0.4 N·m
+结束时骨盆高度 0.792 m → 站住了
+结束时左右脚竖直力 163.7 / 163.4 N，质心离边界 5.31 cm，质心 (x, y) = (0.3, 0.1) cm
+</code></pre>
+<p>对照 <code>04_senses.png</code> 的四个子图（橙色区间是推力作用的 0.2 s）：</p>
+<ul>
+<li><strong>陀螺仪</strong>：x 分量（绕前进方向的侧倾）立刻变负，最大 0.116 rad/s。绕 +x 轴的正转动会让身体往 −y 倒，往 +y 倒就是负的。</li>
+<li><strong>加速度计</strong>：推力一加上，y 分量马上跳到 +1.49 m/s²（躯干被推着往左加速）；推力撤掉的瞬间跳到 −1.96 m/s²（脚和腿把它往回拉）。z 分量一直在 9.81 附近。</li>
+<li><strong>脚底力</strong>：推的 0.2 s 里，左脚从约 163 N 涨到 296.9 N，右脚降到 30.4 N。左右合计基本贴着体重那条虚线。之后左右来回摆了几次，到 t ≈ 2.4 s 左右才回到各一半。</li>
+<li><strong>质心裕度</strong>：几乎没动，一直是 5.3 cm 左右。质心只往左偏了 1.33 cm，而最近的边是<strong>后跟</strong>那条边，侧推根本没让它离后跟更近。最小值 5.29 cm 出现时，8 个脚底球有 1 个短暂离地，只剩 7 个接触点。</li>
+</ul>
+<h3 id="_10">观察记录</h3>
+<ol>
+<li>对照“先猜一猜”第 1–10 题，哪些猜错了？</li>
+<li>用 <code>--view</code> 运行，看查看器里脚底的接触力箭头。推的时候，左右脚的箭头长度怎么变？</li>
+<li>打开 <code>04_push_log.csv</code>，找出右脚竖直力最小的那一行，记下时间和左脚的力。两者相加是多少？</li>
+<li>质心只偏了 1.33 cm，左右脚的力却从各 163 N 变成了 297 N 和 30 N。光看质心位置，能解释这么大的变化吗？（做完练习 4 再回答。）</li>
+</ol>
+<p><strong>观察记录</strong>：＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+<h2 id="_11">练习</h2>
+<ol>
+<li><strong>推重一点。</strong> 用 <code>--force 60</code> 运行。右脚离地多久？质心裕度最小是多少，是正是负？机器人最后倒了吗？如果裕度是负的却没倒，说明了什么？</li>
+<li><strong>推倒它。</strong> 用 <code>--force 100</code> 运行。看加速度计 y 分量的最小值，为什么正好是 −157.00？</li>
+<li><strong>换个方向。</strong> 用 <code>--dir forward</code> 和 <code>--dir backward</code>（都是 30 N）各跑一次。和往左推 30 N 比，结果有什么不同？看输出里“质心 x 范围”和“结束时质心”，它最后往哪边倒？结合 4.5 节支撑区的形状想一想原因。</li>
+<li><strong>压力中心。</strong> 把每个接触点的位置按竖直力加权平均，得到压力中心（CoP）：<span class="math">\(\text{CoP} = \sum_i f_{z,i}\,p_i / \sum_i f_{z,i}\)</span>。写一段代码，算出静止时和往左推 30 N 过程中的 CoP，和质心投影比较。</li>
+<li><strong>给 IMU 加噪声。</strong> 4.2 节说 <code>noise</code> 属性不会自动生效。在 C 段的记录循环里，自己给陀螺仪读数加上标准差为 <code>m.sensor_noise[...]</code> 的高斯噪声，再画一次第一个子图。</li>
+</ol>
+<h2 id="_12">如果报错</h2>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>可能原因</th>
+<th>解决</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>KeyError: &quot;Invalid name &#x27;imu_torso&#x27;. Valid names: [...]&quot;</code></td>
+<td>传感器名字写错</td>
+<td>按报错列出的名字写，G1 的 IMU 名字是 <code>imu-torso-linear-acceleration</code> 这种带连字符的</td>
+</tr>
+<tr>
+<td><code>ValueError: Error: unrecognized name &#x27;left_knee&#x27; of sensorized object</code></td>
+<td><code>add_sensor</code> 的 <code>objname</code> 写错</td>
+<td>关节名是 <code>left_knee_joint</code>；执行器名也是 <code>left_knee_joint</code></td>
+</tr>
+<tr>
+<td><code>ValueError: Error: sensor must be attached to actuator</code></td>
+<td><code>objtype</code> 和传感器类型不配，比如 <code>actuatorfrc</code> 配了 <code>mjOBJ_JOINT</code></td>
+<td><code>jointpos</code>、<code>jointvel</code> 配 <code>mjOBJ_JOINT</code>，<code>actuatorfrc</code> 配 <code>mjOBJ_ACTUATOR</code>，<code>subtreecom</code> 配 <code>mjOBJ_BODY</code></td>
+</tr>
+<tr>
+<td><code>d.ncon</code> 是 0，接触力全是 0</td>
+<td>刚 <code>mj_resetDataKeyframe</code> 完，还没 <code>mj_forward</code> 或 <code>mj_step</code>，碰撞检测没跑</td>
+<td>先调用一次 <code>mj_forward(m, d)</code></td>
+</tr>
+<tr>
+<td>脚底合力明显不等于体重</td>
+<td>刚重置就读，机器人还在落地、晃动；或者有手、膝等其他部位也碰到了地</td>
+<td>先站 1 s 再读；打印每个接触的 <code>geom1/geom2</code> 所属 body，看看还有谁着地</td>
+</tr>
+<tr>
+<td>左右脚的力是负的</td>
+<td>脚是 <code>geom1</code> 时没有反号</td>
+<td>按 4.4 节的代码，判断脚是 geom1 还是 geom2</td>
+</tr>
+<tr>
+<td>传感器读数和 <code>qpos</code> 差一点点</td>
+<td>正常：<code>mj_step</code> 里传感器在积分之前计算</td>
+<td>要完全一致就先 <code>mj_forward</code></td>
+</tr>
+<tr>
+<td>图里的中文显示成方块</td>
+<td>系统没有脚本里列的中文字体</td>
+<td>把 <code>plt.rcParams[&quot;font.sans-serif&quot;]</code> 改成本机有的中文字体名</td>
+</tr>
+<tr>
+<td><code>--view</code> 打不开窗口</td>
+<td>远程桌面、虚拟机的 OpenGL 不支持</td>
+<td>去掉 <code>--view</code>，看 <code>output/</code> 里的图；第 10 课会讲离屏渲染录视频</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_13">延伸阅读</h2>
+<ul>
+<li><a href="../官方文档_中文HTML/XMLreference.html#sensor-accelerometer">XML 参考：accelerometer</a>、<a href="../官方文档_中文HTML/XMLreference.html#sensor-gyro">gyro</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#sensor-jointpos">XML 参考：jointpos</a>、<a href="../官方文档_中文HTML/XMLreference.html#sensor-jointvel">jointvel</a>、<a href="../官方文档_中文HTML/XMLreference.html#sensor-actuatorfrc">actuatorfrc</a>、<a href="../官方文档_中文HTML/XMLreference.html#sensor-subtreecom">subtreecom</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#sensor-touch">XML 参考：touch 传感器</a>、<a href="../官方文档_中文HTML/XMLreference.html#sensor-contact">contact 传感器</a>（另外两种读接触的办法）</li>
+<li><a href="../官方文档_中文HTML/modeling.html#sensor-noise">建模：传感器通用属性 noise、cutoff</a></li>
+<li><a href="../官方文档_中文HTML/programming/simulation.html#sicontact">编程：接触（contact.frame 的存储方式、mj_contactForce）</a></li>
+<li><a href="../官方文档_中文HTML/computation/index.html#cocontact">计算：接触坐标系与摩擦锥</a></li>
+<li><a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mj-contactforce">API：mj_contactForce</a>、<a href="../官方文档_中文HTML/APIreference/APItypes.html#mjcontact">mjContact 结构体</a></li>
+<li><a href="../官方文档_中文HTML/python.html#pymodeledit">Python：用 MjSpec 编辑模型</a>、<a href="../官方文档_中文HTML/python.html#pyviewerpassive">被动查看器 launch_passive</a></li>
+</ul>
+<hr />
+<details>
+<summary><b>参考答案（跑完再看）</b></summary>
+
+<strong>先猜一猜 1–3</strong>：静止时躯干加速度计约 <code>[0.028, -0.001, 9.81]</code>，模长 9.810，是 <strong>+9.81 向上</strong>。自由下落时是 <code>[0, 0, 0]</code>。静止时陀螺仪三个分量都接近 0（y 分量约 0.001 rad/s，还在微微晃）。
+
+<strong>先猜一猜 4–5</strong>：刚 <code>mj_step</code> 完不完全相等，<code>jointpos</code> 差 6.2e-07 rad，<code>jointvel</code> 差 9.4e-07 rad/s，因为传感器是积分前算的；<code>mj_forward</code> 后差值为 0。左膝 <code>ctrl - qpos = 0.00049</code> rad，电机出力约 0.2466 N·m，几乎不出力。
+
+<strong>先猜一猜 6–7</strong>：竖直合力 327.1 N，等于 <span class="math">\(m g = 33.34 \times 9.81\)</span>。左右各约 163.5 N（163.66 和 163.42）。后跟承重更多：质心 x = 0.3 cm，离后跟（−5.0 cm）比离前掌（12.0 cm）近得多。按杠杆原理，后跟分到的力约为前掌的 <span class="math">\(11.7 / 5.3 \approx 2.2\)</span> 倍。脚本输出正是后跟 225.0 N、前掌 102.1 N。
+
+<strong>先猜一猜 8–10</strong>：往左推，左脚力变大（最大 296.9 N），右脚变小（最小 30.4 N），但 30 N 时两脚都没离地。陀螺仪 x 分量反应最大，为负，峰值 0.116 rad/s。推完后左右来回摆了几次，t ≈ 2.4 s 后才回到各一半（结束时 163.7 / 163.4 N）。
+
+<strong>观察记录 3</strong>：右脚最小 30.4 N 出现在 t = 1.200 s，也就是推力刚要撤掉的时候。此时左脚 296.9 N，两者之和 327.3 N，仍约等于体重。
+
+<strong>观察记录 4</strong>：光看质心解释不了。质心只决定<strong>静止</strong>时重量怎么分；被推时还要算推力的力矩。推力加在离地 1.02 m 的躯干上，对两脚中间那条线产生约 <span class="math">\(30 	imes 1.02 pprox 31\)</span> N·m 的翻转力矩。地面要顶住它，只能让左右脚的竖直力拉开差距：两脚中心相距 0.237 m，粗算 <span class="math">\(F_左 - F_右 pprox 2 	imes 31 / 0.237 pprox 258\)</span> N，即左脚约 293 N、右脚约 34 N，和实测的 296.9 N、30.4 N 很接近。同样大的推力，作用点越高，这个力矩越大。练习 4 的压力中心把这一点画在了地面上。
+
+<strong>练习 1</strong>（<code>--force 60</code>）：右脚离地 0.254 s，质心裕度最小 −12.73 cm（t = 1.160 s），最后站住了（骨盆高度 0.792 m）。裕度最负的那一刻，脚底只剩 2 个接触点：右脚离地，左脚也只有外侧的前掌和后跟着地，整台机器人踮在左脚外侧边缘上，支撑区退化成一条线。质心还在这条边的内侧（离它 12.73 cm），重力力矩会把身体拉回来，右脚重新落地。所以“质心投影在不在支撑区”只是<strong>静止平衡</strong>的判据；动起来时支撑区本身会变，要看的是质心会不会越过即将翻倒的那条边、以及它带着多大的速度。
+
+<strong>练习 2</strong>（<code>--force 100</code>）：机器人倒了（骨盆高度 0.085 m），陀螺仪侧倾峰值 5.849 rad/s，左右脚分别离地 0.798 s 和 1.986 s。加速度计 y 分量最小值 −157.00 是因为摔到地上的冲击超过了量程，被 <code>cutoff=&quot;157&quot;</code> 截断了。真机 IMU 也会这样饱和。
+
+<strong>练习 3</strong>：往前、往后推 30 N 都倒了（结束时骨盆高度 0.060 m 和 0.061 m），而往左推 30 N 稳稳站住。更有意思的是，<strong>两次都是往后倒的</strong>：结束时质心 x 分别是 −80.3 cm 和 −80.4 cm。往前推时质心先往前晃到 4.2 cm，弹回来时冲过了头，从后跟那边翻了过去。
+
+原因还是 4.5 节的支撑区。用观察记录 4 的算法粗估：30 N 推在 1.02 m 高处，要让地面力的作用点（压力中心）往推的方向挪约 <span class="math">\(30 	imes 1.02 / 327.1 pprox 9.4\)</span> cm 才顶得住。往左推，质心到左边界有 14 cm 以上，挪得开；往后推，质心离后跟只有 5.31 cm，压力中心挪到后跟边缘就到头了，身体只能绕后跟往后转；往前推，前掌方向有 11.7 cm，推的时候扛住了，可回弹时又遇上了那 5.31 cm 的后跟边。另外 <code>stand</code> 关键帧是直腿站立，膝盖没有缓冲。站姿对抗推能力的影响是第 5 课的主题。
+
+<strong>练习 4</strong>：
+
+
+<pre><code class="language-python">def cop(m, d):
+    &quot;&quot;&quot;压力中心：各接触点按竖直力加权平均。&quot;&quot;&quot;
+    f6, num, den = np.zeros(6), np.zeros(2), 0.0
+    for i in range(d.ncon):
+        c = d.contact[i]
+        mujoco.mj_contactForce(m, d, i, f6)
+        fz = (c.frame.reshape(3, 3).T @ f6[:3])[2]   # 地面是 geom1，力作用在脚上
+        num += fz * c.pos[:2]
+        den += fz
+    return num / den
+</code></pre>
+
+
+运行结果：
+
+
+<pre><code class="language-text">压力中心 CoP [0.003  0.0001]   质心投影 [0.0031 0.0001]
+t=1.002  CoP [0.003  0.0079]   质心投影 [0.0031 0.0001]
+t=1.100  CoP [0.0037 0.0739]   质心投影 [0.0031 0.0039]
+t=1.200  CoP [0.004  0.1198]   质心投影 [0.0031 0.0112]
+</code></pre>
+
+
+静止时 CoP 和质心投影重合，这是静平衡的条件。被推时 CoP 一下子跑到左边 12 cm（左脚中心在 y ≈ 11.9 cm，即两脚间距 23.7 cm 的一半，几乎全压在左脚上了），质心才动了 1.1 cm。按观察记录 4 的静态估算是 9.4 cm，实际更大一些，因为身体在加速、转动，地面还得额外平衡惯性带来的力矩。CoP 跑在质心前面，地面力才能产生把身体扶回来的力矩。这就是 ZMP（零力矩点）类步行控制的出发点。CoP 一旦到了支撑区边缘就无法再往外，再推就只能抬脚或者倒下。
+
+<strong>练习 5</strong>：示例写法：
+
+
+<pre><code class="language-python">rng = np.random.default_rng(0)
+sid = m.sensor(&quot;imu-torso-angular-velocity&quot;).id
+gyro = d.sensor(&quot;imu-torso-angular-velocity&quot;).data + rng.normal(0, m.sensor_noise[sid], 3)
+</code></pre>
+
+
+<code>m.sensor_noise[sid]</code> 就是 XML 里写的 0.0005。噪声标准差只有 0.0005 rad/s，比推的时候 0.116 rad/s 的信号小得多，在图上几乎看不出来。
+
+</details>
+<nav class="pager"><span><a href="03_吊起来挥手.html">← 第 3 课 把它吊起来挥手</a></span><span><a href="05_扛住推力.html">第 5 课 扛住多大的推力：从侧面推 G1 →</a></span></nav>
+</main>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".math").forEach(function (el) {
+    renderMathInElement(el, {delimiters: [{left: "\\[", right: "\\]", display: true}, {left: "\\(", right: "\\)", display: false}]});
+  });
+});
+</script>
+</body></html>

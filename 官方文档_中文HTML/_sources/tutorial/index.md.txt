@@ -29,6 +29,8 @@
 ```
 
 
+> 在 G1 上练习 → 《G1 实战》第 1 课（认识 G1：打开它，读懂它）；先读《G1 实战》大纲
+
 MuJoCo（<strong>Mu</strong>lti-<strong>Jo</strong>int dynamics with <strong>Co</strong>ntact）是一个面向机器人、生物力学、强化学习的物理引擎，特点是<strong>在广义坐标下精确、快速地模拟带接触的多关节系统</strong>。它由 Emo Todorov 于 2012 年前后开发，2021 年被 Google DeepMind 收购并免费开放，2022 年起以 Apache 2.0 协议开源，目前仍由 DeepMind 主导维护。
 
 <strong>为什么选 MuJoCo</strong>：
@@ -69,6 +71,8 @@ MuJoCo（<strong>Mu</strong>lti-<strong>Jo</strong>int dynamics with <strong>Co<
 {ref}`Python › 安装 <PyInstallation>`
 ```
 
+
+> 在 G1 上练习 → 《G1 实战》第 0 课（装好环境：离线安装与版本核对）
 
 MuJoCo 的 Python 包已内置引擎动态库，<strong>一条 `pip install mujoco` 即可</strong>，无需单独下载二进制或配置许可证。
 
@@ -149,6 +153,8 @@ python -m mujoco.viewer          # 打开空查看器，可把 XML 文件拖进�
 | 离线安装时 pip 报找不到 numpy/glfw | 离线打包时漏了依赖，用 `pip download` （不加 `--no-deps`）重新打包 |
 
 ## 3. 核心概念
+
+> 在 G1 上练习 → 《G1 实战》第 1 课（认识 G1）、第 2 课（站着与倒下）、第 4 课（它感觉到了什么）
 
 MuJoCo 的一切都围绕三样东西：<strong>描述模型的 `MjModel`、保存状态的 `MjData`、推进时间的 `mj_step`</strong>。理解它们的分工，就理解了 MuJoCo 的 API 风格。
 
@@ -257,6 +263,8 @@ M(q)\,\dot v + c(q, v) = \tau + J^T(q)\, f
 只想“算一遍但不推进时间”（例如修改 qpos 后刷新 xpos、传感器），用 `mj_forward`；只要运动学可用更轻的 `mj_kinematics`。
 
 ## 4. MJCF 建模详解
+
+> 在 G1 上练习 → 《G1 实战》第 1 课（认识 G1：读懂 g1.xml）、第 3 课（吊起来挥手）、第 7 课（伸手碰球）
 
 MJCF 是 MuJoCo 的 XML 模型格式，<strong>用嵌套的 `<body>` 表达运动学树，用 `<joint>` 给 body 增加自由度，用 `<geom>` 提供碰撞与外观</strong>。写好 MJCF 是学 MuJoCo 最核心的技能。
 
@@ -459,6 +467,8 @@ MJCF 是 MuJoCo 的 XML 模型格式，<strong>用嵌套的 `<body>` 表达运�
 
 ## 5. Python API 基础
 
+> 在 G1 上练习 → 《G1 实战》第 1 课（认识 G1）、第 2 课（站着与倒下）、第 3 课（吊起来挥手）、第 4 课（它感觉到了什么）、第 5 课（扛住推力）
+
 所有仿真脚本都是同一个骨架：<strong>加载模型 → 创建数据 → 循环里写 `ctrl` 并调用 `mj_step` → 读状态</strong>。本章代码均已在 MuJoCo 4.0.1 + Python 3.13 上实测通过。
 
 ### 5.1 加载模型
@@ -635,6 +645,8 @@ mujoco.mj_saveModel(m, "out.mjb")     # 二进制，加载快但与版本绑定
 
 ## 6. 可视化
 
+> 在 G1 上练习 → 《G1 实战》第 1 课（认识 G1：用 Studio 打开它）、第 3 课（吊起来挥手）、第 10 课（录视频与批量实验）
+
 初学阶段用 <strong>`mujoco.viewer` 或 MuJoCo Studio 交互查看模型</strong>，写代码时用 <strong>`launch_passive` 边跑边看</strong>，在服务器上生成图像或视频用 <strong>离屏 `mujoco.Renderer`</strong>。
 
 ### 6.1 三种查看器
@@ -765,6 +777,8 @@ renderer.disable_segmentation_rendering()
 - 4.0 起还有基于 Filament 的新渲染器 `mujoco.rendering.filament`（画质更好，API 较新），入门阶段用 `mujoco.Renderer` 即可。
 
 ## 7. 执行器、传感器与控制
+
+> 在 G1 上练习 → 《G1 实战》第 2 课（站着与倒下）、第 3 课（吊起来挥手）、第 4 课（它感觉到了什么）、第 6 课（省力地站）、第 9 课（让它走起来）
 
 <strong>执行器把 `d.ctrl` 变成关节力，传感器把状态写进 `d.sensordata`</strong>。选对执行器类型，很多控制器可以直接交给 MuJoCo 来算。
 
@@ -904,6 +918,8 @@ print("末端位置:", d.sensor("ee_pos").data.round(3))  # [0.647 0. 1.131]
 
 ## 8. 接触与物理参数
 
+> 在 G1 上练习 → 《G1 实战》第 1 课（认识 G1）、第 2 课（站着与倒下）、第 5 课（扛住推力）、第 7 课（伸手碰球）、第 9 课（让它走起来）
+
 MuJoCo 的约束（接触、限位、等式）都是<strong>软约束</strong>：允许微小穿透，由 `solref`（刚度/阻尼）和 `solimp`（阻抗曲线）决定“有多软”。大多数仿真问题都能通过调这一章的参数解决。
 
 ### 8.1 碰撞过滤
@@ -1021,6 +1037,8 @@ MuJoCo 的约束（接触、限位、等式）都是<strong>软约束</strong>�
 
 ## 9. 实用技巧
 
+> 在 G1 上练习 → 《G1 实战》第 3 课（吊起来挥手）、第 6 课（省力地站）、第 7 课（伸手碰球）、第 8 课（单腿平衡）、第 10 课（录视频与批量实验）
+
 本章示例均使用下面的两连杆平面机械臂，保存为 `arm.xml`（与 7.3 节相同，去掉了执行器）：
 
 ```xml
@@ -1104,7 +1122,7 @@ print(d2.qacc)                        # [ 1.  -0.5]
 
 # 稠密质量矩阵
 M = np.zeros((m.nv, m.nv))
-mujoco.mj_fullM(m, d, M)              # 注意：4.0 起参数是 (m, d, dst)，老教程的 (m, dst, d.qM) 已失效
+mujoco.mj_fullM(m, d, M)              # 注意：3.10 起参数是 (m, d, dst)，老教程的 (m, dst, d.qM) 已失效
 ```
 
 其他常用量：`d.qfrc_bias`（重力 + 科氏力）、`d.qfrc_actuator`（执行器力）、`d.qfrc_constraint`（约束力）。对当前动力学做有限差分线性化（LQR、MPC 常用）用 `mjd_transitionFD`。
@@ -1204,6 +1222,8 @@ for _ in range(1000):
 适合采样式 MPC、参数扫描、小规模 RL。需要的并行规模更大（上千个环境）时，使用下一章的 GPU 方案。
 
 ## 10. 进阶方向：GPU 并行仿真与强化学习
+
+> 在 G1 上练习 → 《G1 实战》第 9 课（让它走起来）、第 11 课（附录：往后学什么）
 
 结论先行：需要同时跑成千上万个环境时用 GPU 版本；单个仿真、低延迟控制时，CPU 版 MuJoCo 反而更快。下表帮助选型：
 
@@ -1371,6 +1391,8 @@ for _ in range(1000):
 {ref}`概览 › 发散 <Divergence>`　·　{ref}`概览 › 意外的碰撞 <SurprisingCollisions>`
 ```
 
+
+> 在 G1 上练习 → 《G1 实战》第 0–11 课（各课末尾的“如果报错”表格）
 
 遇到问题先用查看器打开模型，打开接触点、接触力、关节、惯量的可视化，大部分问题一眼就能看出来。下表按现象列出最常见的原因。
 

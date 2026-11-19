@@ -24,8 +24,12 @@ MuJoCo_Live\
     要通过“启动官方文档.bat”打开（直接双击 html 不行），首页“其他资料”里有入口，默认打开 G1 人形机器人。
     详见 MuJoCo_Live\说明.txt。
 
-G1实战\（编写中）
-    以宇树 Unitree G1 人形机器人为案例的实战课程。
+G1实战\
+    以宇树 Unitree G1 人形机器人为案例的实战课程，第 0–10 课加附录。
+    入口是 G1实战\index.html（课程目录），每课也有同名的 .md 版本。
+    第 0 课讲怎么离线装好课程用到的 Python 包；第 9 课的行走策略装了 PyTorch 会用它运行，没装就自动改用 numpy。
+    code\                       每课的脚本，在 G1实战 目录下运行，例如 python code\01_inspect.py；
+                                图片、视频等输出写到 G1实战\output\
     models\unitree_g1\          G1 模型（DeepMind MuJoCo Menagerie，BSD-3-Clause）
     models\unitree_rl_gym_g1\   宇树官方 G1 行走策略 motion.pt、部署脚本和 12 自由度模型（unitree_rl_gym，BSD-3-Clause）
 

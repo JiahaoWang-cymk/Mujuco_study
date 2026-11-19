@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 7 课　伸手碰球：雅可比与逆运动学 · G1 实战</title>
+<link rel="stylesheet" href="katex/katex.min.css"><style>
+:root { --ink:#16213a; --muted:#5a6880; --line:#d5dbe4; --accent:#2a4fd6; --bg:#ffffff; --code-bg:#f4f6f9; --quote:#eef3ff; }
+@media (prefers-color-scheme: dark) {
+  :root { --ink:#e5eaf3; --muted:#97a3b8; --line:#2c3a53; --accent:#86a2ff; --bg:#121a29; --code-bg:#1a2438; --quote:#1a2540; }
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); color: var(--ink); font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif; }
+body { margin: 0; line-height: 1.75; font-size: 16px; }
+main { max-width: 860px; margin: 0 auto; padding: 24px 20px 64px; }
+nav.top { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; padding: 10px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+nav.top a, nav.pager a { color: var(--accent); text-decoration: none; }
+nav.top a:hover, nav.pager a:hover { text-decoration: underline; }
+nav.pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 15px; }
+h1 { font-size: 30px; line-height: 1.3; margin: 24px 0 16px; }
+h2 { font-size: 22px; margin: 40px 0 12px; padding-left: 12px; border-left: 5px solid var(--accent); }
+h3 { font-size: 18px; margin: 28px 0 8px; }
+a { color: var(--accent); }
+code { font-family: Consolas, "Microsoft YaHei", monospace; font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; line-height: 1.5; }
+pre code { background: none; padding: 0; font-size: 14px; }
+table { border-collapse: collapse; margin: 12px 0; display: block; overflow-x: auto; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; vertical-align: top; }
+th { background: var(--code-bg); text-align: left; }
+blockquote { margin: 14px 0; padding: 8px 16px; background: var(--quote); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; }
+blockquote p { margin: 6px 0; }
+hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
+details { margin: 24px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
+details summary { cursor: pointer; }
+img { max-width: 100%; }
+.katex-display { overflow-x: auto; overflow-y: hidden; }
+</style>
+<script defer src="katex/katex.min.js"></script><script defer src="katex/contrib/auto-render.min.js"></script>
+</head><body><main>
+<nav class="top"><a href="../index.html">资料包首页</a><a href="index.html">G1 实战目录</a><a href="00_装好环境.html">第 0 课</a><a href="01_认识G1.html">第 1 课</a><a href="02_站着与倒下.html">第 2 课</a><a href="03_吊起来挥手.html">第 3 课</a><a href="04_它感觉到了什么.html">第 4 课</a><a href="05_扛住推力.html">第 5 课</a><a href="06_省力地站.html">第 6 课</a><a href="07_伸手碰球.html">第 7 课</a><a href="08_单腿平衡.html">第 8 课</a><a href="09_让它走起来.html">第 9 课</a><a href="10_录视频与批量实验.html">第 10 课</a><a href="11_附录_往后学什么.html">第 11 课</a></nav>
+<h1 id="7">第 7 课　伸手碰球：雅可比与逆运动学</h1>
+<p><strong>对应入门教程</strong>：4.7、8.1、9.1、9.4</p>
+<p><strong>本课目标</strong></p>
+<ul>
+<li>用 MjSpec 给 G1 的右手加一个末端点（site），在场景里加一个目标小球（mocap body）。</li>
+<li>理解雅可比：关节转一点点，手会移动多少；会用 <code>mj_jacSite</code> 取出它。</li>
+<li>写一个阻尼最小二乘（DLS）逆运动学，只动右臂 7 个关节，把手送到球上。</li>
+<li>把 IK 结果交给位置伺服，让站着的 G1 真的伸手碰到球；理解为什么仿真里会差一点，以及怎样修正。</li>
+<li>看清 DLS 在“够不着”时的表现，体会阻尼的取舍；知道加上腰以后能够得更远，也更容易摔。</li>
+<li>用 <code>contype</code> / <code>conaffinity</code> 决定球是“幽灵”还是“实心”。</li>
+</ul>
+<p><strong>预计用时</strong>：2–2.5 小时　<strong>前置</strong>：第 2 课（stand 关键帧、position 执行器）、第 3 课（MjSpec 改模型）</p>
+<hr />
+<h2 id="71">7.1 要解决的问题：已知手的位置，反求关节角</h2>
+<p>前几课一直在做<strong>正运动学</strong>：给出 <code>qpos</code>，<code>mj_kinematics</code> 算出每个 body、每个 site 在哪里。这一步有唯一答案，算起来也快。</p>
+<p>这一课反过来：球在 <code>(0.30, -0.20, 1.00)</code>，右臂 7 个关节各该转多少度，手才能碰到它？这叫<strong>逆运动学</strong>（IK）。它难在三点：</p>
+<ul>
+<li><strong>没有现成公式。</strong> 7 个关节、带各种偏置的连杆，写不出解析解。</li>
+<li><strong>解不唯一。</strong> 手的位置只有 3 个数，关节却有 7 个，多出来的 4 个自由度可以“随便摆”（比如手不动、手肘上下转）。</li>
+<li><strong>可能无解。</strong> 球太远，手臂伸直了也够不着。</li>
+</ul>
+<p>MuJoCo 不直接提供 IK 函数，但给了做数值 IK 需要的全部零件：正运动学、雅可比、关节范围。本课用它们自己拼一个。</p>
+<h2 id="72-mjspec">7.2 用 MjSpec 加末端点和目标球</h2>
+<h3 id="_1">末端点放在哪</h3>
+<p>G1 的右手是 <code>right_wrist_yaw_link</code> 上的一块橡胶手（<code>right_rubber_hand</code> 网格）。脚本算了一下它的网格范围：在手腕坐标系里 x 方向大约从 0.04 m 延伸到 0.17 m。我们把末端点放在 x = 0.13 m，大致是手掌中部偏前。</p>
+<p>为什么要专门加一个 site，而不直接用 body 的位置？body 的原点在手腕关节上，离手掌还有十几厘米。site 是“挂在 body 上、没有物理作用的坐标系标记”（第 1 课 1.3 ⑥），专门用来标记末端点、装传感器。</p>
+<h3 id="mocap-body">目标球为什么用 mocap body</h3>
+<p>球要满足两个要求：不能被重力拉掉，又要能随时挪到新位置。mocap body 正好如此：</p>
+<ul>
+<li>它是世界的直接子 body，不受任何力，不会掉也不会被推走。</li>
+<li>位置不写在 <code>qpos</code> 里，而写在 <code>d.mocap_pos[k]</code> 里，随时可以改，改了下一步就生效。</li>
+<li>下标 <code>k</code> 不是 body id，要用 <code>m.body_mocapid[body_id]</code> 换算。</li>
+</ul>
+<h3 id="_2">代码</h3>
+<pre><code class="language-python">def build_model(ball_collides=False):
+    spec = mujoco.MjSpec.from_file(str(XML))
+    hand = spec.body(&quot;right_wrist_yaw_link&quot;)
+    hand.add_site(name=&quot;right_palm&quot;, pos=[0.13, 0.0, 0.0], size=[0.01, 0, 0],
+                  rgba=[0, 1, 0, 1], group=0)
+
+    # 目标球放在 mocap body 上：不受力、不会掉，用 d.mocap_pos 随时摆放
+    target = spec.worldbody.add_body(name=&quot;target&quot;, mocap=True, pos=TARGETS[&quot;A&quot;])
+    if ball_collides:
+        ...                                    # 7.8 节再讲
+    else:
+        # 纯标记：contype=conaffinity=0，和谁都不碰
+        target.add_geom(name=&quot;ball&quot;, type=mujoco.mjtGeom.mjGEOM_SPHERE,
+                        size=[BALL_R, 0, 0], rgba=[1, 0.5, 0, 0.6],
+                        contype=0, conaffinity=0)
+    return spec.compile()
+</code></pre>
+<p>几点说明：</p>
+<ul>
+<li><code>spec.body(&quot;right_wrist_yaw_link&quot;)</code> 按名字找到要挂 site 的 body，和第 3 课的用法一样。原始的 <code>g1.xml</code> 一个字都没改，改动只存在于内存里的这份 spec 中。</li>
+<li>G1 默认类里的 site 是 <code>group=&quot;5&quot;</code>，查看器里默认看不到。这里显式写 <code>group=0</code>，绿色小点一开查看器就能看见。</li>
+<li>球半径 <code>BALL_R = 0.04</code> m。默认情况下球是<strong>纯标记</strong>：<code>contype=0</code>、<code>conaffinity=0</code>，和什么都不碰撞（为什么这样选，7.8 节专门讲）。判断“碰到了”的标准是：手掌 site 进入球内，也就是 site 到球心的距离小于 40 mm。</li>
+</ul>
+<p>运行后第一行会打印 <code>nsite=5  ngeom=73  nmocap=1</code>：原来 4 个 site 加 1 个，原来 72 个 geom 加 1 个球。机器人质量仍是 33.34 kg。</p>
+<h2 id="73">7.3 雅可比：关节动一点，手动多少</h2>
+<p>设手掌位置是 <span class="math">\(p\)</span>（3 个数），全身速度是 <span class="math">\(\dot q\)</span>（G1 有 <code>nv = 35</code> 个）。它们之间是线性关系：</p>
+<p><div class="math">\[\dot p = J_p\,\dot q,\qquad J_p \in \mathbb{R}^{3\times 35}\]</div></p>
+<p><span class="math">\(J_p\)</span> 就是<strong>平移雅可比</strong>。第 <span class="math">\(i\)</span> 列表示：只让第 <span class="math">\(i\)</span> 个自由度以 1 rad/s（或 1 m/s）运动时，手掌的速度。</p>
+<pre><code class="language-python">jacp = np.zeros((3, m.nv))                 # 必须是 3×nv、float64
+mujoco.mj_kinematics(m, d)                 # 先更新位姿
+mujoco.mj_comPos(m, d)                     # 雅可比要用到的中间量
+mujoco.mj_jacSite(m, d, jacp, None, sid)   # 不要旋转雅可比，就传 None
+J = jacp[:, vadr]                          # 只取右臂 7 个关节那几列 → 3×7
+</code></pre>
+<ul>
+<li>第 4 个参数是<strong>旋转雅可比</strong> <code>jacr</code>（手的角速度）。本课只管手到哪，不管手朝哪，所以传 <code>None</code>。</li>
+<li>35 列里大多数和右手无关：左臂、腿的列全是 0。要注意的是前 6 列（浮动基）和腰的 3 列<strong>不是 0</strong>：骨盆或腰一动，手当然跟着动。本课只取右臂 7 列，等于假设身体其余部分不动。7.5 节会看到这个假设在仿真里带来的后果。</li>
+<li><code>vadr</code> 是右臂 7 个关节在 <code>qvel</code> 里的下标，用 <code>m.jnt_dofadr</code> 取（第 1 课 1.5 的表里是 28–34）。</li>
+</ul>
+<h2 id="74">7.4 阻尼最小二乘：一步一步把手挪过去</h2>
+<p>思路很朴素：现在差 <span class="math">\(e = p_{\text{目标}} - p_{\text{当前}}\)</span>，想找一个关节增量 <span class="math">\(\Delta q\)</span> 让 <span class="math">\(J\,\Delta q \approx e\)</span>。<span class="math">\(J\)</span> 是 3×7 的“扁”矩阵，不能直接求逆。<strong>阻尼最小二乘</strong>（Damped Least Squares，DLS）解的是</p>
+<p><div class="math">\[\min_{\Delta q}\ \|J\,\Delta q - e\|^2 + \lambda^2\|\Delta q\|^2
+\quad\Longrightarrow\quad
+\Delta q = J^\top\left(J J^\top + \lambda^2 I\right)^{-1} e\]</div></p>
+<ul>
+<li>第一项：手尽量往目标走。</li>
+<li>第二项：关节别动太多。<span class="math">\(\lambda\)</span> 叫<strong>阻尼</strong>，入门教程 9.1 的例子里写的 <code>1e-4</code> 就是 <span class="math">\(\lambda^2\)</span>（<span class="math">\(\lambda = 0.01\)</span>）。</li>
+<li>只要 <span class="math">\(\lambda &gt; 0\)</span>，<span class="math">\(JJ^\top + \lambda^2 I\)</span> 一定可逆，手臂伸直（奇异位形）时也不会除以零。</li>
+</ul>
+<p>雅可比只在当前姿态附近准确，所以一步到不了，要迭代：算误差 → 算雅可比 → 走一小步 → 重来。</p>
+<pre><code class="language-python">def solve_ik(m, d0, target, joints, damping=0.05, max_iter=200, tol=1e-4, max_step=0.2):
+    d = mujoco.MjData(m)                       # 单独一份数据，只做运动学，不碰 d0
+    d.qpos[:] = d0.qpos
+    ...
+    for it in range(max_iter + 1):             # 最多走 max_iter 步；多一轮只为量出最后一步之后的误差
+        mujoco.mj_kinematics(m, d)
+        mujoco.mj_comPos(m, d)
+        err = target - d.site_xpos[sid]
+        errs.append(np.linalg.norm(err))
+        if errs[-1] &lt; tol or it == max_iter:   # 误差小于 0.1 mm，或步数用完，就停
+            break
+        mujoco.mj_jacSite(m, d, jacp, None, sid)
+        J = jacp[:, vadr]
+        dq = J.T @ np.linalg.solve(J @ J.T + damping**2 * np.eye(3), err)
+        s = np.abs(dq).max()                   # 一步太大就整体缩小，防止跳过头
+        if s &gt; max_step:
+            dq *= max_step / s
+        d.qpos[qadr] = np.clip(d.qpos[qadr] + dq, lo, hi)   # 不能超出关节范围
+    return d.qpos[qadr].copy(), errs, steps
+</code></pre>
+<p>和入门教程 9.1 相比，多了三处工程上的处理：</p>
+<ol>
+<li><strong>单独一份 <code>MjData</code>。</strong> IK 只是“在脑子里比划”，不能去动正在仿真的 <code>d</code>。新建的 <code>d</code> 从仿真里的当前状态出发，骨盆、腿、腰都在实际位置上。</li>
+<li><strong>单步限幅 <code>max_step = 0.2</code> rad。</strong> 离目标很远时，线性近似很不准，一步迈太大容易越过头。7.7 节会看到它的作用。</li>
+<li><strong>按关节范围截断。</strong> 算出的角度超出 <code>range</code>，伺服也执行不了，不如在 IK 里就截掉。</li>
+</ol>
+<p>另外注意循环跑的是 <code>max_iter + 1</code> 轮：最后一步走完后再量一次误差。这样返回的关节角和 <code>errs</code> 里最后一个误差对应同一个姿态。少了这一轮，打印的“末误差”其实是倒数第二个姿态的；7.7 节会看到，够不着时相邻两步的姿态可能差得很远。</p>
+<blockquote>
+<p>入门教程用 <code>mj_integratePos</code> 更新 <code>qpos</code>，这样对球关节、自由关节也成立。这里 7 个关节都是铰链，<code>qpos</code> 和 <code>qvel</code> 一一对应，直接相加是对的。如果你把骨盆的 freejoint 也放进 IK，就必须改用 <code>mj_integratePos</code>。</p>
+</blockquote>
+<h2 id="75-ik">7.5 把 IK 结果交给位置伺服</h2>
+<p>IK 给出的是 7 个<strong>目标角度</strong>。G1 的执行器正好是位置伺服（第 2 课），<code>ctrl</code> 就是目标角度，所以直接把结果写进 <code>ctrl</code>。只是不要一下子跳过去，否则手臂会猛甩一下，甚至把自己晃倒。脚本用 1 s 的 smoothstep 曲线（起点、终点速度都是 0）过渡，再保持 2 s：</p>
+<pre><code class="language-python">s = min((d.time - t0) / ramp, 1.0)
+s = 3 * s**2 - 2 * s**3
+d.ctrl[aids] = c0 + s * (q_goal - c0)
+</code></pre>
+<p>四个目标点（世界坐标，G1 面朝 +x，右手在 −y 一侧）：</p>
+<table>
+<thead>
+<tr>
+<th>点</th>
+<th>位置 (m)</th>
+<th>说明</th>
+<th>离右肩 (m)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>(0.30, −0.20, 1.00)</td>
+<td>胸前</td>
+<td>0.328</td>
+</tr>
+<tr>
+<td>B</td>
+<td>(0.25, −0.30, 0.75)</td>
+<td>右前下方</td>
+<td>0.463</td>
+</tr>
+<tr>
+<td>C</td>
+<td>(0.05, −0.45, 1.25)</td>
+<td>右侧高处</td>
+<td>0.391</td>
+</tr>
+<tr>
+<td>D</td>
+<td>(0.80, −0.20, 1.00)</td>
+<td>正前方，很远</td>
+<td>0.811</td>
+</tr>
+</tbody>
+</table>
+<p>每个点都从 <code>stand</code> 关键帧开始，先站 0.5 s 再伸手。站稳后，手掌 site 在 <code>(-0.004, -0.247, 0.595)</code>，也就是垂在身体右侧；右肩在 <code>(-0.001, -0.1, 1.083)</code>。</p>
+<h3 id="_3">先猜一猜</h3>
+<ol>
+<li>A 点离手掌起始位置约半米。DLS 需要迭代多少次才能把误差压到 0.1 mm 以下：3 次左右、10 次左右，还是 100 次以上？</li>
+<li>IK 算出的误差是 0.09 mm。把结果交给位置伺服以后，仿真里手离球心会差多少：不到 1 mm、1 cm 左右，还是 5 cm 以上？</li>
+<li>D 点离肩膀 0.81 m。IK 会怎样：报错、数值发散，还是停在某个“尽量近”的位置？</li>
+</ol>
+<h3 id="_4">运行</h3>
+<pre><code class="language-bash">cd G1实战/code
+python 07_reach.py          # 无界面，约 5 秒跑完，打印结果并保存 output/07_reach.png
+python 07_reach.py --view   # 打开查看器，依次去碰 A、B、C、D 四个球；关掉窗口结束
+</code></pre>
+<p><code>--view</code> 用的是 <code>mujoco.viewer.launch_passive</code>：仿真循环在脚本里，查看器只负责显示，每推进约 16 ms 调一次 <code>viewer.sync()</code>，并按真实时间等待。和无界面模式一样，每个点之前都先复位到 <code>stand</code> 并站稳 0.5 s（这一段瞬间算完，不实时播放），所以画面会“跳回”站姿再伸手；打印出的数字也和上面一致。</p>
+<p>实验 1 的输出（节选）：</p>
+<pre><code class="language-text">[A] 目标 [ 0.3 -0.2  1. ]，离右肩 0.328 m
+  迭代:误差(mm)  0:508.23  1:478.65  2:440.29  3:387.19  5:222.98  10:0.09
+  共 10 次迭代，IK 末误差 0.09 mm
+  关节角(rad) [-0.072 -0.323 -0.058  0.188  0.053 -0.807  0.017]
+  仿真：最近 9.8 mm，3 s 末 12.5 mm，碰到了；骨盆高 0.792 m
+
+[B] ... 共 7 次迭代，IK 末误差 0.02 mm ... 仿真：最近 5.5 mm，3 s 末 6.1 mm，碰到了
+[C] ... 共 13 次迭代，IK 末误差 0.08 mm ... 仿真：最近 6.5 mm，3 s 末 7.3 mm，碰到了
+
+[D] 目标 [ 0.8 -0.2  1. ]，离右肩 0.811 m
+  迭代:误差(mm)  0:901.30  1:835.46  2:752.93  3:594.53  5:468.50  10:313.27  20:297.49  50:297.26  200:296.81
+  共 200 次迭代，IK 末误差 296.81 mm
+  仿真：最近 248.3 mm，3 s 末 274.7 mm，没碰到；骨盆高 0.792 m
+</code></pre>
+<p>运行后打开 <code>output/07_reach.png</code>。左图是 IK 误差随迭代次数的变化（对数纵轴）：A、B、C 前几步下降得慢（受单步 0.2 rad 的限幅），靠近目标后几步之内就掉到 0.1 mm 以下，这是牛顿类方法典型的“越近越快”。D 在 300 mm 左右变成一条水平线。右图是仿真里手掌到球心的距离：A、B、C 在 1 s 过渡快结束时（0.8–0.9 s）都落到 40 mm 的虚线（球半径）以下，D 停在 250–285 mm 之间晃动。</p>
+<h3 id="_5">观察记录</h3>
+<ol>
+<li>A、B、C 三个点，IK 各用了几次迭代？误差下降曲线是“匀速”的，还是“先慢后快”的？</li>
+<li>IK 误差都不到 0.1 mm，仿真里却差了 6–12 mm。你觉得差在哪里？（7.6 节揭晓）</li>
+<li>D 点的 IK 停在多大的误差上？由此估算右臂从肩膀到手掌最多能伸多长。</li>
+<li>在 <code>--view</code> 里看 D：手臂是伸直指向球的吗？过渡结束后手臂还在晃吗？</li>
+</ol>
+<h2 id="76-12-mm">7.6 差的 12 mm 从哪来：开环与闭环</h2>
+<p>IK 是在“身体不动”的假设下算的。真实情况是：手臂伸出去，整机质心前移，腿和腰的伺服被压得稍微变形，身体会跟着晃一点；手臂自己也要扛重力，位置伺服 kp=500 不是无限硬（第 2 课）。</p>
+<p>实验 2 把这两部分拆开算（只做运动学，不仿真）：</p>
+<pre><code class="language-text">=== 实验 2：A 点，按实际状态再做 IK 修正 3 轮 ===
+  开环：12.47 mm
+  手臂关节跟踪误差 0.0044 rad → 单独造成 2.6 mm
+  骨盆前移 5.7 mm、腿和腰最多转了 0.0066 rad → 单独造成 11.0 mm
+  修正第 1 轮后：0.68 mm
+  修正第 2 轮后：0.05 mm
+  修正第 3 轮后：0.02 mm
+</code></pre>
+<ul>
+<li>手臂关节最多只差了 0.0044 rad（约 0.25°），单独算只让手偏 2.6 mm。</li>
+<li>大头在身体：骨盆往前挪了 5.7 mm，腿和腰的关节转了不到 0.4°，但它们离手掌有一米远的“杠杆”，放大成 11 mm。</li>
+</ul>
+<p>所以只靠给手臂加重力补偿（第 6 课的思路）解决不了主要矛盾。办法是<strong>闭环修正</strong>：手伸过去以后，从<strong>实际</strong>的身体状态出发再做一次 IK，看看还差多少关节角，把差值加到 <code>ctrl</code> 上。</p>
+<pre><code class="language-python">q_need, _, _ = solve_ik(m, d, target, joints)      # d 是正在仿真的状态
+goal = d.ctrl[aids] + (q_need - d.qpos[qadr])       # 还差多少，就在目标上多给多少
+</code></pre>
+<p>为什么不直接 <code>ctrl = q_need</code>？因为伺服有稳态误差：给 <code>ctrl = q</code> 它停在 <code>q</code> 附近，差 0.004 rad 左右。在当前 <code>ctrl</code> 上<strong>加上差值</strong>，等于把稳态误差也一并补掉。修正一轮就从 12.47 mm 降到 0.68 mm，三轮后 0.02 mm。</p>
+<blockquote>
+<p>这就是“开环”和“闭环”的区别：开环是算好了一次性执行；闭环是边做边看结果、再修正。真实机器人上，“实际状态”来自关节编码器和 IMU 的状态估计；看球的位置则要靠相机。</p>
+</blockquote>
+<h2 id="77">7.7 够不着怎么办：阻尼的取舍</h2>
+<p>D 点离肩膀 0.811 m，IK 停在 297 mm 的误差上，说明右臂最多伸出约 0.811 − 0.297 ≈ 0.51 m（和实验 3 末尾直接扫肘角得到的 0.511 m 一致）。DLS 没有报错，也没有发散，只是尽量往球的方向伸。这是阻尼项的功劳：误差降不下去时，<span class="math">\(\lambda^2\|\Delta q\|^2\)</span> 不让关节无止境地乱转。</p>
+<p>但阻尼取多大合适？实验 3 用三个阻尼值分别解 A 和 D：</p>
+<pre><code class="language-text">=== 实验 3：阻尼大小（A 能够到，D 够不着） ===
+    阻尼 | A 迭代次数 | D 末误差(mm) | D 最后 20 步最大步长(rad)
+   0.001 |         10 |        298.8 | 0.2000   （D 的肘角 +1.277）
+    0.05 |         10 |        296.8 | 0.2000   （D 的肘角 +1.315）
+     0.3 |         27 |        296.0 | 0.0018   （D 的肘角 +1.405）
+</code></pre>
+<p>看最后一列：</p>
+<ul>
+<li>阻尼 0.001 和 0.05 时，D 点到第 200 次迭代，每步关节还在动 0.2 rad，正好是限幅的上限。它没有停下，而是<strong>在两个姿态之间来回跳</strong>。把 <code>max_iter</code> 依次设成 195、196……200 分别求解，打印结果可以看到：阻尼 0.05 时肘角在 1.315 和 1.45 之间交替，手腕 pitch 在 −0.023 和 0.177 之间交替；阻尼 0.001 时肘角在 1.277 和 1.41 之间交替，末误差也跟着在 298.8 和 296.1 mm 之间跳。手臂接近伸直时 <span class="math">\(JJ^\top\)</span> 有一个方向的奇异值很小，阻尼太小就压不住那个方向，算出的步长被限幅截到 0.2 rad，下一步又跳回来。</li>
+<li>阻尼 0.3 时，D 稳稳停下（最后每步只动 0.0018 rad），肘角 1.405，接近伸直。（G1 的肘角为 0 时小臂水平朝前、和大臂成直角。脚本在实验 3 末尾扫了一遍肘角：1.45 rad 时肩到手掌最远，0.511 m。）</li>
+<li>代价是：够得着的 A 点，阻尼 0.3 要 27 次迭代，阻尼 0.05 只要 10 次。阻尼越大，每一步越“保守”。</li>
+</ul>
+<blockquote>
+<p>三种阻尼的末误差差不多（296–299 mm），但阻尼小时“停在哪一步就取哪一步”，交给伺服的目标会随机落在两个姿态之一。实际系统里常见的折中是<strong>自适应阻尼</strong>：离目标近时用小阻尼求快，误差降不下去时自动加大阻尼求稳。练习 2 还会看到，把限幅也去掉会更糟。</p>
+</blockquote>
+<h2 id="78">7.8 加上腰：够得更远，也更容易摔</h2>
+<p>把腰的 3 个关节（yaw、roll、pitch）也加进 IK，<code>joints</code> 从 7 个变成 10 个，代码一行不用改，雅可比自动多取 3 列。实验 4 选了一个“胳膊差一点”的 E 点：</p>
+<pre><code class="language-text">=== 实验 4：右臂 7 + 腰 3 = 10 个关节 ===
+  E 点 [ 0.55 -0.2   0.95]，离右肩 0.575 m
+  只用手臂：200 次迭代，末误差 61.2 mm
+  加上腰  ：9 次迭代，末误差 0.01 mm，腰 yaw/roll/pitch = [ 0.349 -0.104  0.259]
+  仿真开环：44.0 mm；修正 3 轮：2.8 → 2.3 → 0.7 mm；骨盆高 0.791 m
+  D 点加腰：IK 末误差 165.2 mm，腰 = [0.794 0.52  0.52 ]；仿真 3 s 后骨盆高 0.167 m
+</code></pre>
+<ul>
+<li>E 点只用手臂差 6 cm 够不着；加上腰，上身向左转 0.349 rad（yaw 绕 +z 轴，正值是从上往下看逆时针，正好把右肩往前送）、前倾 0.259 rad，9 次迭代就够到了。</li>
+<li>仿真里开环差 44 mm，比只动手臂时大得多：上身前倾，质心前移更多，腿被压得更厉害。修正 3 轮后降到 0.7 mm，骨盆高度 0.791 m，仍然站着。</li>
+<li>D 点即使加上腰也差 165 mm（这里同样在两个姿态之间来回跳，换个 <code>max_iter</code> 会看到 192 mm 左右的另一个值）。IK 把腰 roll 和 pitch 都拉到了 0.52 rad 的关节极限。把这个结果交给伺服，3 s 后骨盆只有 0.167 m 高：G1 摔倒了。</li>
+</ul>
+<p><strong>IK 只管手到哪，不管站不站得住。</strong> 动到腰甚至腿以后，就必须同时考虑平衡：质心要留在两脚之间的支撑区域里（第 4 课）。专业的全身控制会把“手到目标”和“质心在支撑区内”写成多个任务，按优先级一起求解。第 8 课会用 LQR 处理平衡问题。</p>
+<h2 id="79">7.9 碰撞过滤：球是“幽灵”还是“实心”</h2>
+<p>到目前为止，球是个纯标记，<code>contype=0</code>、<code>conaffinity=0</code>，手可以穿进去。为什么不让它“实心”？入门教程 8.1 讲过，两个 geom 要检测碰撞，必须同时满足：</p>
+<ol>
+<li>不在同一个 body 上；</li>
+<li>两个 body 不是父子关系（父 body 是世界或静态时例外）；</li>
+<li>位掩码匹配：<code>(contype1 &amp; conaffinity2) || (contype2 &amp; conaffinity1)</code> 不为 0；</li>
+<li>没有被 <code>&lt;contact&gt;&lt;exclude&gt;</code> 排除。</li>
+</ol>
+<p>先看 G1 自己的情况：第 1 课讲过，<code>visual</code> 类的 geom 都是 <code>contype=&quot;0&quot; conaffinity=&quot;0&quot;</code>。橡胶手 <code>right_rubber_hand</code> 只用了 <code>visual</code> 类，<strong>手掌根本没有碰撞体</strong>。手腕上倒是有一个碰撞 mesh，但它在手腕坐标系里只到 x = 0.04 m，离手掌 site 还有 9 cm。</p>
+<p>所以就算把球设成默认的 <code>contype=1 conaffinity=1</code>，手掌也会直接穿过它（练习 3 来验证）。要让手真的“摸”到球，得先给手掌补一个碰撞体。实验 5 这样做：</p>
+<pre><code class="language-python">target.add_geom(name=&quot;ball&quot;, ..., contype=2, conaffinity=2)
+hand.add_geom(name=&quot;palm_collision&quot;, type=mujoco.mjtGeom.mjGEOM_SPHERE,
+              pos=PALM_POS, size=[PALM_R, 0, 0],
+              contype=2, conaffinity=2, density=0, group=3)
+</code></pre>
+<p>为什么用 2 而不是 1？按位掩码算一遍：</p>
+<table>
+<thead>
+<tr>
+<th>geom 对</th>
+<th>计算</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>球 (2, 2) — 手掌球 (2, 2)</td>
+<td><code>2 &amp; 2 = 2</code></td>
+<td>碰撞</td>
+</tr>
+<tr>
+<td>手掌球 (2, 2) — 躯干、大腿等 (1, 1)</td>
+<td><code>2 &amp; 1 = 0</code>，<code>1 &amp; 2 = 0</code></td>
+<td>不碰</td>
+</tr>
+<tr>
+<td>手掌球 (2, 2) — 地面 (1, 1)</td>
+<td>同上</td>
+<td>不碰</td>
+</tr>
+<tr>
+<td>球 (2, 2) — 手腕碰撞 mesh (1, 1)</td>
+<td>同上</td>
+<td>不碰</td>
+</tr>
+</tbody>
+</table>
+<p>用一个“专用的位”，就只开了“手掌—球”这一对，不会让新加的手掌球意外撞上自己的胸口或大腿。这比用 <code>&lt;contact&gt;&lt;pair&gt;</code> 显式列出也更省事。另外 <code>density=0</code> 让手掌球不增加质量，<code>group=3</code> 让它和其他碰撞体一起显示和隐藏。</p>
+<p>实验 5 让 IK 仍然瞄准<strong>球心</strong>，看会发生什么：</p>
+<pre><code class="language-text">=== 实验 5：球和手掌碰撞球都设 contype=conaffinity=2 ===
+  ball            contype=2  conaffinity=2
+  palm_collision  contype=2  conaffinity=2
+  floor           contype=1  conaffinity=1
+  手腕碰撞 mesh       contype=1  conaffinity=1
+  IK 仍瞄准球心，末误差 0.09 mm（IK 不知道有碰撞）
+  仿真 3 s 末：手掌 site 到球心 59.5 mm（两球半径和 60 mm），接触 ['palm_collision-ball']，法向力 13.73 N
+</code></pre>
+<ul>
+<li>IK 只是在“脑子里”算，不知道有碰撞，仍然算出一个让手掌伸进球心的姿态。</li>
+<li>仿真里手被球挡住了：手掌 site 到球心 59.5 mm，正好约等于两个半径之和 60 mm（软接触允许约 0.5 mm 的穿透，见入门教程第 8 章开头）。</li>
+<li>伺服的目标在球里面，它一直“往里顶”，于是产生了 13.73 N 的接触力。mocap 球不会被推走，力全部传回到机器人身上。</li>
+</ul>
+<p><strong>怎么选？</strong></p>
+<table>
+<thead>
+<tr>
+<th>做法</th>
+<th>适合</th>
+<th>注意</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>球不碰撞（本课默认）</td>
+<td>只想验证 IK、可视化目标点</td>
+<td>“碰到”要自己用距离判断</td>
+</tr>
+<tr>
+<td>球和手掌都碰撞（实验 5）</td>
+<td>想看接触力，或让手真的推、按、拍一个东西</td>
+<td>IK 的目标要设在球的表面外侧，否则伺服会一直顶着</td>
+</tr>
+<tr>
+<td>球是自由物体（加 freejoint）</td>
+<td>想把球拍走、推倒</td>
+<td>球会被碰飞；还要考虑摩擦（第 5 课）</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_6">练习</h2>
+<ol>
+<li><strong>换左手。</strong> 把 site 改挂到 <code>left_wrist_yaw_link</code>，关节名里的 <code>right</code> 换成 <code>left</code>，四个目标点的 y 坐标取反。（<code>solve_ik</code> 和 <code>reach</code> 里按名字 <code>&quot;right_palm&quot;</code> 找 site：要么新 site 仍叫这个名字，要么把这两处一起改掉。）猜一猜：IK 迭代次数、7 个关节角，和右手的结果有什么关系？</li>
+<li><strong>去掉单步限幅。</strong> 调用 <code>solve_ik</code> 时传 <code>max_step=1e9</code>（相当于不限幅），分别用阻尼 0.001 和 0.05 解 D 点，记下末误差和最大步长。和实验 3 比，变好了还是变差了？</li>
+<li><strong>“实心球”不一定挡得住手。</strong> 不补手掌碰撞球，只把球改成 <code>contype=1, conaffinity=1</code>（MuJoCo 的默认值），对 A 点做开环伸手。手会被挡住吗？用 <code>d.contact</code> 查一下有没有和球有关的接触。</li>
+<li><strong>给手臂加重力前馈（联系第 6 课）。</strong> 对 A 点，在 IK 结果的姿态上调用 <code>mj_forward</code>，读出右臂 7 个关节的 <code>qfrc_bias</code>，把 <code>ctrl</code> 设为 <code>q_ik + qfrc_bias / kp</code>（kp=500）。仿真里手到球心的距离从 12.5 mm 变成多少？和 7.6 节的误差分解对得上吗？</li>
+</ol>
+<h2 id="_7">如果报错</h2>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>可能原因</th>
+<th>解决</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>KeyError: &quot;Invalid name &#x27;right_palm&#x27;. Valid names: [&#x27;imu_in_pelvis&#x27;, &#x27;imu_in_torso&#x27;, &#x27;left_foot&#x27;, &#x27;right_foot&#x27;]&quot;</code></td>
+<td>用的是直接从 XML 加载的原始模型，没有经过 <code>build_model</code> 加 site</td>
+<td>用 <code>build_model()</code> 返回的模型；IK、仿真、查看器要用同一个模型</td>
+</tr>
+<tr>
+<td><code>ValueError: Error: repeated name &#x27;...&#x27; in site</code></td>
+<td>新加的 site 和已有的重名</td>
+<td>换一个名字；同一个 spec 不要重复调用 <code>add_site</code></td>
+</tr>
+<tr>
+<td><code>TypeError: jacp should be of shape (3, nv)</code></td>
+<td><code>jacp</code> 形状不对，比如写成了 <code>(3, 29)</code>（把关节数当成 nv）</td>
+<td>用 <code>np.zeros((3, m.nv))</code>，G1 的 <code>nv</code> 是 35；取列时再用 <code>jnt_dofadr</code></td>
+</tr>
+<tr>
+<td><code>TypeError: mj_jacSite(): incompatible function arguments</code></td>
+<td><code>jacp</code> 不是 C 连续的 float64 数组，例如传了 <code>.T</code> 转置后的数组</td>
+<td>新建一个 <code>np.zeros((3, m.nv))</code> 传进去</td>
+</tr>
+<tr>
+<td><code>IndexError: index 31 is out of bounds for axis 0 with size 1</code></td>
+<td>用 body id 去索引 <code>d.mocap_pos</code></td>
+<td>先 <code>mid = m.body_mocapid[body_id]</code>，再用 <code>d.mocap_pos[mid]</code></td>
+</tr>
+<tr>
+<td>IK 误差停在几百毫米降不下去</td>
+<td>目标超出手臂可达范围</td>
+<td>正常现象。检查目标离肩膀的距离（右臂最长约 0.51 m），或把腰加进来</td>
+</tr>
+<tr>
+<td>目标明明够得着，IK 却停在几十到上百毫米降不下去</td>
+<td>IK 从一个很别扭的姿态起步（比如上一个目标伸直的手臂），掉进了局部极小值或被关节范围卡住</td>
+<td>从站姿重新起步再解（脚本的 <code>--view</code> 每个点前都先 <code>settle</code>）；或者换几个初值多试几次</td>
+</tr>
+<tr>
+<td>够不着时，迭代次数改一点 IK 结果就大变，关节在两个值之间跳</td>
+<td>目标够不着时阻尼太小，在奇异位形附近振荡</td>
+<td>加大阻尼（如 0.3），或用自适应阻尼</td>
+</tr>
+<tr>
+<td>伸手后 G1 摔倒</td>
+<td>IK 动了腰，质心移出支撑区；或 ctrl 一步跳到目标，手臂猛甩</td>
+<td>限制腰的角度；用 smoothstep 等平滑过渡</td>
+</tr>
+<tr>
+<td>手明明“碰到”了却没有接触力</td>
+<td>球或手掌的 <code>contype</code> / <code>conaffinity</code> 位不匹配；橡胶手本身没有碰撞体</td>
+<td>按 7.9 节的位掩码表核对；给手掌补碰撞 geom</td>
+</tr>
+<tr>
+<td><code>--view</code> 窗口打不开或一闪而过</td>
+<td>远程桌面、虚拟机图形驱动问题</td>
+<td>先不加 <code>--view</code> 跑通；查看器问题参考第 1 课</td>
+</tr>
+<tr>
+<td>macOS 上 <code>--view</code> 报错要求 <code>mjpython</code></td>
+<td><code>launch_passive</code> 在 macOS 上必须用 <code>mjpython</code> 启动</td>
+<td>改用 <code>mjpython 07_reach.py --view</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="_8">延伸阅读</h2>
+<ul>
+<li><a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mj-jacsite">API 参考：mj_jacSite</a>、<a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mj-jac">mj_jac</a>、<a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mj-kinematics">mj_kinematics</a>、<a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mj-compos">mj_comPos</a>、<a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mj-integratepos">mj_integratePos</a>、<a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mj-contactforce">mj_contactForce</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#body-site">XML 参考：site</a>、<a href="../官方文档_中文HTML/XMLreference.html#body-mocap">body 的 mocap 属性</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#body-geom-contype">XML 参考：geom 的 contype</a>、<a href="../官方文档_中文HTML/XMLreference.html#body-geom-conaffinity">conaffinity</a>、<a href="../官方文档_中文HTML/XMLreference.html#contact-pair">contact/pair</a>、<a href="../官方文档_中文HTML/XMLreference.html#contact-exclude">contact/exclude</a></li>
+<li><a href="../官方文档_中文HTML/computation/index.html#coselection">计算：碰撞检测中的“选择”（哪些 geom 对会被检查）</a></li>
+<li><a href="../官方文档_中文HTML/programming/modeledit.html#meoverview">模型编辑（MjSpec）概览</a>、<a href="../官方文档_中文HTML/python.html#pymodeledit">Python 中的模型编辑</a></li>
+<li><a href="../官方文档_中文HTML/python.html#pyviewerpassive">Python 被动式查看器 launch_passive</a></li>
+</ul>
+<hr />
+<details>
+<summary><b>参考答案（跑完再看）</b></summary>
+
+<strong>7.5 先猜一猜</strong>
+
+1. 10 次左右。A 点 10 次、B 点 7 次、C 点 13 次。前几步受 0.2 rad 单步限幅，误差降得慢（A：508 → 479 → 440 → 387 mm），进入线性近似准确的区域后几步就降到 0.1 mm 以下（第 5 次 223 mm，第 10 次 0.09 mm）。
+2. 1 cm 左右。A 点 3 s 末差 12.5 mm，B 点 6.1 mm，C 点 7.3 mm，都在球半径 40 mm 以内，算碰到了。原因见 7.6 节。
+3. 停在“尽量近”的位置。D 点 IK 跑满 200 次迭代，误差停在约 297 mm（末次 296.81 mm），不报错也不发散。
+
+<strong>7.5 观察记录</strong>
+
+1. A 10 次、B 7 次、C 13 次。先慢后快，在对数坐标里是一条越来越陡的下降曲线。
+2. IK 假设身体不动，但伸手时整机质心前移，骨盆前移 5.7 mm，腿和腰也有微小转动，经过一米左右的杠杆放大成 11.0 mm；手臂伺服的稳态误差（最多 0.0044 rad）只贡献 2.6 mm。
+3. 约 297 mm，所以右臂从肩膀到手掌最多伸出约 0.811 − 0.297 ≈ 0.51 m。实验 3 末尾扫肘角的结果是 0.511 m（肘角 1.45 rad），两者一致。
+4. D 的 IK 结果肘角 1.315 rad，接近伸直，但不是最远的 1.45 rad（这是阻尼 0.05 下“来回跳”的两个姿态之一，见 7.7 节）。右图中 D 的距离在 1 s 后还在 250–285 mm 之间起伏，说明伸直的手臂和身体还在晃，3 s 内没有完全静止。
+
+<strong>练习 1</strong>：IK 迭代次数完全一样（A 10、B 7、C 13、D 200），IK 末误差几乎一样，仿真 3 s 末距离也一样（A 12.5 mm、B 6.1 mm、C 7.3 mm、D 274.7 mm）。7 个关节角里，shoulder pitch、elbow、wrist pitch 三个（绕 y 轴转的）和右手相同；shoulder roll、shoulder yaw、wrist roll、wrist yaw 四个（绕 x、z 轴转的）符号相反。例如左手 A 点是 <code>[-0.072  0.323  0.058  0.188 -0.053 -0.807 -0.017]</code>，右手是 <code>[-0.072 -0.323 -0.058  0.188  0.053 -0.807  0.017]</code>。G1 左右对称，镜像 y 坐标就等于翻转绕 x、z 轴的转角。
+
+<strong>练习 2</strong>：更糟。不限幅时，阻尼 0.001 的 D 点末误差 465.9 mm，最大一步 15.5 rad，最后 20 步里最大一步 6.6 rad；阻尼 0.05 时末误差 341.1 mm，最大一步 7.7 rad，最后 20 步里最大一步 1.9 rad。都比限幅时的约 297 mm 差：步子太大，线性近似完全失效，越走越偏。（末误差会随 <code>max_iter</code> 改一点就变，你的数字和这里不完全一样也正常，结论不变。）够得着的 A 点倒还能收敛（阻尼 0.001 时 9 次、阻尼 0.05 时 7 次），但阻尼 0.001 时单步达到 10.4 rad，靠关节范围截断才没出事。
+
+<strong>练习 3</strong>：挡不住。3 s 末手掌到球心仍是 12.5 mm，和球不碰撞时完全一样，<code>d.contact</code> 里没有任何和球有关的接触。手掌是 visual geom，不参与碰撞；手腕的碰撞 mesh 离手掌 site 还有 9 cm，碰不到半径 4 cm 的球。
+
+<strong>练习 4</strong>：参考写法：
+
+
+<pre><code class="language-python">di = mujoco.MjData(m)
+di.qpos[:] = d.qpos
+di.qpos[qadr] = q_ik                     # 手臂摆到 IK 姿态
+mujoco.mj_forward(m, di)                 # 速度为 0，qfrc_bias 就是重力项
+ctrl_goal = q_ik + di.qfrc_bias[vadr] / 500
+</code></pre>
+
+
+前馈量为 <code>[-0.0046 -0.0034 -0.0013 -0.0034 0.0002 -0.0006 -0.0001]</code> rad，和实验 2 打印的手臂跟踪误差（最大 0.0044 rad）基本吻合。仿真 3 s 末距离从 12.5 mm 降到 11.1 mm，只少了约 1.4 mm。这和 7.6 节的分解一致：手臂自身下垂只占 2.6 mm，大头 11.0 mm 来自身体移动，重力前馈管不到。要消除它，还得用闭环修正。
+
+</details>
+<nav class="pager"><span><a href="06_省力地站.html">← 第 6 课 省力地站：算出“刚好站住”需要的力矩</a></span><span><a href="08_单腿平衡.html">第 8 课 单腿平衡：把官方 LQR 搬到 G1 上 →</a></span></nav>
+</main>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".math").forEach(function (el) {
+    renderMathInElement(el, {delimiters: [{left: "\\[", right: "\\]", display: true}, {left: "\\(", right: "\\)", display: false}]});
+  });
+});
+</script>
+</body></html>

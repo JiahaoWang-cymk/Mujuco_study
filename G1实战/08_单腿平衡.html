@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 8 课　单腿平衡：把官方 LQR 搬到 G1 上 · G1 实战</title>
+<link rel="stylesheet" href="katex/katex.min.css"><style>
+:root { --ink:#16213a; --muted:#5a6880; --line:#d5dbe4; --accent:#2a4fd6; --bg:#ffffff; --code-bg:#f4f6f9; --quote:#eef3ff; }
+@media (prefers-color-scheme: dark) {
+  :root { --ink:#e5eaf3; --muted:#97a3b8; --line:#2c3a53; --accent:#86a2ff; --bg:#121a29; --code-bg:#1a2438; --quote:#1a2540; }
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); color: var(--ink); font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif; }
+body { margin: 0; line-height: 1.75; font-size: 16px; }
+main { max-width: 860px; margin: 0 auto; padding: 24px 20px 64px; }
+nav.top { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; padding: 10px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+nav.top a, nav.pager a { color: var(--accent); text-decoration: none; }
+nav.top a:hover, nav.pager a:hover { text-decoration: underline; }
+nav.pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 15px; }
+h1 { font-size: 30px; line-height: 1.3; margin: 24px 0 16px; }
+h2 { font-size: 22px; margin: 40px 0 12px; padding-left: 12px; border-left: 5px solid var(--accent); }
+h3 { font-size: 18px; margin: 28px 0 8px; }
+a { color: var(--accent); }
+code { font-family: Consolas, "Microsoft YaHei", monospace; font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; line-height: 1.5; }
+pre code { background: none; padding: 0; font-size: 14px; }
+table { border-collapse: collapse; margin: 12px 0; display: block; overflow-x: auto; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; vertical-align: top; }
+th { background: var(--code-bg); text-align: left; }
+blockquote { margin: 14px 0; padding: 8px 16px; background: var(--quote); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; }
+blockquote p { margin: 6px 0; }
+hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
+details { margin: 24px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
+details summary { cursor: pointer; }
+img { max-width: 100%; }
+.katex-display { overflow-x: auto; overflow-y: hidden; }
+</style>
+<script defer src="katex/katex.min.js"></script><script defer src="katex/contrib/auto-render.min.js"></script>
+</head><body><main>
+<nav class="top"><a href="../index.html">资料包首页</a><a href="index.html">G1 实战目录</a><a href="00_装好环境.html">第 0 课</a><a href="01_认识G1.html">第 1 课</a><a href="02_站着与倒下.html">第 2 课</a><a href="03_吊起来挥手.html">第 3 课</a><a href="04_它感觉到了什么.html">第 4 课</a><a href="05_扛住推力.html">第 5 课</a><a href="06_省力地站.html">第 6 课</a><a href="07_伸手碰球.html">第 7 课</a><a href="08_单腿平衡.html">第 8 课</a><a href="09_让它走起来.html">第 9 课</a><a href="10_录视频与批量实验.html">第 10 课</a><a href="11_附录_往后学什么.html">第 11 课</a></nav>
+<h1 id="8-lqr-g1">第 8 课　单腿平衡：把官方 LQR 搬到 G1 上</h1>
+<p><strong>对应入门教程</strong>：9.1、9.2</p>
+<p><strong>本课目标</strong></p>
+<ul>
+<li>读懂官方 LQR notebook 的六个步骤，并把它们一步步改到 G1 上。</li>
+<li>摆出一个“左脚独立”的姿态，用 <code>mj_inverse</code> 找到它的平衡点；知道只调高度为什么不够。</li>
+<li>弄清 position 执行器和 notebook 里 motor 执行器的区别：<code>ctrl0</code> 怎么求，线性化出来的 A、B 意味着什么。</li>
+<li>不用 scipy，只用 numpy 迭代解离散 Riccati 方程，得到 LQR 增益。</li>
+<li>让 G1 单腿站 10 s，再从四个方向推它，量出 LQR 到底多扛了多少。</li>
+</ul>
+<p><strong>预计用时</strong>：3–4 小时　<strong>前置</strong>：第 4 课（质心与支撑区域）、第 5 课（推力测试）、第 6 课（<code>mj_inverse</code>）、第 7 课（雅可比与逆运动学）</p>
+<blockquote>
+<p>这是一节<strong>选修挑战课</strong>。数学比前面几课多，但每个公式都有对应的代码和打印结果，跟着脚本走就能看懂。</p>
+</blockquote>
+<hr />
+<h2 id="81-notebook">8.1 官方 notebook 做了什么</h2>
+<p>资料包里有官方的 LQR 教程：<code>../官方仓库_模型与教程/python/LQR.ipynb</code>（Jupyter 格式，用 VS Code 或 Jupyter 打开；文本编辑器里看到的是 JSON）。它让 MuJoCo 自带的 humanoid 单腿站住，分六步：</p>
+<table>
+<thead>
+<tr>
+<th>步</th>
+<th>notebook 里做的事</th>
+<th>用到的函数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>①</td>
+<td>取关键帧 1：单腿站立的姿势</td>
+<td><code>mj_resetDataKeyframe</code></td>
+</tr>
+<tr>
+<td>②</td>
+<td>把整个人上下挪 ±1 mm，找“竖直魔法力”最小的高度</td>
+<td><code>mj_inverse</code></td>
+</tr>
+<tr>
+<td>③</td>
+<td>把平衡所需的关节力矩换算成控制量 <code>ctrl0</code></td>
+<td>力臂矩阵的伪逆</td>
+</tr>
+<tr>
+<td>④</td>
+<td>设计代价矩阵 Q（质心对准支撑脚 + 关节别乱动）和 R</td>
+<td><code>mj_jacSubtreeCom</code>、<code>mj_jacBodyCom</code></td>
+</tr>
+<tr>
+<td>⑤</td>
+<td>在平衡点线性化，得到 A、B</td>
+<td><code>mjd_transitionFD</code></td>
+</tr>
+<tr>
+<td>⑥</td>
+<td>解 Riccati 方程得到增益 K，控制律 <code>ctrl = ctrl0 - K·dx</code></td>
+<td><code>scipy.linalg.solve_discrete_are</code></td>
+</tr>
+</tbody>
+</table>
+<p>搬到 G1 上，有四处不一样：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>notebook 的 humanoid</th>
+<th>G1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单腿姿势</td>
+<td>模型自带关键帧</td>
+<td>没有，要自己摆（8.3）</td>
+</tr>
+<tr>
+<td>执行器</td>
+<td><code>motor</code>：<code>ctrl</code> 乘 gear 就是力矩</td>
+<td><code>position</code>：<code>ctrl</code> 是<strong>目标角度</strong>（8.5）</td>
+</tr>
+<tr>
+<td>脚</td>
+<td>胶囊体，脚掌大</td>
+<td>4 个半径 5 mm 的小球，宽约 6 cm</td>
+</tr>
+<tr>
+<td>Riccati 求解</td>
+<td>scipy</td>
+<td>只用 numpy 自己迭代（8.7）</td>
+</tr>
+</tbody>
+</table>
+<p>最要紧的是第二行。下面会看到，它让“平衡”这件事在 G1 上的样子完全不同。</p>
+<h2 id="82">8.2 先猜一猜</h2>
+<p>运行之前，先写下你的预测：</p>
+<ol>
+<li>摆好单腿姿势、算好平衡控制量 <code>ctrl0</code> 以后，<strong>不加任何反馈</strong>，只把 <code>ctrl0</code> 一直送给执行器，G1 能单腿站多久？（提示：notebook 里的 humanoid 不到 1 s 就倒了。）</li>
+<li>在躯干上推 0.1 s，从前、后、左、右四个方向推，哪个方向最容易推倒？</li>
+<li>加上 LQR 以后，能扛的推力大约是不加反馈时的几倍？</li>
+</ol>
+<h2 id="83">8.3 第一步：摆出“左脚独立”</h2>
+<p>G1 的模型只有一个 <code>stand</code> 关键帧，单腿姿势要自己摆。思路和第 7 课的逆运动学一样，只是任务换了：</p>
+<ul>
+<li><strong>手工给定</strong>：右腿抬起（髋 pitch −0.5、膝 1.0、踝 pitch −0.4），左腿微屈，两臂稍微张开。</li>
+<li><strong>让求解器决定</strong>：骨盆的 6 个自由度、左腿 6 个关节、腰 roll 和 pitch，一共 14 个量。</li>
+<li><strong>要满足的任务</strong>（按权重从大到小）：
+  1. 左脚原地不动、脚底放平（6 维）；
+  2. 整机质心的水平投影落在左脚中点（2 维，权重 ×3）；
+  3. 躯干尽量竖直（2 维，权重 ×0.3）；
+  4. 再加一点正则，让各关节别离手工值太远。</li>
+</ul>
+<p>左脚中点怎么定？第 1 课讲过，每只脚 4 个小球的 x 坐标是 −0.05 和 0.12，中点比脚踝的 <code>left_foot</code> site 靠前 3.5 cm。</p>
+<p>核心循环（完整代码见 <code>code/08_lqr_balance.py</code> 第 1 部分）：</p>
+<pre><code class="language-python">for _ in range(200):                                  # 阻尼最小二乘，反复迭代
+    mujoco.mj_forward(m, d)
+    mujoco.mj_jacSite(m, d, jp, jr, sL)               # 左脚 site 的位置、转动雅可比
+    mujoco.mj_jacSubtreeCom(m, d, jc, PELVIS)         # 整机质心的雅可比
+    mujoco.mj_jacBody(m, d, None, jt, TORSO)          # 躯干的转动雅可比
+    J = np.vstack([jp, jr, 3 * jc[:2], 0.3 * jt[:2]]) * mask   # mask：只让 14 个量参与
+    e = np.concatenate([foot_target - d.site_xpos[sL], rot_err(d.site_xmat[sL]),
+                        3 * (com_target - d.subtree_com[PELVIS][:2]),
+                        0.3 * rot_err(d.xmat[TORSO])[:2]])
+    back = np.zeros(nv)
+    mujoco.mj_differentiatePos(m, back, 1, d.qpos, qref)    # 指回手工姿势的方向
+    dq = np.linalg.solve(J.T @ J + np.diag(reg) + 1e-6 * np.eye(nv), J.T @ e + reg * back)
+    mujoco.mj_integratePos(m, d.qpos, dq, 1)          # 带四元数的 qpos 要用它来“加”
+</code></pre>
+<p>两个细节：</p>
+<ul>
+<li><code>qpos</code> 里有四元数，不能直接 <code>qpos += dq</code>。“减”用 <code>mj_differentiatePos</code>，“加”用 <code>mj_integratePos</code>，第 1 课说过 nq ≠ nv 就是这个原因。</li>
+<li><code>mj_jacSubtreeCom(m, d, jc, PELVIS)</code> 给的是骨盆<strong>子树</strong>的质心雅可比。骨盆是整棵树的根，所以就是整机质心。</li>
+</ul>
+<p>运行结果：</p>
+<pre><code class="language-text">=== 1. 摆姿势 ===
+质心 xy = (0.035, 0.118)，高度 0.695 m
+质心相对左脚中点偏 (-0.7, -5.3) mm（正则把姿势往手工值拉，任务没有完全满足）
+质心投影到左脚支撑多边形边缘的最小距离 2.2 cm（正 = 在里面）
+右脚抬高：右脚 site 离地 0.118 m（站立时 0.033 m）
+  left_hip_roll_joint      = -0.074 rad
+  left_ankle_roll_joint    = +0.190 rad
+  waist_roll_joint         = +0.100 rad
+</code></pre>
+<p>质心离脚边最近只有 2.2 cm。单腿站立的难处就在这里：左右方向上，脚掌只有 5～6 cm 宽。</p>
+<p>质心也没有正好落在脚的中点，而是往内侧（−y）偏了 5 mm。这是正则的代价：它一直把关节往手工值拉，几个任务只能“差不多”满足。对平衡来说，这几毫米正好让内侧更危险，后面推力测试会看到。</p>
+<p>还要留意左踝 roll：+0.190 rad，而它的范围只有 ±0.262 rad。8.5 节会再回来看它。</p>
+<h2 id="84">8.4 第二步：找平衡点</h2>
+<h3 id="notebook">notebook 的技巧：高度扫描</h3>
+<p><code>mj_inverse</code> 的问题是：“要让机器人在这个姿势下<strong>完全不动</strong>（<code>qacc = 0</code>），各个自由度上需要多大的力？”关节上的力由电机出；骨盆 6 维没有电机，只能靠地面接触力。如果接触力解释不了，<code>qfrc_inverse[0:6]</code> 就不为 0，这部分是“魔法力”，现实里没人提供。</p>
+<p>MuJoCo 的接触是软的，接触力取决于脚陷进地面多深。摆姿势时脚的高度是随手定的，陷得太深或太浅，竖直方向就需要很大的魔法力。notebook 的做法是：把整个机器人上下挪一挪，挑竖直魔法力最小的高度。</p>
+<pre><code class="language-python">offsets = np.linspace(-0.003, 0.003, 3001)                 # ±3 mm，步长 2 μm
+for i, off in enumerate(offsets):
+    q = q_pose.copy()
+    q[2] += off                                            # 只改骨盆高度
+    fz[i] = inverse(q)[2]                                  # inverse()：设 qvel=qacc=0 后调 mj_inverse
+best = np.argmin(np.abs(fz))
+</code></pre>
+<pre><code class="language-text">体重 327.1 N；最佳高度偏移 +1.488 mm，此时竖直魔法力 -0.435 N
+只调高度后，骨盆 6 维魔法力 [fx fy fz mx my mz] = [ 0.     0.    -0.435 -3.475  2.541  0.237]
+</code></pre>
+<p>运行后打开 <code>output/08_lqr_balance.png</code>，左图就是这条曲线。往下压（负偏移），需要很大的向下魔法力把它“按”在地里；往上抬到 1.9 mm 附近，脚离开地面，需要的力正好等于体重 327 N，之后就不再变化。</p>
+<h3 id="_1">只调高度够不够？</h3>
+<p>竖直力解决了，但还剩绕 x、y 轴的魔法力矩：−3.475 N·m 和 2.541 N·m。notebook 的 humanoid 也有这个问题（用 <code>code/08_notebook_humanoid.py</code> 可以看到，它的 mx 是 −3.447 N·m），只是那边无所谓，反正不加反馈它马上就倒。</p>
+<p>G1 不一样。下一节会看到，这几 N·m 就决定了它不加反馈能不能站住。所以我们多做一步：把<strong>高度、侧倾、前倾</strong>三个量一起调，让 fz、mx、my 三个魔法力全部归零。三个方程三个未知数，用牛顿迭代，雅可比用有限差分算：</p>
+<pre><code class="language-python">ROOT_DOFS = [2, 3, 4]                     # qvel 里：z 平移、绕 x 转、绕 y 转
+for it in range(6):
+    r = inverse(qpos0)[ROOT_DOFS]
+    for j, k in enumerate(ROOT_DOFS):     # 每个量挪 1e-6，看魔法力怎么变
+        ...
+        J[:, j] = (inverse(q)[ROOT_DOFS] - r) / 1e-6
+    step[ROOT_DOFS] = np.linalg.solve(J, -r)
+    mujoco.mj_integratePos(m, qpos0, step, 1)
+</code></pre>
+<pre><code class="language-text">再调倾角后，骨盆 6 维魔法力 = [ 0.  0. -0.  0.  0.  0.]
+  调整量：高度 +0.064 mm，侧倾 +0.292°，前倾 -0.018°
+  平衡点处，质心到左脚支撑多边形边缘的最小距离 1.86 cm
+  left_hip_roll_joint       需要  +34.17 N·m，占上限 24.6%
+  left_ankle_pitch_joint    需要  +10.80 N·m，占上限 21.6%
+</code></pre>
+<p>只侧倾了 0.3°，魔法力就全没了。代价是质心到脚边的余量从 2.2 cm 降到 1.86 cm：整机绕骨盆转了一点，脚和质心转动的半径不一样，两者在水平方向上就错开了几毫米。所需力矩最大的是左髋 roll，34 N·m，用掉上限的四分之一。单腿时整个上身的重量都压在这一侧髋上，要靠它把骨盆“托平”。</p>
+<h2 id="85-position-notebook">8.5 position 执行器：和 notebook 最大的不同</h2>
+<h3 id="ctrl0">ctrl0 怎么求</h3>
+<p>notebook 的 humanoid 用 <code>motor</code> 执行器：力 = gear × ctrl。已知要的力矩，乘上力臂矩阵的伪逆就得到 <code>ctrl0</code>。</p>
+<p>G1 用 <code>position</code> 执行器。第 2 课讲过它的力公式，写成 MuJoCo 的通用形式是</p>
+<p><div class="math">\[\text{force} = \underbrace{k_p}_{\texttt{gainprm[0]}}\cdot\text{ctrl} + \underbrace{0}_{\texttt{biasprm[0]}} \underbrace{-\,k_p}_{\texttt{biasprm[1]}}\cdot q \underbrace{-\,k_v}_{\texttt{biasprm[2]}}\cdot\dot q\]</div></p>
+<p>静止时 <span class="math">\(\dot q = 0\)</span>。要让它输出 <span class="math">\(\tau_0\)</span>，就得</p>
+<p><div class="math">\[\text{ctrl}_0 = \frac{\tau_0 - \texttt{biasprm[0]} - \texttt{biasprm[1]}\cdot q}{\texttt{gainprm[0]}} = q + \frac{\tau_0}{k_p}\]</div></p>
+<p>也就是说：<strong>目标角要比实际角多偏一点，让“弹簧”拉出所需的力矩</strong>。</p>
+<pre><code class="language-text">=== 3. 求 ctrl0 ===
+代回检验：执行器力与 tau0 最大相差 5.26e-14 N·m
+ctrl0 与关节角 q 最大相差 0.068 rad（left_hip_roll_joint）
+左踝 roll：ctrl0 = +0.196，ctrlrange = [-0.262, +0.262]，离最近的限位 0.066 rad
+</code></pre>
+<p>左髋 roll 要多偏 0.068 rad（34.17 / 500）。左踝 roll 的 <code>ctrl0</code> 是 +0.196，离上限只剩 0.066 rad。G1 用了 <code>inheritrange=&quot;1&quot;</code>，<code>ctrlrange</code> 就等于关节范围，超出的 ctrl 会被截断。也就是说，左踝 roll 往这个方向最多只能再“加” <span class="math">\(500 \times 0.066 \approx 33\)</span> N·m。这是 position 执行器特有的限制：<strong>ctrl 的范围就是力矩的余量</strong>。</p>
+<h3 id="_2">不加反馈，会怎样</h3>
+<pre><code class="language-text">=== 4. 不加反馈会怎样（每种最多跑 10 s）===
+  A. ctrl = 关节角（只有 PD，不补偿重力）：1.30 s 失败
+  B. ctrl = 只调高度的平衡点（notebook 做法）：1.67 s 失败
+  C. ctrl = ctrl0（高度 + 倾角都调准）：10 s 都站住了
+</code></pre>
+<p>（“失败”指骨盆低于 0.5 m，或者除左脚以外有任何部位碰到地面。）</p>
+<ul>
+<li><strong>A</strong>：目标角等于当前角，执行器一开始不出力，各关节在重力下先“塌”一点，才攒出力矩。塌的这一下让质心跑出了脚掌。</li>
+<li><strong>B</strong>：那 3 N·m 的魔法力矩没人提供，整机会慢慢往右（左脚的内侧）滚，翻过脚边就倒了。</li>
+<li><strong>C</strong>：平衡点算准了，<strong>不加任何反馈也能单腿站 10 s</strong>。</li>
+</ul>
+<p>C 和 notebook 的结论正好相反。notebook 的 humanoid 只给 <code>ctrl0</code> 一定会倒，G1 却站住了。原因就在执行器上：</p>
+<ul>
+<li>motor 只出恒定的力矩，关节偏了也不会“拉回来”。整个人像一串软绳，站在一个点上，一碰就倒。</li>
+<li>position 执行器在每个关节上都装了一根 kp=500 的弹簧。G1 被这些弹簧撑成了一座“雕像”。雕像底座是平的，质心又在底座里面，小扰动下它自己就是稳的。</li>
+</ul>
+<h3 id="a-b">线性化：A 和 B 的含义变了</h3>
+<p><code>mjd_transitionFD</code> 用有限差分算出离散时间的线性模型</p>
+<p><div class="math">\[\delta x_{t+1} = A\,\delta x_t + B\,\delta u_t,\qquad x = \begin{bmatrix}\delta q\\ \dot q\end{bmatrix}\ (2n_v = 70\ \text{维}),\quad u = \text{ctrl}\ (29\ \text{维})\]</div></p>
+<pre><code class="language-python">mujoco.mj_resetData(m, d)
+d.qpos[:] = qpos0
+d.ctrl[:] = ctrl0
+A = np.zeros((2 * nv, 2 * nv))
+B = np.zeros((2 * nv, nu))
+mujoco.mjd_transitionFD(m, d, 1e-6, True, A, B, None, None)   # eps=1e-6，中心差分
+</code></pre>
+<pre><code class="language-text">=== 5. 线性化 ===
+A: (70, 70)，B: (70, 29)；A 的最大特征值模 1.000000，模 &gt; 1.0001 的有 0 个
+B 的含义：left_knee_joint 目标角 +1 rad，一步（2 ms）后它的角速度变化 1.09 rad/s
+B 的含义：right_knee_joint 目标角 +1 rad，一步（2 ms）后它的角速度变化 1.69 rad/s
+</code></pre>
+<p>对照 <code>code/08_notebook_humanoid.py</code> 的输出：</p>
+<pre><code class="language-text">humanoid：nu=21，执行器类型 gaintype=0（0 = fixed，即 motor），gear=40，时间步长 5 ms
+最佳高度偏移 -0.507 mm，骨盆 6 维魔法力 [ 0.     0.    -0.191 -3.447  0.222 -0.817]
+只给 ctrl0、不加反馈：躯干起始高度 1.22 m，0.84 s 时已下降 0.2 m
+A 的最大特征值模 1.0562，模 &gt; 1.0001 的有 9 个（不稳定方向）
+B 的含义：左膝 ctrl +1（= 80 N·m），一步后左膝角速度变化 1.61 rad/s
+</code></pre>
+<p>离散系统里，特征值的模大于 1，就表示这个方向的偏差会一步步放大。humanoid 有 9 个这样的方向，G1 一个也没有。这和上面“雕像”的说法一致。</p>
+<p>把差别归纳一下：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>motor（notebook）</th>
+<th>position（G1）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ctrl</code> 的单位</td>
+<td>力矩 / gear</td>
+<td>目标角，rad</td>
+</tr>
+<tr>
+<td>A 里有什么</td>
+<td>只有机器人本身的动力学</td>
+<td>机器人 <strong>+ 每个关节的 PD 伺服</strong>（<span class="math">\(-k_p q\)</span>、<span class="math">\(-k_v \dot q\)</span> 都在 A 里）</td>
+</tr>
+<tr>
+<td>B 的一列</td>
+<td>这个电机多出 gear N·m，下一步状态怎么变</td>
+<td>这个关节目标角多偏 1 rad（≈ 多出 500 N·m），下一步状态怎么变</td>
+</tr>
+<tr>
+<td>LQR 算出的 <code>-K·dx</code></td>
+<td>力矩修正</td>
+<td><strong>目标角修正</strong>：在内层 PD 之上再套一层外环</td>
+</tr>
+<tr>
+<td>R 的单位</td>
+<td>(ctrl)²，ctrl = 力矩 / gear</td>
+<td>rad²</td>
+</tr>
+<tr>
+<td>饱和</td>
+<td><code>forcerange</code>、<code>ctrlrange</code></td>
+<td><code>ctrlrange</code> = 关节范围，<code>forcerange</code> 照样起作用</td>
+</tr>
+</tbody>
+</table>
+<p>所以，G1 的 LQR 不直接出力矩，而是<strong>每一步改一改各关节的目标角</strong>。内层的 PD 伺服仍然在 MuJoCo 里以 500 Hz 跑着，LQR 看到的“被控对象”已经是“机器人 + 伺服”这个整体了。<code>mjd_transitionFD</code> 是对整个 <code>mj_step</code> 做差分，这件事它自动就处理好了；官方文档还说明，它对控制量的截断也做了正确处理。</p>
+<blockquote>
+<p>既然不加反馈也能站，还要 LQR 做什么？雕像只扛得住小扰动。推一下，质心离开平衡位置，雕像只会僵着，等质心出了脚边就整个翻倒。LQR 会主动调整踝、髋、腰甚至手臂，把质心拉回来。8.8 节用推力测试来量化这一点。</p>
+</blockquote>
+<h2 id="86-qr">8.6 第三步：Q、R，以及三个“漂移方向”</h2>
+<h3 id="q-r-notebook">Q 和 R 照搬 notebook</h3>
+<pre><code class="language-python">mujoco.mj_jacSubtreeCom(m, d, jac_com, PELVIS)          # 整机质心
+mujoco.mj_jacBodyCom(m, d, jac_foot, None, LFOOT)       # 左脚（left_ankle_roll_link）的质心
+jac_diff = jac_com - jac_foot
+Q_balance = jac_diff.T @ jac_diff                       # 质心相对左脚的偏移，平方
+
+BALANCE_COST, BALANCE_JOINT_COST, OTHER_JOINT_COST = 1000, 3, 0.3   # 与 notebook 相同
+Q_joint = np.eye(nv)
+Q_joint[:6, :6] = 0                                     # 骨盆 6 维不直接惩罚
+Q_joint[balance_dofs, balance_dofs] *= BALANCE_JOINT_COST   # 左腿 6 个 + 腰 roll/pitch
+Q_joint[other_dofs, other_dofs] *= OTHER_JOINT_COST         # 其余：手臂、右腿、腰 yaw
+Q[:nv, :nv] = BALANCE_COST * Q_balance + Q_joint        # 速度不直接惩罚
+R = np.eye(nu)                                          # 单位：rad²
+</code></pre>
+<p>思路和 notebook 一样：</p>
+<ul>
+<li><strong>质心对准支撑脚</strong>是头等大事，系数 1000。</li>
+<li><strong>支撑腿和腰</strong>要稳，系数 3。</li>
+<li><strong>手臂、抬起的右腿</strong>可以多动，系数 0.3，让它们去“甩”来帮忙平衡。</li>
+</ul>
+<h3 id="notebook_1">漂移方向：一个 notebook 没讲的坑</h3>
+<p>照搬后直接解 Riccati 方程，会发现迭代<strong>不收敛</strong>（后面有对照）。原因藏在 A 里。</p>
+<p>找出所有满足 <span class="math">\(A x = x\)</span> 的方向，也就是“一步以后原样不变”的状态：</p>
+<pre><code class="language-python">_, sv, Vt = np.linalg.svd(A - np.eye(2 * nv))
+drift = Vt[sv &lt; 1e-6].T                                    # 每一列是一个漂移方向
+</code></pre>
+<pre><code class="language-text">A - I 最小的 4 个奇异值 [0.    0.    0.    0.002]，于是有 3 个“漂移方向”：
+  主要成分：qvel 下标 5（-0.982）、1（+0.156）
+  主要成分：qvel 下标 0（-1.000）、35（-0.000）
+  主要成分：qvel 下标 1（+0.988）、5（+0.155）
+漂移方向上的代价 x'Qx：投影前最大 1.3e-01，投影后最大 5.3e-15
+</code></pre>
+<p>对照第 1 课的表，qvel 下标 0、1 是骨盆的 x、y 平移，5 是绕竖直轴转。这三个方向就是<strong>整机在地上平移、整机原地转向</strong>。</p>
+<ul>
+<li>把整个机器人连脚一起挪 1 cm，它照样站着，没有任何力会把它拉回原处。所以理论上特征值正好是 1（有限差分算出来的是“非常接近 1”）。</li>
+<li>关节怎么动也改变不了“整机在哪”。地面摩擦只阻止它滑动，并不把它往回推，所以这三个方向<strong>不可控</strong>。</li>
+</ul>
+<p>LQR 的代价是把未来每一步的 <span class="math">\(x^\top Q x\)</span> 加起来。如果 Q 在漂移方向上有一点点权重（这里是 0.13，来自 <code>Q_balance</code> 对转向的依赖），而这个偏差又永远消不掉，代价就会一直累加到无穷，Riccati 方程也就没有有限解。</p>
+<blockquote>
+<p>notebook 为什么没碰到这个问题？它用的是 scipy。有限差分算出的 A，特征值只是“非常接近 1”，并不精确等于 1，所以 scipy 照样能算出一个 P，只是这个 P 被漂移方向撑得非常大（8.7 节的打印：大了 116 倍）。“能算出数”不等于“算对了”。</p>
+</blockquote>
+<p>解决办法：告诉 Q“别管这三个方向”，把它投影到漂移方向的补空间：</p>
+<pre><code class="language-python">Pi = np.eye(2 * nv) - drift @ drift.T
+Q = Pi @ Q_raw @ Pi
+</code></pre>
+<p>这不影响平衡。我们关心的是质心相对脚的位置，而不是机器人站在地板的哪一块。</p>
+<h2 id="87-numpy-riccati">8.7 第四步：只用 numpy 解 Riccati 方程</h2>
+<p>notebook 里的两个公式（离散时间 LQR）：</p>
+<p><div class="math">\[P = Q + A^\top P A - A^\top P B\,(R + B^\top P B)^{-1} B^\top P A\]</div></p>
+<p><div class="math">\[K = (R + B^\top P B)^{-1} B^\top P A\]</div></p>
+<p>notebook 直接调 <code>scipy.linalg.solve_discrete_are</code>。第 0 课装的环境里没有 scipy，我们就自己解。最直接的办法是<strong>不动点迭代</strong>：从 <span class="math">\(P = Q\)</span> 出发，把右边算出来当成新的 P，反复代入，直到 P 不再变化。</p>
+<pre><code class="language-python">def riccati_iterate(A, B, Q, R, tol=1e-10, max_iter=20000):
+    &quot;&quot;&quot;最朴素的不动点迭代：把 notebook 里的 Riccati 方程反复代入，直到 P 不再变化。&quot;&quot;&quot;
+    P = Q.copy()
+    for k in range(1, max_iter + 1):
+        BtP = B.T @ P
+        K = np.linalg.solve(R + BtP @ B, BtP @ A)
+        P_new = Q + A.T @ P @ (A - B @ K)       # 与上面的公式等价，少算一次求逆
+        P_new = 0.5 * (P_new + P_new.T)         # 保持对称，抑制舍入误差
+        change = np.max(np.abs(P_new - P)) / np.max(np.abs(P_new))
+        P = P_new
+        if change &lt; tol:
+            return P, k, change
+    return P, max_iter, change
+</code></pre>
+<p>这个迭代有直观含义：迭代 N 次得到的 P，就是“只往前看 N 步”的最优代价。N 越大越接近无限时域，收敛后就是 LQR 的解。</p>
+<pre><code class="language-text">=== 6. 解 Riccati 方程 ===
+朴素迭代：682 次收敛，用时 0.07 s，方程相对残差 9.6e-11
+倍增迭代：12 次收敛，用时 0.003 s，与朴素迭代的 K 相对差 1.5e-08
+（装了 scipy，核对一下：与 solve_discrete_are 的 P 相对差 1.2e-06）
+（scipy 对不投影的 Q 也会给出一个 P，但 max|P| 是投影后的 116 倍）
+对照：不做投影，朴素迭代 3000 次后 P 每步仍变化 4.3e-08（收敛判据 1e-10）
+K: (29, 70)；闭环 A-BK 最大的几个特征值模 [1.    1.    1.    0.991 0.985]
+K 中左踝 roll 一行的最大元素 18.65
+</code></pre>
+<ul>
+<li>朴素迭代 682 次收敛，不到 0.1 s（用时和电脑有关，下同）。</li>
+<li>脚本里还有一个<strong>倍增迭代</strong>（<code>riccati_doubling</code>）：每迭代一次，相当于朴素迭代的“往前看的步数”翻一倍，所以 12 次就够了。两者的 K 相差 1.5e-8。状态维数再大几倍时，它的优势会很明显。</li>
+<li>如果你的环境里恰好装了 scipy，脚本会顺便核对一下，没装就跳过这两行。</li>
+<li>不做 8.6 的投影，3000 次后 P 还在每步涨一点。漂移方向的代价每一步都要再加一份，所以它会一直涨下去，实际上到不了收敛判据。</li>
+<li>闭环 <span class="math">\(A - BK\)</span> 的特征值：三个 1 是漂移方向（LQR 管不了，也不需要管），其余都小于 1。</li>
+</ul>
+<h2 id="88">8.8 第五步：闭环，然后推它</h2>
+<h3 id="_3">控制律</h3>
+<pre><code class="language-python">def lqr():
+    mujoco.mj_differentiatePos(m, dq, 1, qpos0, d.qpos)   # 位置差：nq 维 → nv 维
+    return ctrl0 - K @ np.concatenate([dq, d.qvel])
+</code></pre>
+<p>每个仿真步（2 ms）调一次。位置差同样要用 <code>mj_differentiatePos</code>，因为骨盆姿态是四元数。</p>
+<h3 id="10-s">无扰动：单腿站 10 s</h3>
+<pre><code class="language-text">=== 7. LQR 闭环，无扰动 10 s ===
+10 s 后骨盆高度 0.781 m，接触点 4 个（全是左脚）
+质心水平偏离平衡点：最大 0.01 μm，最后 0.01 μm
+|ctrl - ctrl0| 最大 0.0000 rad；被 ctrlrange 截断的步数 0
+</code></pre>
+<p>稳稳站了 10 s，4 个接触点全在左脚上。平衡点算得很准，LQR 几乎不用出手。notebook 里也是这样，它说这段视频“有点让人失望”，因为人形几乎一动不动。要看 LQR 的本事，得推它。</p>
+<h3 id="_4">推力测试</h3>
+<p>在 t = 1 s 时推躯干 0.1 s，之后 3 s 内仍然只用左脚站着就算成功。推力从 10 N 起，每次加 10 N，直到失败。“不加反馈”就是一直送 <code>ctrl0</code>，即 8.5 节里能站 10 s 的 C 方案。</p>
+<pre><code class="language-text">=== 8. 推力测试（推躯干 0.1 s，之后单腿站住 3 s 算成功）===
+  （M = 33.34 kg，质心高 h = 0.696 m，ω = 3.753 1/s）
+  方向          不加反馈     LQR   质心到脚边   倒立摆估计上限
+  向前 +x       50 N   100 N      8.6 cm    10.8 N·s（≈ 108 N × 0.1 s）
+  向后 -x       50 N   100 N      8.4 cm    10.5 N·s（≈ 105 N × 0.1 s）
+  向左 +y       20 N    40 N      3.6 cm     4.5 N·s（≈ 45 N × 0.1 s）
+  向右 -y       10 N    20 N      1.9 cm     2.3 N·s（≈ 23 N × 0.1 s）
+  用时 6.1 s
+</code></pre>
+<p>“质心到脚边”是从平衡点的质心出发，沿推力方向走到支撑多边形边上的距离（脚的内侧边略斜，所以不是简单地拿 y 坐标相减）。</p>
+<ol>
+<li><strong>按 10 N 一档量，四个方向 LQR 都是不加反馈的 2 倍。</strong> 档位很粗，“2 倍”只是个大概，不要当成什么定律。</li>
+<li><strong>左右比前后弱得多。</strong> 脚长 17 cm，宽只有 5～6 cm。往右推最弱，因为质心离脚的内侧边只有 1.9 cm。</li>
+<li><strong>LQR 已经接近“倒立摆极限”。</strong> 最后一列是粗估：把机器人看成一根倒立摆，质量 M，质心高 h。推一下给它冲量 I，质心获得速度 v = I/M。倒立摆有个“捕获点”：质心带着速度 v，还会再往前冲 v/ω 才可能停住，其中 <span class="math">\(\omega = \sqrt{g/h}\)</span>。这段距离不能超过脚边 d，所以</li>
+</ol>
+<p><div class="math">\[I_{\max} \approx M\,\omega\,d\]</div></p>
+<p>例如向前：<span class="math">\(33.34 \times 3.753 \times 0.086 \approx 10.8\)</span> N·s。LQR 扛住的 100 N × 0.1 s = 10 N·s，已经到了极限的九成多；左右两个方向是 4.0/4.5、2.0/2.3，也都在八九成。这个估计只考虑“脚不动、靠踝调整”。想扛得更多，就要甩手臂、扭髋（髋策略），甚至跨一步，后者已经超出“围着一个平衡点做线性化”的 LQR 的能力。</p>
+<p>演示一次：向左推 40 N（LQR 的极限）：</p>
+<pre><code class="language-text">演示：向左推 40 N × 0.1 s
+  LQR：质心 y 最多偏 17.7 mm（离脚边 36 mm），左踝 roll 力矩峰值 12.4 N·m（上限 50）
+       1.45 s 到最远，2.40 s 反向冲过头 -9.5 mm，3.10 s 以后一直在 1 mm 以内
+  不加反馈：质心在 1.33 s 越过脚边，2.37 s 骨盆低于 0.5 m
+</code></pre>
+<p><code>output/08_lqr_balance.png</code> 的中图和右图画的就是这一次：LQR 让质心偏出 17.7 mm，再往回荡、略冲过头（−9.5 mm），推完约 2 s 后稳定在 1 mm 以内；不加反馈时，质心一路偏出脚边。左踝 roll 的力矩峰值只有 12.4 N·m，远没到 50 N·m 的上限：限制它的不是电机力气，而是质心离脚边太近（练习 2 会从另一个角度验证：放开 ctrl 截断，极限也不变）。</p>
+<p>脚本还写了三个 CSV：<code>08_lqr_free.csv</code>（无扰动 10 s 的记录）、<code>08_push_test.csv</code>（推力表）、<code>08_push_demo.csv</code>（LQR 侧推演示的时间序列），可以拿去自己画图。</p>
+<h3 id="_5">动手观察</h3>
+<pre><code class="language-bash">python code/08_lqr_balance.py --view
+</code></pre>
+<p>算完以后会打开查看器（<code>mujoco.viewer.launch_passive</code>）。从第 3 s 起，每 3 s 推一次躯干，方向按前、后、左、右轮换，大小取各方向 LQR 极限的 80%。仔细看：</p>
+<ol>
+<li>被推以后，哪些关节动得最明显？手臂有没有参与？</li>
+<li>推了几轮以后，G1 还站在原来的位置吗？（提示：想想 8.6 的漂移方向。）</li>
+<li>双击选中躯干，按住 <code>Ctrl</code> 用右键拖它，体会左右和前后哪个更容易推倒。</li>
+</ol>
+<h3 id="_6">观察记录</h3>
+<ol>
+<li>对照 8.2 的三个预测，哪个猜错了？为什么 G1 不加反馈能站住，notebook 的 humanoid 却不行？</li>
+<li>8.5 节的 B 矩阵里，左膝（支撑腿）的 1.09 比右膝（悬空腿）的 1.69 小。为什么同样多偏 1 rad 目标角，支撑腿的膝盖“动得慢”？</li>
+<li>推力表里，LQR 最弱的方向是哪个？它和 8.3 节打印的“质心到脚边最小距离”有什么关系？</li>
+<li><code>K</code> 的形状是 (29, 70)。它的每一行、每一列分别对应什么？</li>
+</ol>
+<p><strong>观察记录</strong>：＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+<h2 id="_7">练习</h2>
+<ol>
+<li><strong>调 R。</strong> 把 <code>R = np.eye(nu)</code> 改成 <code>0.1 * np.eye(nu)</code> 和 <code>10 * np.eye(nu)</code>，重跑推力测试。R 变小意味着“允许目标角改得更猛”，抗推能力一定更强吗？</li>
+<li><strong>放开截断。</strong> 8.5 节说左踝 roll 的 <code>ctrl0</code> 离上限只剩 0.066 rad。在第 8 部分之前加一行 <code>m.actuator_ctrllimited[:] = 0</code>，取消所有执行器的 ctrl 截断，再测一遍推力。截断是不是瓶颈？</li>
+<li><strong>换右脚站。</strong> 把 8.3 的手工值和任务左右对调，让 G1 用右脚独立。哪些地方要改？（提示：<code>left_</code> ↔ <code>right_</code>，hip roll、ankle roll、shoulder roll 的符号，<code>LFOOT</code>，<code>balance_dofs</code>。）</li>
+<li><strong>思考题。</strong> 如果 G1 的执行器换成 motor（力矩控制），8.5 节的“C 方案”还能站住吗？A 的特征值会变成什么样？LQR 的 R 应该用什么单位？</li>
+</ol>
+<h2 id="_8">如果报错</h2>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>可能原因</th>
+<th>解决</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WARNING: Nan, Inf or huge value in QACC ... The simulation is unstable</code></td>
+<td>推力太大，或者改的姿势、增益让仿真发散了</td>
+<td>脚本的 <code>survive()</code> 会检查 <code>d.warning[mjWARN_BADQACC]</code>，直接判为失败。自己写循环时也要检查：MuJoCo 发散后会<strong>自动重置</strong> <code>MjData</code>，<code>d.time</code> 回到 0，<code>while d.time &lt; T</code> 会一直跑下去</td>
+</tr>
+<tr>
+<td>朴素迭代跑满 20000 次还没收敛</td>
+<td>Q 在不可控的漂移方向上有权重</td>
+<td>确认做了 8.6 的投影；改姿势后漂移方向的个数可能变化，看打印的奇异值</td>
+</tr>
+<tr>
+<td><code>RuntimeError: 倍增迭代没有收敛</code></td>
+<td>同上，或 A、B 里出现了 NaN</td>
+<td>同上；检查 <code>mjd_transitionFD</code> 前是否设好了 <code>qpos0</code> 和 <code>ctrl0</code></td>
+</tr>
+<tr>
+<td>改了姿势以后，不加反馈的 C 方案也倒</td>
+<td>质心离脚边太近，或 <code>ctrl0</code> 被 <code>ctrlrange</code> 截断了</td>
+<td>看第 1 部分打印的“最小距离”和第 3 部分的“离最近的限位”；让质心更靠近脚的中心</td>
+</tr>
+<tr>
+<td>魔法力矩调不到 0，牛顿迭代发散</td>
+<td>姿势里脚没放平，只有一两个小球着地</td>
+<td>检查第 1 部分的逆运动学是否收敛；看 <code>d.ncon</code> 是否为 4</td>
+</tr>
+<tr>
+<td>图里的中文是方框</td>
+<td>系统里没有微软雅黑或黑体</td>
+<td>改 <code>plt.rcParams[&quot;font.sans-serif&quot;]</code>，换成系统里有的中文字体；不影响计算结果</td>
+</tr>
+<tr>
+<td><code>--view</code> 窗口打不开</td>
+<td>远程桌面或虚拟机的图形驱动问题</td>
+<td>先不加 <code>--view</code> 运行，看打印结果和 <code>output/</code> 里的图；第 10 课会讲怎么离屏录视频</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_9">延伸阅读</h2>
+<ul>
+<li>官方 LQR 教程原文：<code>../官方仓库_模型与教程/python/LQR.ipynb</code></li>
+<li><a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mjd-transitionfd">API：mjd_transitionFD</a>、<a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mj-inverse">mj_inverse</a>、<a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mj-differentiatepos">mj_differentiatePos</a>、<a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mj-jacsubtreecom">mj_jacSubtreeCom</a></li>
+<li><a href="../官方文档_中文HTML/computation/index.html#derivatives">计算：导数（有限差分怎样复用流水线、处理控制截断）</a></li>
+<li><a href="../官方文档_中文HTML/computation/index.html#piinverse">计算：逆动力学</a></li>
+<li><a href="../官方文档_中文HTML/computation/index.html#geactuatorforce">计算：执行器力（gain、bias 的通用公式）</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#actuator-position">XML 参考：position 执行器</a>，以及其中的 <a href="../官方文档_中文HTML/XMLreference.html#actuator-position-kp">kp</a>、<a href="../官方文档_中文HTML/XMLreference.html#actuator-position-dampratio">dampratio</a>、<a href="../官方文档_中文HTML/XMLreference.html#actuator-position-inheritrange">inheritrange</a></li>
+<li><a href="../官方文档_中文HTML/APIreference/APItypes.html#mjtwarning">API 类型：mjtWarning（发散警告）</a></li>
+<li><a href="../官方文档_中文HTML/python.html#pyviewerpassive">Python：被动查看器 launch_passive</a></li>
+</ul>
+<hr />
+<details>
+<summary><b>参考答案（跑完再看）</b></summary>
+
+<strong>8.2 先猜一猜</strong>
+
+1. 要看平衡点算得准不准。只调高度（notebook 的做法），1.67 s 就倒；高度、侧倾、前倾都调准，不加反馈也能单腿站满 10 s。
+2. 向右（−y）最容易倒，不加反馈时 20 N × 0.1 s 就倒（能扛住的只有 10 N）。右边是左脚的内侧，质心沿 −y 到这条边只有 1.9 cm。
+3. 按 10 N 一档量，四个方向都是 2 倍：100/100/40/20 N 对 50/50/20/10 N。
+
+<strong>观察记录</strong>
+
+1. G1 每个关节都是 kp=500 的位置伺服，相当于一座被弹簧撑住的雕像。平衡点算准、质心又在脚掌里时，小扰动下是稳的：A 没有模大于 1 的特征值。humanoid 用的是 motor，关节偏了没有回复力，A 有 9 个不稳定特征值（最大 1.0562），只给 <code>ctrl0</code> 0.84 s 躯干就下降了 0.2 m。
+2. 支撑腿的膝盖连着脚，脚踩在地上。膝盖一动，就得带着整个上身一起动，等效惯量大得多，同样的力矩下角加速度就小。悬空的右膝只需要带动小腿和脚。
+3. 最弱的是向右（−y），20 N。质心离这条内侧边最近：8.3 节打印的“最小距离 2.2 cm”量的就是到它的距离；8.4 调完倾角后降到 1.86 cm；推力表沿 −y 方向量，是 1.9 cm。倒立摆估计 <span class="math">\(I_{\max} \approx M\omega d\)</span> 与 d 成正比，距离最小的方向最弱。8.3 里质心往内侧偏的那 5 mm，在这里就变成了实打实的弱点。
+4. 行对应 29 个执行器（目标角的修正量，rad），列对应 70 维状态：前 35 列是位置偏差 <code>dq</code>（nv 维，骨盆 6 + 关节 29），后 35 列是速度 <code>qvel</code>。
+
+<strong>练习 1</strong>（我们实测，四个方向依次是前、后、左、右）：R × 0.1 时为 80/70/40/20 N，R × 10 时为 100/90/40/20 N，原来是 100/100/40/20 N。R 变小（增益更猛）反而变差，R 变大也略差，默认的 R = 1 正好在中间。原因是 LQR 只对“平衡点附近的线性模型”最优，而推力测试的极限情况偏差很大：ctrl 会撞上 <code>ctrlrange</code>，力矩会撞上 <code>forcerange</code>，线性模型本身也不准了。这些在 LQR 的推导里都没有，所以“增益越猛越好”不成立。左右方向三种 R 都一样，说明那边卡在倒立摆极限上，不是控制器调得不好。
+
+<strong>练习 2</strong>：取消截断后，结果仍是 100/100/40/20 N，和原来一样。截断不是瓶颈，瓶颈是质心到脚边的距离，与倒立摆估计一致。不过 <code>ctrlrange</code> 在这里等于关节范围，真机上也不能让关节超出限位，所以这一步只能当实验，不能当方案。
+
+<strong>练习 3</strong>：要改的有：右腿的手工值换到左腿；左臂、右臂的 shoulder roll 符号对调；<code>find_one_leg_pose()</code> 里的 <code>left_foot</code> site（<code>foot_target</code> 和 <code>sL</code>）换成 <code>right_foot</code>；<code>free</code> 列表换成右腿的 6 个关节；<code>LFOOT</code> 换成 <code>right_ankle_roll_link</code>；<code>balance_dofs</code> 换成右腿的 6 个关节；演示用的 <code>ar</code> 换成 <code>right_ankle_roll_joint</code>，演示方向改成向右推（<code>results[&quot;向右 -y&quot;]</code>，<code>[0, -f_demo, 0]</code>）。G1 左右对称，结果应当与左脚站立基本镜像（向左推变成最弱的方向）。这一题我们没有逐项实测，数字以你自己跑出来的为准。
+
+<strong>练习 4</strong>：站不住。motor 不提供关节刚度，只给恒定力矩时，任何偏差都不会被拉回，A 会和 humanoid 一样出现模大于 1 的特征值。这时 LQR 必须独自承担全部稳定任务。R 的单位变成 (ctrl)²，ctrl 乘 gear 是力矩，所以要按力矩的量级重新调 R。
+
+</details>
+<nav class="pager"><span><a href="07_伸手碰球.html">← 第 7 课 伸手碰球：雅可比与逆运动学</a></span><span><a href="09_让它走起来.html">第 9 课 让它走起来：运行宇树的预训练行走策略 →</a></span></nav>
+</main>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".math").forEach(function (el) {
+    renderMathInElement(el, {delimiters: [{left: "\\[", right: "\\]", display: true}, {left: "\\(", right: "\\)", display: false}]});
+  });
+});
+</script>
+</body></html>

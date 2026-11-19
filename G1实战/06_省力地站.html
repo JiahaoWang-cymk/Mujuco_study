@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 6 课　省力地站：算出“刚好站住”需要的力矩 · G1 实战</title>
+<link rel="stylesheet" href="katex/katex.min.css"><style>
+:root { --ink:#16213a; --muted:#5a6880; --line:#d5dbe4; --accent:#2a4fd6; --bg:#ffffff; --code-bg:#f4f6f9; --quote:#eef3ff; }
+@media (prefers-color-scheme: dark) {
+  :root { --ink:#e5eaf3; --muted:#97a3b8; --line:#2c3a53; --accent:#86a2ff; --bg:#121a29; --code-bg:#1a2438; --quote:#1a2540; }
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); color: var(--ink); font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif; }
+body { margin: 0; line-height: 1.75; font-size: 16px; }
+main { max-width: 860px; margin: 0 auto; padding: 24px 20px 64px; }
+nav.top { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; padding: 10px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+nav.top a, nav.pager a { color: var(--accent); text-decoration: none; }
+nav.top a:hover, nav.pager a:hover { text-decoration: underline; }
+nav.pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 15px; }
+h1 { font-size: 30px; line-height: 1.3; margin: 24px 0 16px; }
+h2 { font-size: 22px; margin: 40px 0 12px; padding-left: 12px; border-left: 5px solid var(--accent); }
+h3 { font-size: 18px; margin: 28px 0 8px; }
+a { color: var(--accent); }
+code { font-family: Consolas, "Microsoft YaHei", monospace; font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; line-height: 1.5; }
+pre code { background: none; padding: 0; font-size: 14px; }
+table { border-collapse: collapse; margin: 12px 0; display: block; overflow-x: auto; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; vertical-align: top; }
+th { background: var(--code-bg); text-align: left; }
+blockquote { margin: 14px 0; padding: 8px 16px; background: var(--quote); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; }
+blockquote p { margin: 6px 0; }
+hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
+details { margin: 24px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
+details summary { cursor: pointer; }
+img { max-width: 100%; }
+.katex-display { overflow-x: auto; overflow-y: hidden; }
+</style>
+<script defer src="katex/katex.min.js"></script><script defer src="katex/contrib/auto-render.min.js"></script>
+</head><body><main>
+<nav class="top"><a href="../index.html">资料包首页</a><a href="index.html">G1 实战目录</a><a href="00_装好环境.html">第 0 课</a><a href="01_认识G1.html">第 1 课</a><a href="02_站着与倒下.html">第 2 课</a><a href="03_吊起来挥手.html">第 3 课</a><a href="04_它感觉到了什么.html">第 4 课</a><a href="05_扛住推力.html">第 5 课</a><a href="06_省力地站.html">第 6 课</a><a href="07_伸手碰球.html">第 7 课</a><a href="08_单腿平衡.html">第 8 课</a><a href="09_让它走起来.html">第 9 课</a><a href="10_录视频与批量实验.html">第 10 课</a><a href="11_附录_往后学什么.html">第 11 课</a></nav>
+<h1 id="6">第 6 课　省力地站：算出“刚好站住”需要的力矩</h1>
+<p><strong>对应入门教程</strong>：9.2、7.3</p>
+<p><strong>本课目标</strong></p>
+<ul>
+<li>用逆动力学 <code>mj_inverse</code> 算出 G1 静止站立时，每个关节到底要出多少力矩。</li>
+<li>搞清楚浮动基机器人的特殊之处：<code>qfrc_inverse</code> 的前 6 维没有电机，只能靠地面接触力来提供。</li>
+<li>把所需力矩和电机上限 <code>forcerange</code> 对比，算出余量；比较直腿站和屈膝站的膝盖负担。</li>
+<li>用算出的力矩做<strong>前馈</strong>，配合较小的 kp，看稳态误差和所需增益怎么变。</li>
+<li>认识质量矩阵 <code>mj_fullM</code>，并用它解释 <code>dampratio</code> 算出的 kv。</li>
+</ul>
+<p><strong>预计用时</strong>：2–2.5 小时　<strong>前置</strong>：第 2 课（position 执行器的力公式）、第 4 课（接触力）、第 5 课（屈膝站姿）</p>
+<hr />
+<h2 id="61">6.1 问题：站着不动，电机在出多少力？</h2>
+<p>第 2 课讲过，position 执行器的力是</p>
+<p><div class="math">\[\tau = k_p\,(\text{ctrl} - q) - k_v\,\dot q\]</div></p>
+<p>静止时 <span class="math">\(\dot q = 0\)</span>。如果关节需要力矩 <span class="math">\(\tau\)</span> 才能扛住重力，伺服就只能靠<strong>误差</strong>把它“攒”出来：</p>
+<p><div class="math">\[q - \text{ctrl} = -\tau / k_p\]</div></p>
+<p>需要的力矩越大、kp 越小，误差就越大。想消掉这个误差，要么把 kp 调得很大，要么事先知道 <span class="math">\(\tau\)</span> 是多少，直接加进去。后一种做法叫<strong>前馈</strong>，而“事先知道 <span class="math">\(\tau\)</span>”正是逆动力学的工作。</p>
+<p>正向动力学和逆动力学是同一个方程的两种用法（入门教程 9.2）：</p>
+<p><div class="math">\[M(q)\,\ddot q + c(q,\dot q) = \tau + J^\mathsf{T} f\]</div></p>
+<ul>
+<li><strong>正向</strong>（<code>mj_step</code>、<code>mj_forward</code>）：已知力 <span class="math">\(\tau\)</span>，求加速度 <span class="math">\(\ddot q\)</span>。</li>
+<li><strong>逆向</strong>（<code>mj_inverse</code>）：已知 <span class="math">\(q\)</span>、<span class="math">\(\dot q\)</span>、<span class="math">\(\ddot q\)</span>，求“需要施加的力”，结果放在 <code>d.qfrc_inverse</code>。</li>
+</ul>
+<p>这里 <span class="math">\(M\)</span> 是质量矩阵，<span class="math">\(c\)</span> 是重力加科氏力（MuJoCo 里叫 <code>qfrc_bias</code>），<span class="math">\(J^\mathsf{T} f\)</span> 是接触等约束力。要“静止站住”，就令 <span class="math">\(\dot q = 0\)</span>、<span class="math">\(\ddot q = 0\)</span>。</p>
+<h3 id="_1">先猜一猜</h3>
+<ol>
+<li>G1 用 <code>stand</code> 关键帧直腿站着时，膝盖电机需要多大力矩？（A）接近 0　（B）10 N·m 左右　（C）50 N·m 以上</li>
+<li>把接触关掉、让 G1 悬在空中，再做逆动力学。<code>qfrc_inverse[2]</code>（骨盆 z 方向）会是多少？</li>
+<li>屈膝 1.2 rad（约 69°）站着时，膝盖力矩大约占电机上限（139 N·m）的百分之几？</li>
+<li>屈膝站时，把所有关节的 kp 从 500 降到 200，不加前馈会怎样？加了前馈呢？</li>
+</ol>
+<h2 id="62-mj_inverse-6">6.2 第一次调用 mj_inverse：浮动基的“前 6 维”</h2>
+<p>本课脚本是 <code>code/06_inverse.py</code>，默认无界面运行，大约 10 秒跑完：</p>
+<pre><code class="language-bash">python code/06_inverse.py
+</code></pre>
+<p>先看最核心的几行。脚本第 1 部分在 <code>stand</code> 姿势下，分三种情况调用 <code>mj_inverse</code>：</p>
+<pre><code class="language-python">mujoco.mj_resetDataKeyframe(m, d, KEY)        # qvel 是 0，qacc 也是 0
+mujoco.mj_inverse(m, d)                       # (a) 直接用关键帧
+print(d.qfrc_inverse[:6])
+
+m.opt.disableflags |= mujoco.mjtDisableBit.mjDSBL_CONTACT   # (b) 关掉接触 = 悬空
+mujoco.mj_inverse(m, d)
+
+mujoco.mj_resetDataKeyframe(m, d, KEY)        # (c) 先仿真 3 秒，让它自己站稳
+for _ in range(1500):
+    mujoco.mj_step(m, d)
+dd = mujoco.MjData(m)
+dd.qpos[:] = d.qpos                           # 只拷位置，速度和加速度保持 0
+mujoco.mj_inverse(m, dd)
+</code></pre>
+<blockquote>
+<p><code>mj_inverse</code> 的输入是 <code>qpos</code>、<code>qvel</code>、<code>qacc</code>，调用前要自己把 <code>qacc</code> 设好。新建的 <code>MjData</code> 里它们都是 0，正好是“静止”。如果给了非零的 <code>qacc</code>，结果里还会包含 <span class="math">\(M\ddot q\)</span> 这一项，也就是第 3 课挥手时剩下的那部分“加速度误差”也能一起算进前馈。本课只做静止站立，所以 <code>qacc</code> 始终是 0。</p>
+</blockquote>
+<p>运行结果（节选）：</p>
+<pre><code class="language-text">MuJoCo 4.0.1，总质量 33.34 kg，重力 m·g = 327.08 N
+(a) 直接用关键帧（骨盆 z=0.790，接触 8 个）：前 6 维 [    0.        0.    -5407.846     0.073   199.635     0.   ]
+(b) 关掉接触（悬空）：前 6 维 [  0.      0.    327.077   0.027  -1.074   0.   ]
+    左腿 6 个关节 [-1.219 -0.068  0.009 -0.256 -0.153  0.   ]
+    与 qfrc_bias 的最大差 0.00e+00
+(c) 先仿真 3 s 站稳（骨盆 z=0.7916，最大速度 1.3e-04，接触法向力合计 327.08 N）
+    前 6 维 [ 0.     0.    -0.004 -0.    -0.001 -0.   ]
+    左腿 6 个关节 [-0.713 -0.341  0.059  0.266  0.362  0.087]
+</code></pre>
+<h3 id="6_1">前 6 维是什么</h3>
+<p>回忆第 1 课 1.5 的表：<code>qvel</code> 的前 6 个是骨盆 freejoint 的自由度，前 3 个是世界坐标系里的平移，后 3 个是绕骨盆自身坐标轴的转动。<code>qfrc_inverse</code> 和 <code>qvel</code> 一一对应，所以它的前 6 维就是“<strong>为了让骨盆这样静止，需要有人直接对骨盆施加的力和力矩</strong>”。</p>
+<p>官方文档说得很明白：<code>qfrc_inverse</code> 等于<strong>外力与执行器力之和</strong>。G1 的 29 个电机全装在关节上，没有一个能直接推骨盆。所以：</p>
+<ul>
+<li><strong>前 6 维必须是 0</strong>（或接近 0）。否则这个姿势在现实里不可能静止，得有一只看不见的手托着骨盆。</li>
+<li><strong>后 29 维</strong>才是电机要出的力矩。</li>
+</ul>
+<p>三种情况分别说明了一件事：</p>
+<ul>
+<li><strong>(b) 悬空</strong>：前 6 维的 z 分量是 327.077 N，正好等于 m·g。没有地面，就得有人从上面把整台机器人提着。这时 <code>qfrc_inverse</code> 和 <code>qfrc_bias</code> 完全相同，因为没有加速度、没有接触，要抵消的只有重力。</li>
+<li><strong>(a) 直接用关键帧</strong>：z 分量是 −5407.846 N，要“往下按”五千多牛！原因是关键帧里骨盆高 0.790 m，而站稳后是 0.7916 m，脚底小球陷进地面约 1.6 mm。MuJoCo 的接触是软约束，逆动力学根据穿透深度算接触力，陷得越深，地面推得越狠。</li>
+<li><strong>(c) 先站稳再算</strong>：前 6 维几乎全是 0，接触法向力合计 327.08 N，正好托住整机重量。这才是有意义的结果。</li>
+</ul>
+<blockquote>
+<p><strong>要点</strong>：对浮动基机器人做逆动力学，必须先让它和地面处于<strong>真实的接触平衡</strong>。最简单的办法是先仿真一段时间让它站稳，再拿那一刻的 <code>qpos</code>。</p>
+</blockquote>
+<h3 id="73">和入门教程 7.3 的对比</h3>
+<p>入门教程 7.3 的机械臂用 <code>qfrc_bias</code> 做重力补偿，第 3 课把 G1 吊起来时也是这么做的。但看 (b) 和 (c) 的左腿：悬空时膝盖要 −0.256 N·m（托着下垂的小腿），站在地上时却是 +0.266 N·m，<strong>连符号都反了</strong>。站着的时候，脚下的地面也在出力，<code>qfrc_bias</code> 不知道这一点。所以对站立的人形机器人，“重力补偿”要用带接触的逆动力学来算，不能照搬 <code>qfrc_bias[6:]</code>。</p>
+<h3 id="_2">动手观察</h3>
+<ol>
+<li>在 (c) 里，左腿 6 个关节最大的力矩是多少？在哪个关节？</li>
+<li>打开脚本，把 (c) 的仿真步数从 1500 改成 10（只站 0.02 秒），再看前 6 维。为什么变大了？</li>
+<li>骨盆前 6 维里，(a) 的第 5 个数（绕 y 轴的力矩）是 199.635。猜一猜它是怎么来的。（提示：8 个脚底球陷进地面的深度一样吗？）</li>
+</ol>
+<h2 id="63">6.3 逆动力学算得对吗</h2>
+<p>脚本接着做了三项检查：</p>
+<pre><code class="language-text">    验证 qfrc_inverse = qfrc_bias − qfrc_passive − qfrc_constraint：最大差 0.00e+00
+    逆动力学 vs 伺服实际输出 actuator_force：最大差 0.177 N·m（在 right_hip_roll）
+    左脚受到的侧向接触力：仿真中 -0.256 N，逆动力学中 +0.000 N
+    把它作为 qfrc_applied 加回去、关掉执行器做 mj_forward：|qacc| 最大 0.00e+00
+</code></pre>
+<ul>
+<li><strong>公式检查</strong>：<span class="math">\(\ddot q = 0\)</span> 时，运动方程变成 <span class="math">\(\tau = c - J^\mathsf{T}f\)</span>（再减去被动力）。MuJoCo 把这三项分别存在 <code>qfrc_bias</code>、<code>qfrc_constraint</code>、<code>qfrc_passive</code> 里，组合起来和 <code>qfrc_inverse</code> 完全一致。</li>
+<li><strong>加回去检查</strong>：和入门教程 9.2 的做法一样，用 <code>mjDSBL_ACTUATION</code> 关掉执行器，把 <code>qfrc_inverse</code> 原样放进 <code>qfrc_applied</code>，再做 <code>mj_forward</code>，加速度是 0。说明这组力确实能让机器人静止。</li>
+<li><strong>和伺服实际输出比</strong>：站稳时 position 伺服真正输出的力矩 <code>actuator_force</code>，和逆动力学最多差 0.177 N·m，出现在髋 roll。差在哪？看下一行：仿真里两只脚在侧向互相“较劲”，地面给左脚一个 −0.256 N 的侧向力（指向身体中线）；逆动力学里速度、加速度都是 0，脚在切向既没有滑动速度、也没有位移，软接触算出的摩擦力就是 0。</li>
+</ul>
+<p>这就引出双脚站立的一个本质问题：<strong>双脚支撑是超静定的</strong>。体重怎么分给左右脚、脚尖和脚跟，两只脚之间要不要互相挤一挤，有无穷多种分法都能让合力平衡。MuJoCo 的软接触按“谁陷得深谁多出力”给出其中一种分法。所以姿势差一点，逆动力学算出的关节力矩也会差一点。后面迭代算前馈时还会看到这一点。</p>
+<h2 id="64-forcerange">6.4 余量：所需力矩和 forcerange 比一比</h2>
+<p>第 1 课说过，<code>forcerange</code> 是第 6 课的重要线索。现在就能算出每个电机在站立时用掉了多少能力：</p>
+<p><div class="math">\[\text{余量} = 1 - \frac{|\tau|}{\text{forcerange 上限}}\]</div></p>
+<p>脚本第 2 部分还准备了一个<strong>屈膝站姿</strong>：在 <code>stand</code> 的基础上，膝关节弯 1.2 rad，髋 pitch 和踝 pitch 各分担 −0.6 rad，让大腿和小腿对称、上身保持直立。函数 <code>pose(bend)</code> 负责生成这个姿势，<code>place()</code> 把骨盆放到脚底刚好碰地的高度。</p>
+<p>屈膝站的力矩不能像 6.2 那样一步算出，因为 kp=500 的伺服会让膝盖“塌”下去一点（误差 τ/kp），塌下去以后的姿势就不是我们要的了。脚本用了一个简单的迭代：站稳 → 算逆动力学 → 把结果当前馈再站稳 → 再算：</p>
+<pre><code class="language-text">=== 2. 屈膝 1.2 rad 的站姿：先站稳，再迭代算前馈 ===
+  第 1 轮：前馈=无，最大关节误差 0.0502 rad，左膝力矩 -25.02 N·m，骨盆残差 |前6维| 最大 0.336
+  第 2 轮：前馈=有，最大关节误差 0.0087 rad，左膝力矩 -21.02 N·m，骨盆残差 |前6维| 最大 0.087
+  第 3 轮：前馈=有，最大关节误差 0.0040 rad，左膝力矩 -22.54 N·m，骨盆残差 |前6维| 最大 0.030
+</code></pre>
+<ul>
+<li>第 1 轮没有前馈，最大误差 0.0502 rad，正好约等于 25.02 / 500 = 0.050。这就是 6.1 里的公式 <span class="math">\(|q - \text{ctrl}| = |\tau| / k_p\)</span>。</li>
+<li>加上前馈后误差降到 0.004 rad，骨盆残差也越来越接近 0。</li>
+<li>膝盖力矩在 −21 到 −25 N·m 之间摆动，没有单调收敛，原因就是 6.3 讲的超静定：姿势稍有不同，体重在脚尖、脚跟之间的分配就变了。本课取第 3 轮的结果。</li>
+</ul>
+<p>力矩的符号：膝关节正方向是弯曲。屈膝时重力想让它弯得更深，电机就得出<strong>负</strong>力矩往回撑。</p>
+<p>各关节的结果（节选，完整的 29 行见运行输出和 <code>output/06_torque_margin.csv</code>）：</p>
+<table>
+<thead>
+<tr>
+<th>关节</th>
+<th>上限 N·m</th>
+<th>直腿 τ</th>
+<th>余量</th>
+<th>屈膝 1.2 τ</th>
+<th>余量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>left_hip_pitch</td>
+<td>88</td>
+<td>−0.71</td>
+<td>99.2%</td>
+<td>−0.90</td>
+<td>99.0%</td>
+</tr>
+<tr>
+<td>left_knee</td>
+<td>139</td>
+<td>+0.27</td>
+<td>99.8%</td>
+<td>−22.54</td>
+<td>83.8%</td>
+</tr>
+<tr>
+<td>left_ankle_pitch</td>
+<td>50</td>
+<td>+0.36</td>
+<td>99.3%</td>
+<td>+2.67</td>
+<td>94.7%</td>
+</tr>
+<tr>
+<td>waist_pitch</td>
+<td>50</td>
+<td>+0.83</td>
+<td>98.3%</td>
+<td>+1.00</td>
+<td>98.0%</td>
+</tr>
+<tr>
+<td>left_shoulder_roll</td>
+<td>25</td>
+<td>+1.38</td>
+<td>94.5%</td>
+<td>+1.40</td>
+<td>94.4%</td>
+</tr>
+<tr>
+<td>left_wrist_pitch</td>
+<td>5</td>
+<td>−0.04</td>
+<td>99.3%</td>
+<td>−0.04</td>
+<td>99.2%</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-text">直腿：最吃力的关节 right_shoulder_roll（占上限 5.5%），29 个关节力矩平方和 6.9
+屈膝：最吃力的关节 left_knee（占上限 16.2%），29 个关节力矩平方和 1036.9
+</code></pre>
+<p><img alt="各关节力矩占上限的百分比" src="output/06_torque_margin.png" /></p>
+<p>几个值得注意的地方：</p>
+<ul>
+<li><strong>直腿站几乎不费力</strong>。腿伸直时，重力的作用线差不多穿过髋、膝、踝的转轴，力臂接近 0，所以腿部关节都不到 1 N·m。全身最吃力的反而是肩 roll：<code>stand</code> 关键帧里手臂略微外张（肩 roll = ±0.2 rad），电机要托住整条手臂。</li>
+<li><strong>屈膝站，膝盖一下子成了主角</strong>，占上限 16.2%。“力矩平方和”常被当作能耗的粗略指标，屈膝站是直腿站的 150 倍。</li>
+<li>腿部电机上限是 88–139 N·m，静止站立只用了很小一部分。剩下的余量要留给走路、蹲起、抗推这些动态动作。</li>
+</ul>
+<h2 id="65">6.5 直腿与屈膝：蹲得越低越累</h2>
+<p>脚本第 4 部分把膝角从 0 扫到 1.5 rad，每个姿势都用 kp=500 的伺服站稳 3 秒，再做逆动力学（这里不迭代，用的是第 1 轮的结果）：</p>
+<pre><code class="language-text">    膝角     骨盆z   髋pitch        膝   踝pitch     膝占上限
+  0.00   0.792    -0.72    +0.26    +0.36     0.2%
+  0.30   0.784    -1.07    -6.52    +0.27     4.7%
+  0.60   0.760    -1.51   -13.24    +0.07     9.5%
+  0.90   0.722    -1.93   -19.60    -0.05    14.1%
+  1.20   0.670    -2.02   -25.02    +0.32    18.0%
+  1.50   0.607    -1.71   -29.38    +1.24    21.1%
+</code></pre>
+<p>（表中隔一行取一行，完整的见运行输出。）</p>
+<p><img alt="膝角扫描" src="output/06_knee_sweep.png" /></p>
+<p>膝盖力矩随屈膝角度几乎线性增长，髋 pitch 却一直只有 1–2 N·m。为什么？在这个对称的屈膝姿势里，上身直立，质心大致落在脚踝正上方。膝盖向前突出，它离“质心竖直线”的水平距离大约是小腿长 × sin(膝角 / 2)，膝角越大，这个力臂越长。髋关节则基本在质心正上方，力臂很小。练习 1 会让你用这个思路手算一遍。</p>
+<blockquote>
+<p>还记得第 5 课吗？屈膝站反而不如直腿站抗推，原因是屈膝时关节本身就要扛重力矩，位置伺服“软”在那里。这张表把这份负担量化了：膝角 1.2 rad 时，每个膝盖一直要出 20 多 N·m。真实机器人上，这还意味着电机持续发热、更耗电。</p>
+</blockquote>
+<h2 id="66-mj_fullm">6.6 质量矩阵 mj_fullM</h2>
+<p>运动方程里的 <span class="math">\(M(q)\)</span> 是<strong>质量矩阵</strong>（也叫关节空间惯性矩阵）。MuJoCo 内部只存稀疏格式（CSR，放在 <code>d.M</code> 里；老版本的 <code>d.qM</code> 从 3.11 起已经移除），想看完整的矩阵要用 <code>mj_fullM</code> 转成稠密格式：</p>
+<pre><code class="language-python">M = np.zeros((m.nv, m.nv))
+mujoco.mj_fullM(m, d, M)      # 3.10 起参数顺序是 (m, d, dst)，老写法 (m, dst, d.qM) 已失效
+</code></pre>
+<blockquote>
+<p>调用前 <code>d</code> 里的位置相关量要是最新的（<code>mj_forward</code>、<code>mj_step</code> 或 <code>mj_inverse</code> 之后都可以）。</p>
+</blockquote>
+<p>脚本第 5 部分的输出：</p>
+<pre><code class="language-text">形状 (35, 35)，非零元素 641 / 1225，对称误差 0.0e+00，特征值范围 [0.0102, 34.13]
+左上 3×3（平移块）:
+ [[33.341  0.     0.   ]
+ [ 0.    33.341  0.   ]
+ [ 0.     0.    33.341]]
+左膝 M_ii = 0.1256，左腕 yaw M_ii = 0.0118（其中转子惯量 armature = 0.01）
+</code></pre>
+<p>怎么读这些数：</p>
+<ul>
+<li><strong>35 × 35</strong>：大小是 <code>nv × nv</code>，对应 35 个速度坐标。</li>
+<li><strong>左上 3×3 是 33.341 × 单位阵</strong>：沿 x、y、z 平移骨盆，整台机器人跟着一起平移，所以“惯量”就是总质量。</li>
+<li><strong>只有约一半元素非零</strong>：左臂的关节转动不会带动左腿，它们之间的耦合项是 0。这是树形结构带来的稀疏性，MuJoCo 正是利用它来加速质量矩阵的分解和求解，关节越多省得越多。</li>
+<li><strong>对称、正定</strong>：特征值全是正的。最小的 0.0102 来自手腕，几乎全是 <code>armature = 0.01</code> 贡献的。转子惯量让 <span class="math">\(M\)</span> 远离奇异，这也是第 1 课说“armature 能让仿真更稳定”的原因。</li>
+</ul>
+<h3 id="m-dampratio-kv">用 M 解释 dampratio 算出的 kv</h3>
+<p>第 1 课提到，<code>dampratio=&quot;1&quot;</code> 会让 MuJoCo 自动给每个执行器算 kv。临界阻尼的公式是 <span class="math">\(k_v = 2\sqrt{k_p \cdot m}\)</span>，那这里的“质量” <span class="math">\(m\)</span> 是哪个数？直接拿 <span class="math">\(M_{ii}\)</span> 试一试：</p>
+<pre><code class="language-text">关节                    模型kv  2√(kp·M_ii)  2√(kp/(M⁻¹)_ii)
+left_hip_pitch      10.319       43.011           10.319
+left_hip_roll       15.801       39.585           15.801
+left_knee            9.080       15.847            9.080
+left_ankle_pitch     4.924        5.055            4.924
+waist_pitch          9.280       35.216            9.280
+left_shoulder_yaw    7.347       10.119            7.347
+29 个执行器里 |模型kv − 2√(kp/(M⁻¹)_ii)| 最大 2.8e-14
+</code></pre>
+<p>用 <span class="math">\(M_{ii}\)</span> 算出来的偏大；用 <span class="math">\(1/(M^{-1})_{ii}\)</span> 才完全对上（差 1e-14，只是浮点误差）。官方文档里写的等效质量就是 <span class="math">\((J M^{-1} J^\mathsf{T})^{-1}\)</span>，在 <code>qpos0</code> 处计算。</p>
+<p>直观理解：<span class="math">\(M_{ii}\)</span> 是“其他关节全都锁死时”转动这个关节的惯量；<span class="math">\(1/(M^{-1})_{ii}\)</span> 是“其他关节都自由时”的等效惯量。G1 的骨盆是浮动的，髋电机一用力，腿往前转的同时，骨盆和上身也会往反方向转，所以感受到的惯量小得多：髋 pitch 的 kv 差了 4 倍多，换算成惯量差了约 17 倍（43.011 ÷ 10.319 再平方）。</p>
+<h2 id="67-pd">6.7 前馈 + 小增益 PD</h2>
+<p>现在把算出的力矩用起来。控制律是</p>
+<p><div class="math">\[\tau = \tau_\text{ff} + k_p\,(q_\text{des} - q) - k_v\,\dot q\]</div></p>
+<p><span class="math">\(\tau_\text{ff}\)</span> 是逆动力学给的前馈。G1 的执行器是 position 类型，没有单独的力矩输入，但可以把前馈“折算”进目标角度里：</p>
+<p><div class="math">\[\text{ctrl} = q_\text{des} + \tau_\text{ff}/k_p\]</div></p>
+<p>代入 position 的力公式：<span class="math">\(k_p(\text{ctrl} - q) - k_v\dot q = \tau_\text{ff} + k_p(q_\text{des} - q) - k_v\dot q\)</span>，和上式完全一样。这样做的好处是，力矩仍然由执行器输出，仍然受 <code>forcerange</code> 限制，阻尼也仍然由隐式积分器处理，比在 Python 里自己算 PD 更稳定。</p>
+<p>脚本用 MjSpec 生成不同 kp 的模型（kv 仍按 <code>dampratio=1</code> 自动算），并关掉 <code>ctrlrange</code> 限制，免得折算后的目标超出关节范围被截断：</p>
+<pre><code class="language-python">def make_model(kp):
+    spec = mujoco.MjSpec.from_file(str(XML))
+    for a in spec.actuators:
+        a.set_to_position(kp=kp, dampratio=1.0)   # forcerange 保持不变
+        a.ctrllimited = 0
+    return spec.compile()
+
+dd.ctrl[:] = q_des[7:] + tff / kp                 # 前馈折算成目标偏移
+</code></pre>
+<p>每组实验都从“kp=500 加前馈站稳”的状态出发，换成新的 kp，跑 5 秒。骨盆低于 0.45 m 算倒下。结果（<code>output/06_gain_sweep.csv</code>）：</p>
+<table>
+<thead>
+<tr>
+<th>kp</th>
+<th>直腿·无前馈</th>
+<th>直腿·有前馈</th>
+<th>屈膝 1.2·无前馈</th>
+<th>屈膝 1.2·有前馈</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>500</td>
+<td>最大误差 0.0028</td>
+<td>0.0001</td>
+<td>膝 +0.0497，后仰 3.0°</td>
+<td>膝 −0.0013</td>
+</tr>
+<tr>
+<td>400</td>
+<td>0.0035</td>
+<td>0.0001</td>
+<td>膝 +0.0645，后仰 4.1°</td>
+<td>膝 −0.0017</td>
+</tr>
+<tr>
+<td>300</td>
+<td>0.0046</td>
+<td>0.0003</td>
+<td>1.88 s 倒下</td>
+<td>膝 −0.0028</td>
+</tr>
+<tr>
+<td>200</td>
+<td>0.0068</td>
+<td>0.0009</td>
+<td>1.29 s 倒下</td>
+<td>膝 −0.0080，前倾 1.3°</td>
+</tr>
+<tr>
+<td>150</td>
+<td>0.0452，前倾 4.7°</td>
+<td>0.0127</td>
+<td>1.15 s 倒下</td>
+<td>膝 −0.0593，前倾 9.6°</td>
+</tr>
+<tr>
+<td>100</td>
+<td>3.84 s 倒下</td>
+<td>4.77 s 倒下</td>
+<td>0.99 s 倒下</td>
+<td>2.82 s 倒下</td>
+</tr>
+<tr>
+<td>70</td>
+<td>3.37 s 倒下</td>
+<td>4.04 s 倒下</td>
+<td>0.86 s 倒下</td>
+<td>2.57 s 倒下</td>
+</tr>
+<tr>
+<td>50</td>
+<td>3.37 s 倒下</td>
+<td>3.74 s 倒下</td>
+<td>0.73 s 倒下</td>
+<td>2.49 s 倒下</td>
+</tr>
+</tbody>
+</table>
+<p>（误差单位都是 rad。直腿两列给的是 29 个关节里的最大误差。）</p>
+<p><img alt="屈膝站 kp=300 有无前馈" src="output/06_ff_vs_pd.png" /></p>
+<p>读这张表：</p>
+<ul>
+<li><strong>屈膝站，前馈的效果最明显。</strong> 不加前馈，kp 至少要 400 才站得住，而且膝盖塌下去 0.05–0.065 rad，上身后仰。加了前馈，kp=200 就够了，误差 0.008 rad，比不加前馈、kp=500 时还小 6 倍。</li>
+<li><strong>不加前馈为什么会倒？</strong> 看上图蓝线：kp=300 时膝盖塌下去约 0.1 rad，骨盆一路后仰，最后向后摔倒。膝盖一塌，姿势就变了，质心往后跑出了脚跟，伺服还在按原来的目标拉，回不来了。</li>
+<li><strong>加了前馈，kp 也不能无限小。</strong> kp=150 时，屈膝站已经前倾 9.6°，还在慢慢漂；kp ≤ 100 全部倒下。直腿站更能说明问题：直腿时需要的力矩不到 1.4 N·m，前馈几乎没东西可补，可 kp=100 照样倒下。</li>
+</ul>
+<p>最后一点是本课最重要的结论：<strong>前馈只抵消“目标姿势下”的重力</strong>。人形机器人站着就像一个倒立摆，身体一旦偏离目标，重力就会把它往更偏的方向拉，偏得越多拉得越狠，相当于一个“负刚度”。能和它对抗的只有 kp。</p>
+<p>可以粗算一下。把整机看成绕脚踝转动的刚体，脚本第 6 部分开头打印了：</p>
+<pre><code class="language-text">倒立摆粗估：整机质心比踝 pitch 轴高 h = 0.641 m，负刚度 m·g·h = 210 N·m/rad；两个踝 pitch 并联，kp 至少要 105
+</code></pre>
+<p>身体前倾一个小角度 <span class="math">\(\theta\)</span>，重力力矩约为 <span class="math">\(m g h\,\theta\)</span>；两个踝 pitch 伺服能拉回来的力矩是 <span class="math">\(2k_p\theta\)</span>。要拉得回来，就得 <span class="math">\(2k_p &gt; m g h\)</span>，即 kp 大于约 105。直腿实验里 kp=150 站住、kp=100 倒下，正好卡在这个数两边。实际上膝、髋也是“弹簧”，整条链比单个脚踝更软，所以这只是下限。所以：</p>
+<ul>
+<li>前馈解决<strong>稳态误差</strong>：让机器人准确地停在目标姿势，不用靠大误差“攒”力矩。</li>
+<li>kp 解决<strong>稳定性</strong>：kp 必须大于倒立摆的负刚度，否则偏差会越滚越大。</li>
+</ul>
+<p>真正的平衡控制器会去调整脚踝力矩、挪动质心来对抗这种不稳定，那是第 8 课（LQR）和第 9 课（学习到的行走策略）要做的事。</p>
+<h3 id="_3">想在查看器里看</h3>
+<pre><code class="language-bash">python code/06_inverse.py --view                  # 屈膝 1.2 rad，kp=200，有前馈
+python code/06_inverse.py --view --noff           # 同样的 kp，去掉前馈：很快向后倒
+python code/06_inverse.py --view --kp 120         # 有前馈但 kp 太小：慢慢往前倾，最后倒下
+python code/06_inverse.py --view --bend 0.6       # 换个屈膝角度
+</code></pre>
+<p>脚本会先离线算好前馈（要几秒），再用 <code>mujoco.viewer.launch_passive</code> 打开窗口。窗口里可以像第 1 课那样，先双击选中躯干，再按住 <code>Ctrl</code> 用右键拖动推它一下，比较不同 kp 下的反应。</p>
+<h3 id="_4">观察记录</h3>
+<ol>
+<li>6.2 的 (a) 里骨盆 z 方向要 −5407.846 N，而 (c) 只差 1.6 mm，结果却接近 0。这说明逆动力学对什么特别敏感？</li>
+<li>屈膝 1.2 rad 时，膝盖用了上限的百分之几？直腿时最吃力的关节是哪个？</li>
+<li><code>dampratio</code> 算 kv 时用的是 <span class="math">\(M_{ii}\)</span> 还是 <span class="math">\(1/(M^{-1})_{ii}\)</span>？为什么两者对髋关节差得特别多？</li>
+<li>屈膝站时，有前馈后 kp 最低能降到多少还站得住？那时误差比“无前馈、kp=500”大还是小？</li>
+<li>用一句话说明：前馈和 kp 各自负责什么？</li>
+</ol>
+<h2 id="68">6.8 小结</h2>
+<table>
+<thead>
+<tr>
+<th>你想知道</th>
+<th>用什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>保持某个状态需要多大的广义力</td>
+<td>设好 <code>qpos</code>、<code>qvel</code>、<code>qacc</code>，调用 <code>mj_inverse</code>，读 <code>qfrc_inverse</code></td>
+</tr>
+<tr>
+<td>浮动基能否静止</td>
+<td>看 <code>qfrc_inverse[:6]</code> 是否接近 0；不为 0 就是需要“看不见的手”</td>
+</tr>
+<tr>
+<td>电机还剩多少余量</td>
+<td><code>1 − |qfrc_inverse[6:]| / actuator_forcerange[:, 1]</code></td>
+</tr>
+<tr>
+<td>质量矩阵</td>
+<td><code>mj_fullM(m, d, M)</code>；等效惯量用 <span class="math">\(1/(M^{-1})_{ii}\)</span></td>
+</tr>
+<tr>
+<td>给 position 伺服加前馈</td>
+<td><code>ctrl = q_des + tau_ff / kp</code>（记得关掉 <code>ctrllimited</code>）</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_5">练习</h2>
+<ol>
+<li><strong>手算膝盖力矩。</strong> 屈膝时，假设质心在脚踝正上方，每个膝盖托着“膝盖以上的一半体重”，力臂约为小腿长 × sin(膝角 / 2)。用 <code>d.xanchor</code> 量出左膝到左踝 pitch 关节的距离，用 <code>m.body_mass</code> 求出单条小腿加脚的质量，估算膝角 1.2 rad 时的膝盖力矩，和 6.5 的表对比。</li>
+<li><strong>双臂前平举。</strong> 在 <code>stand</code> 的基础上，把两个 <code>shoulder_pitch</code> 改成 −1.57（手臂向前平举），两个 <code>elbow</code> 改成 0（伸直），用脚本里的 <code>settle_with_ff()</code> 算力矩。肩膀和腰的余量是多少？哪个关节最吃力？</li>
+<li><strong>换个屈膝角度做增益扫描。</strong> 把 6.7 的实验换成屈膝 0.6 rad，kp 取 300、200、150、100、70。有前馈和无前馈时，能站住的最小 kp 分别是多少？</li>
+<li><strong>关键帧的高度。</strong> 把 <code>stand</code> 关键帧的骨盆 z 依次改成 0.790、0.791、0.7916、0.792、0.793，各做一次 <code>mj_inverse</code>，记下接触数和 <code>qfrc_inverse[2]</code>。1 mm 的高度差对应多少牛顿？</li>
+</ol>
+<h2 id="_6">如果报错</h2>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>可能原因</th>
+<th>解决</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>qfrc_inverse[:6]</code> 是几千牛顿</td>
+<td>直接用关键帧，脚陷进了地面；或者没站稳就算</td>
+<td>先仿真一段时间，等速度接近 0 再取 <code>qpos</code></td>
+</tr>
+<tr>
+<td><code>qfrc_inverse[2]</code> 正好是 327 N 左右</td>
+<td>脚没碰到地（骨盆太高，或关掉了接触）</td>
+<td>检查 <code>d.ncon</code>；用 <code>place()</code> 把脚放到地面上</td>
+</tr>
+<tr>
+<td><code>AttributeError: ... has no attribute &#x27;qM&#x27;</code> 或 <code>TypeError: mj_fullM(): incompatible function arguments</code></td>
+<td>用了老教程的写法 <code>mj_fullM(m, M, d.qM)</code>；新版本已移除 <code>d.qM</code></td>
+<td>改成 <code>mj_fullM(m, d, M)</code>，<code>M</code> 要是 <code>(nv, nv)</code> 的 float64 连续数组</td>
+</tr>
+<tr>
+<td>加了前馈反而抖或倒</td>
+<td><code>ctrlrange</code> 把 <code>q_des + tau_ff/kp</code> 截断了；或前馈来自另一个姿势</td>
+<td>设 <code>ctrllimited = 0</code>；前馈要在目标姿势附近算</td>
+</tr>
+<tr>
+<td>自己在 Python 里写 PD（motor 执行器）时，kp、kd 稍大就发散</td>
+<td>显式算出的阻尼力在 2 ms 步长下不稳定</td>
+<td>用 position 执行器 + 折算前馈，阻尼交给隐式积分器；或减小 kd</td>
+</tr>
+<tr>
+<td><code>--view</code> 窗口打不开</td>
+<td>远程桌面或虚拟机的图形驱动问题</td>
+<td>先不加 <code>--view</code> 跑完看图；或改用 Studio 的 <code>--gfx=web</code> 观看模型</td>
+</tr>
+<tr>
+<td>中文图例显示成方块</td>
+<td>matplotlib 找不到中文字体</td>
+<td>脚本里已列了 Microsoft YaHei、SimHei、Noto Sans SC，装上其中一个即可</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_7">延伸阅读</h2>
+<ul>
+<li><a href="../官方文档_中文HTML/computation/index.html#moinverse">计算：逆动力学与优化（为什么软接触才有逆动力学）</a></li>
+<li><a href="../官方文档_中文HTML/computation/index.html#framework">计算：运动方程的总体框架</a></li>
+<li><a href="../官方文档_中文HTML/computation/index.html#piinverse">计算：逆动力学的计算流程</a></li>
+<li><a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mj-inverse">API：mj_inverse</a>、<a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mj-fullm">mj_fullM</a>、<a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mj-contactforce">mj_contactForce</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#actuator-position-dampratio">XML 参考：position 执行器的 dampratio（等效质量的定义）</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#option-flag-invdiscrete">XML 参考：invdiscrete 标志（速度不为 0 时做逆动力学要注意）</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#actuator-pid">XML 参考：pid 执行器（自带前馈输入，可作为本课“折算前馈”的另一种做法）</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#body-joint-armature">XML 参考：joint 的 armature</a></li>
+<li><a href="../官方文档_中文HTML/python.html#pyviewerpassive">Python：被动式查看器 launch_passive</a></li>
+</ul>
+<hr />
+<details>
+<summary><b>参考答案（跑完再看）</b></summary>
+
+<strong>6.1 先猜一猜</strong>
+
+1. （A）。直腿站时左膝只要 +0.27 N·m，腿部关节都不到 1 N·m。
+2. 327.077 N，等于 m·g（33.34 kg × 9.81）。没有地面，就得有人把整台机器人提着。
+3. 迭代后是 22.54 N·m，占 16.2%（余量 83.8%）；不迭代、膝盖塌下去一点时是 25.02 N·m，占 18.0%。
+4. 不加前馈，1.29 s 时倒下；加了前馈能站住，膝误差 −0.0080 rad。
+
+<strong>6.2 动手观察</strong>
+
+1. 最大的是髋 pitch，−0.713 N·m。
+2. 只站 10 步（0.02 秒）时，前 6 维的 z 分量是 −3800.399 N，最大速度还有 0.066。机器人刚开始从关键帧往上弹，脚仍陷在地面里，<code>qpos</code> 不是平衡状态，前 6 维就不会接近 0。
+3. 8 个小球陷进地面的深度不一样，前后脚掌的接触力不对称，对骨盆形成一个绕 y 轴的力矩。
+
+<strong>观察记录</strong>
+
+1. 对接触的穿透深度特别敏感。软接触的逆动力学按穿透深度算接触力，毫米级的差别就能带来几千牛顿的变化（见练习 4）。
+2. 屈膝 1.2 rad 时膝盖占上限 16.2%。直腿时最吃力的是肩 roll（1.38 N·m，占 5.5%）。
+3. 用 <span class="math">\(1/(M^{-1})_{ii}\)</span>。<span class="math">\(M_{ii}\)</span> 假设其他关节全锁死；G1 的骨盆是浮动的，髋一用力，骨盆和上身也会跟着反向转动，等效惯量小很多。髋 pitch 的 <span class="math">\(M_{ii}\)</span> 算出 kv = 43.011，实际 kv = 10.319。
+4. kp=200。误差 −0.0080 rad，比无前馈、kp=500 时的 +0.0497 rad 小约 6 倍。kp=150 虽然没倒，但已前倾 9.6°，还在漂。
+5. 前馈负责消除稳态误差（把重力力矩直接补上），kp 负责稳定性（对抗倒立摆的负刚度）。
+
+<strong>练习 1</strong>：左膝到左踝 pitch 关节距离 0.300 m，单条小腿加脚（<code>left_knee_link</code>、<code>left_ankle_pitch_link</code>、<code>left_ankle_roll_link</code>）共 2.614 kg。每个膝盖托着 (33.34 − 2 × 2.614) / 2 ≈ 14.06 kg，约 137.9 N。力臂 0.300 × sin(0.6) ≈ 0.169 m，力矩 ≈ 23.4 N·m。仿真结果是 22.54（迭代后）到 25.02 N·m（不迭代），估算相当接近。
+
+<strong>练习 2</strong>：迭代 3 轮后，左肩 pitch −4.66 N·m（余量 81.4%），腰 pitch −10.33 N·m（余量 79.3%），左踝 pitch +6.21 N·m（余量 87.6%），左膝 +6.00 N·m（余量 95.7%）。最吃力的是腰 pitch：两条手臂伸到前面，整个上身的重心前移，要靠腰往后拉住；脚踝和膝盖也跟着出力，把整机质心留在脚掌上方。
+
+<strong>练习 3</strong>：屈膝 0.6 rad 时（前馈里左膝 −11.81 N·m）：
+
+| kp | 无前馈 | 有前馈 |
+|---|---|---|
+| 300 | 站住，膝误差 +0.05，后仰 3.7° | 站住，膝误差 −0.0028 |
+| 200 | 1.80 s 倒下 | 站住，膝误差 −0.0089 |
+| 150 | 1.56 s 倒下 | 4.49 s 倒下 |
+| 100 | 1.37 s 倒下 | 2.92 s 倒下 |
+| 70 | 1.25 s 倒下 | 2.69 s 倒下 |
+
+无前馈最小 kp=300，有前馈最小 kp=200。规律和屈膝 1.2 rad 一样：前馈能让 kp 再降一档，但降不到 150 以下。
+
+<strong>练习 4</strong>：
+
+| 骨盆 z（m） | 接触数 | <code>qfrc_inverse[2]</code>（N） |
+|---|---|---|
+| 0.790 | 8 | −5407.85 |
+| 0.791 | 8 | −2225.61 |
+| 0.7916 | 8 | −70.43 |
+| 0.792 | 0 | 327.08 |
+| 0.793 | 0 | 327.08 |
+
+从 0.790 到 0.791，1 mm 差了约 3200 N。到 0.792 时脚已经离开地面，前 6 维变回 m·g。0.7916 也没有正好得到 0，因为站稳后各关节并不完全等于关键帧的角度，8 个小球的深度也不一样。这再次说明：要先仿真站稳，用真实的平衡姿势做逆动力学。
+
+</details>
+<nav class="pager"><span><a href="05_扛住推力.html">← 第 5 课 扛住多大的推力：从侧面推 G1</a></span><span><a href="07_伸手碰球.html">第 7 课 伸手碰球：雅可比与逆运动学 →</a></span></nav>
+</main>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".math").forEach(function (el) {
+    renderMathInElement(el, {delimiters: [{left: "\\[", right: "\\]", display: true}, {left: "\\(", right: "\\)", display: false}]});
+  });
+});
+</script>
+</body></html>

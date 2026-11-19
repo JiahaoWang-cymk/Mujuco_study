@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>G1 实战：让一台人形机器人动起来（大纲） · G1 实战</title>
+<link rel="stylesheet" href="katex/katex.min.css"><style>
+:root { --ink:#16213a; --muted:#5a6880; --line:#d5dbe4; --accent:#2a4fd6; --bg:#ffffff; --code-bg:#f4f6f9; --quote:#eef3ff; }
+@media (prefers-color-scheme: dark) {
+  :root { --ink:#e5eaf3; --muted:#97a3b8; --line:#2c3a53; --accent:#86a2ff; --bg:#121a29; --code-bg:#1a2438; --quote:#1a2540; }
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); color: var(--ink); font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif; }
+body { margin: 0; line-height: 1.75; font-size: 16px; }
+main { max-width: 860px; margin: 0 auto; padding: 24px 20px 64px; }
+nav.top { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; padding: 10px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+nav.top a, nav.pager a { color: var(--accent); text-decoration: none; }
+nav.top a:hover, nav.pager a:hover { text-decoration: underline; }
+nav.pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 15px; }
+h1 { font-size: 30px; line-height: 1.3; margin: 24px 0 16px; }
+h2 { font-size: 22px; margin: 40px 0 12px; padding-left: 12px; border-left: 5px solid var(--accent); }
+h3 { font-size: 18px; margin: 28px 0 8px; }
+a { color: var(--accent); }
+code { font-family: Consolas, "Microsoft YaHei", monospace; font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; line-height: 1.5; }
+pre code { background: none; padding: 0; font-size: 14px; }
+table { border-collapse: collapse; margin: 12px 0; display: block; overflow-x: auto; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; vertical-align: top; }
+th { background: var(--code-bg); text-align: left; }
+blockquote { margin: 14px 0; padding: 8px 16px; background: var(--quote); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; }
+blockquote p { margin: 6px 0; }
+hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
+details { margin: 24px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
+details summary { cursor: pointer; }
+img { max-width: 100%; }
+.katex-display { overflow-x: auto; overflow-y: hidden; }
+</style>
+<script defer src="katex/katex.min.js"></script><script defer src="katex/contrib/auto-render.min.js"></script>
+</head><body><main>
+<nav class="top"><a href="../index.html">资料包首页</a><a href="index.html">G1 实战目录</a><a href="00_装好环境.html">第 0 课</a><a href="01_认识G1.html">第 1 课</a><a href="02_站着与倒下.html">第 2 课</a><a href="03_吊起来挥手.html">第 3 课</a><a href="04_它感觉到了什么.html">第 4 课</a><a href="05_扛住推力.html">第 5 课</a><a href="06_省力地站.html">第 6 课</a><a href="07_伸手碰球.html">第 7 课</a><a href="08_单腿平衡.html">第 8 课</a><a href="09_让它走起来.html">第 9 课</a><a href="10_录视频与批量实验.html">第 10 课</a><a href="11_附录_往后学什么.html">第 11 课</a></nav>
+<h1 id="g1">G1 实战：让一台人形机器人动起来（大纲）</h1>
+<p>案例机器人：宇树 Unitree G1，29 个关节（腿 6×2、腰 3、手臂 7×2），身高约 1.3 m，模型总质量 33.3 kg。</p>
+<p>用到的开源资源（都已放进资料包）：</p>
+<table>
+<thead>
+<tr>
+<th>资源</th>
+<th>来源</th>
+<th>许可证</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unitree_g1</code> 模型</td>
+<td>DeepMind MuJoCo Menagerie（提交 370c439，2026-11-10）</td>
+<td>BSD-3-Clause</td>
+<td>第 1–8、10 课的主角（第 11 课附录还会对照它的 <code>g1_mjx.xml</code>、<code>g1_mjlab.xml</code>）</td>
+</tr>
+<tr>
+<td>G1 行走策略 <code>motion.pt</code> + 12 自由度模型</td>
+<td>宇树 unitree_rl_gym</td>
+<td>BSD-3-Clause</td>
+<td>第 9 课让它走起来</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_1">学习方式</h2>
+<ul>
+<li>每课都有<strong>完整脚本</strong>（<code>code/</code> 目录，文件名以两位课号开头，见下面的课程表）。先读懂代码，再运行。</li>
+<li>脚本默认不开窗口：跑完打印关键结果，图片（PNG）、视频（mp4）、数据（CSV）都写到 <code>output/</code> 目录。想实时看，第 2–10 课的大部分脚本可以加 <code>--view</code> 打开查看器（第 1 课直接用 Studio 看）。</li>
+<li>运行前，先回答“<strong>先猜一猜</strong>”里的问题；运行时完成“<strong>动手观察</strong>”，运行后填写“<strong>观察记录</strong>”。答案放在每课末尾折叠起来的“<strong>参考答案</strong>”里，跑完再展开对照。</li>
+<li>正文和答案里的数字都是编写时实际运行得到的。耗时、测速这类数字随电脑和负载变化，以你自己运行的结果为准。</li>
+<li>每课末尾附“<strong>练习</strong>”“<strong>如果报错</strong>”和“<strong>延伸阅读</strong>”，延伸阅读链接到中文官方文档的对应章节。</li>
+<li>每课标题下方有一行“<strong>对应入门教程</strong>”，列出可以对照查阅的《MuJoCo 入门教程》章节（对应关系见本文最后一节）。</li>
+</ul>
+<h2 id="_2">课程</h2>
+<table>
+<thead>
+<tr>
+<th>课</th>
+<th>让 G1 做什么</th>
+<th>学到的东西</th>
+<th>难度</th>
+<th>正文</th>
+<th>脚本</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>装好环境</td>
+<td>wheel 离线安装、版本核对</td>
+<td>★</td>
+<td><code>00_装好环境.md</code></td>
+<td><code>00_check_env.py</code>、<code>00_read_report.py</code></td>
+</tr>
+<tr>
+<td>1</td>
+<td><strong>认识 G1</strong>：用 Studio 打开它、读懂它的 XML</td>
+<td>Studio 查看器、body 树、freejoint、visual 与 collision geom、default 类、qpos/qvel 的排布</td>
+<td>★</td>
+<td><code>01_认识G1.md</code></td>
+<td><code>01_inspect.py</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>它为什么站着、为什么会倒</strong></td>
+<td>position 执行器的力公式（kp/kv/forcerange）、关键帧、把 kp 改成 0 看它瘫倒</td>
+<td>★★</td>
+<td><code>02_站着与倒下.md</code></td>
+<td><code>02_stand_and_fall.py</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>把它吊起来挥手</strong>：固定骨盆，让手臂按轨迹运动</td>
+<td>用 MjSpec 改模型、轨迹插值、记录数据并画跟踪误差</td>
+<td>★★</td>
+<td><code>03_吊起来挥手.md</code></td>
+<td><code>03_wave.py</code>、<code>03_compare_models.py</code>（练习 3）</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>它“感觉”到了什么</strong></td>
+<td>IMU（gyro/accelerometer）、关节传感器、脚底接触力、质心和支撑区域</td>
+<td>★★</td>
+<td><code>04_它感觉到了什么.md</code></td>
+<td><code>04_senses.py</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>扛住多大的推力</strong>：站立时从侧面推它</td>
+<td><code>xfrc_applied</code> 外力、直腿与屈膝两种站姿的对比、摩擦与接触参数</td>
+<td>★★★</td>
+<td><code>05_扛住推力.md</code></td>
+<td><code>05_push.py</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>省力地站</strong>：算出“刚好站住”需要的力矩</td>
+<td>逆动力学 <code>mj_inverse</code>、重力补偿、力矩与电机上限对比</td>
+<td>★★★</td>
+<td><code>06_省力地站.md</code></td>
+<td><code>06_inverse.py</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>伸手去碰一个球</strong>：站着用手臂够目标</td>
+<td>雅可比、阻尼最小二乘逆运动学、用 MjSpec 加 site 和目标物</td>
+<td>★★★</td>
+<td><code>07_伸手碰球.md</code></td>
+<td><code>07_reach.py</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>单腿平衡</strong>（选修挑战）</td>
+<td>线性化 <code>mjd_transitionFD</code>、LQR，对照官方 LQR notebook 改到 G1 上</td>
+<td>★★★★</td>
+<td><code>08_单腿平衡.md</code></td>
+<td><code>08_lqr_balance.py</code>、<code>08_notebook_humanoid.py</code>（官方 notebook 的 humanoid 对照）</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>让它走起来</strong>：运行宇树的预训练行走策略</td>
+<td>拆解策略部署脚本：观测向量、控制分频、PD 力矩；改速度指令、推它、改摩擦，测试鲁棒性</td>
+<td>★★★</td>
+<td><code>09_让它走起来.md</code></td>
+<td><code>09_walk.py</code>、<code>09_compare_models.py</code></td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>录视频、批量做实验</strong></td>
+<td>离屏渲染、批量随机推力测试、统计摔倒率</td>
+<td>★★★</td>
+<td><code>10_录视频与批量实验.md</code></td>
+<td><code>10_video.py</code>、<code>10_batch_push.py</code></td>
+</tr>
+<tr>
+<td>11（附录）</td>
+<td>往后学什么</td>
+<td>GPU 训练（MuJoCo Playground、mjlab）的入口和所需硬件</td>
+<td>—</td>
+<td><code>11_附录_往后学什么.md</code></td>
+<td><code>11_model_variants.py</code></td>
+</tr>
+</tbody>
+</table>
+<p>正文在 <code>G1实战/</code> 下，脚本在 <code>G1实战/code/</code> 下，脚本输出写到 <code>G1实战/output/</code>。第 9 课的 <code>09_walk.py</code> 有 PyTorch 时用它加载 <code>motion.pt</code>，没有时自动改用 numpy 计算同一个网络，所以 PyTorch 是可选的（见第 0 课 0.6 节）。</p>
+<p>第 0 课注意：MuJoCo 4 起，<code>mujoco</code> 拆成了 <code>mujoco-core</code>（仿真核心）和 <code>mujoco-studio</code>（新查看器，依赖 <code>mujoco-studio-wasm</code>）。离线下载 wheel 时要连同依赖一起下，否则装不全。</p>
+<h2 id="_3">看仿真的几种方式</h2>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>命令 / 入口</th>
+<th>需要 Python</th>
+<th>用在哪</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Studio 桌面窗口</td>
+<td><code>python -m mujoco.studio.viewer --model=...</code></td>
+<td>是</td>
+<td>第 1 课；随手打开任何模型</td>
+</tr>
+<tr>
+<td>Studio 网页查看器</td>
+<td>同上，加 <code>--gfx=web</code></td>
+<td>是（浏览器只负责显示）</td>
+<td>远程桌面、虚拟机里桌面窗口打不开时</td>
+</tr>
+<tr>
+<td>离线 MuJoCo Live</td>
+<td><code>启动官方文档.bat</code> → 首页 → MuJoCo Live</td>
+<td>否（整个 MuJoCo 在浏览器里运行）</td>
+<td>先睹为快、拖一个模型进去随手看看</td>
+</tr>
+<tr>
+<td>课程脚本加 <code>--view</code></td>
+<td><code>python code/NN_xxx.py --view</code></td>
+<td>是</td>
+<td>第 2–10 课：仿真循环在脚本里，用 <code>mujoco.viewer.launch_passive</code> 实时显示</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_4">和原教程的对应关系</h2>
+<p>原来的《MuJoCo 入门教程》改作“参考手册”：查 API、查 MJCF 属性、排查问题时翻它。G1 实战作为学习主线。两边会双向链接：G1 每课标题下列出“对应入门教程：X.X”，原教程每章开头注明“在 G1 上练习 → 第 X 课”。</p>
+<table>
+<thead>
+<tr>
+<th>原教程章节</th>
+<th>G1 实战</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 MuJoCo 简介</td>
+<td>大纲 + 第 1 课</td>
+</tr>
+<tr>
+<td>2 安装与环境</td>
+<td>第 0 课</td>
+</tr>
+<tr>
+<td>3.1 从文件到仿真</td>
+<td>第 1 课</td>
+</tr>
+<tr>
+<td>3.2 广义坐标 nq / nv</td>
+<td>第 1 课（1.4、1.5）</td>
+</tr>
+<tr>
+<td>3.3 MjData 常用字段、3.5 一步仿真里发生了什么</td>
+<td>第 2、4 课</td>
+</tr>
+<tr>
+<td>3.4 单位与坐标系</td>
+<td>第 1 课（四元数顺序、弧度）</td>
+</tr>
+<tr>
+<td>4.1–4.5 MJCF 结构、元素、姿态、default、compiler/option</td>
+<td>第 1 课（读 G1 的 XML）</td>
+</tr>
+<tr>
+<td>4.6 完整示例、4.7 模型复用</td>
+<td>第 1 课（scene.xml include g1.xml）；第 3、7 课</td>
+</tr>
+<tr>
+<td>5.1–5.3 加载、仿真循环、按名字访问</td>
+<td>第 1、2 课</td>
+</tr>
+<tr>
+<td>5.4 修改状态后调用 mj_forward</td>
+<td>第 1、2 课</td>
+</tr>
+<tr>
+<td>5.5 重置、关键帧、状态保存</td>
+<td>第 2 课</td>
+</tr>
+<tr>
+<td>5.6 施加外力</td>
+<td>第 5 课</td>
+</tr>
+<tr>
+<td>5.7 读取接触</td>
+<td>第 4 课</td>
+</tr>
+<tr>
+<td>5.8 保存模型</td>
+<td>第 3 课</td>
+</tr>
+<tr>
+<td>6.1–6.3 查看器、在自己的循环中显示</td>
+<td>第 1、3 课</td>
+</tr>
+<tr>
+<td>6.4 离屏渲染</td>
+<td>第 10 课</td>
+</tr>
+<tr>
+<td>7.1 执行器类型</td>
+<td>第 2 课（position）、第 9 课（motor）</td>
+</tr>
+<tr>
+<td>7.2 传感器</td>
+<td>第 4 课</td>
+</tr>
+<tr>
+<td>7.3 PD + 重力补偿</td>
+<td>第 3、6 课</td>
+</tr>
+<tr>
+<td>7.4 控制频率与延迟</td>
+<td>第 9 课（策略 50 Hz，仿真 500 Hz）</td>
+</tr>
+<tr>
+<td>8.1 碰撞过滤</td>
+<td>第 1 课（visual 与 collision）、第 7 课</td>
+</tr>
+<tr>
+<td>8.2–8.3 摩擦、solref / solimp</td>
+<td>第 5 课</td>
+</tr>
+<tr>
+<td>8.4 积分器与求解器</td>
+<td>第 2、5 课</td>
+</tr>
+<tr>
+<td>8.5 防止抓取打滑</td>
+<td>（人形不涉及，保留在参考手册）</td>
+</tr>
+<tr>
+<td>8.6 稳定性调优清单</td>
+<td>第 5、9 课</td>
+</tr>
+<tr>
+<td>9.1 雅可比与逆运动学</td>
+<td>第 7 课；第 8 课（用 IK 摆单腿站姿）</td>
+</tr>
+<tr>
+<td>9.2 逆动力学与质量矩阵</td>
+<td>第 6 课；第 8 课（<code>mjd_transitionFD</code> 线性化）</td>
+</tr>
+<tr>
+<td>9.3 导入 URDF</td>
+<td>第 3 课练习 3：资料包里没有宇树官方 URDF，改为对比宇树从 URDF 转出的 <code>g1_12dof.xml</code> 与 Menagerie 版</td>
+</tr>
+<tr>
+<td>9.4 程序化建模 MjSpec</td>
+<td>第 3、7 课</td>
+</tr>
+<tr>
+<td>9.5 批量仿真</td>
+<td>第 10 课</td>
+</tr>
+<tr>
+<td>10.1–10.3 MJX、Warp、Playground</td>
+<td>附录第 11 课（需要 NVIDIA GPU）</td>
+</tr>
+<tr>
+<td>10.4 Gymnasium 与强化学习</td>
+<td>第 9 课（部署已训练策略）+ 附录第 11 课</td>
+</tr>
+<tr>
+<td>11 常见问题排查</td>
+<td>每课“如果报错”</td>
+</tr>
+<tr>
+<td>12 速查表、13 参考资料</td>
+<td>保留在参考手册</td>
+</tr>
+</tbody>
+</table>
+<nav class="pager"><span></span><span><a href="00_装好环境.html">第 0 课 装好环境：离线安装与版本核对 →</a></span></nav>
+</main>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".math").forEach(function (el) {
+    renderMathInElement(el, {delimiters: [{left: "\\[", right: "\\]", display: true}, {left: "\\(", right: "\\)", display: false}]});
+  });
+});
+</script>
+</body></html>

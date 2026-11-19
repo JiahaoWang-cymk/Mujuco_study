@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 2 课　它为什么站着、为什么会倒 · G1 实战</title>
+<link rel="stylesheet" href="katex/katex.min.css"><style>
+:root { --ink:#16213a; --muted:#5a6880; --line:#d5dbe4; --accent:#2a4fd6; --bg:#ffffff; --code-bg:#f4f6f9; --quote:#eef3ff; }
+@media (prefers-color-scheme: dark) {
+  :root { --ink:#e5eaf3; --muted:#97a3b8; --line:#2c3a53; --accent:#86a2ff; --bg:#121a29; --code-bg:#1a2438; --quote:#1a2540; }
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); color: var(--ink); font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif; }
+body { margin: 0; line-height: 1.75; font-size: 16px; }
+main { max-width: 860px; margin: 0 auto; padding: 24px 20px 64px; }
+nav.top { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; padding: 10px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+nav.top a, nav.pager a { color: var(--accent); text-decoration: none; }
+nav.top a:hover, nav.pager a:hover { text-decoration: underline; }
+nav.pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 15px; }
+h1 { font-size: 30px; line-height: 1.3; margin: 24px 0 16px; }
+h2 { font-size: 22px; margin: 40px 0 12px; padding-left: 12px; border-left: 5px solid var(--accent); }
+h3 { font-size: 18px; margin: 28px 0 8px; }
+a { color: var(--accent); }
+code { font-family: Consolas, "Microsoft YaHei", monospace; font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; line-height: 1.5; }
+pre code { background: none; padding: 0; font-size: 14px; }
+table { border-collapse: collapse; margin: 12px 0; display: block; overflow-x: auto; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; vertical-align: top; }
+th { background: var(--code-bg); text-align: left; }
+blockquote { margin: 14px 0; padding: 8px 16px; background: var(--quote); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; }
+blockquote p { margin: 6px 0; }
+hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
+details { margin: 24px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
+details summary { cursor: pointer; }
+img { max-width: 100%; }
+.katex-display { overflow-x: auto; overflow-y: hidden; }
+</style>
+<script defer src="katex/katex.min.js"></script><script defer src="katex/contrib/auto-render.min.js"></script>
+</head><body><main>
+<nav class="top"><a href="../index.html">资料包首页</a><a href="index.html">G1 实战目录</a><a href="00_装好环境.html">第 0 课</a><a href="01_认识G1.html">第 1 课</a><a href="02_站着与倒下.html">第 2 课</a><a href="03_吊起来挥手.html">第 3 课</a><a href="04_它感觉到了什么.html">第 4 课</a><a href="05_扛住推力.html">第 5 课</a><a href="06_省力地站.html">第 6 课</a><a href="07_伸手碰球.html">第 7 课</a><a href="08_单腿平衡.html">第 8 课</a><a href="09_让它走起来.html">第 9 课</a><a href="10_录视频与批量实验.html">第 10 课</a><a href="11_附录_往后学什么.html">第 11 课</a></nav>
+<h1 id="2">第 2 课　它为什么站着、为什么会倒</h1>
+<p><strong>对应入门教程</strong>：3.3、3.5、5.1–5.5、7.1、8.4</p>
+<p><strong>本课目标</strong></p>
+<ul>
+<li>读出 <code>position</code> 执行器真正用的参数（<code>gainprm</code>、<code>biasprm</code>、<code>forcerange</code>），手算力矩并和 MuJoCo 对上。</li>
+<li>分清 <code>mj_resetData</code> 和 <code>mj_resetDataKeyframe</code>，知道关键帧 <code>stand</code> 里存了什么。</li>
+<li>把 kp 一步步调小，用骨盆高度曲线和摔倒时间量化“站不住”。</li>
+<li>揭晓第 1 课的问题：推倒以后，它会不会自己爬起来？</li>
+<li>认识 <code>timestep</code> 和积分器：为什么 G1 的 XML 要写 <code>implicitfast</code>。</li>
+</ul>
+<p><strong>预计用时</strong>：1.5–2 小时　<strong>前置</strong>：第 1 课（读过 g1.xml 的执行器和关键帧部分）</p>
+<hr />
+<h2 id="21">2.1 先猜一猜</h2>
+<p>第 1 课里你已经知道：G1 的 29 个关节各有一个 <code>position</code> 执行器，<code>kp=500</code>，<code>dampratio=1</code>。运行脚本之前，先写下你的预测：</p>
+<ol>
+<li>第 1 课 1.2 节第 4 题：把 G1 推倒以后，它会自己爬起来吗？</li>
+<li>不加载关键帧（直接用 XML 里的初始姿势、<code>ctrl</code> 全是 0），它还站得住吗？</li>
+<li>加载 <code>stand</code> 关键帧后什么都不管，它能站多久？10 秒？1 分钟？一直站着？</li>
+<li>把所有关节的 kp 从 500 降到多少，它就站不住了？kp=0 时，它是一下子瘫倒，还是慢慢软下去？</li>
+<li>时间步长从默认的 2 ms 加大到 20 ms，会发生什么？</li>
+</ol>
+<h2 id="22-position">2.2 position 执行器：一个公式，三个参数</h2>
+<h3 id="_1">所有执行器都是同一个公式</h3>
+<p>入门教程 7.1 讲过，MuJoCo 的执行器本质上都是 <code>&lt;general&gt;</code> 的快捷写法。一个执行器输出的力是：</p>
+<p><div class="math">\[\text{force} = \text{gain}\cdot\text{ctrl} + \text{bias}_0 + \text{bias}_1\cdot\text{length} + \text{bias}_2\cdot\text{velocity}\]</div></p>
+<p>对 G1 这种“一个执行器驱动一个铰链关节”的情况，<code>length</code> 就是关节角 <span class="math">\(q\)</span>，<code>velocity</code> 就是关节角速度 <span class="math">\(\dot q\)</span>。<code>position</code> 执行器把参数填成：</p>
+<table>
+<thead>
+<tr>
+<th>编译后的字段</th>
+<th>填的值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gainprm[0]</code></td>
+<td><code>kp</code></td>
+<td>ctrl 前面的系数</td>
+</tr>
+<tr>
+<td><code>biasprm[0]</code></td>
+<td>0</td>
+<td>常数项</td>
+</tr>
+<tr>
+<td><code>biasprm[1]</code></td>
+<td><code>-kp</code></td>
+<td>乘关节角</td>
+</tr>
+<tr>
+<td><code>biasprm[2]</code></td>
+<td><code>-kv</code></td>
+<td>乘关节角速度</td>
+</tr>
+</tbody>
+</table>
+<p>代进去，正好是第 1 课写的 PD 公式：</p>
+<p><div class="math">\[\tau = k_p\,\text{ctrl} - k_p\,q - k_v\,\dot q = k_p(\text{ctrl}-q) - k_v\,\dot q,\qquad \text{再截断到 forcerange}\]</div></p>
+<h3 id="_2">读出真实的数</h3>
+<p>脚本第 1 部分把 29 个执行器的参数全打印出来。摘几行：</p>
+<pre><code class="language-text">timestep = 0.002 s，integrator = mjINT_IMPLICITFAST
+gaintype = mjGAIN_FIXED，biastype = mjBIAS_AFFINE
+执行器                          gainprm[0] biasprm[1] biasprm[2]   forcerange
+left_hip_pitch_joint              500.0     -500.0     -10.32        88 N·m
+left_knee_joint                   500.0     -500.0      -9.08       139 N·m
+left_ankle_roll_joint             500.0     -500.0      -4.54        50 N·m
+waist_roll_joint                  500.0     -500.0     -16.20        50 N·m
+left_wrist_pitch_joint            500.0     -500.0      -4.96         5 N·m
+kv 最小 4.54（left_ankle_roll_joint），最大 16.20（waist_roll_joint）
+</code></pre>
+<ul>
+<li><strong>kp 全一样</strong>，都是 500，来自 default 类。</li>
+<li><strong>kv 各不相同</strong>，从 4.54 到 16.20。XML 里一个 kv 都没写，写的是 <code>dampratio=&quot;1&quot;</code>。编译时，MuJoCo 按每个执行器在 <code>qpos0</code> 处“带动的等效惯量” <span class="math">\(m\)</span> 算出临界阻尼 <span class="math">\(k_v = 2\sqrt{k_p\,m}\)</span>。腰 roll 要带动整个上半身，<span class="math">\(m\)</span> 大，kv 就大；踝 roll 只带动一只脚，kv 就小。</li>
+<li><strong>forcerange</strong> 每个关节单独写，膝和髋 roll 139 N·m，手腕 pitch/yaw 只有 5 N·m。</li>
+</ul>
+<blockquote>
+<p>小细节：用 <code>MjSpec</code> 读 XML 时，<code>left_knee_joint</code> 的 <code>biasprm</code> 是 <code>[0, -500, 1]</code>。第三个数是<strong>正的</strong> 1，表示“这是 dampratio”；编译后才变成负的 <code>-9.08</code>，也就是 <code>-kv</code>。所以用 MjSpec 改 kp 再重新编译，kv 会跟着重算；直接改编译好的 <code>MjModel</code>，kv 不会变。2.6 节两种都会试。</p>
+</blockquote>
+<h3 id="mujoco">手算一遍，和 MuJoCo 对答案</h3>
+<p>脚本第 2 部分先让 G1 站 0.5 秒，再用公式把 29 个力矩全手算一遍：</p>
+<pre><code class="language-python">jid = m.actuator_trnid[:, 0]                 # 每个执行器驱动的关节 id
+q  = d.qpos[m.jnt_qposadr[jid]]
+qd = d.qvel[m.jnt_dofadr[jid]]
+f = kp * d.ctrl + m.actuator_biasprm[:, 0] + m.actuator_biasprm[:, 1] * q \
+    + m.actuator_biasprm[:, 2] * qd          # = kp*(ctrl-q) - kv*qd
+f = np.clip(f, m.actuator_forcerange[:, 0], m.actuator_forcerange[:, 1])
+</code></pre>
+<p>结果：</p>
+<pre><code class="language-text">站立 0.5 s 后：手算与 actuator_force 最大差 2.13e-14 N·m
+左膝：ctrl=0.000  q=-0.00053  力矩=0.260 N·m
+左膝目标改成 1.0 rad：公式给出 500.3 N·m，截断后 139.0，MuJoCo 给出 139.0
+</code></pre>
+<ul>
+<li>差 <span class="math">\(10^{-14}\)</span>，就是浮点误差。公式完全对。</li>
+<li>左膝目标从 0 突然改成 1.0 rad，误差 1 rad 乘 kp=500，公式要 500 N·m，可电机只给 139。<strong>forcerange 是硬上限</strong>。目标给得再猛，力矩也不会超过它。</li>
+</ul>
+<blockquote>
+<p><code>d.actuator_force</code> 只在 <code>mj_step</code> 或 <code>mj_forward</code> 里更新。改了 <code>ctrl</code> 想马上看力矩，要先调 <code>mj_forward</code>（入门教程 5.4）。</p>
+</blockquote>
+<h2 id="23">2.3 关键帧和两种重置</h2>
+<pre><code class="language-xml">&lt;key name=&quot;stand&quot; qpos=&quot;0 0 0.79 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0.2 0 1.28 0 0 0 0.2 -0.2 0 1.28 0 0 0&quot;
+  ctrl=&quot;0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0.2 0 1.28 0 0 0 0.2 -0.2 0 1.28 0 0 0&quot;/&gt;
+</code></pre>
+<p>对照第 1 课 1.5 节的排布表来读：骨盆在 0.79 m 高，姿态是单位四元数；腿和腰全是 0（直腿站）；两只手臂肩 pitch 0.2、肩 roll ±0.2、肘 1.28 rad（约 73°，弯着）。<code>ctrl</code> 里的 29 个目标和 <code>qpos[7:]</code> 一模一样：<strong>让每个伺服就盯着关键帧里的角度</strong>。</p>
+<p>两个重置函数：</p>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>qpos</th>
+<th>ctrl</th>
+<th>用在哪</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mj_resetData(m, d)</code></td>
+<td><code>m.qpos0</code>，即 XML 里各 body 的初始位置。G1 的骨盆在 0.793 m，关节全 0</td>
+<td>全 0</td>
+<td>回到“刚加载”的状态</td>
+</tr>
+<tr>
+<td><code>mj_resetDataKeyframe(m, d, m.key(&quot;stand&quot;).id)</code></td>
+<td>关键帧的 qpos</td>
+<td>关键帧的 ctrl</td>
+<td>回到一个指定的状态</td>
+</tr>
+</tbody>
+</table>
+<p><code>mj_resetDataKeyframe</code> 先把数据重置，再用关键帧里的字段（<code>time</code>、<code>qpos</code>、<code>qvel</code>、<code>act</code>、<code>ctrl</code>、mocap 位姿等）覆盖进去，关键帧里没写的字段取默认值。所以<strong>它会一并设好 ctrl</strong>，不用你自己再抄一遍。</p>
+<h2 id="24-66">2.4 脚本 <code>code/02_stand_and_fall.py</code></h2>
+<p>脚本有 300 多行，分 6 组实验，默认不开窗口，跑完 10 多秒。核心是两个函数。</p>
+<p><strong>加载模型，可以顺手改 kp：</strong></p>
+<pre><code class="language-python">def load_model(kp=None, kv_follow=False, timestep=None, integrator=None):
+    if kp is not None and kv_follow:
+        spec = mujoco.MjSpec.from_file(str(XML))
+        for act in spec.actuators:
+            act.gainprm[0] = kp
+            act.biasprm[1] = -kp             # biasprm[2] 仍是 +1，表示 dampratio=1
+        m = spec.compile()
+    else:
+        m = mujoco.MjModel.from_xml_path(str(XML))
+        if kp is not None:
+            m.actuator_gainprm[:, 0] = kp
+            m.actuator_biasprm[:, 1] = -kp   # biasprm[2]（即 -kv）不动
+    if timestep is not None:
+        m.opt.timestep = timestep
+    if integrator is not None:
+        m.opt.integrator = integrator
+    return m
+</code></pre>
+<p>注意 <code>gainprm[0]</code> 和 <code>biasprm[1]</code> <strong>要一起改</strong>。只改 <code>gainprm[0]</code>，公式就变成 <span class="math">\(k_p&#x27;\,\text{ctrl} - 500\,q\)</span>，目标和实际对不上，关节会停在奇怪的角度。</p>
+<p><strong>仿真并记录骨盆高度：</strong></p>
+<pre><code class="language-python">def simulate(m, T, start=&quot;key&quot;, push=None, kv_zero=False):
+    ...
+    if start.startswith(&quot;key&quot;):
+        mujoco.mj_resetDataKeyframe(m, d, m.key(&quot;stand&quot;).id)
+        if start == &quot;key_ctrl0&quot;:
+            d.ctrl[:] = 0.0
+    else:
+        mujoco.mj_resetData(m, d)
+    ...
+    for i in range(n):
+        if push is not None:                 # 在 [t0, t0+dur) 时段里推躯干
+            F, t0, dur = push
+            d.xfrc_applied[torso, 1] = F if t0 &lt;= d.time &lt; t0 + dur else 0.0
+        mujoco.mj_step(m, d)
+        ts[i], zs[i] = d.time, d.qpos[2]     # qpos[2] 就是骨盆高度
+        if t_fall is None and d.qpos[2] &lt; FALL_Z:
+            t_fall = d.time
+</code></pre>
+<p>“摔倒”的判据：骨盆高度第一次低于 0.5 m（站立时约 0.79 m）。<code>xfrc_applied</code> 是施加在 body 上的外力，第 5 课会专门讲，这里先拿来推一下。</p>
+<p>运行：</p>
+<pre><code class="language-bash">cd G1实战/code
+python 02_stand_and_fall.py
+</code></pre>
+<p>图和 CSV 写到 <code>G1实战/output/</code>。</p>
+<h2 id="25">2.5 实验一：它为什么站着</h2>
+<pre><code class="language-text">3. 三种起始方式，各站 10 秒（kp=500）
+   加载 stand 关键帧（qpos+ctrl）    初始 0.790 m → 10 s 后 0.7916 m，最低 0.7900，左肘 1.28 rad，摔倒：没倒
+   不加载关键帧，mj_resetData        初始 0.793 m → 10 s 后 0.7915 m，最低 0.7907，左肘 0.00 rad，摔倒：没倒
+   加载关键帧后把 ctrl 清零            初始 0.790 m → 10 s 后 0.7915 m，最低 0.7900，左肘 0.00 rad，摔倒：没倒
+   关键帧 + ctrl 保持，60 s 后：骨盆 x=-0.065 mm, y=+0.001 mm, z=0.7916 m；摔倒：没倒
+</code></pre>
+<p>三种方式<strong>都站得住</strong>。区别只在手臂：<code>ctrl</code> 是 0 时，肘关节被拉直；用关键帧的 ctrl，肘就保持弯着。</p>
+<ul>
+<li>关键帧的骨盆写的是 0.79 m，其实比“刚好着地”低了一点，脚底小球略微压进地面，开始后骨盆被顶起到 0.7916 m。</li>
+<li><code>qpos0</code> 的骨盆在 0.793 m，脚略微悬空，开始后落下约 1.5 mm。</li>
+<li>60 秒后，骨盆在水平方向只漂了 0.065 mm。只要没人碰它，它就<strong>一直站着</strong>。</li>
+</ul>
+<p>为什么这么稳？看站稳后哪些关节在出力：</p>
+<pre><code class="language-text">站稳后力矩最大的 5 个执行器（误差 = 力矩 / kp）：
+  right_shoulder_roll_joint  力矩   -1.39 N·m   ctrl-q = -0.00277 rad (-0.159°)
+  left_shoulder_roll_joint   力矩   +1.38 N·m   ctrl-q = +0.00277 rad (+0.159°)
+  waist_pitch_joint          力矩   +0.83 N·m   ctrl-q = +0.00166 rad (+0.095°)
+  right_hip_pitch_joint      力矩   -0.71 N·m   ctrl-q = -0.00143 rad (-0.082°)
+  left_hip_pitch_joint       力矩   -0.71 N·m   ctrl-q = -0.00143 rad (-0.082°)
+</code></pre>
+<p>两个发现：</p>
+<ol>
+<li><strong>最大的力矩才 1.39 N·m</strong>，腿上的更小。<code>stand</code> 是直腿站，体重几乎沿着腿骨直接压到脚上，就像你直腿站着时膝盖不费劲。第 5 课会对比屈膝站，第 6 课会算出那时膝盖要出大得多的力。</li>
+<li><strong>位置伺服一定有误差</strong>。要输出力矩 <span class="math">\(\tau\)</span>，就必须有 <span class="math">\(\text{ctrl}-q = \tau/k_p\)</span> 的偏差（静止时 <span class="math">\(\dot q=0\)</span>）。1.39 N·m 除以 500，正好 0.00277 rad。kp 越小，同样的力矩要的误差越大。第 6 课用逆动力学算出前馈力矩（带接触的“重力补偿”）消除这个误差。</li>
+</ol>
+<blockquote>
+<p>这里还藏着第 1 课 1.2 节第 1 题的答案：Studio 一打开，相当于 <code>mj_resetData</code> 后 ctrl 全 0，G1 稳稳站着，两肘停在 0 位，小臂向前平举（第 1 课练习 1 说过：肘关节角为 0 并不是手臂伸直）。</p>
+</blockquote>
+<h2 id="26-kp">2.6 实验二：把 kp 调小，看它瘫倒</h2>
+<h3 id="_3">先估算一下</h3>
+<p>把整个 G1 看成一根绕脚踝转动的“倒立摆”。它往前倾一个小角度 <span class="math">\(\theta\)</span>，重力产生的掀翻力矩约为 <span class="math">\(M g h\,\theta\)</span>；两个踝 pitch 伺服的恢复力矩是 <span class="math">\(2k_p\,\theta\)</span>。恢复力矩要大过掀翻力矩：</p>
+<pre><code class="language-text">倒立摆估算：M=33.34 kg，质心比踝轴高 h=0.641 m，M*g*h=210 N·m/rad → 两个踝 2*kp 要大于它，kp &gt; 105
+</code></pre>
+<p>这只是下限。实际上髋、膝也是“弹簧”，串在一起整体会更软，所以真正需要的 kp 会更大。</p>
+<h3 id="_4">实测</h3>
+<pre><code class="language-text">4. 调小 kp，各仿真 10 秒（只改 kp，kv 保持原值）
+   kp=500       左膝 kv= 9.08  摔倒：没倒  10 s 后骨盆 0.792 m
+   kp=250       左膝 kv= 9.08  摔倒：没倒  10 s 后骨盆 0.792 m
+   kp=200       左膝 kv= 9.08  摔倒：没倒  10 s 后骨盆 0.792 m
+   kp=150       左膝 kv= 9.08  摔倒： 8.71 s  10 s 后骨盆 0.085 m
+   kp=100       左膝 kv= 9.08  摔倒： 3.66 s  10 s 后骨盆 0.085 m
+   kp=50        左膝 kv= 9.08  摔倒： 2.79 s  10 s 后骨盆 0.082 m
+   kp=0         左膝 kv= 9.08  摔倒： 2.00 s  10 s 后骨盆 0.071 m
+   kp=0，kv=0    左膝 kv= 0.00  摔倒： 0.76 s  10 s 后骨盆 0.149 m
+</code></pre>
+<p>打开 <code>output/02_kp_sweep.png</code> 对照着看：</p>
+<ul>
+<li><strong>kp=200 还站得住，kp=150 就不行了</strong>。临界值在 150 和 200 之间，比倒立摆估算的 105 大，和上面的分析一致。</li>
+<li>kp=150 的曲线很有意思：前 5 秒骨盆只降了 1.4 mm（0.7916 → 0.7902 m），第 8 秒也才到 0.775 m，之后突然加速，8.71 s 越过 0.5 m 线。它是<strong>慢慢往前扑倒</strong>的。刚度不够时，一点点偏差都会自己越滚越大，这就是“不稳定平衡”。</li>
+<li>kp=0 但保留 kv：执行器变成纯阻尼器，像泡在蜂蜜里，2.00 s 才倒。</li>
+<li>kp=0 且 kv=0：彻底“断电”，0.76 s 就倒，像布娃娃一样在髋部对折着瘫下去，骨盆停在 0.149 m。关节里只剩 <code>frictionloss=0.3</code> 的干摩擦，挡不住 33 kg 的体重。</li>
+</ul>
+<h2 id="27">2.7 实验三：推倒以后，它会爬起来吗？</h2>
+<p>这是第 1 课 1.2 节第 4 题的答案。脚本在第 1 秒起沿 +y 方向推躯干 0.2 秒：</p>
+<pre><code class="language-text">5. 第 1 秒起侧推躯干 0.2 秒（+y 方向），共仿真 10 秒
+     50 N（冲量   10 N·s）：摔倒 没倒，10 s 后骨盆 0.792 m（站着），…，关节离目标最多差 0.2°（right_shoulder_roll_joint）
+     80 N（冲量   16 N·s）：摔倒 没倒，10 s 后骨盆 0.792 m（站着），…，关节离目标最多差 0.2°（right_shoulder_roll_joint）
+     90 N（冲量   18 N·s）：摔倒  2.40 s，10 s 后骨盆 0.085 m（躺在地上），…，关节离目标最多差 1.6°（waist_pitch_joint）
+    100 N（冲量   20 N·s）：摔倒  2.15 s，10 s 后骨盆 0.085 m（躺在地上），…，关节离目标最多差 1.6°（waist_pitch_joint）
+    200 N（冲量   40 N·s）：摔倒  1.61 s，10 s 后骨盆 0.085 m（躺在地上），…，关节离目标最多差 1.6°（waist_pitch_joint）
+</code></pre>
+<p>（“…”处省略了“最后 1 s 骨盆最高”，它和 10 s 后的高度一样。）</p>
+<p><strong>答案：不会。</strong> 80 N 推 0.2 秒还能晃回来，90 N 就倒了，朝推的方向侧躺在地上，一直不起来。</p>
+<p>原因就在最后一列：<strong>躺在地上时，各关节离目标最多只差 1.6°</strong>。对这 29 个位置伺服来说，任务已经完成了：每个关节都摆在 <code>stand</code> 的角度上。至于整个身体是竖着还是躺着，它们根本不知道，也不关心。</p>
+<p><code>position</code> 执行器只管关节角，不管平衡。要爬起来，需要一个“看得见”身体姿态（第 4 课的 IMU）、会主动规划动作的控制器。第 9 课的行走策略就是这样的控制器，它每 20 ms 根据传感器重新算一遍 <code>ctrl</code>。</p>
+<blockquote>
+<p>在 Studio 里用鼠标拖，是用一根“弹簧”拉 body，力的大小随拖动距离变，不好量化。脚本里用固定的力和时长，结果可以复现。第 5 课会系统地测“扛住多大的推力”，还会对比直腿和屈膝两种站姿。</p>
+</blockquote>
+<h2 id="28-timestep">2.8 实验四：timestep 与积分器</h2>
+<p>G1 的 XML 写了 <code>&lt;option integrator=&quot;implicitfast&quot;/&gt;</code>，<code>timestep</code> 没写，用默认的 0.002 s。MuJoCo 的默认积分器是 <code>Euler</code>。两者的区别（入门教程 8.4）：<code>implicitfast</code> 把<strong>速度相关的力</strong>（执行器的 <span class="math">\(-k_v\dot q\)</span>、关节阻尼）做隐式处理，<code>Euler</code> 对执行器的 kv 是显式处理的。显式处理遇到“又硬又轻”的伺服，步长一大就会发散。</p>
+<p>先看 G1 最“快”的伺服有多快：dampratio=1 时 <span class="math">\(k_v=2\sqrt{k_p m}\)</span>，反推出等效惯量 <span class="math">\(m=k_v^2/(4k_p)\)</span>，再算固有周期 <span class="math">\(2\pi/\sqrt{k_p/m}\)</span>：</p>
+<pre><code class="language-text">最“快”的伺服：left_ankle_roll_joint，等效惯量 0.0103 kg·m²，固有周期 28.6 ms（最慢的 101.8 ms）
+粗估：kv 显式处理时，这个伺服要求 dt &lt; 0.83/ω = 3.8 ms
+</code></pre>
+<p>第二行是把这个伺服单独看成“质量-弹簧-阻尼”，用 MuJoCo 的半隐式 Euler 积分时的稳定条件 <span class="math">\(\omega\,\Delta t &lt; 2\sqrt2-2\approx0.83\)</span>（<span class="math">\(\omega=2\pi/\text{周期}\)</span>，推导略）。记住这个 3.8 ms，下面要用。</p>
+<p>然后两种积分器、四种步长，各站 5 秒（下面删掉了每行末尾的“用时”一列，步长越大越快，具体数值看你的电脑）：</p>
+<pre><code class="language-text">mjINT_IMPLICITFAST   dt=0.002  摔倒：没倒       最低 0.790 m  结束时 d.time=5.00 s 骨盆 0.792 m  BADQACC 计数 0  实际重置  0 次
+mjINT_IMPLICITFAST   dt=0.005  摔倒：没倒       最低 0.790 m  结束时 d.time=5.00 s 骨盆 0.792 m  BADQACC 计数 0  实际重置  0 次
+mjINT_IMPLICITFAST   dt=0.01   摔倒：没倒       最低 0.790 m  结束时 d.time=5.00 s 骨盆 0.792 m  BADQACC 计数 0  实际重置  0 次
+mjINT_IMPLICITFAST   dt=0.02   摔倒：没倒       最低 0.790 m  结束时 d.time=5.00 s 骨盆 0.791 m  BADQACC 计数 0  实际重置  0 次
+mjINT_EULER          dt=0.002  摔倒：没倒       最低 0.790 m  结束时 d.time=5.00 s 骨盆 0.792 m  BADQACC 计数 0  实际重置  0 次
+mjINT_EULER          dt=0.005  摔倒：没倒       最低 0.790 m  结束时 d.time=5.00 s 骨盆 0.792 m  BADQACC 计数 0  实际重置  0 次
+mjINT_EULER          dt=0.01   摔倒： 0.56 s  最低 0.057 m  结束时 d.time=5.00 s 骨盆 0.085 m  BADQACC 计数 0  实际重置  0 次
+mjINT_EULER          dt=0.02   摔倒： 0.22 s  最低 0.380 m  结束时 d.time=0.02 s 骨盆 0.789 m  BADQACC 计数 1  实际重置 19 次
+对照：mjINT_EULER dt=0.004，把 frictionloss 改成 0 → 摔倒： 1.24 s
+</code></pre>
+<ul>
+<li><code>implicitfast</code> 在 20 ms 步长下依然站得住。</li>
+<li><code>Euler</code> 在 5 ms 还站得住，比粗估的 3.8 ms 宽松。最后一行给出了原因：关节里的干摩擦 <code>frictionloss=0.3</code> 不是普通的力，而是交给约束求解器处理的，它把关节的小幅抖动“摁住”了。把它改成 0，<code>Euler</code> 在 4 ms 就倒。可见粗估只能当参考，实际的极限要靠试。</li>
+<li><code>Euler</code> 到 10 ms 就不行了：腰、踝、髋的伺服越抖越厉害，0.56 s 摔倒。</li>
+<li><code>Euler</code> 在 20 ms 时更隐蔽：终端开头会打印一行</li>
+</ul>
+<p><code>text
+  WARNING: Nan, Inf or huge value in QACC at DOF 0. The simulation is unstable. Time = 0.3000.</code></p>
+<p>加速度算出了 NaN，MuJoCo <strong>自动调用 <code>mj_resetData</code> 把状态重置</strong>，然后接着跑。重置回 <code>qpos0</code> 后 ctrl 是 0，可 20 ms 的 Euler 照样发散，于是每隔约 0.26 s 就再重置一次，5 秒里一共重置了 19 次。最后一刻刚好重置完，骨盆在 0.789 m，看上去“站着”；<code>d.time</code> 却只有 0.02 s，而不是 5 s。</p>
+<p>更坑的是计数：<code>d.warning[mujoco.mjtWarning.mjWARN_BADQACC].number</code> 只显示 1。因为 <code>mj_resetData</code> 连 <code>d.warning</code> 也一起清零了，每次重置后计数都从头算。终端也只打印了第一次的 WARNING。脚本里“实际重置”一列是靠“<code>d.time</code> 倒退”数出来的。<strong>只看最终结果会被骗</strong>：要同时检查 <code>d.warning</code> 和 <code>d.time</code> 是否连续。</p>
+<blockquote>
+<p>这行 WARNING 是 MuJoCo 的 C 库直接打到终端的，和 Python 的 print 不在同一个缓冲区，所以常常出现在输出的最前面。它同时会写进当前目录下的 <code>MUJOCO_LOG.TXT</code>，这个文件可以随手删掉。</p>
+</blockquote>
+<p>那为什么不直接用 20 ms？步长大了，接触、碰撞的精度会变差，推、走这类剧烈动作更容易出问题。G1 用默认的 2 ms，第 9 课部署行走策略时也用 2 ms 步长。选步长的原则：<strong>在不发散、结果不明显变化的前提下尽量大</strong>。</p>
+<h2 id="29-102">2.9 实时看：<code>--view</code></h2>
+<pre><code class="language-bash">python 02_stand_and_fall.py --view --kp 100      # kp=100，看它在 3–4 秒时往前扑倒
+python 02_stand_and_fall.py --view --push 100    # kp=500，第 1 秒侧推 100 N
+</code></pre>
+<p><code>--view</code> 用 <code>mujoco.viewer.launch_passive</code> 打开旧查看器的窗口，由脚本自己推进仿真：</p>
+<pre><code class="language-python">with mujoco.viewer.launch_passive(m, d) as viewer:
+    while viewer.is_running():
+        step_start = time.time()
+        ...                                  # 按需施加推力
+        mujoco.mj_step(m, d)
+        viewer.sync()                        # 把 d 的新状态交给窗口显示
+        rest = m.opt.timestep - (time.time() - step_start)
+        if rest &gt; 0:
+            time.sleep(rest)                 # 按真实时间播放
+</code></pre>
+<p><code>launch_passive</code> 不阻塞：窗口在另一个线程里画，你的循环负责 <code>mj_step</code>，每步调一次 <code>sync()</code> 同步。窗口关了，<code>is_running()</code> 返回 False，循环结束。</p>
+<h3 id="_5">观察记录</h3>
+<ol>
+<li>对照 2.1 的预测，哪几个猜错了？</li>
+<li>在 <code>02_kp_sweep.png</code> 里，kp=0（保留 kv）和 kp=0、kv=0 两条曲线，哪条更“陡”？为什么最终骨盆高度不一样？</li>
+<li>用 <code>--view --kp 150</code> 看一遍。它倒下之前的几秒里，身体是怎么动的？</li>
+<li>用 <code>--view --push 100</code> 看它倒地后的样子。躺着时手臂是什么姿势？和站着时一样吗？</li>
+</ol>
+<p><strong>观察记录</strong>：＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+<h2 id="_6">小结</h2>
+<ul>
+<li><code>position</code> 执行器 = <code>gainprm[0]=kp</code>、<code>biasprm[1]=-kp</code>、<code>biasprm[2]=-kv</code> 的仿射力，再截断到 <code>forcerange</code>。改 kp 时这两处要一起改。</li>
+<li><code>dampratio</code> 在编译时按等效惯量换成 kv，所以各关节 kv 不同；直接改 <code>MjModel</code> 不会重算 kv，用 MjSpec 重编译才会。</li>
+<li><code>mj_resetDataKeyframe</code> 会同时设好 qpos 和 ctrl。</li>
+<li>G1 站得住，靠的是足够硬的位置伺服把直腿“锁”住；kp 低于 150–200 就会慢慢扑倒。</li>
+<li>位置伺服只管关节角，不管平衡，倒了也不会爬起来。</li>
+<li><code>implicitfast</code> 让 G1 在大步长下也不发散；<code>Euler</code> 发散时 MuJoCo 会自动重置（连 <code>d.warning</code> 计数也清零），要同时查 <code>d.warning</code> 和 <code>d.time</code>。</li>
+</ul>
+<h2 id="_7">练习</h2>
+<ol>
+<li><strong>kv 跟着 kp 变。</strong> 运行 <code>python 02_stand_and_fall.py --kv-follow</code>，它只跑实验二，但用 MjSpec 重编译，kv 按 dampratio=1 重算。和 2.6 的表对比，摔倒时间变了多少？kp=0 那一行为什么和“kp=0，kv=0”一样？</li>
+<li><strong>二分找临界 kp。</strong> 用 <code>load_model(kp=...)</code> 和 <code>simulate(m, 20.0)</code>（可以 <code>import</code> 这个脚本，或者复制这两个函数），在 150 到 200 之间找出“20 秒内不倒”的最小 kp，精确到 5。</li>
+<li><strong>Euler 的极限步长。</strong> 同样的方法，把 <code>integrator</code> 设成 <code>mujoco.mjtIntegrator.mjINT_EULER</code>，在 0.005 到 0.01 之间试 0.006、0.007、0.008、0.009，站 5 秒，哪个开始站不住？</li>
+<li><strong>改个关键帧。</strong> 在第 1 课练习 1 里，你做了一个两肘都为 0 的关键帧 <code>elbows_zero</code>（在 <code>scene_my.xml</code> 里）。加载 <code>scene_my.xml</code>，用 <code>mj_resetDataKeyframe</code> 重置到这个关键帧，站 10 秒，再用 2.5 节的方法打印力矩最大的 5 个执行器，并打印整机质心 <code>d.subtree_com[0]</code>。榜单换成了谁？为什么？</li>
+</ol>
+<h2 id="_8">如果报错</h2>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>可能原因</th>
+<th>解决</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>终端出现 <code>WARNING: Nan, Inf or huge value in QACC ...</code></td>
+<td>仿真发散，MuJoCo 已自动重置状态</td>
+<td>减小 <code>timestep</code>，或换 <code>implicitfast</code>；检查 kp 是否过大、ctrl 是否离谱</td>
+</tr>
+<tr>
+<td>改了 kp 以后，关节停在奇怪的角度不动</td>
+<td>只改了 <code>gainprm[0]</code>，没改 <code>biasprm[1]</code></td>
+<td>两者要满足 <code>biasprm[1] = -gainprm[0]</code></td>
+</tr>
+<tr>
+<td>改了 ctrl，<code>d.actuator_force</code> 没变</td>
+<td>派生量没刷新</td>
+<td>先 <code>mujoco.mj_forward(m, d)</code> 再读</td>
+</tr>
+<tr>
+<td><code>KeyError</code> 或 <code>ValueError: ... &#x27;stand&#x27;</code></td>
+<td>加载的不是 G1 的 scene.xml / g1.xml，或名字拼错</td>
+<td>检查路径；<code>[m.key(i).name for i in range(m.nkey)]</code> 看有哪些关键帧</td>
+</tr>
+<tr>
+<td>图里中文显示成方框</td>
+<td>matplotlib 找不到中文字体</td>
+<td>脚本按 Microsoft YaHei、SimHei、Noto Sans CJK SC 的顺序找；Linux 上装其中一种字体</td>
+</tr>
+<tr>
+<td><code>--view</code> 窗口打不开或闪退</td>
+<td>远程桌面、虚拟机的显卡驱动不支持</td>
+<td>不加 <code>--view</code> 只看数字和图；或者换到本机桌面运行</td>
+</tr>
+<tr>
+<td>macOS 上 <code>--view</code> 报错要求 <code>mjpython</code></td>
+<td><code>launch_passive</code> 在 macOS 上必须用 <code>mjpython</code> 启动</td>
+<td>改用 <code>mjpython 02_stand_and_fall.py --view</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="_9">延伸阅读</h2>
+<ul>
+<li><a href="../官方文档_中文HTML/XMLreference.html#actuator-position">XML 参考：position 执行器</a>，以及其中的 <a href="../官方文档_中文HTML/XMLreference.html#actuator-position-kp">kp</a>、<a href="../官方文档_中文HTML/XMLreference.html#actuator-position-kv">kv</a>、<a href="../官方文档_中文HTML/XMLreference.html#actuator-position-dampratio">dampratio</a>、<a href="../官方文档_中文HTML/XMLreference.html#actuator-position-forcerange">forcerange</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#actuator-general-gainprm">XML 参考：general 执行器的 gainprm</a>、<a href="../官方文档_中文HTML/XMLreference.html#actuator-general-biasprm">biasprm</a></li>
+<li><a href="../官方文档_中文HTML/computation/index.html#geactuation">计算：执行器模型</a>、<a href="../官方文档_中文HTML/computation/index.html#geactuatorforce">执行器力</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#keyframe">XML 参考：keyframe</a></li>
+<li><a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mj-resetdata">API：mj_resetData</a>、<a href="../官方文档_中文HTML/APIreference/APIfunctions.html#mj-resetdatakeyframe">mj_resetDataKeyframe</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#option-timestep">XML 参考：option 的 timestep</a>、<a href="../官方文档_中文HTML/XMLreference.html#option-integrator">integrator</a></li>
+<li><a href="../官方文档_中文HTML/computation/index.html#geintegrators">计算：几种积分器</a>、<a href="../官方文档_中文HTML/computation/index.html#gechoosingtimestepintegrator">选择时间步长和积分器</a></li>
+<li><a href="../官方文档_中文HTML/overview.html#divergence">概述：仿真发散</a>、<a href="../官方文档_中文HTML/APIreference/APItypes.html#mjtwarning">mjtWarning 警告类型</a></li>
+<li><a href="../官方文档_中文HTML/python.html#pyviewerpassive">Python：被动式查看器 launch_passive</a></li>
+</ul>
+<hr />
+<details>
+<summary><b>参考答案（跑完再看）</b></summary>
+
+<strong>2.1 先猜一猜</strong>
+
+1. 不会爬起来。80 N 推 0.2 秒还能站住，90 N 就倒；倒下后骨盆一直停在 0.085 m。躺着时各关节离 <code>stand</code> 的目标最多差 1.6°，伺服认为“任务已完成”。
+2. 站得住。<code>mj_resetData</code> 后骨盆从 0.793 m 落到 0.7915 m，10 秒不倒，只是 ctrl=0 让肘关节伸直。
+3. 一直站着。60 秒后骨盆水平漂移只有 0.065 mm，高度 0.7916 m。
+4. kp=200 还站得住，kp=150 在 8.71 s 倒下，临界在 150–200 之间。kp=0 但保留 kv 时 2.00 s 倒（阻尼让它慢慢软下去）；kv 也为 0 时 0.76 s 就瘫倒。
+5. 用 <code>implicitfast</code> 没事，5 秒后骨盆 0.791 m；如果换成 <code>Euler</code>，0.22 s 骨盆就掉到 0.5 m 以下，0.3 s 触发 <code>mjWARN_BADQACC</code> 被自动重置，之后反复发散、反复重置，5 秒里一共重置 19 次。
+
+<strong>观察记录 2</strong>：kp=0、kv=0 的曲线更陡（0.76 s 对 2.00 s），因为没有阻尼拖慢关节。两次都是髋部对折（左髋 pitch 停在 2.88 rad 和 2.80 rad），但倒的方向不同：保留 kv 时躯干朝前（+x）趴下，断电时躯干朝后（−x）倒。着地姿势不同，骨盆高度也就不同（0.071 m 对 0.149 m）。
+
+<strong>观察记录 3</strong>：骨盆几乎不往下掉，而是整个人绕脚踝慢慢往前（+x）倾：躯干前倾 2 s 时约 0.5°、5 s 时 4.6°、8 s 时 19.6°，越倾越快，最后扑倒，脸朝下趴在地上。倒之前腿基本是直的（左膝只动了约 0.09 rad），主要是踝 pitch 和髋一点点被压弯，大体就是 2.6 节“绕脚踝的倒立摆”的样子。
+
+<strong>观察记录 4</strong>：手臂还是站着时的样子：肩 pitch 0.2、肩 roll ±0.2、肘弯 1.28 rad。脚本的输出说明躺下后各关节离目标最多差 1.6°，所以手臂、腿的姿势和站着时几乎一样，只是整个人横在了地上。
+
+<strong>练习 1</strong>：kv 随 kp 变小（左膝 kp=250 时 6.42，kp=150 时 4.97，kp=100 时 4.06，kp=50 时 2.87）。摔倒时间：kp=150 从 8.71 s 变为 8.08 s，kp=100 从 3.66 s 变为 3.56 s，kp=50 从 2.79 s 变为 2.84 s，kp≥200 照样不倒。阻尼小了，kp=150、100 倒得略快一点，但临界 kp 基本没变（用练习 2 的办法查，<code>kv_follow=True</code> 时 kp=155 在 11.61 s 倒、kp=160 站满 20 秒，和只改 kp 时一样在 155–160 之间），说明<strong>站不站得住主要看 kp</strong>，kv 只影响倒的快慢。kp=0 时 <span class="math">\(k_v=2\sqrt{0\cdot m}=0\)</span>，所以和“kp=0，kv=0”完全一样：0.76 s，最终 0.149 m。
+
+<strong>练习 2</strong>：kp=155 在 12.69 s 倒下；kp=160 站满 20 秒，但骨盆停在 0.7865 m，躯干前倾约 10°，是“歪着站住”的；kp=165、170 都在 0.791 m 站稳。答案是 160。
+
+<strong>练习 3</strong>：0.006、0.007、0.008、0.009 都能站满 5 秒（骨盆 0.792 m，没有警告），0.01 才在 0.56 s 摔倒。所以这个模型用 <code>Euler</code> 的极限步长在 9–10 ms 之间，比 2.8 节粗估的 3.8 ms 宽松得多，多出来的余量来自 <code>frictionloss</code>。
+
+<strong>练习 4</strong>：两肘为 0 时，力矩最大的 5 个变成左右踝 pitch（各 3.32 N·m）、腰 pitch（−3.23）、左右膝（各 2.94）。肩 roll 反而从 1.38 降到 1.05 N·m，肘从 −0.04 变成 −1.77。原因是整机质心的 x 从 3.1 mm 前移到 21.3 mm，身体整体往前“压”，腿和腰要出力把它拉住。手臂姿势一变，受影响的不只是手臂，而是全身。
+
+</details>
+<nav class="pager"><span><a href="01_认识G1.html">← 第 1 课 认识 G1：打开它，读懂它</a></span><span><a href="03_吊起来挥手.html">第 3 课 把它吊起来挥手 →</a></span></nav>
+</main>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".math").forEach(function (el) {
+    renderMathInElement(el, {delimiters: [{left: "\\[", right: "\\]", display: true}, {left: "\\(", right: "\\)", display: false}]});
+  });
+});
+</script>
+</body></html>

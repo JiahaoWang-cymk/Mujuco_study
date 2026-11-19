@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 5 课　扛住多大的推力：从侧面推 G1 · G1 实战</title>
+<link rel="stylesheet" href="katex/katex.min.css"><style>
+:root { --ink:#16213a; --muted:#5a6880; --line:#d5dbe4; --accent:#2a4fd6; --bg:#ffffff; --code-bg:#f4f6f9; --quote:#eef3ff; }
+@media (prefers-color-scheme: dark) {
+  :root { --ink:#e5eaf3; --muted:#97a3b8; --line:#2c3a53; --accent:#86a2ff; --bg:#121a29; --code-bg:#1a2438; --quote:#1a2540; }
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); color: var(--ink); font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif; }
+body { margin: 0; line-height: 1.75; font-size: 16px; }
+main { max-width: 860px; margin: 0 auto; padding: 24px 20px 64px; }
+nav.top { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; padding: 10px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+nav.top a, nav.pager a { color: var(--accent); text-decoration: none; }
+nav.top a:hover, nav.pager a:hover { text-decoration: underline; }
+nav.pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 15px; }
+h1 { font-size: 30px; line-height: 1.3; margin: 24px 0 16px; }
+h2 { font-size: 22px; margin: 40px 0 12px; padding-left: 12px; border-left: 5px solid var(--accent); }
+h3 { font-size: 18px; margin: 28px 0 8px; }
+a { color: var(--accent); }
+code { font-family: Consolas, "Microsoft YaHei", monospace; font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; line-height: 1.5; }
+pre code { background: none; padding: 0; font-size: 14px; }
+table { border-collapse: collapse; margin: 12px 0; display: block; overflow-x: auto; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; vertical-align: top; }
+th { background: var(--code-bg); text-align: left; }
+blockquote { margin: 14px 0; padding: 8px 16px; background: var(--quote); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; }
+blockquote p { margin: 6px 0; }
+hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
+details { margin: 24px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
+details summary { cursor: pointer; }
+img { max-width: 100%; }
+.katex-display { overflow-x: auto; overflow-y: hidden; }
+</style>
+<script defer src="katex/katex.min.js"></script><script defer src="katex/contrib/auto-render.min.js"></script>
+</head><body><main>
+<nav class="top"><a href="../index.html">资料包首页</a><a href="index.html">G1 实战目录</a><a href="00_装好环境.html">第 0 课</a><a href="01_认识G1.html">第 1 课</a><a href="02_站着与倒下.html">第 2 课</a><a href="03_吊起来挥手.html">第 3 课</a><a href="04_它感觉到了什么.html">第 4 课</a><a href="05_扛住推力.html">第 5 课</a><a href="06_省力地站.html">第 6 课</a><a href="07_伸手碰球.html">第 7 课</a><a href="08_单腿平衡.html">第 8 课</a><a href="09_让它走起来.html">第 9 课</a><a href="10_录视频与批量实验.html">第 10 课</a><a href="11_附录_往后学什么.html">第 11 课</a></nav>
+<h1 id="5-g1">第 5 课　扛住多大的推力：从侧面推 G1</h1>
+<p><strong>对应入门教程</strong>：5.6、8.2、8.3、8.4、8.6</p>
+<p><strong>本课目标</strong></p>
+<ul>
+<li>用 <code>xfrc_applied</code> 给躯干施加一段持续的外力，并且知道它作用在哪、什么时候要清零。</li>
+<li>给“摔倒”下一个明确的判据，用二分搜索找出 G1 不摔倒的最大推力。</li>
+<li>自己设计一个屈膝站姿（脚平放、质心在支撑区中心），和直腿站姿比一比谁更抗推。</li>
+<li>改脚底的 <code>friction</code>、<code>solref</code>、<code>solimp</code>，看临界推力怎么变，弄懂这几个参数到底管什么。</li>
+</ul>
+<p><strong>预计用时</strong>：2–2.5 小时　<strong>前置</strong>：第 2 课（position 执行器、关键帧）、第 4 课（质心与支撑区域）</p>
+<hr />
+<h2 id="51-10">5.1 怎么“推”它：<code>xfrc_applied</code></h2>
+<p><code>d.xfrc_applied</code> 是一个 <code>nbody × 6</code> 的数组，每行对应一个 body：</p>
+<pre><code class="language-python">d.xfrc_applied[body_id] = [fx, fy, fz, tx, ty, tz]   # 世界坐标系下的力 (N) 和力矩 (N·m)
+</code></pre>
+<p>三件事要记住：</p>
+<ul>
+<li><strong>作用点是这个 body 的质心</strong>（<code>d.xipos[body_id]</code>），方向按<strong>世界坐标系</strong>算，和 body 自己怎么转无关。</li>
+<li><strong>不会自动清零。</strong> 写进去以后每一步都在推，直到你自己把它改回 0。</li>
+<li>查看器里双击选中一个 body，再按住 <code>Ctrl</code> + 右键拖动推它，用的也是这个字段。所以在 <code>--view</code> 模式下，脚本只在“推完那一刻”清零一次，平时不去碰它，免得把你的鼠标扰动覆盖掉。</li>
+</ul>
+<p>本课统一这样推（和第 2、4 课一样）：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>取值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>推哪里</td>
+<td>躯干 <code>torso_link</code> 的质心（站立时离地约 1.02 m）</td>
+</tr>
+<tr>
+<td>往哪推</td>
+<td>世界 +y，也就是机器人的左侧</td>
+</tr>
+<tr>
+<td>什么时候</td>
+<td>t = 1.0 s 起，持续 0.2 s，大小恒定为 F</td>
+</tr>
+<tr>
+<td>看多久</td>
+<td>一直仿真到 t = 4.0 s</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-python">pushing = PUSH_T0 &lt;= d.time &lt; PUSH_T0 + PUSH_DUR
+d.xfrc_applied[torso, :] = 0.0                  # 每步先清零
+if pushing:
+    d.xfrc_applied[torso, :3] = F * PUSH_DIR    # 再按需要写；PUSH_DIR = [0, 1, 0]，即 +y
+mujoco.mj_step(m, d)
+</code></pre>
+<blockquote>
+<p>也可以用 <code>d.qfrc_applied</code> 直接给广义力（关节空间的力）。想“推某个点”时用 <code>xfrc_applied</code> 更直观；想给某个关节额外加力矩时用 <code>qfrc_applied</code>。</p>
+</blockquote>
+<h2 id="52">5.2 什么算“摔倒”，怎么找临界推力</h2>
+<h3 id="_1">摔倒的判据</h3>
+<p>“倒没倒”必须写成代码能判断的条件。本课用两条，任一条满足就算摔倒：</p>
+<table>
+<thead>
+<tr>
+<th>判据</th>
+<th>阈值</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>骨盆高度 <code>qpos[2]</code></td>
+<td>低于 0.5 m</td>
+<td>站立时 0.79 m，倒地后只剩 0.1 m 左右，中间没有“半倒”的稳定状态</td>
+</tr>
+<tr>
+<td>骨盆倾角</td>
+<td>超过 45°</td>
+<td>骨盆竖直轴（旋转矩阵第 3 列）和世界 z 轴的夹角；倾到 45° 质心早已越出支撑区，回不来了</td>
+</tr>
+</tbody>
+</table>
+<p>倾角的算法只要一行：骨盆旋转矩阵 <code>d.xmat[pelvis]</code> 按行展开，第 9 个数（下标 8）就是它的 z 轴在世界 z 方向上的分量，取 <code>arccos</code> 就是倾角。</p>
+<p>为什么要两条？高度判据只在“已经躺下”时才触发；倾角判据能更早发现“正在倒”，还能抓住“往后坐倒但骨盆没降多少”的情况。</p>
+<h3 id="_2">二分搜索</h3>
+<p>如果“推力越大越容易倒”成立（单调），就可以二分：</p>
+<pre><code class="language-text">lo = 0 N（站得住），hi = 300 N（推得倒）
+重复：mid = (lo + hi) / 2，推一次
+      倒了 → hi = mid；没倒 → lo = mid
+直到 hi − lo &lt; 0.5 N，lo 就是“不摔倒的最大推力”
+</code></pre>
+<p>每次约 10 轮，一轮就是一次 4 s 的仿真。G1 每步只要几十微秒，所以找一个临界推力只要两秒左右。</p>
+<p>单调性不能想当然，脚本会先用笨办法验证一遍：从 40 N 到 200 N 每隔 4 N 推一次，打印一行 <code>.</code>（站住）和 <code>X</code>（摔倒）。如果出现 <code>..X..XX</code> 这种交错，说明存在“推得大反而不倒”的区间，二分的结果就不可信了。</p>
+<h2 id="53">5.3 设计一个屈膝站姿</h2>
+<p><code>stand</code> 关键帧的腿全是 0，也就是直腿站。人被推的时候会下意识屈膝。我们也给 G1 设计一个屈膝站姿，要求是：<strong>两脚平放在地上，质心落在支撑区中间</strong>。</p>
+<p>思路分三步，全部在 <code>crouch_pose()</code> 里：</p>
+<ol>
+<li><strong>脚要平</strong>。G1 腿上的 <code>hip_pitch</code>、<code>knee</code>、<code>ankle_pitch</code> 三个关节都绕 y 轴转，转轴互相平行（髋的 roll、yaw 都是 0）。这时脚相对骨盆的俯仰角就等于三个角之和。令 <code>ankle = -(hip + knee)</code>，三者之和为 0，脚就和骨盆一样“平”；骨盆保持竖直，脚掌就平贴地面。</li>
+<li><strong>质心要正</strong>。膝角固定为 1.0 rad（约 57°）。髋角 <code>hip</code> 越大，大腿越往后摆，脚相对骨盆就越靠后（骨盆和上身始终竖直），反过来看就是质心相对脚越靠前。于是用二分法求 <code>hip</code>，让整机质心 <code>subtree_com[0]</code> 的 x 正好落在 8 个脚底小球 x 坐标的平均值上，也就是支撑区的正中间。</li>
+<li><strong>脚要踩地</strong>。屈膝后骨盆高度要跟着降。用 <code>mj_kinematics</code> 算出脚底小球的高度，把骨盆的 <code>qpos[2]</code> 平移一下，让小球的高度和 <code>stand</code> 关键帧里完全一样。</li>
+</ol>
+<pre><code class="language-python">def place(hip):
+    q = q_stand.copy()
+    for side in (&quot;left&quot;, &quot;right&quot;):
+        q[m.joint(f&quot;{side}_hip_pitch_joint&quot;).qposadr[0]] = hip
+        q[m.joint(f&quot;{side}_knee_joint&quot;).qposadr[0]] = knee
+        q[m.joint(f&quot;{side}_ankle_pitch_joint&quot;).qposadr[0]] = -(hip + knee)
+    d.qpos[:] = q
+    mujoco.mj_kinematics(m, d)
+    q[2] += z_foot - d.geom_xpos[feet, 2].min()     # 调骨盆高度，让脚刚好踩地
+    d.qpos[:] = q
+    mujoco.mj_kinematics(m, d)
+    mujoco.mj_comPos(m, d)                          # subtree_com 在这一步才算出来
+    return q, d.subtree_com[0, 0] - d.geom_xpos[feet, 0].mean()
+</code></pre>
+<p>注意 <code>subtree_com</code> 不是 <code>mj_kinematics</code> 算的，要再调一次 <code>mj_comPos</code>（或者直接用 <code>mj_forward</code>）。</p>
+<p>求出来的结果是 <code>hip_pitch = -0.464</code>、<code>ankle_pitch = -0.536</code> rad，骨盆从 0.790 m 降到 0.712 m。踝角在关节范围 [−0.873, 0.524] 内，不会顶到限位。仿真时 <code>ctrl</code> 直接设成这组关节角，位置伺服就会保持这个姿势。</p>
+<h2 id="54-vs">5.4 运行脚本：直腿 vs 屈膝</h2>
+<h3 id="_3">先猜一猜</h3>
+<ol>
+<li>恒定推 0.2 s，你觉得直腿站的 G1 能扛住多少牛？（提示：它重 33.3 kg，自身重力约 327 N。）</li>
+<li>屈膝站姿质心更低，你觉得它的临界推力比直腿高还是低？</li>
+<li>只推 0.2 s 和一直推着不撤，哪种需要的力更大？</li>
+</ol>
+<h3 id="_4">运行</h3>
+<pre><code class="language-bash">python code/05_push.py                  # 全部实验，约 1–1.5 分钟，结果写到 output/
+python code/05_push.py --view --force 90                # 查看器里看直腿被推 90 N
+python code/05_push.py --view --crouch --force 70       # 屈膝站姿被推 70 N
+</code></pre>
+<p><code>--view</code> 模式每 4 s 自动重来一次，可以反复看。它用的是 <code>mujoco.viewer.launch_passive</code>（被动查看器），仿真循环在脚本里，查看器只负责显示和收鼠标事件。</p>
+<h3 id="a">A 组结果</h3>
+<p>脚本先打印两种站姿的静态信息：</p>
+<table>
+<thead>
+<tr>
+<th>站姿</th>
+<th>骨盆高</th>
+<th>质心高</th>
+<th>躯干质心高 h</th>
+<th>质心比支撑区中心 x 偏</th>
+<th>不推时最大倾角</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>直腿 <code>stand</code></td>
+<td>0.790 m</td>
+<td>0.692 m</td>
+<td>1.019 m</td>
+<td>−3.2 cm</td>
+<td>0.1°</td>
+</tr>
+<tr>
+<td>屈膝 knee=1.0</td>
+<td>0.712 m</td>
+<td>0.630 m</td>
+<td>0.941 m</td>
+<td>0.0 cm</td>
+<td>2.8°</td>
+</tr>
+</tbody>
+</table>
+<p>单调性检查（40–200 N，每 4 N 一格）：</p>
+<pre><code class="language-text">直腿 ...........XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+屈膝 .........XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+</code></pre>
+<p>没有交错，可以放心二分。临界推力：</p>
+<table>
+<thead>
+<tr>
+<th>站姿</th>
+<th>临界推力</th>
+<th>两脚最大水平位移</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>直腿 <code>stand</code></td>
+<td><strong>82.0 N</strong></td>
+<td>5.9 cm</td>
+</tr>
+<tr>
+<td>屈膝 knee=1.0</td>
+<td><strong>72.9 N</strong></td>
+<td>5.7 cm</td>
+</tr>
+<tr>
+<td>直腿，kp×10</td>
+<td>89.9 N</td>
+<td>2.1 cm</td>
+</tr>
+<tr>
+<td>屈膝，kp×10</td>
+<td>91.7 N</td>
+<td>2.3 cm</td>
+</tr>
+</tbody>
+</table>
+<p>（“两脚最大水平位移”是用临界推力推时，两只脚的 site 在 4 s 内离开原位的最大水平距离。）</p>
+<p><img alt="临界推力上下的骨盆倾角，以及临界推力随摩擦、接触软硬的变化" src="output/05_push.png" /></p>
+<p>左图是用临界推力的 95% 和 105% 各推一次的骨盆倾角。95% 时倾角最多涨到 5–9° 就回来了；105% 时倾角一路涨，过了 45° 摔倒线。推完的那一刻两条曲线还几乎重合，要再过零点几秒才分开，真正越过 45° 已经是 t ≈ 2.5 s 了。翻倒是一个慢过程：推力只是给了它一个初速度，之后能不能“翻过去”，看的是重力能不能把它拉回来。</p>
+<h3 id="_5">怎么理解这几个数</h3>
+<p><strong>静力学估计。</strong> 往 +y 推，G1 会绕左脚外侧边缘翻倒。把它看成一块刚体，力矩平衡就是</p>
+<p><div class="math">\[F\cdot h = M g\cdot w\]</div></p>
+<p>w 是质心到翻倒支点的水平距离。支点是左脚最外侧那排小球的接地点：小球和地面的接触点在球心正下方，所以只看球心的 y，不用加半径。h 是推力作用点（躯干质心）的高度。脚本算出 w = 14.84 cm，直腿时 <span class="math">\(F = 47.7\)</span> N，屈膝时 <span class="math">\(F = 51.6\)</span> N。这是“一直推着不撤”时刚好推倒刚体的力。</p>
+<ul>
+<li>只推 0.2 s 时，临界推力 82.0 N 比 47.7 N 大得多：短时间的推力超过静力学值也不一定倒，要看这一下给的<strong>冲量</strong>（82.0 × 0.2 ≈ 16.4 N·s）够不够把质心送过脚的边缘。</li>
+<li>按刚体的想法，屈膝时 h 更小，应该更抗推。可实际上屈膝的临界推力反而低了 9 N。</li>
+</ul>
+<p><strong>为什么屈膝反而差？</strong> 关键在“位置伺服不是刚体”。position 执行器就是一个 kp=500 的弹簧，受力就会偏离目标角。直腿时重力几乎沿着腿骨传下去，关节不怎么受力；屈膝时膝、髋、踝都要扛重力矩，本身就“软”在那里（不推时骨盆已经倾了 2.8°），被侧推时腿还会额外弯、扭，质心被带得更偏。</p>
+<p>证据就在表格最后两行：把所有关节的 kp 乘 10（kv 乘 <span class="math">\(\sqrt{10}\)</span>，保持临界阻尼），腿接近刚体，屈膝立刻反超直腿（91.7 N 对 89.9 N），和刚体的直觉一致了。</p>
+<blockquote>
+<p>人屈膝抗推，靠的是主动调整（踝、髋策略，甚至迈步），不是姿势本身。G1 现在只是“把关节锁在一个角度上”，没有任何平衡控制，屈膝只会多出柔性。第 8 课会给它加上真正的平衡控制器。</p>
+</blockquote>
+<h2 id="55-49-50">5.5 摩擦：<code>friction</code> 和 <code>priority</code></h2>
+<h3 id="82">参数含义（入门教程 8.2）</h3>
+<p>geom 的 <code>friction</code> 有 3 个数：<code>滑动 扭转 滚动</code>，默认 <code>1 0.005 0.0001</code>。用到几个由 <code>condim</code> 决定：G1 脚底小球是 <code>condim=&quot;3&quot;</code>，只有法向力和两个方向的滑动摩擦，后两个数不起作用。</p>
+<p>两个 geom 接触时，摩擦系数取谁的？</p>
+<ul>
+<li><code>priority</code> 高的一方说了算；</li>
+<li>优先级相同，就逐元素取<strong>最大值</strong>。</li>
+</ul>
+<p>G1 的脚底小球写着 <code>priority=&quot;1&quot; friction=&quot;0.6&quot;</code>，地面是默认的 <code>priority=&quot;0&quot; friction=&quot;1&quot;</code>。所以脚和地面的接触用的是 <strong>0.6</strong>，地面的摩擦根本不起作用。</p>
+<h3 id="_6">先猜一猜</h3>
+<ol>
+<li>只把地面 <code>floor</code> 的摩擦改成 0.1，临界推力会变吗？</li>
+<li>把脚底的摩擦从 0.6 改成 0.05（像冰面），G1 是更容易倒，还是更不容易倒？</li>
+</ol>
+<h3 id="b">B 组结果（直腿站姿）</h3>
+<p>脚本直接改编译好的模型：<code>m.geom_friction[脚底小球, 0] = μ</code>。这类数值参数改了就生效，不用重新编译。</p>
+<table>
+<thead>
+<tr>
+<th>设置</th>
+<th>临界推力</th>
+<th>两脚最大水平位移</th>
+<th>静止穿透</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>脚底 μ = 0.05</td>
+<td><strong>113.4 N</strong></td>
+<td><strong>44.2 cm</strong></td>
+<td>0.00 mm</td>
+</tr>
+<tr>
+<td>脚底 μ = 0.1</td>
+<td>85.8 N</td>
+<td>7.1 cm</td>
+<td>0.01 mm</td>
+</tr>
+<tr>
+<td>脚底 μ = 0.3</td>
+<td>83.2 N</td>
+<td>5.9 cm</td>
+<td>0.07 mm</td>
+</tr>
+<tr>
+<td>脚底 μ = 0.6（默认）</td>
+<td>82.0 N</td>
+<td>5.9 cm</td>
+<td>0.29 mm</td>
+</tr>
+<tr>
+<td>脚底 μ = 1.0</td>
+<td>80.0 N</td>
+<td>6.0 cm</td>
+<td>0.71 mm</td>
+</tr>
+<tr>
+<td>只把地面 μ 改成 0.1</td>
+<td>82.0 N</td>
+<td>5.9 cm</td>
+<td>0.29 mm</td>
+</tr>
+</tbody>
+</table>
+<p>几点观察：</p>
+<ul>
+<li><strong>只改地面，什么都没变</strong>，和默认一模一样。原因就是上面的 <code>priority</code>。想改“地面滑不滑”，在这个模型里要改脚，或者把地面的 priority 调得比脚高。</li>
+<li><strong>摩擦越小，临界推力反而越大。</strong> μ = 0.05 时它没倒，而是整个人被推着滑出去 44 cm。滑动把推力的一部分能量用摩擦耗掉了，翻倒的力矩也小了（脚底摩擦力就是让它绕脚边转的那个支点力）。但在真实世界里，滑出去半米同样是事故。判据只看“倒没倒”，所以表格要和位移一起看。</li>
+<li>默认 μ 下脚也挪了 5.9 cm。这主要是右脚（迎着推力那一侧）：被推的时候它几乎被卸载，接触力很小，摩擦力也就很小，被腿拖着往里滑。</li>
+<li><strong>静止穿透也随 μ 变</strong>，这有点反直觉。原因是默认的摩擦锥是棱锥型（<code>cone=&quot;pyramidal&quot;</code>）：它把法向力和摩擦力绑在一起，拆成几个沿“棱”方向的约束来求解，摩擦系数会影响法向的等效软硬。换成椭圆锥 <code>cone=&quot;elliptic&quot;</code> 后，法向和摩擦分开处理，就没有这个现象了（见练习 4）。</li>
+</ul>
+<h2 id="56-64-65">5.6 接触有多软：<code>solref</code> 和 <code>solimp</code></h2>
+<h3 id="83">参数含义（入门教程 8.3）</h3>
+<p>MuJoCo 的接触是<strong>软约束</strong>：允许脚稍微压进地面，压得越深，推回来的力越大。“有多软”由两组参数决定：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>默认值</th>
+<th>管什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>solref=&quot;timeconst dampratio&quot;</code></td>
+<td><code>0.02 1</code></td>
+<td>把接触看成弹簧-阻尼器。timeconst 是“消除穿透需要多长时间”，越小越硬；dampratio=1 是临界阻尼，小于 1 会弹</td>
+</tr>
+<tr>
+<td><code>solimp=&quot;d0 dw width midpoint power&quot;</code></td>
+<td><code>0.9 0.95 0.001 0.5 2</code></td>
+<td>阻抗 d，取值 0 到 1，表示约束“能使出几成力”。穿透为 0 时是 d0，穿透达到 width（米）时是 dw，中间按 midpoint、power 决定的 S 形曲线过渡。d 越接近 1 越硬</td>
+</tr>
+</tbody>
+</table>
+<p>官方文档给了一个静止时穿透深度的公式（正数格式、阻抗为常数 d 时）：</p>
+<p><div class="math">\[r = a_u\,(1-d)\,\text{timeconst}^2\,\text{dampratio}^2\]</div></p>
+<p><span class="math">\(a_u\)</span> 是没有约束时的加速度（这里差不多就是重力加速度）。可以看出：timeconst 翻倍，穿透变成 4 倍；d 从 0.9 降到 0.5，<span class="math">\((1-d)\)</span> 变成 5 倍。</p>
+<p>两个 geom 的 solref / solimp 怎么合成？规则和摩擦类似：<code>priority</code> 高的一方说了算；优先级相同时按 <code>solmix</code> 加权平均。G1 的脚 priority 更高，所以改脚就够了。</p>
+<p>另外，timeconst 至少要是时间步长的 2 倍（这里是 0.004 s），更小的值会被 MuJoCo 自动抬到这个下限。</p>
+<h3 id="c">C 组结果（直腿站姿，只改脚底小球）</h3>
+<table>
+<thead>
+<tr>
+<th>设置</th>
+<th>临界推力</th>
+<th>两脚最大水平位移</th>
+<th>静止穿透</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>solref timeconst = 0.004</td>
+<td>83.2 N</td>
+<td>5.6 cm</td>
+<td>0.01 mm</td>
+</tr>
+<tr>
+<td>solref timeconst = 0.01</td>
+<td>82.9 N</td>
+<td>5.7 cm</td>
+<td>0.08 mm</td>
+</tr>
+<tr>
+<td>solref timeconst = 0.02（默认）</td>
+<td>82.0 N</td>
+<td>5.9 cm</td>
+<td>0.29 mm</td>
+</tr>
+<tr>
+<td>solref timeconst = 0.05</td>
+<td>77.6 N</td>
+<td>6.1 cm</td>
+<td>0.94 mm</td>
+</tr>
+<tr>
+<td>solref timeconst = 0.1</td>
+<td><strong>57.7 N</strong></td>
+<td>3.9 cm</td>
+<td><strong>4.29 mm</strong></td>
+</tr>
+<tr>
+<td>solimp = 0.99 0.99 0.001</td>
+<td>82.6 N</td>
+<td>5.6 cm</td>
+<td>0.03 mm</td>
+</tr>
+<tr>
+<td>solimp = 0.5 0.95 0.001</td>
+<td>82.0 N</td>
+<td>6.0 cm</td>
+<td>0.64 mm</td>
+</tr>
+<tr>
+<td>solimp = 0.9 0.95 0.01</td>
+<td>82.0 N</td>
+<td>6.1 cm</td>
+<td>0.33 mm</td>
+</tr>
+<tr>
+<td>solimp = 0.5 0.6 0.01</td>
+<td><strong>72.9 N</strong></td>
+<td>7.9 cm</td>
+<td>2.21 mm</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>默认值附近，临界推力几乎不变</strong>（82–83 N）。接触已经够硬，再硬也没用。</li>
+<li><strong>接触软到一定程度，临界推力明显下降。</strong> timeconst = 0.1 时脚压进地面 4 mm 多，推一下，外侧的脚边压得更深，相当于脚底下垫了一层海绵，人更容易歪过去。</li>
+<li><code>solimp = 0.5 0.95 0.001</code> 的 d0 虽然小，但 width 只有 1 mm，稍一压就涨到 0.95，所以临界推力没变。只有 d0、dw 都小、width 又大（<code>0.5 0.6 0.01</code>）时，整段都是软的，临界推力才掉下来。</li>
+</ul>
+<blockquote>
+<p>实用结论：仿真里的“地面”默认就够硬。调 solref / solimp 通常是为了<strong>模拟软地面</strong>（草地、垫子）或者<strong>解决穿透、抖动</strong>，不是为了让机器人更稳。</p>
+</blockquote>
+<h2 id="57">5.7 数值设置会不会改变结论</h2>
+<p>（入门教程 8.4、8.6）结论如果随时间步长、积分器变来变去，那测的就是数值误差，不是物理。D 组把三项数值设置各改一下：</p>
+<table>
+<thead>
+<tr>
+<th>设置</th>
+<th>直腿临界推力</th>
+<th>屈膝临界推力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>默认（timestep 0.002、implicitfast、pyramidal）</td>
+<td>82.0 N</td>
+<td>72.9 N</td>
+</tr>
+<tr>
+<td>timestep = 0.001</td>
+<td>81.7 N</td>
+<td>72.9 N</td>
+</tr>
+<tr>
+<td>integrator = Euler</td>
+<td>82.3 N</td>
+<td>73.2 N</td>
+</tr>
+<tr>
+<td>cone = elliptic</td>
+<td>79.7 N</td>
+<td>67.7 N</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>时间步长减半、换积分器，临界推力变化不到 0.5 N，和二分精度（0.5 N）相当。说明 2 ms 步长对这个实验已经收敛。</li>
+<li>换摩擦锥变化大一些（屈膝少了 5 N）。棱锥和椭圆是两种<strong>不同的摩擦模型</strong>，不是同一个模型的不同精度，所以结果有差别是正常的。椭圆锥更接近真实的库仑摩擦。</li>
+<li>无论哪种设置，“直腿比屈膝更抗推”的结论都不变。这才是可以写进报告的结论。</li>
+</ul>
+<p>8.6 的稳定性清单在这里的体现：G1 的模型已经用了 <code>implicitfast</code>，每个关节都有 <code>armature=&quot;0.01&quot;</code>，所以默认设置下就很稳。你自己的模型如果在被推时发散、乱飞，按清单先减小 timestep，再换 <code>implicitfast</code>，再查 armature。</p>
+<h2 id="_7">观察记录</h2>
+<ol>
+<li>对照“先猜一猜”，直腿站姿的临界推力你猜的是多少？实际是多少？</li>
+<li>屈膝站姿为什么不如直腿？kp×10 那两行说明了什么？</li>
+<li>只改地面摩擦为什么没有效果？如果要让“地面”说了算，模型该怎么改？</li>
+<li>μ = 0.05 时临界推力最大。能说“摩擦越小机器人越稳”吗？</li>
+<li>把 solref 的 timeconst 从 0.02 改到 0.1，穿透深度变成几倍？和公式 <span class="math">\(r \propto \text{timeconst}^2\)</span> 的预测（25 倍）比，接近吗？</li>
+</ol>
+<h2 id="_8">练习</h2>
+<ol>
+<li><strong>推多久。</strong> 把 <code>PUSH_DUR</code> 改成 0.1、0.4、1.0 s，只求直腿站姿的临界推力。临界推力和冲量 <span class="math">\(F\cdot\Delta t\)</span> 分别怎么变？推 1.0 s 时的临界推力和静力学估计 47.7 N 比，哪个大？为什么？</li>
+</ol>
+<p>提示：脚本名以数字开头，不能直接 <code>import</code>，可以这样加载后改常量：</p>
+<p><code>python
+   import importlib.util
+   spec = importlib.util.spec_from_file_location("push", "code/05_push.py")
+   p = importlib.util.module_from_spec(spec); spec.loader.exec_module(p)
+   m = p.load_model(); q = p.stand_pose(m)
+   p.PUSH_DUR = 0.1
+   print(p.critical_force(m, q)[0])</code></p>
+<ol start="2">
+<li><strong>推哪里。</strong> 把 <code>PUSH_BODY</code> 改成 <code>&quot;pelvis&quot;</code>（骨盆质心约 0.71 m 高），临界推力变成多少？用 <span class="math">\(F\cdot h\)</span> 的思路解释。</li>
+<li><strong>屈多少。</strong> 用 <code>crouch_pose(m, knee)</code> 试 knee = 0.5 和 1.2，记录髋角、踝角、骨盆高度和临界推力。屈得越深越好还是越差？</li>
+<li><strong>摩擦锥与穿透。</strong> 把 <code>m.opt.cone</code> 设成 <code>mujoco.mjtCone.mjCONE_ELLIPTIC</code>，再扫一遍脚底 μ = 0.05、0.1、0.6、1.0，用 <code>penetration_mm()</code> 看静止穿透还随 μ 变吗？</li>
+<li><strong>（选做）往前推、往后推。</strong> 用练习 1 的加载方法，把 <code>p.PUSH_DIR</code> 改成 <code>np.array([1.0, 0, 0])</code>（向前）和 <code>np.array([-1.0, 0, 0])</code>（向后），临界推力各是多少？结合第 4 课的支撑区域，解释为什么和侧推不一样。再把 kp 乘 10（做法见脚本 <code>part_a()</code>）试一次往前推，结果说明了什么？</li>
+</ol>
+<h2 id="_9">如果报错</h2>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>可能原因</th>
+<th>解决</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>推完以后机器人一直往一边飘</td>
+<td>忘了把 <code>xfrc_applied</code> 清零</td>
+<td>每步先写 0，或者推完时清零一次</td>
+</tr>
+<tr>
+<td>推力加到很大也推不倒</td>
+<td>写错了下标：<code>xfrc_applied[id, 1]</code> 是 fy，<code>[id, 4]</code> 是绕 y 的力矩</td>
+<td>前 3 个是力，后 3 个是力矩</td>
+</tr>
+<tr>
+<td>二分结果每次差很多、或比扫描结果大</td>
+<td>摔倒与否不单调（例如屈膝太深时往后坐倒）</td>
+<td>先跑单调性检查；不单调就缩小搜索区间或换判据</td>
+</tr>
+<tr>
+<td>改了地面 friction 没效果</td>
+<td>脚的 <code>priority=&quot;1&quot;</code> 更高，接触用脚的参数</td>
+<td>改脚底小球，或把地面 priority 设得更高</td>
+</tr>
+<tr>
+<td>改 solref 的 timeconst 小于 0.004 也没变化</td>
+<td>低于 2 倍时间步长的值会被自动抬高</td>
+<td>想更硬就先减小 <code>timestep</code></td>
+</tr>
+<tr>
+<td>屈膝姿势一开始就往后倒</td>
+<td>自己凑的髋角、踝角让质心落到了支撑区外，或者脚没放平</td>
+<td>按 5.3 的方法：踝角取 <code>-(hip + knee)</code>，髋角用二分法让质心对准脚的中间</td>
+</tr>
+<tr>
+<td><code>--view</code> 窗口打不开或报 OpenGL 错误</td>
+<td>远程桌面、虚拟机显卡不支持</td>
+<td>先不加 <code>--view</code> 跑无界面版本；或参考第 1 课改用网页查看器</td>
+</tr>
+<tr>
+<td><code>AttributeError: module &#x27;mujoco&#x27; has no attribute &#x27;viewer&#x27;</code></td>
+<td>没有 <code>import mujoco.viewer</code></td>
+<td>脚本里 <code>view()</code> 已经单独导入；自己写时别漏</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_10">延伸阅读</h2>
+<ul>
+<li><a href="../官方文档_中文HTML/programming/simulation.html#siinput">仿真：辅助控制 qfrc_applied 与 xfrc_applied</a></li>
+<li><a href="../官方文档_中文HTML/modeling.html#ccontact">建模：接触参数怎么合成（priority、solmix）</a>、<a href="../官方文档_中文HTML/modeling.html#solmixing">solref / solimp 的混合规则</a></li>
+<li><a href="../官方文档_中文HTML/modeling.html#csolverimpedance">建模：求解器参数 solimp（阻抗）</a>、<a href="../官方文档_中文HTML/modeling.html#csolverreference">solref（参考加速度）</a>、<a href="../官方文档_中文HTML/modeling.html#csolverfriction">摩擦约束</a>、<a href="../官方文档_中文HTML/modeling.html#cslowslippage">缓慢滑移</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#body-geom-friction">XML 参考：geom 的 friction</a>、<a href="../官方文档_中文HTML/XMLreference.html#body-geom-priority">priority</a>、<a href="../官方文档_中文HTML/XMLreference.html#body-geom-condim">condim</a>、<a href="../官方文档_中文HTML/XMLreference.html#body-geom-solref">solref</a>、<a href="../官方文档_中文HTML/XMLreference.html#body-geom-solimp">solimp</a></li>
+<li><a href="../官方文档_中文HTML/XMLreference.html#option-timestep">XML 参考：option 的 timestep</a>、<a href="../官方文档_中文HTML/XMLreference.html#option-integrator">integrator</a>、<a href="../官方文档_中文HTML/XMLreference.html#option-cone">cone</a></li>
+<li><a href="../官方文档_中文HTML/computation/index.html#cocontact">计算：接触与摩擦锥</a></li>
+<li><a href="../官方文档_中文HTML/python.html#pyviewerpassive">Python：被动查看器 launch_passive</a></li>
+</ul>
+<hr />
+<details>
+<summary><b>参考答案（跑完再看）</b></summary>
+
+<strong>5.4 先猜一猜</strong>：直腿推 0.2 s 的临界推力是 82.0 N，约为自重的四分之一。屈膝反而更低，72.9 N。只推 0.2 s 需要的力更大。一直推着时，刚体的静力学估计是 47.7 N；实际上推 1.0 s，G1 只要 35.2 N 就倒了（见练习 1）。
+
+<strong>5.5 先猜一猜</strong>：只改地面摩擦，临界推力还是 82.0 N，完全不变。脚底 μ = 0.05 时更“不容易倒”（113.4 N），但会被推着滑出去 44.2 cm。
+
+<strong>观察记录 2</strong>：屈膝时关节要扛重力矩，位置伺服本身就有偏差（不推时骨盆已倾 2.8°），被推时腿还会继续弯、扭，柔性让质心偏得更多。kp×10 后腿接近刚体，屈膝（91.7 N）超过直腿（89.9 N），说明“质心低更稳”在刚体意义上成立，G1 屈膝变差是伺服太软造成的。
+
+<strong>观察记录 3</strong>：脚底小球 <code>priority=&quot;1&quot;</code> 高于地面的 0，接触的 friction、solref、solimp 都只用脚的。想让地面说了算，把地面的 priority 设成 2 之类更高的值；或者用 <code>&lt;contact&gt;&lt;pair&gt;</code> 显式指定这对 geom 的接触参数。
+
+<strong>观察记录 4</strong>：不能。μ 小时它不倒，是因为在滑。滑出 44 cm 对真机同样是失败。判据要结合任务，例如再加一条“脚滑动超过 10 cm 也算失败”。
+
+<strong>观察记录 5</strong>：0.29 mm → 4.29 mm，约 15 倍，比 25 倍小，但量级对得上。公式假设阻抗 d 是常数，而 solimp 默认的 d 会随穿透从 0.9 涨到 0.95（width = 1 mm）：穿透 0.29 mm 时 d 还在两者之间，穿透 4 mm 时已经到 0.95，<span class="math">\((1-d)\)</span> 变小，把倍数拉低了。另外 5.5 节说过，棱锥摩擦锥也会影响法向的等效软硬，公式没有考虑这一点。
+
+<strong>练习 1</strong>：
+
+| 推多久 | 临界推力 | 冲量 F·Δt |
+|---|---|---|
+| 0.1 s | 148.5 N | 14.85 N·s |
+| 0.2 s | 82.0 N | 16.41 N·s |
+| 0.4 s | 50.4 N | 20.16 N·s |
+| 1.0 s | 35.2 N | 35.16 N·s |
+
+推得越短，越接近“只看冲量”（0.1 s 和 0.2 s 的冲量差不多）；推得越长，越接近“只看力”。推 1.0 s 时的 35.2 N 比静力学估计 47.7 N 还小，原因有二：一是腿不是刚体，侧推时髋、踝的伺服会让一点，质心被带向外侧，w 变小；二是力是突然加上去的，系统会冲过头（阶跃响应的超调），最大偏转比同样大小的静态力更大。
+
+<strong>练习 2</strong>：推骨盆时临界推力是 104.0 N。骨盆质心比躯干质心低约 0.3 m，同样的力产生的翻倒力矩 <span class="math">\(F\cdot h\)</span> 小，所以要更大的力。
+
+<strong>练习 3</strong>：
+
+| knee | hip_pitch | ankle_pitch | 骨盆高 | 临界推力 |
+|---|---|---|---|---|
+| 0.5 | −0.203 | −0.297 | 0.770 m | 78.8 N |
+| 1.0 | −0.464 | −0.536 | 0.712 m | 72.9 N |
+| 1.2 | −0.567 | −0.633 | 0.679 m | 65.6 N |
+
+屈得越深，临界推力越低，原因同观察记录 2。
+
+<strong>练习 4</strong>：椭圆锥下，四种 μ 的静止穿透都是 0.713 mm，不再随 μ 变；棱锥锥下分别是 0.002、0.007、0.294、0.714 mm。椭圆锥把法向和摩擦分开处理，法向的软硬只由 solref、solimp 决定。
+
+<strong>练习 5</strong>：往前推（+x）临界推力 29.0 N，往后推（−x）只有 22.6 N，都远小于侧推的 82.0 N。直腿站姿下，质心到脚尖那排小球 11.7 cm，到脚跟那排只有 5.3 cm（侧向是 14.8 cm），所以往后推最弱。按 <span class="math">\(F = Mgw/h\)</span> 的静力学估计，往前推是 <span class="math">\(327 \times 0.117 / 1.019 \approx 37.5\)</span> N，往后推约 17.1 N。往后推的 22.6 N 比静力学值大，和侧推一样，是“只推 0.2 s”带来的余量；往前推的 29.0 N 却连静力学值都不到。前后方向上，身体主要靠两个踝关节的 pitch 伺服“撑”在脚上，伺服一让，质心就往前送，w 被吃掉一截。把 kp 乘 10 再推，往前推升到 36.9 N，往后推升到 27.5 N，说明前后方向的短板主要来自伺服的柔性。这也是为什么真实的人形机器人前后方向更需要主动平衡（踝策略、迈步）。
+
+</details>
+<nav class="pager"><span><a href="04_它感觉到了什么.html">← 第 4 课 它“感觉”到了什么</a></span><span><a href="06_省力地站.html">第 6 课 省力地站：算出“刚好站住”需要的力矩 →</a></span></nav>
+</main>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".math").forEach(function (el) {
+    renderMathInElement(el, {delimiters: [{left: "\\[", right: "\\]", display: true}, {left: "\\(", right: "\\)", display: false}]});
+  });
+});
+</script>
+</body></html>
