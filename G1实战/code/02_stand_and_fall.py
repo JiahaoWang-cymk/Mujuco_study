@@ -13,6 +13,10 @@
   python 02_stand_and_fall.py --kv-follow     # 第 4 组改用 MjSpec 重新编译，kv 随 kp 按 dampratio 重算
   python 02_stand_and_fall.py --view --kp 100 # 打开查看器实时看：kp=100 时它怎么倒
   python 02_stand_and_fall.py --view --push 100   # kp 保持 500，第 1 秒侧推 100 N
+  python 02_stand_and_fall.py --web 8790 --kp 100 # 同 --view，但显示在网页里：浏览器打开 http://127.0.0.1:8790/
+  python 02_stand_and_fall.py --once --kp 150     # 只跑一次（无界面，几秒）：打印结果，画骨盆高度曲线和截图
+  python 02_stand_and_fall.py --once --dt 0.01 --integrator euler   # 换步长和积分器
+--kp、--kv-follow、--push、--start、--dt、--integrator、--time 对 --once、--view、--web 都有效。
 """
 import argparse
 import pathlib
@@ -307,19 +311,131 @@ def part6_integrator():
     print(f"   对照：mjINT_EULER dt=0.004，把 frictionloss 改成 0 → 摔倒：{fmt_fall(tf)}")
 
 
-# ---------------------------------------------------------------- 查看器
-def view(kp, push):
-    import mujoco.viewer
+# ---------------------------------------------------------------- 跑一次（无界面）
+INTEGRATORS = {"implicitfast": mujoco.mjtIntegrator.mjINT_IMPLICITFAST,
+               "euler": mujoco.mjtIntegrator.mjINT_EULER,
+               "rk4": mujoco.mjtIntegrator.mjINT_RK4}
+START_NAME = {"key": "加载 stand 关键帧", "qpos0": "不加载关键帧（mj_resetData）", "key_ctrl0": "加载关键帧后把 ctrl 清零"}
 
-    m = load_model(kp=kp)
+
+def setup(kp, kv_follow, dt, integrator):
+    """按命令行参数准备模型。kp=500 且不加 --kv-follow 时，模型和 XML 里的一样。"""
+    integ = INTEGRATORS[integrator] if integrator else None
+    return load_model(kp=kp, kv_follow=kv_follow, timestep=dt, integrator=integ)
+
+
+def reset_to(m, d, start):
+    """按 start（同 simulate() 的 start 参数）重置。"""
+    if start.startswith("key"):
+        mujoco.mj_resetDataKeyframe(m, d, m.key("stand").id)
+        if start == "key_ctrl0":
+            d.ctrl[:] = 0.0
+    else:
+        mujoco.mj_resetData(m, d)
+    mujoco.mj_forward(m, d)
+
+
+def describe(m, kp, kv_follow, push, start, T):
+    knee_kv = -m.actuator_biasprm[m.actuator("left_knee_joint").id, 2]
+    print(f"kp={kp:g}（左膝 kv={knee_kv:.2f}{'，随 kp 重算' if kv_follow else ''}），起始：{START_NAME[start]}，"
+          f"timestep={m.opt.timestep:g} s，integrator={mujoco.mjtIntegrator(m.opt.integrator).name}")
+    print(f"仿真 {T:g} s" + (f"，第 1 秒起侧推躯干 {push:g} N、持续 0.2 s（冲量 {push * 0.2:.0f} N·s）" if push else "，不推"),
+          flush=True)
+
+
+def once(kp, kv_follow, push, start, dt, integrator, T):
+    m = setup(kp, kv_follow, dt, integrator)
+    describe(m, kp, kv_follow, push, start, T)
     d = mujoco.MjData(m)
-    mujoco.mj_resetDataKeyframe(m, d, m.key("stand").id)
+    reset_to(m, d, start)
+    torso = m.body("torso_link").id
+
+    cam = mujoco.MjvCamera()
+    cam.lookat[:] = [0.3, 0.25, 0.4]            # 往前（+x）、往左（+y，推的方向）偏一点，倒地后也在画面里
+    cam.distance, cam.azimuth, cam.elevation = 3.2, 150.0, -18.0
+    n = int(round(T / m.opt.timestep))
+    shot_steps = {int(round(k * n / 4)) - 1 for k in (1, 2, 3, 4)}
+    frames = []
+    ts, zs = np.zeros(n), np.zeros(n)
+    t_fall, nreset = None, 0
+    with mujoco.Renderer(m, height=300, width=300) as r:
+        r.update_scene(d, cam)
+        frames.append((0.0, r.render().copy()))
+        for i in range(n):
+            if push:
+                d.xfrc_applied[torso, 1] = push if 1.0 <= d.time < 1.2 else 0.0
+            t_before = d.time
+            mujoco.mj_step(m, d)
+            if d.time < t_before:            # 发散后 MuJoCo 自动 mj_resetData，d.time 回到 0
+                nreset += 1
+            ts[i], zs[i] = (i + 1) * m.opt.timestep, d.qpos[2]   # 横轴用步数×timestep，重置了也连续
+            if t_fall is None and d.qpos[2] < FALL_Z:
+                t_fall = ts[i]
+            if i in shot_steps:
+                r.update_scene(d, cam)
+                frames.append((ts[i], r.render().copy()))
+
+    jid = m.actuator_trnid[:, 0]
+    err = np.abs(d.ctrl - d.qpos[m.jnt_qposadr[jid]])
+    up = "站着" if zs[-1] > FALL_Z else "躺在地上"
+    print(f"结果：摔倒 {fmt_fall(t_fall).strip()}，最低 {zs.min():.3f} m，{T:g} s 后骨盆 {zs[-1]:.3f} m（{up}），"
+          f"关节离目标最多差 {np.degrees(err.max()):.1f}°（{m.actuator(int(err.argmax())).name}）")
+    if nreset:
+        print(f"注意：仿真发散，MuJoCo 自动重置了 {nreset} 次，结束时 d.time 只有 {d.time:.2f} s。"
+              "上面的时间按“步数 × timestep”累计，不随重置回到 0")
+
+    fig = plt.figure(figsize=(12, 6.2))
+    gs = fig.add_gridspec(2, len(frames), height_ratios=[1.2, 1])
+    for k, (t, img) in enumerate(frames):
+        ax = fig.add_subplot(gs[0, k])
+        ax.imshow(img)
+        ax.set_axis_off()
+        ax.set_title(f"t = {t:.2f} s", fontsize=10)
+    ax = fig.add_subplot(gs[1, :])
+    ax.plot(ts, zs, color="#eb6834" if t_fall else "#2a78d6", lw=2)
+    ax.axhline(FALL_Z, color="gray", ls="--", lw=1)
+    ax.text(0.05, FALL_Z + 0.01, "摔倒判据 0.5 m", ha="left", va="bottom", color="gray")
+    if push:
+        ax.axvspan(1.0, 1.2, color="orange", alpha=0.2)
+    ax.set_xlim(0, T)
+    ax.set_ylim(0, 0.9)
+    ax.set_xlabel("时间 (s)" + ("（橙色：推力作用时段）" if push else ""))
+    ax.set_ylabel("骨盆高度 (m)")
+    integ = mujoco.mjtIntegrator(m.opt.integrator).name.replace("mjINT_", "")
+    ax.set_title(f"kp={kp:g}，{START_NAME[start]}，" + (f"推 {push:g} N，" if push else "") + f"dt={m.opt.timestep:g} s {integ}："
+                 f"摔倒 {fmt_fall(t_fall).strip()}" + (f"（自动重置 {nreset} 次）" if nreset else ""))
+    ax.grid(alpha=0.3)
+    fig.tight_layout()
+    path = OUT / "02_once.png"
+    fig.savefig(path, dpi=100)
+    plt.close(fig)
+    print(f"图已保存：{path}")
+
+
+# ---------------------------------------------------------------- 查看器
+def view(kp, push, kv_follow=False, start="key", dt=None, integrator=None, T=10.0, web_port=None):
+    """实时观看，每 T 秒重来一次。web_port 为 None 时开桌面查看器；给了端口就用网页查看器（课文页实验台右侧那个）。"""
+    m = setup(kp, kv_follow, dt, integrator)
+    d = mujoco.MjData(m)
+    reset_to(m, d, start)
     torso = m.body("torso_link").id
     pushing = False
-    print(f"kp={kp}，侧推 {push} N。关掉窗口结束。")
-    with mujoco.viewer.launch_passive(m, d) as viewer:
+    describe(m, kp, kv_follow, push, start, T)
+    print(f"每 {T:g} s 重来一次。" + ("" if web_port else "关掉窗口结束。"), flush=True)
+    if web_port:
+        from webview import open_web                # 同目录的 webview.py
+        viewer_cm = open_web(m, d, web_port, title="第 2 课：站着与倒下")
+    else:
+        from mujoco import viewer as mj_viewer
+        viewer_cm = mj_viewer.launch_passive(m, d)
+    with viewer_cm as viewer:
+        t_run = 0.0                          # 这一轮跑了多久：自己累加，发散自动重置时 d.time 会回到 0
         while viewer.is_running():
             step_start = time.time()
+            if t_run >= T:
+                reset_to(m, d, start)
+                d.xfrc_applied[:] = 0.0
+                pushing, t_run = False, 0.0
             if push:
                 now = 1.0 <= d.time < 1.2
                 if now:
@@ -328,7 +444,11 @@ def view(kp, push):
                     d.xfrc_applied[torso, 1] = 0.0
                 pushing = now
             mujoco.mj_step(m, d)
-            viewer.sync()
+            t_run += m.opt.timestep
+            if web_port:
+                viewer.sync(m, d)
+            else:
+                viewer.sync()
             # 按真实时间播放
             rest = m.opt.timestep - (time.time() - step_start)
             if rest > 0:
@@ -338,14 +458,25 @@ def view(kp, push):
 def main():
     ap = argparse.ArgumentParser(description="第 2 课：站着与倒下")
     ap.add_argument("--view", action="store_true", help="打开查看器实时观看（不跑批量实验）")
-    ap.add_argument("--kp", type=float, default=500.0, help="--view 时所有执行器的 kp")
-    ap.add_argument("--push", type=float, default=0.0, help="--view 时第 1 秒侧推的力 (N)")
-    ap.add_argument("--kv-follow", action="store_true", help="第 4 组用 MjSpec 重编译，kv 随 kp 重算")
+    ap.add_argument("--web", type=int, metavar="PORT", help="像 --view 一样实时观看，但显示在网页里（http://127.0.0.1:PORT/）")
+    ap.add_argument("--once", action="store_true", help="只跑一次（无界面），图写到 output/02_once.png")
+    ap.add_argument("--kp", type=float, default=500.0, help="--once/--view/--web 时所有执行器的 kp")
+    ap.add_argument("--push", type=float, default=0.0, help="--once/--view/--web 时第 1 秒侧推的力 (N)")
+    ap.add_argument("--start", choices=list(START_NAME), default="key", help="起始方式（同实验一），默认 key")
+    ap.add_argument("--dt", type=float, default=None, help="timestep (s)，默认 0.002")
+    ap.add_argument("--integrator", choices=list(INTEGRATORS), default=None, help="积分器，默认 implicitfast")
+    ap.add_argument("--time", type=float, default=10.0, help="--once 仿真多久 / --view、--web 多久重来一次 (s)")
+    ap.add_argument("--kv-follow", action="store_true",
+                    help="第 4 组用 MjSpec 重编译，kv 随 kp 重算（和 --once/--view/--web 一起用时作用于那次仿真）")
     args = ap.parse_args()
 
     print(f"MuJoCo {mujoco.__version__}")
-    if args.view:
-        view(args.kp, args.push)
+    if args.view or args.web:
+        view(args.kp, args.push, args.kv_follow, args.start, args.dt, args.integrator, args.time,
+             web_port=args.web)
+        return
+    if args.once:
+        once(args.kp, args.kv_follow, args.push, args.start, args.dt, args.integrator, args.time)
         return
     if args.kv_follow:                       # 只跑第 4 组
         part4_kp(kv_follow=True)

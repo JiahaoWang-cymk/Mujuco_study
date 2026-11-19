@@ -1,40 +1,201 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>第 3 课　把它吊起来挥手 · G1 实战</title>
-<link rel="stylesheet" href="katex/katex.min.css"><style>
-:root { --ink:#16213a; --muted:#5a6880; --line:#d5dbe4; --accent:#2a4fd6; --bg:#ffffff; --code-bg:#f4f6f9; --quote:#eef3ff; }
+<title>第 3 课 把它吊起来挥手 · G1 实战</title>
+<link rel="stylesheet" href="katex/katex.min.css"><script defer src="katex/katex.min.js"></script><script defer src="katex/contrib/auto-render.min.js"></script><style>
+:root {
+  --paper:#eef1f5; --panel:#ffffff; --ink:#142038; --muted:#5a6880; --line:#d5dbe4;
+  --joint:#2a4fd6; --contact:#c87414; --code-bg:#f2f4f8; --quote:#eef3ff;
+  --sky-top:#2e4d6c; --sky-low:#22394f; --on-sky:#eaf0f7; --on-sky-muted:#a9bbd0;
+  --display:"Bahnschrift","DIN Alternate","Segoe UI","Microsoft YaHei",sans-serif;
+  --text:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;
+}
 @media (prefers-color-scheme: dark) {
-  :root { --ink:#e5eaf3; --muted:#97a3b8; --line:#2c3a53; --accent:#86a2ff; --bg:#121a29; --code-bg:#1a2438; --quote:#1a2540; }
+  :root { --paper:#121a29; --panel:#172134; --ink:#e6ebf3; --muted:#97a3b8; --line:#2c3a53;
+          --joint:#86a2ff; --contact:#f2ab4f; --code-bg:#1d2840; --quote:#1a2540; }
 }
 * { box-sizing: border-box; }
-html { background: var(--bg); color: var(--ink); font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif; }
+html { background: var(--paper); color: var(--ink); font-family: var(--text); }
 body { margin: 0; line-height: 1.75; font-size: 16px; }
-main { max-width: 860px; margin: 0 auto; padding: 24px 20px 64px; }
-nav.top { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; padding: 10px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
-nav.top a, nav.pager a { color: var(--accent); text-decoration: none; }
-nav.top a:hover, nav.pager a:hover { text-decoration: underline; }
-nav.pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 15px; }
-h1 { font-size: 30px; line-height: 1.3; margin: 24px 0 16px; }
-h2 { font-size: 22px; margin: 40px 0 12px; padding-left: 12px; border-left: 5px solid var(--accent); }
-h3 { font-size: 18px; margin: 28px 0 8px; }
-a { color: var(--accent); }
+a { color: var(--joint); }
+a:focus-visible, summary:focus-visible { outline: 3px solid var(--joint); outline-offset: 3px; border-radius: 4px; }
 code { font-family: Consolas, "Microsoft YaHei", monospace; font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
-pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; line-height: 1.5; }
-pre code { background: none; padding: 0; font-size: 14px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+pre code { background: none; padding: 0; font-size: 14px; white-space: inherit; }
 table { border-collapse: collapse; margin: 12px 0; display: block; overflow-x: auto; }
 th, td { border: 1px solid var(--line); padding: 6px 10px; vertical-align: top; }
 th { background: var(--code-bg); text-align: left; }
-blockquote { margin: 14px 0; padding: 8px 16px; background: var(--quote); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; }
-blockquote p { margin: 6px 0; }
-hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
-details { margin: 24px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
-details summary { cursor: pointer; }
 img { max-width: 100%; }
 .katex-display { overflow-x: auto; overflow-y: hidden; }
+
+/* 顶栏：面包屑 + 课程跳转 */
+.bar { max-width: 1080px; margin: 0 auto; padding: 14px 28px; display: flex; align-items: center; gap: 12px; font-size: 14px; position: relative; }
+.bar .crumb { display: flex; gap: 8px; align-items: center; flex: 1; min-width: 0; color: var(--muted); }
+.bar .crumb a { color: var(--muted); text-decoration: none; }
+.bar .crumb a:hover { color: var(--joint); }
+.bar .crumb b { color: var(--ink); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jump summary { cursor: pointer; list-style: none; padding: 4px 12px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: var(--panel); white-space: nowrap; }
+.jump summary::-webkit-details-marker { display: none; }
+.jump[open] summary { border-color: var(--joint); }
+.jump ol { position: absolute; right: 28px; top: 52px; z-index: 5; margin: 0; padding: 8px 0; list-style: none; width: 300px; max-width: calc(100vw - 32px);
+           background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 30px rgba(20,32,56,.18); }
+.jump li a { display: flex; gap: 10px; padding: 5px 16px; text-decoration: none; color: var(--ink); }
+.jump li a:hover, .jump li a[aria-current] { background: var(--quote); }
+.jump li span { font-family: var(--display); color: var(--joint); width: 1.6em; text-align: right; flex: none; }
+
+/* 课文页 */
+article { max-width: 860px; margin: 0 auto 64px; padding: 8px 48px 40px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+article h1 { font-size: 30px; line-height: 1.3; margin: 28px 0 16px; }
+article h2 { font-size: 22px; margin: 40px 0 12px; padding-left: 12px; border-left: 5px solid var(--joint); }
+article h3 { font-size: 18px; margin: 28px 0 8px; }
+blockquote { margin: 14px 0; padding: 8px 16px; background: var(--quote); border-left: 4px solid var(--joint); border-radius: 0 8px 8px 0; }
+blockquote p { margin: 6px 0; }
+hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
+article details { margin: 24px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
+article details summary { cursor: pointer; }
+nav.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 48px; }
+nav.pager a { display: block; padding: 12px 16px; border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--ink); }
+nav.pager a:hover { border-color: var(--joint); }
+nav.pager small { display: block; color: var(--muted); font-size: 13px; }
+nav.pager .next { text-align: right; grid-column: 2; }
+
+/* 实验台 */
+.lab { margin: 22px 0; padding: 14px 18px 16px; border: 1px solid var(--line); border-left: 4px solid var(--contact); border-radius: 0 10px 10px 0; background: var(--paper); }
+.lab > header { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.lab > header .tag { font-size: 13px; font-weight: 700; color: var(--contact); }
+.lab > header b { font-size: 16px; }
+.lab .note { margin: 6px 0 0; color: var(--muted); font-size: 14.5px; }
+.lab .lab-cmd { margin: 10px 0 0; padding: 8px 12px; font-size: 13.5px; }
+.lab .lab-cmd code { white-space: pre-wrap; word-break: break-all; }
+.lab .lab-off { margin: 8px 0 0; font-size: 14px; color: var(--muted); }
+.lab-fields { display: flex; flex-wrap: wrap; gap: 10px 22px; margin: 12px 0 0; font-size: 14.5px; }
+.lab-fields label { display: inline-flex; align-items: center; gap: 8px; }
+.lab-fields select { font: inherit; padding: 4px 8px; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+.lab-fields input[type=number] { width: 6.5em; padding: 4px 8px; font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+.lab-fields input:focus-visible, .lab button:focus-visible { outline: 3px solid var(--joint); outline-offset: 2px; }
+.lab-fields input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--joint); }
+.lab-fields small { color: var(--muted); }
+.lab-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.lab button { font: inherit; font-size: 14.5px; padding: 5px 14px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.lab button:hover { border-color: var(--joint); }
+.lab button.primary { background: var(--joint); border-color: var(--joint); color: var(--panel); font-weight: 700; }
+.lab button.ghost { background: transparent; }
+.lab button:disabled { opacity: .5; cursor: progress; }
+.lab-status { font-size: 14px; color: var(--muted); margin-left: 4px; }
+.lab-status.ok { color: #2f8a4a; } .lab-status.bad { color: #c2410c; }
+.lab-status.busy::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--contact); animation: pulse 1s infinite alternate; }
+@keyframes pulse { from { opacity: 1; } to { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .lab-status.busy::before { animation: none; } }
+.lab-log { margin: 12px 0 0; max-height: 260px; overflow: auto; font-size: 13px; white-space: pre-wrap; background: #0f1828; color: #d7e0ee; }
+.lab-results figure { margin: 12px 0 0; }
+.lab-results img, .lab-results video { display: block; max-width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+.lab-results figcaption, .lab-file, .lab-hint { font-size: 13px; color: var(--muted); margin: 4px 0; }
+.lab-srcbox { margin-top: 12px; }
+.lab-src { position: relative; margin: 0; max-height: 380px; overflow: auto; padding: 8px 0; font-size: 13px; line-height: 1.5; }
+.lab-src .ln { display: block; padding: 0 12px 0 4.4em; text-indent: -4.4em; white-space: pre-wrap; overflow-wrap: anywhere; }
+.lab-src .ln i { display: inline-block; width: 3.4em; padding-right: 1em; text-align: right; color: var(--muted); font-style: normal; user-select: none; }
+.lab-src .ln.hl { background: color-mix(in srgb, var(--contact) 16%, transparent); }
+
+/* 有实时仿真画面的课：课文在左，画面固定在右 */
+.split { display: grid; grid-template-columns: minmax(0, 800px) minmax(420px, 1fr); gap: 20px; max-width: 1900px; margin: 0 auto; padding: 0 20px 64px; align-items: start; }
+.split article { margin: 0; max-width: none; }
+.viewer { position: sticky; top: 10px; height: calc(100vh - 20px); display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.viewer-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.viewer-head b { font-size: 15px; white-space: nowrap; }
+.viewer-what { flex: 1; min-width: 0; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.viewer-head button { font: inherit; font-size: 13px; padding: 3px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.viewer-head a { font-size: 13px; white-space: nowrap; }
+.viewer-frame { flex: 1; position: relative; background: #1b2a3d; }
+.viewer-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.viewer-empty { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: #a9bbd0; font-size: 15px; line-height: 1.8; }
+.lab.playing { border-left-color: var(--joint); box-shadow: 0 0 0 2px color-mix(in srgb, var(--joint) 35%, transparent); }
+@media (max-width: 1180px) {
+  .split { grid-template-columns: 1fr; padding: 0 0 64px; }
+  .viewer { order: -1; top: 0; height: 46vh; border-radius: 0; border-left: 0; border-right: 0; z-index: 4; }
+}
+
+/* 目录页 */
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+.hero { display: grid; grid-template-columns: 1.15fr 1fr; align-items: stretch; border-radius: 18px; overflow: hidden;
+        background: linear-gradient(180deg, var(--sky-top), var(--sky-low)); color: var(--on-sky); }
+.hero .copy { padding: 52px 8px 44px 48px; display: flex; flex-direction: column; justify-content: center; }
+.hero h1 { font-family: var(--display); font-weight: 600; font-size: clamp(44px, 7vw, 76px); line-height: 1; margin: 0; letter-spacing: -0.5px; }
+.hero h1 span { display: block; font-family: var(--text); font-weight: 700; font-size: 0.4em; letter-spacing: 1px; margin-top: 14px; }
+.hero p { color: var(--on-sky-muted); margin: 18px 0 26px; max-width: 30em; }
+.hero dl { display: flex; flex-wrap: wrap; gap: 12px 30px; margin: 0 0 30px; }
+.hero dt { font-family: var(--display); font-size: 28px; font-weight: 600; line-height: 1.1; color: var(--on-sky); }
+.hero dd { margin: 0; font-size: 13px; color: var(--on-sky-muted); }
+.hero .start { align-self: flex-start; background: var(--on-sky); color: var(--sky-low); font-weight: 700; text-decoration: none; padding: 9px 20px; border-radius: 8px; }
+.hero .start:hover { background: #fff; }
+.hero figure { margin: 0; position: relative; min-height: 360px; }
+.hero figure img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%;
+                   -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%); mask-image: linear-gradient(90deg, transparent, #000 22%); }
+.hero figcaption { position: absolute; right: 14px; bottom: 10px; font-size: 12px; color: var(--on-sky-muted); }
+
+h2.sec { font-size: 22px; margin: 52px 0 6px; }
+p.lead { color: var(--muted); margin: 0 0 22px; max-width: 46em; }
+
+/* 课程路线：每课是运动链上的一个关节 */
+.route { list-style: none; margin: 0; padding: 0; position: relative; }
+.route::before { content: ""; position: absolute; left: 27px; top: 30px; bottom: 30px; width: 4px; border-radius: 2px; background: var(--line); }
+.route li { position: relative; padding-left: 76px; }
+.route li + li { margin-top: 10px; }
+.route .node { position: absolute; left: 6px; top: 16px; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
+               background: var(--paper); border: 3px solid var(--joint); color: var(--joint); font-family: var(--display); font-weight: 600; font-size: 19px; }
+.route li.extra .node { border-style: dashed; }
+.route a.card { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "t l" "w w" "k k" "f f";
+                column-gap: 24px; padding: 16px 22px; background: var(--panel); border: 1px solid var(--line);
+                border-radius: 12px; text-decoration: none; color: var(--ink); }
+.route a.card:hover { border-color: var(--joint); }
+.route a.card:hover h3 { color: var(--joint); }
+.route h3 { grid-area: t; margin: 0; font-size: 19px; line-height: 1.4; }
+.route h3 em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--contact); margin-left: 10px; white-space: nowrap; }
+.route .what { grid-area: w; margin: 2px 0 0; color: var(--muted); font-size: 15px; }
+.route .learn { grid-area: k; margin: 8px 0 0; font-size: 14.5px; }
+.route .files { grid-area: f; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 13px; color: var(--muted); }
+.route .files code { font-size: 12.5px; }
+.route .level { grid-area: l; align-self: center; }
+.level { display: flex; gap: 3px; align-items: center; font-size: 12px; color: var(--muted); }
+.level i { width: 14px; height: 6px; border-radius: 3px; background: var(--line); }
+.level i.on { background: var(--joint); }
+.level b { font-weight: 400; margin-right: 6px; }
+.notes { margin: 22px 0 0 76px; color: var(--muted); font-size: 15px; }
+.notes p { margin: 6px 0; max-width: 52em; }
+
+.how { margin: 0; padding-left: 1.2em; max-width: 50em; }
+.how li { margin: 6px 0; }
+.wide { overflow-x: auto; }
+.wide table { font-size: 15px; display: table; width: 100%; background: var(--panel); }
+.wide td:first-child { white-space: nowrap; }
+details.map { margin: 16px 0 0; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+details.map summary { cursor: pointer; padding: 14px 20px; font-weight: 700; }
+details.map > div { padding: 0 20px 16px; }
+details.map p { color: var(--muted); max-width: 52em; }
+footer { color: var(--muted); font-size: 13px; padding: 48px 0 40px; }
+
+@media (max-width: 820px) {
+  .bar, .wrap { padding-left: 16px; padding-right: 16px; }
+  .jump ol { right: 16px; }
+  article { padding: 4px 18px 28px; border-radius: 0; border-left: 0; border-right: 0; }
+  .hero { grid-template-columns: 1fr; }
+  .hero .copy { padding: 32px 24px 8px; }
+  .hero dl { gap: 10px 24px; }
+  .hero figure { min-height: 300px; }
+  .hero figure img { -webkit-mask-image: linear-gradient(180deg, transparent, #000 20%); mask-image: linear-gradient(180deg, transparent, #000 20%); }
+  .route::before { left: 19px; }
+  .route li { padding-left: 52px; }
+  .route .node { left: 0; width: 40px; height: 40px; font-size: 17px; }
+  .route a.card { grid-template-columns: 1fr; grid-template-areas: "t" "l" "w" "k" "f"; padding: 14px 16px; }
+  .route .level { justify-self: start; margin-top: 4px; }
+  .notes { margin-left: 0; }
+}
 </style>
-<script defer src="katex/katex.min.js"></script><script defer src="katex/contrib/auto-render.min.js"></script>
-</head><body><main>
-<nav class="top"><a href="../index.html">资料包首页</a><a href="index.html">G1 实战目录</a><a href="00_装好环境.html">第 0 课</a><a href="01_认识G1.html">第 1 课</a><a href="02_站着与倒下.html">第 2 课</a><a href="03_吊起来挥手.html">第 3 课</a><a href="04_它感觉到了什么.html">第 4 课</a><a href="05_扛住推力.html">第 5 课</a><a href="06_省力地站.html">第 6 课</a><a href="07_伸手碰球.html">第 7 课</a><a href="08_单腿平衡.html">第 8 课</a><a href="09_让它走起来.html">第 9 课</a><a href="10_录视频与批量实验.html">第 10 课</a><a href="11_附录_往后学什么.html">第 11 课</a></nav>
+</head><body>
+<header class="bar">
+  <nav class="crumb" aria-label="位置"><a href="../index.html">资料包首页</a><span aria-hidden="true">/</span><a href="index.html">G1 实战</a><span aria-hidden="true">/</span><b>第 3 课 把它吊起来挥手</b></nav>
+  <details class="jump"><summary>全部课程</summary><ol><li><a href="00_装好环境.html"><span>0</span>装好环境：离线安装与版本核对</a></li><li><a href="01_认识G1.html"><span>1</span>认识 G1：打开它，读懂它</a></li><li><a href="02_站着与倒下.html"><span>2</span>它为什么站着、为什么会倒</a></li><li><a href="03_吊起来挥手.html" aria-current=page><span>3</span>把它吊起来挥手</a></li><li><a href="04_它感觉到了什么.html"><span>4</span>它“感觉”到了什么</a></li><li><a href="05_扛住推力.html"><span>5</span>扛住多大的推力：从侧面推 G1</a></li><li><a href="06_省力地站.html"><span>6</span>省力地站：算出“刚好站住”需要的力矩</a></li><li><a href="07_伸手碰球.html"><span>7</span>伸手碰球：雅可比与逆运动学</a></li><li><a href="08_单腿平衡.html"><span>8</span>单腿平衡：把官方 LQR 搬到 G1 上</a></li><li><a href="09_让它走起来.html"><span>9</span>让它走起来：运行宇树的预训练行走策略</a></li><li><a href="10_录视频与批量实验.html"><span>10</span>录视频、批量做实验</a></li><li><a href="11_附录_往后学什么.html"><span>11</span>附录：往后学什么——从“跑别人的策略”到“自己训练”</a></li></ol></details>
+</header>
+<div class="split">
+<article>
 <h1 id="3">第 3 课　把它吊起来挥手</h1>
 <p><strong>对应入门教程</strong>：4.7、5.8、6.3、7.3、9.3、9.4</p>
 <p><strong>本课目标</strong></p>
@@ -207,7 +368,11 @@ for joint in spec.joints:
 <h2 id="35">3.5 运行并观察</h2>
 <p>在 <code>G1实战</code> 目录下运行：</p>
 <pre><code class="language-bash">python code/03_wave.py
+python code/03_wave.py --freq 3 --amp 0.8    # 挥得更快、更大
 </code></pre>
+
+<section class="lab" data-spec="{&quot;title&quot;: &quot;三种方式跟踪挥手&quot;, &quot;script&quot;: &quot;03_wave.py&quot;, &quot;run&quot;: [], &quot;stream&quot;: true, &quot;focus&quot;: &quot;Waver&quot;, &quot;show&quot;: [&quot;output/03_wave_error.png&quot;, &quot;output/03_wave_tracking.png&quot;], &quot;note&quot;: &quot;几秒跑完三种方式。默认参数的结果就是下面的输出。再把频率调到 3 Hz 或幅度调到 1.0 rad：肘的误差约翻一倍（它主要是运动滞后，和角速度成正比）；两样一起加，肩 roll 的伺服顶到 25 N·m 的上限。右侧画面只显示一种方式，用下拉框切换。&quot;, &quot;fields&quot;: [{&quot;flag&quot;: &quot;--amp&quot;, &quot;label&quot;: &quot;挥手幅度&quot;, &quot;unit&quot;: &quot;rad&quot;, &quot;value&quot;: 0.5, &quot;min&quot;: 0.1, &quot;max&quot;: 1.0, &quot;step&quot;: 0.1}, {&quot;flag&quot;: &quot;--freq&quot;, &quot;label&quot;: &quot;挥手频率&quot;, &quot;type&quot;: &quot;select&quot;, &quot;value&quot;: &quot;1.5&quot;, &quot;options&quot;: [[&quot;0.5&quot;, &quot;0.5 Hz&quot;], [&quot;1&quot;, &quot;1 Hz&quot;], [&quot;1.5&quot;, &quot;1.5 Hz（默认）&quot;], [&quot;2&quot;, &quot;2 Hz&quot;], [&quot;2.5&quot;, &quot;2.5 Hz&quot;], [&quot;3&quot;, &quot;3 Hz&quot;]]}, {&quot;flag&quot;: &quot;--mode&quot;, &quot;label&quot;: &quot;右侧画面的控制方式&quot;, &quot;type&quot;: &quot;select&quot;, &quot;value&quot;: &quot;servo&quot;, &quot;streamOnly&quot;: true, &quot;options&quot;: [[&quot;servo&quot;, &quot;纯位置伺服&quot;], [&quot;ff&quot;, &quot;伺服 + qfrc_bias 前馈&quot;], [&quot;gravcomp&quot;, &quot;伺服 + 内置 gravcomp&quot;]]}]}"><header><span class="tag">实验台</span><b>三种方式跟踪挥手</b></header><p class="note">几秒跑完三种方式。默认参数的结果就是下面的输出。再把频率调到 3 Hz 或幅度调到 1.0 rad：肘的误差约翻一倍（它主要是运动滞后，和角速度成正比）；两样一起加，肩 roll 的伺服顶到 25 N·m 的上限。右侧画面只显示一种方式，用下拉框切换。</p><pre class="lab-cmd"><code>python code/03_wave.py --amp 0.5 --freq 1.5</code></pre><p class="lab-off">在 <code>G1实战</code> 目录下运行上面的命令；用 <code>启动官方文档.bat</code> 打开本页时，可以直接在这里改参数、运行。</p></section>
+
 <p>三种方式各仿真 8 s，在编写本课的电脑上每种不到 1 秒就跑完。输出（节选）：</p>
 <pre><code class="language-text">原模型：nq=36 nv=35  →  吊起来后：nq=29 nv=29 nu=29
 骨盆位置 [0.  0.  1.2]，父 body 是 world（id=0）
@@ -305,6 +470,7 @@ for joint in spec.joints:
 <h2 id="37">3.7 实时观看</h2>
 <pre><code class="language-bash">python code/03_wave.py --view              # 默认 servo
 python code/03_wave.py --view --mode ff
+python code/03_wave.py --web 8790 --mode ff  # 同上，但显示在网页里：浏览器打开 http://127.0.0.1:8790/
 </code></pre>
 <p>脚本里的写法和入门教程 6.3 一样，用 <code>launch_passive</code>，仿真循环自己控制：</p>
 <pre><code class="language-python">with mujoco.viewer.launch_passive(w.m, w.d) as viewer:
@@ -329,6 +495,9 @@ python code/03_wave.py --view --mode ff
 <li><strong>两个版本的 G1。</strong> 资料包里没有宇树官方的 URDF，但 <code>models/unitree_rl_gym_g1/g1_description/g1_12dof.xml</code> 是宇树训练行走策略用的模型，看得出是从 URDF 转出来的。写一个脚本，和 Menagerie 的 <code>g1.xml</code> 对比：关节有哪些、共有关节的范围 / armature / frictionloss / damping / 力矩上限、各 body 的质量、执行器类型。在 <code>g1_12dof.xml</code> 里找找 URDF 转换的痕迹（对照入门教程 9.3）。</li>
 <li><strong>用 weld 吊起来。</strong> 不删 freejoint，改用 <code>spec.add_equality(type=mujoco.mjtEq.mjEQ_WELD, objtype=mujoco.mjtObj.mjOBJ_BODY, name1=&quot;pelvis&quot;)</code> 把骨盆焊在世界上（<code>name2</code> 不填就是 world）。记得把 <code>pelvis.pos</code> 和关键帧 <code>qpos[2]</code> 都改成 1.2。仿真 2 s，骨盆下沉了多少？<code>nq</code> 是多少？</li>
 </ol>
+
+<section class="lab" data-spec="{&quot;title&quot;: &quot;练习 1：软一点的伺服&quot;, &quot;script&quot;: &quot;03_wave.py&quot;, &quot;run&quot;: [], &quot;stream&quot;: true, &quot;focus&quot;: &quot;build_spec&quot;, &quot;show&quot;: [&quot;output/03_wave_error.png&quot;], &quot;note&quot;: &quot;先自己改 `build_spec` 做一遍，再用这里的 `--arm-kp` 对答案。kp=100 时比较三种方式的肩 roll 误差和静止误差；再试 50，右侧画面里纯伺服的手臂明显垂得更低。&quot;, &quot;fields&quot;: [{&quot;flag&quot;: &quot;--arm-kp&quot;, &quot;label&quot;: &quot;右臂 kp&quot;, &quot;value&quot;: 100, &quot;min&quot;: 10, &quot;max&quot;: 1000, &quot;step&quot;: 10}, {&quot;flag&quot;: &quot;--mode&quot;, &quot;label&quot;: &quot;右侧画面的控制方式&quot;, &quot;type&quot;: &quot;select&quot;, &quot;value&quot;: &quot;servo&quot;, &quot;streamOnly&quot;: true, &quot;options&quot;: [[&quot;servo&quot;, &quot;纯位置伺服&quot;], [&quot;ff&quot;, &quot;伺服 + qfrc_bias 前馈&quot;], [&quot;gravcomp&quot;, &quot;伺服 + 内置 gravcomp&quot;]]}]}"><header><span class="tag">实验台</span><b>练习 1：软一点的伺服</b></header><p class="note">先自己改 <code>build_spec</code> 做一遍，再用这里的 <code>--arm-kp</code> 对答案。kp=100 时比较三种方式的肩 roll 误差和静止误差；再试 50，右侧画面里纯伺服的手臂明显垂得更低。</p><pre class="lab-cmd"><code>python code/03_wave.py --arm-kp 100</code></pre><p class="lab-off">在 <code>G1实战</code> 目录下运行上面的命令；用 <code>启动官方文档.bat</code> 打开本页时，可以直接在这里改参数、运行。</p></section>
+
 <h2 id="_7">如果报错</h2>
 <table>
 <thead>
@@ -479,13 +648,23 @@ eq.data = data
 为什么 <code>pelvis.pos</code> 和关键帧都要改？<code>relpose</code> 不指定时，weld 会把 <code>qpos0</code>（模型的参考姿势，由 body 的 <code>pos</code> 决定）下的相对位姿当作目标。只改关键帧，weld 会把骨盆拉回 0.79 m，脚又落回地面。
 
 </details>
-<nav class="pager"><span><a href="02_站着与倒下.html">← 第 2 课 它为什么站着、为什么会倒</a></span><span><a href="04_它感觉到了什么.html">第 4 课 它“感觉”到了什么 →</a></span></nav>
-</main>
+<nav class="pager" aria-label="翻页"><a class="prev" href="02_站着与倒下.html"><small>上一课</small>第 2 课 它为什么站着、为什么会倒</a><a class="next" href="04_它感觉到了什么.html"><small>下一课</small>第 4 课 它“感觉”到了什么</a></nav>
+</article>
+<aside class="viewer" aria-label="实时仿真画面"><div class="viewer-head"><b>仿真画面</b><span class="viewer-what">还没有运行</span></div><div class="viewer-frame"><p class="viewer-empty">点任一实验台的“运行”，这里会实时播放那次仿真：<br>和实验台用同一组参数，跑完一轮会自动重来。<br>鼠标左键拖动转视角，滚轮缩放。</p></div></aside>
+</div>
+<script defer src="assets/lab.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll(".math").forEach(function (el) {
     renderMathInElement(el, {delimiters: [{left: "\\[", right: "\\]", display: true}, {left: "\\(", right: "\\)", display: false}]});
   });
+});
+</script>
+<script>
+// 点页面其他地方时收起“全部课程”菜单
+document.addEventListener("click", function (e) {
+  var d = document.querySelector(".jump");
+  if (d && d.open && !d.contains(e.target)) d.open = false;
 });
 </script>
 </body></html>

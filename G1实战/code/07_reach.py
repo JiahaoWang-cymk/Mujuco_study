@@ -9,6 +9,13 @@
 用法：
     python 07_reach.py           # 无界面运行，打印结果并保存图
     python 07_reach.py --view    # 打开查看器，依次去碰 A、B、C、D 四个球
+    python 07_reach.py --once --target D                # 只碰一个点（无界面，几秒），图写到 output/07_once.png
+    python 07_reach.py --once --target E --waist        # 加上腰 3 个关节
+    python 07_reach.py --once --target A --correct 3    # 开环之后再闭环修正 3 轮
+    python 07_reach.py --view --target C --damping 0.3  # 查看器里反复去碰一个点
+    python 07_reach.py --web 8790 --target A            # 同上，但显示在网页里：浏览器打开 http://127.0.0.1:8790/
+--target（A–E）、--x/--y/--z（改目标坐标）、--waist、--damping、--max-step、--correct、--collide
+对 --once、--view、--web 都有效；--view/--web 不给这些参数时依次去碰 A、B、C、D。
 """
 import argparse
 import pathlib
@@ -136,7 +143,7 @@ def reach(m, d, joints, q_goal, ramp=1.0, hold=2.0, viewer=None):
         if viewer is not None and k % 8 == 0:  # 约 60 Hz 刷新画面
             if not viewer.is_running():
                 break
-            viewer.sync()
+            viewer.sync()                      # 网页查看器也包成了同样的 sync()，见 _WebViewer
             lag = (d.time - t0) - (time.time() - wall0)
             if lag > 0:
                 time.sleep(lag)                # 让仿真和真实时间同速
@@ -156,28 +163,149 @@ def correct(m, d, target, joints, rounds=3, viewer=None):
     return out
 
 
-def run_view():
-    """--view：在查看器里依次去碰 A、B、C、D 四个球，关掉窗口结束。"""
-    import mujoco.viewer
+class _WebViewer:
+    """把网页查看器（webview.open_web 返回的 Studio 句柄）包成和桌面查看器一样的 sync()。"""
 
-    m = build_model()
+    def __init__(self, handle, m, d):
+        self.handle, self.m, self.d = handle, m, d
+
+    def is_running(self):
+        return self.handle.is_running()
+
+    def sync(self):
+        self.handle.sync(self.m, self.d)
+
+
+def pick_target(args):
+    """--target 选 A–E，--x/--y/--z 再改其中的坐标。返回 (名字, 坐标)。"""
+    name = args.target or "A"
+    tgt = np.array(TARGET_E if name == "E" else TARGETS[name], float)
+    for i, v in enumerate((args.x, args.y, args.z)):
+        if v is not None:
+            tgt[i] = v
+    if any(v is not None for v in (args.x, args.y, args.z)):
+        name += "（改过坐标）"
+    return name, tgt
+
+
+def run_view(args=None, web_port=None):
+    """--view / --web：实时观看。没给 --target 等参数时依次去碰 A、B、C、D 四个球；
+    给了就反复去碰那一个点。web_port 为 None 时开桌面查看器，否则用网页查看器。"""
+    single = args is not None and args.single
+    m = build_model(ball_collides=single and args.collide)
     d = mujoco.MjData(m)
     mid = m.body_mocapid[m.body("target").id]
-    with mujoco.viewer.launch_passive(m, d) as viewer:
+    if single:
+        name, tgt = pick_target(args)
+        joints = ARM + WAIST if args.waist else ARM
+        plan = [(name, tgt)]
+        print(f"反复去碰 {name} 点 {tgt}：{'右臂 7 + 腰 3' if args.waist else '右臂 7'} 个关节，"
+              f"阻尼 {args.damping:g}，单步限幅 {args.max_step:g} rad，闭环修正 {args.correct} 轮"
+              + ("，球和手掌参与碰撞" if args.collide else ""), flush=True)
+    else:
+        joints = ARM
+        plan = [(n, np.array(t)) for n, t in TARGETS.items()]
+    if web_port:
+        from webview import open_web                 # 同目录的 webview.py
+        viewer_cm = open_web(m, d, web_port, title="第 7 课：伸手碰球",
+                             distance=2.2, azimuth=135.0, elevation=-15.0)
+    else:
+        from mujoco import viewer as mj_viewer
+        viewer_cm = mj_viewer.launch_passive(m, d)
+    with viewer_cm as handle:
+        viewer = _WebViewer(handle, m, d) if web_port else handle
         while viewer.is_running():
-            for name, tgt in TARGETS.items():
-                tgt = np.array(tgt)
+            for name, tgt in plan:
                 # 和无界面模式一样，每个点都从站姿出发；否则 IK 从上一个点的姿态起步，
                 # 可能卡在局部极小值里（实测连续去碰时 B 点会停在 120 mm 左右）
                 settle(m, d)
                 d.mocap_pos[mid] = tgt
                 viewer.sync()
-                q, errs, _ = solve_ik(m, d, tgt, ARM)
-                print(f"{name}: IK 误差 {errs[-1]*1000:.2f} mm，伸手……")
-                _, dist = reach(m, d, ARM, q, viewer=viewer)
+                if single:
+                    q, errs, _ = solve_ik(m, d, tgt, joints, damping=args.damping, max_step=args.max_step)
+                else:
+                    q, errs, _ = solve_ik(m, d, tgt, ARM)
+                print(f"{name}: IK 误差 {errs[-1]*1000:.2f} mm，伸手……", flush=True)
+                _, dist = reach(m, d, joints, q, viewer=viewer)
                 if not viewer.is_running():
                     return
-                print(f"   手到球心 {dist[-1]*1000:.1f} mm")
+                print(f"   手到球心 {dist[-1]*1000:.1f} mm", flush=True)
+                if single and args.correct:
+                    fix = correct(m, d, tgt, joints, rounds=args.correct, viewer=viewer)
+                    if not viewer.is_running():
+                        return
+                    print("   闭环修正：" + " → ".join(f"{e*1000:.1f}" for e in fix) + " mm", flush=True)
+
+
+def once(args):
+    """--once：只碰一个点，打印结果，图写到 output/07_once.png。"""
+    name, tgt = pick_target(args)
+    joints = ARM + WAIST if args.waist else ARM
+    m = build_model(ball_collides=args.collide)
+    d = mujoco.MjData(m)
+    sid = m.site("right_palm").id
+    mid = m.body_mocapid[m.body("target").id]
+    settle(m, d)
+    sh = d.body("right_shoulder_pitch_link").xpos.copy()
+    print(f"目标 {name} = {tgt}，离右肩 {np.linalg.norm(tgt - sh):.3f} m（右臂最长约 0.51 m）")
+    print(f"IK：{'右臂 7 + 腰 3 = 10' if args.waist else '右臂 7'} 个关节，阻尼 {args.damping:g}，"
+          f"单步限幅 {args.max_step:g} rad" + ("；球和手掌参与碰撞" if args.collide else ""))
+    q, errs, steps = solve_ik(m, d, tgt, joints, damping=args.damping, max_step=args.max_step)
+    print(f"  共 {len(errs)-1} 次迭代，IK 末误差 {errs[-1]*1000:.2f} mm，最大一步 {max(steps, default=0):.3f} rad")
+    print(f"  关节角(rad) {q.round(3)}")
+    d.mocap_pos[mid] = tgt
+    ts, dist = reach(m, d, joints, q)
+    # 球不碰撞时，手掌 site 进了球（距离 < 球半径）就算碰到；碰撞时手掌碰撞球会被挡在外面，看两球半径和
+    reach_r, what = (BALL_R + PALM_R + 0.001, "两球半径和") if args.collide else (BALL_R, "球半径")
+    print(f"仿真开环 3 s：最近 {dist.min()*1000:.1f} mm，末了 {dist[-1]*1000:.1f} mm，"
+          f"{'碰到了' if dist.min() < reach_r else '没碰到'}（{what} {(reach_r - 0.001 if args.collide else BALL_R)*1000:.0f} mm）；"
+          f"骨盆高 {d.body('pelvis').xpos[2]:.3f} m")
+    t_all, d_all = list(ts), list(dist)
+    for k in range(args.correct):
+        t_end = t_all[-1]
+        q_need, _, _ = solve_ik(m, d, tgt, joints, damping=args.damping, max_step=args.max_step)
+        aids = [m.actuator(n).id for n in joints]
+        qadr = m.jnt_qposadr[[m.joint(n).id for n in joints]]
+        tk, dk = reach(m, d, joints, d.ctrl[aids] + (q_need - d.qpos[qadr]), ramp=0.5, hold=1.0)
+        t_all += list(tk + t_end)
+        d_all += list(dk)
+        print(f"  闭环修正第 {k+1} 轮后：{dk[-1]*1000:.2f} mm")
+    if args.collide:
+        ball_gid, fn = m.geom("ball").id, 0.0
+        for i in range(d.ncon):
+            if ball_gid in (d.contact[i].geom1, d.contact[i].geom2):
+                f6 = np.zeros(6)
+                mujoco.mj_contactForce(m, d, i, f6)
+                fn += f6[0]
+        print(f"  和球的接触法向力 {fn:.2f} N")
+    if d.body("pelvis").xpos[2] < 0.5:
+        print("  骨盆已低于 0.5 m：摔倒了")
+
+    cam = mujoco.MjvCamera()
+    cam.lookat[:] = [0.15, -0.2, 0.9]
+    cam.distance, cam.azimuth, cam.elevation = 1.5, 135.0, -15.0
+    with mujoco.Renderer(m, height=360, width=360) as r:
+        r.update_scene(d, cam)
+        img = r.render().copy()
+    fig, ax = plt.subplots(1, 3, figsize=(14, 4), gridspec_kw={"width_ratios": [1, 1.3, 0.9]})
+    ax[0].semilogy(np.arange(len(errs)), np.maximum(np.array(errs) * 1000, 1e-3), marker=".")
+    ax[0].set(xlabel="iteration", ylabel="IK error (mm)", title=f"DLS IK, damping {args.damping}")
+    ax[1].plot(t_all, np.array(d_all) * 1000)
+    ax[1].axhline((reach_r - 0.001 if args.collide else BALL_R) * 1000, color="gray", ls="--",
+                  label="ball + palm radius" if args.collide else "ball radius")
+    if args.correct:
+        ax[1].axvline(ts[-1], color="k", ls=":", label="closed-loop correction starts")
+    ax[1].set(xlabel="time (s)", ylabel="palm-to-ball distance (mm)", title="Simulation")
+    ax[1].set_ylim(0, max(100, 1.1 * max(d_all) * 1000))
+    ax[1].legend()
+    ax[2].imshow(img)
+    ax[2].set_axis_off()
+    ax[2].set_title(f"t = {t_all[-1]:.1f} s")
+    fig.tight_layout()
+    png = OUT / "07_once.png"
+    fig.savefig(png, dpi=100)
+    plt.close(fig)
+    print(f"图已保存：{png}")
 
 
 # ================================================================ 主程序
@@ -343,8 +471,25 @@ def main():
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--view", action="store_true", help="打开查看器观看")
+    ap.add_argument("--web", type=int, metavar="PORT", help="像 --view 一样实时观看，但显示在网页里（http://127.0.0.1:PORT/）")
+    ap.add_argument("--once", action="store_true", help="只碰一个点（无界面），图写到 output/07_once.png")
+    ap.add_argument("--target", choices=["A", "B", "C", "D", "E"], help="目标点，默认 A；E 是要弯腰才够得着的点")
+    ap.add_argument("--x", type=float, help="改目标的 x 坐标 (m)")
+    ap.add_argument("--y", type=float, help="改目标的 y 坐标 (m)")
+    ap.add_argument("--z", type=float, help="改目标的 z 坐标 (m)")
+    ap.add_argument("--waist", action="store_true", help="IK 再加上腰 3 个关节")
+    ap.add_argument("--damping", type=float, default=0.05, help="DLS 阻尼，默认 0.05")
+    ap.add_argument("--max-step", type=float, default=0.2, help="IK 单步限幅 (rad)，默认 0.2；给很大的数相当于不限幅")
+    ap.add_argument("--correct", type=int, default=0, help="开环伸手之后再闭环修正几轮，默认 0")
+    ap.add_argument("--collide", action="store_true", help="球和手掌碰撞球都参与碰撞（实验 5）")
     args = ap.parse_args()
-    if args.view:
-        run_view()
+    # 给了这些参数中的任何一个，--view/--web 就只反复去碰这一个点
+    args.single = (args.target is not None or args.waist or args.collide or args.correct > 0
+                   or args.damping != 0.05 or args.max_step != 0.2
+                   or any(v is not None for v in (args.x, args.y, args.z)))
+    if args.view or args.web:
+        run_view(args, web_port=args.web)
+    elif args.once:
+        once(args)
     else:
         main()

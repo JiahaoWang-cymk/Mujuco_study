@@ -12,8 +12,12 @@
 
 用法：
   python 05_push.py                           # 全部实验（无界面，约 1–1.5 分钟）
+  python 05_push.py --once --force 90         # 只推一次（无界面，几秒）：打印结果，画倾角曲线和 5 张截图
+  python 05_push.py --once --force 90 --critical   # 推一次，再二分求这组设置下的临界推力
   python 05_push.py --view --force 90         # 查看器里看直腿站姿被推 90 N
+  python 05_push.py --web 8790 --force 90     # 同上，但显示在网页里：浏览器打开 http://127.0.0.1:8790/
   python 05_push.py --view --crouch --force 70 --mu 0.05   # 屈膝 + 脚底摩擦 0.05
+--force、--crouch、--mu、--timeconst、--dur 对 --once、--view、--web 都有效。
 """
 import argparse
 import csv
@@ -346,18 +350,106 @@ def plot(curves, fric, soft):
     print(f"\n图已保存：{path}")
 
 
-# ---------------------------------------------------------------- 查看器
-def view(force, crouch, mu):
-    import mujoco.viewer
 
+# ---------------------------------------------------------------- 推一次（无界面）
+def setup(crouch, mu, timeconst, dur):
+    """按命令行参数准备模型和站姿。dur 改的是全局 PUSH_DUR，simulate() 和 view() 都用它。"""
+    global PUSH_DUR
+    if dur is not None:
+        PUSH_DUR = dur
     m = load_model()
     if mu is not None:
         m.geom_friction[foot_geoms(m), 0] = mu
+    if timeconst is not None:
+        m.geom_solref[foot_geoms(m), 0] = timeconst
     q = crouch_pose(m)[0] if crouch else stand_pose(m)
+    return m, q
+
+
+def once(force, crouch, mu, timeconst, dur, critical):
+    m, q = setup(crouch, mu, timeconst, dur)
+    feet = foot_geoms(m)
+    print(f"站姿：{'屈膝 knee=' + str(KNEE) if crouch else '直腿 stand'}   "
+          f"脚底 μ = {m.geom_friction[feet[0], 0]:g}   脚底 solref timeconst = {m.geom_solref[feet[0], 0]:g} s")
+    print(f"推法：t = {PUSH_T0} s 起，侧推 {force:g} N，持续 {PUSH_DUR:g} s（冲量 {force * PUSH_DUR:.1f} N·s）")
+
+    d = mujoco.MjData(m)
+    d.qpos[:] = q
+    d.ctrl[:] = q[7:]
+    mujoco.mj_forward(m, d)
+    torso, pelvis = m.body(PUSH_BODY).id, m.body("pelvis").id
+    foot_sites = [m.site("left_foot").id, m.site("right_foot").id]
+    foot0 = d.site_xpos[foot_sites, :2].copy()
+
+    # 从正前方看（相机在 +x，朝 -x 看），机器人左侧 +y 在画面右边
+    cam = mujoco.MjvCamera()
+    cam.lookat[:] = [0.0, 0.45, 0.55]           # 往推的方向偏一点，倒地后也在画面里
+    cam.distance, cam.azimuth, cam.elevation = 3.6, 180.0, -10.0
+    shots = [PUSH_T0 - 0.05, PUSH_T0 + PUSH_DUR, 2.0, 3.0, T_END - 0.01]
+    frames, ts, tilts, zs = [], [], [], []
+    fell_at, slide = None, 0.0
+    with mujoco.Renderer(m, height=320, width=360) as r:
+        while d.time < T_END - 1e-9:
+            d.xfrc_applied[torso, :] = 0.0
+            if PUSH_T0 <= d.time < PUSH_T0 + PUSH_DUR:
+                d.xfrc_applied[torso, :3] = force * PUSH_DIR
+            mujoco.mj_step(m, d)
+            ts.append(d.time)
+            tilts.append(tilt_deg(d, pelvis))
+            zs.append(d.qpos[2])
+            slide = max(slide, np.linalg.norm(d.site_xpos[foot_sites, :2] - foot0, axis=1).max())
+            if fell_at is None and (zs[-1] < FALL_Z or tilts[-1] > FALL_TILT):
+                fell_at = d.time
+            if len(frames) < len(shots) and d.time >= shots[len(frames)]:
+                r.update_scene(d, cam)
+                frames.append((d.time, r.render().copy()))
+
+    if fell_at is None:
+        print(f"结果：站住了。骨盆最大倾角 {max(tilts):.1f}°，最低 {min(zs):.3f} m，两脚最大水平位移 {slide * 100:.1f} cm")
+    else:
+        print(f"结果：摔倒了（t = {fell_at:.2f} s 触发判据）。两脚最大水平位移 {slide * 100:.1f} cm")
+
+    blue, orange, ink, grid = "#2a78d6", "#eb6834", "#52514e", "#e4e3df"
+    fig = plt.figure(figsize=(13, 6.6))
+    gs = fig.add_gridspec(2, len(shots), height_ratios=[1.25, 1])
+    for k, (t, img) in enumerate(frames):
+        ax = fig.add_subplot(gs[0, k])
+        ax.imshow(img)
+        ax.set_axis_off()
+        ax.set_title(f"t = {t:.2f} s" + ("（推之前）" if k == 0 else "（推完）" if k == 1 else ""), fontsize=10)
+    ax = fig.add_subplot(gs[1, :])
+    ax.plot(ts, tilts, color=orange if fell_at else blue, lw=2, label="骨盆倾角 / °")
+    ax.axvspan(PUSH_T0, PUSH_T0 + PUSH_DUR, color=grid, zorder=0)
+    ax.axhline(FALL_TILT, color=ink, lw=1, ls=":")
+    ax.text(T_END, FALL_TILT + 2, "摔倒线 45°", ha="right", color=ink)
+    ax.set_ylim(0, max(60, min(100, max(tilts) + 8)))
+    ax.set_xlim(0, T_END)
+    ax.set_xlabel("时间 / s（灰带：推的这段时间）")
+    ax.set_ylabel("骨盆倾角 / °")
+    verdict = f"摔倒（t = {fell_at:.2f} s）" if fell_at else f"站住了，最大倾角 {max(tilts):.1f}°"
+    ax.set_title(f"{'屈膝' if crouch else '直腿'}，侧推 {force:g} N × {PUSH_DUR:g} s：{verdict}")
+    ax.grid(color=grid, lw=0.8)
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
+    fig.tight_layout()
+    path = OUT / "05_once.png"
+    fig.savefig(path, dpi=100)
+    plt.close(fig)
+    print(f"图已保存：{path}")
+
+    if critical:
+        t0 = time.time()
+        F, _ = critical_force(m, q)
+        print(f"这组设置下的临界推力：{F:.1f} N（二分到 {F_TOL} N，用时 {time.time() - t0:.1f} s）")
+
+# ---------------------------------------------------------------- 查看器
+def view(force, crouch, mu, timeconst, dur, web_port=None):
+    """实时观看。web_port 为 None 时开桌面查看器；给了端口就用网页查看器（课文页实验台右侧那个）。"""
+    m, q = setup(crouch, mu, timeconst, dur)
     d = mujoco.MjData(m)
     torso = m.body(PUSH_BODY).id
     print(f"{'屈膝' if crouch else '直腿'}站姿，每 {T_END:.0f} s 重来一次，"
-          f"第 {PUSH_T0} s 起侧推 {force} N、持续 {PUSH_DUR} s。关掉窗口结束。")
+          f"第 {PUSH_T0} s 起侧推 {force} N、持续 {PUSH_DUR} s。" + ("" if web_port else "关掉窗口结束。"), flush=True)
 
     def reset():
         mujoco.mj_resetData(m, d)
@@ -367,7 +459,13 @@ def view(force, crouch, mu):
 
     reset()
     pushing = False
-    with mujoco.viewer.launch_passive(m, d) as viewer:
+    if web_port:
+        from webview import open_web                # 同目录的 webview.py
+        viewer_cm = open_web(m, d, web_port, title="第 5 课：侧推 G1")
+    else:
+        from mujoco import viewer as mj_viewer
+        viewer_cm = mj_viewer.launch_passive(m, d)
+    with viewer_cm as viewer:
         while viewer.is_running():
             step_start = time.time()
             if d.time >= T_END:
@@ -379,7 +477,10 @@ def view(force, crouch, mu):
                 d.xfrc_applied[torso, :3] = 0.0
             pushing = now
             mujoco.mj_step(m, d)
-            viewer.sync()
+            if web_port:
+                viewer.sync(m, d)
+            else:
+                viewer.sync()
             rest = m.opt.timestep - (time.time() - step_start)   # 按真实时间播放
             if rest > 0:
                 time.sleep(rest)
@@ -388,12 +489,20 @@ def view(force, crouch, mu):
 def main():
     ap = argparse.ArgumentParser(description="第 5 课：侧推 G1，找临界推力")
     ap.add_argument("--view", action="store_true", help="打开查看器实时观看")
-    ap.add_argument("--force", type=float, default=90.0, help="--view 时的推力 (N)")
-    ap.add_argument("--crouch", action="store_true", help="--view 时用屈膝站姿")
-    ap.add_argument("--mu", type=float, default=None, help="--view 时脚底摩擦系数")
+    ap.add_argument("--web", type=int, metavar="PORT", help="像 --view 一样实时观看，但显示在网页里（http://127.0.0.1:PORT/）")
+    ap.add_argument("--once", action="store_true", help="只推一次（无界面），图写到 output/05_once.png")
+    ap.add_argument("--critical", action="store_true", help="--once 时再二分求临界推力")
+    ap.add_argument("--force", type=float, default=90.0, help="推力 (N)")
+    ap.add_argument("--crouch", action="store_true", help="用屈膝站姿")
+    ap.add_argument("--mu", type=float, default=None, help="脚底摩擦系数（默认 0.6）")
+    ap.add_argument("--timeconst", type=float, default=None, help="脚底 solref 的 timeconst（默认 0.02 s）")
+    ap.add_argument("--dur", type=float, default=None, help=f"推多久 (s)，默认 {PUSH_DUR}")
     args = ap.parse_args()
-    if args.view:
-        view(args.force, args.crouch, args.mu)
+    if args.view or args.web:
+        view(args.force, args.crouch, args.mu, args.timeconst, args.dur, web_port=args.web)
+        return
+    if args.once:
+        once(args.force, args.crouch, args.mu, args.timeconst, args.dur, args.critical)
         return
 
     t0 = time.time()

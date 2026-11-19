@@ -1,40 +1,201 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>第 1 课　认识 G1：打开它，读懂它 · G1 实战</title>
-<link rel="stylesheet" href="katex/katex.min.css"><style>
-:root { --ink:#16213a; --muted:#5a6880; --line:#d5dbe4; --accent:#2a4fd6; --bg:#ffffff; --code-bg:#f4f6f9; --quote:#eef3ff; }
+<title>第 1 课 认识 G1：打开它，读懂它 · G1 实战</title>
+<link rel="stylesheet" href="katex/katex.min.css"><script defer src="katex/katex.min.js"></script><script defer src="katex/contrib/auto-render.min.js"></script><style>
+:root {
+  --paper:#eef1f5; --panel:#ffffff; --ink:#142038; --muted:#5a6880; --line:#d5dbe4;
+  --joint:#2a4fd6; --contact:#c87414; --code-bg:#f2f4f8; --quote:#eef3ff;
+  --sky-top:#2e4d6c; --sky-low:#22394f; --on-sky:#eaf0f7; --on-sky-muted:#a9bbd0;
+  --display:"Bahnschrift","DIN Alternate","Segoe UI","Microsoft YaHei",sans-serif;
+  --text:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;
+}
 @media (prefers-color-scheme: dark) {
-  :root { --ink:#e5eaf3; --muted:#97a3b8; --line:#2c3a53; --accent:#86a2ff; --bg:#121a29; --code-bg:#1a2438; --quote:#1a2540; }
+  :root { --paper:#121a29; --panel:#172134; --ink:#e6ebf3; --muted:#97a3b8; --line:#2c3a53;
+          --joint:#86a2ff; --contact:#f2ab4f; --code-bg:#1d2840; --quote:#1a2540; }
 }
 * { box-sizing: border-box; }
-html { background: var(--bg); color: var(--ink); font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif; }
+html { background: var(--paper); color: var(--ink); font-family: var(--text); }
 body { margin: 0; line-height: 1.75; font-size: 16px; }
-main { max-width: 860px; margin: 0 auto; padding: 24px 20px 64px; }
-nav.top { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; padding: 10px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
-nav.top a, nav.pager a { color: var(--accent); text-decoration: none; }
-nav.top a:hover, nav.pager a:hover { text-decoration: underline; }
-nav.pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 15px; }
-h1 { font-size: 30px; line-height: 1.3; margin: 24px 0 16px; }
-h2 { font-size: 22px; margin: 40px 0 12px; padding-left: 12px; border-left: 5px solid var(--accent); }
-h3 { font-size: 18px; margin: 28px 0 8px; }
-a { color: var(--accent); }
+a { color: var(--joint); }
+a:focus-visible, summary:focus-visible { outline: 3px solid var(--joint); outline-offset: 3px; border-radius: 4px; }
 code { font-family: Consolas, "Microsoft YaHei", monospace; font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
-pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; line-height: 1.5; }
-pre code { background: none; padding: 0; font-size: 14px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+pre code { background: none; padding: 0; font-size: 14px; white-space: inherit; }
 table { border-collapse: collapse; margin: 12px 0; display: block; overflow-x: auto; }
 th, td { border: 1px solid var(--line); padding: 6px 10px; vertical-align: top; }
 th { background: var(--code-bg); text-align: left; }
-blockquote { margin: 14px 0; padding: 8px 16px; background: var(--quote); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; }
-blockquote p { margin: 6px 0; }
-hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
-details { margin: 24px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
-details summary { cursor: pointer; }
 img { max-width: 100%; }
 .katex-display { overflow-x: auto; overflow-y: hidden; }
+
+/* 顶栏：面包屑 + 课程跳转 */
+.bar { max-width: 1080px; margin: 0 auto; padding: 14px 28px; display: flex; align-items: center; gap: 12px; font-size: 14px; position: relative; }
+.bar .crumb { display: flex; gap: 8px; align-items: center; flex: 1; min-width: 0; color: var(--muted); }
+.bar .crumb a { color: var(--muted); text-decoration: none; }
+.bar .crumb a:hover { color: var(--joint); }
+.bar .crumb b { color: var(--ink); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jump summary { cursor: pointer; list-style: none; padding: 4px 12px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: var(--panel); white-space: nowrap; }
+.jump summary::-webkit-details-marker { display: none; }
+.jump[open] summary { border-color: var(--joint); }
+.jump ol { position: absolute; right: 28px; top: 52px; z-index: 5; margin: 0; padding: 8px 0; list-style: none; width: 300px; max-width: calc(100vw - 32px);
+           background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 30px rgba(20,32,56,.18); }
+.jump li a { display: flex; gap: 10px; padding: 5px 16px; text-decoration: none; color: var(--ink); }
+.jump li a:hover, .jump li a[aria-current] { background: var(--quote); }
+.jump li span { font-family: var(--display); color: var(--joint); width: 1.6em; text-align: right; flex: none; }
+
+/* 课文页 */
+article { max-width: 860px; margin: 0 auto 64px; padding: 8px 48px 40px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+article h1 { font-size: 30px; line-height: 1.3; margin: 28px 0 16px; }
+article h2 { font-size: 22px; margin: 40px 0 12px; padding-left: 12px; border-left: 5px solid var(--joint); }
+article h3 { font-size: 18px; margin: 28px 0 8px; }
+blockquote { margin: 14px 0; padding: 8px 16px; background: var(--quote); border-left: 4px solid var(--joint); border-radius: 0 8px 8px 0; }
+blockquote p { margin: 6px 0; }
+hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
+article details { margin: 24px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
+article details summary { cursor: pointer; }
+nav.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 48px; }
+nav.pager a { display: block; padding: 12px 16px; border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--ink); }
+nav.pager a:hover { border-color: var(--joint); }
+nav.pager small { display: block; color: var(--muted); font-size: 13px; }
+nav.pager .next { text-align: right; grid-column: 2; }
+
+/* 实验台 */
+.lab { margin: 22px 0; padding: 14px 18px 16px; border: 1px solid var(--line); border-left: 4px solid var(--contact); border-radius: 0 10px 10px 0; background: var(--paper); }
+.lab > header { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.lab > header .tag { font-size: 13px; font-weight: 700; color: var(--contact); }
+.lab > header b { font-size: 16px; }
+.lab .note { margin: 6px 0 0; color: var(--muted); font-size: 14.5px; }
+.lab .lab-cmd { margin: 10px 0 0; padding: 8px 12px; font-size: 13.5px; }
+.lab .lab-cmd code { white-space: pre-wrap; word-break: break-all; }
+.lab .lab-off { margin: 8px 0 0; font-size: 14px; color: var(--muted); }
+.lab-fields { display: flex; flex-wrap: wrap; gap: 10px 22px; margin: 12px 0 0; font-size: 14.5px; }
+.lab-fields label { display: inline-flex; align-items: center; gap: 8px; }
+.lab-fields select { font: inherit; padding: 4px 8px; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+.lab-fields input[type=number] { width: 6.5em; padding: 4px 8px; font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+.lab-fields input:focus-visible, .lab button:focus-visible { outline: 3px solid var(--joint); outline-offset: 2px; }
+.lab-fields input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--joint); }
+.lab-fields small { color: var(--muted); }
+.lab-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.lab button { font: inherit; font-size: 14.5px; padding: 5px 14px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.lab button:hover { border-color: var(--joint); }
+.lab button.primary { background: var(--joint); border-color: var(--joint); color: var(--panel); font-weight: 700; }
+.lab button.ghost { background: transparent; }
+.lab button:disabled { opacity: .5; cursor: progress; }
+.lab-status { font-size: 14px; color: var(--muted); margin-left: 4px; }
+.lab-status.ok { color: #2f8a4a; } .lab-status.bad { color: #c2410c; }
+.lab-status.busy::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--contact); animation: pulse 1s infinite alternate; }
+@keyframes pulse { from { opacity: 1; } to { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .lab-status.busy::before { animation: none; } }
+.lab-log { margin: 12px 0 0; max-height: 260px; overflow: auto; font-size: 13px; white-space: pre-wrap; background: #0f1828; color: #d7e0ee; }
+.lab-results figure { margin: 12px 0 0; }
+.lab-results img, .lab-results video { display: block; max-width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+.lab-results figcaption, .lab-file, .lab-hint { font-size: 13px; color: var(--muted); margin: 4px 0; }
+.lab-srcbox { margin-top: 12px; }
+.lab-src { position: relative; margin: 0; max-height: 380px; overflow: auto; padding: 8px 0; font-size: 13px; line-height: 1.5; }
+.lab-src .ln { display: block; padding: 0 12px 0 4.4em; text-indent: -4.4em; white-space: pre-wrap; overflow-wrap: anywhere; }
+.lab-src .ln i { display: inline-block; width: 3.4em; padding-right: 1em; text-align: right; color: var(--muted); font-style: normal; user-select: none; }
+.lab-src .ln.hl { background: color-mix(in srgb, var(--contact) 16%, transparent); }
+
+/* 有实时仿真画面的课：课文在左，画面固定在右 */
+.split { display: grid; grid-template-columns: minmax(0, 800px) minmax(420px, 1fr); gap: 20px; max-width: 1900px; margin: 0 auto; padding: 0 20px 64px; align-items: start; }
+.split article { margin: 0; max-width: none; }
+.viewer { position: sticky; top: 10px; height: calc(100vh - 20px); display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.viewer-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.viewer-head b { font-size: 15px; white-space: nowrap; }
+.viewer-what { flex: 1; min-width: 0; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.viewer-head button { font: inherit; font-size: 13px; padding: 3px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.viewer-head a { font-size: 13px; white-space: nowrap; }
+.viewer-frame { flex: 1; position: relative; background: #1b2a3d; }
+.viewer-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.viewer-empty { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: #a9bbd0; font-size: 15px; line-height: 1.8; }
+.lab.playing { border-left-color: var(--joint); box-shadow: 0 0 0 2px color-mix(in srgb, var(--joint) 35%, transparent); }
+@media (max-width: 1180px) {
+  .split { grid-template-columns: 1fr; padding: 0 0 64px; }
+  .viewer { order: -1; top: 0; height: 46vh; border-radius: 0; border-left: 0; border-right: 0; z-index: 4; }
+}
+
+/* 目录页 */
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+.hero { display: grid; grid-template-columns: 1.15fr 1fr; align-items: stretch; border-radius: 18px; overflow: hidden;
+        background: linear-gradient(180deg, var(--sky-top), var(--sky-low)); color: var(--on-sky); }
+.hero .copy { padding: 52px 8px 44px 48px; display: flex; flex-direction: column; justify-content: center; }
+.hero h1 { font-family: var(--display); font-weight: 600; font-size: clamp(44px, 7vw, 76px); line-height: 1; margin: 0; letter-spacing: -0.5px; }
+.hero h1 span { display: block; font-family: var(--text); font-weight: 700; font-size: 0.4em; letter-spacing: 1px; margin-top: 14px; }
+.hero p { color: var(--on-sky-muted); margin: 18px 0 26px; max-width: 30em; }
+.hero dl { display: flex; flex-wrap: wrap; gap: 12px 30px; margin: 0 0 30px; }
+.hero dt { font-family: var(--display); font-size: 28px; font-weight: 600; line-height: 1.1; color: var(--on-sky); }
+.hero dd { margin: 0; font-size: 13px; color: var(--on-sky-muted); }
+.hero .start { align-self: flex-start; background: var(--on-sky); color: var(--sky-low); font-weight: 700; text-decoration: none; padding: 9px 20px; border-radius: 8px; }
+.hero .start:hover { background: #fff; }
+.hero figure { margin: 0; position: relative; min-height: 360px; }
+.hero figure img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%;
+                   -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%); mask-image: linear-gradient(90deg, transparent, #000 22%); }
+.hero figcaption { position: absolute; right: 14px; bottom: 10px; font-size: 12px; color: var(--on-sky-muted); }
+
+h2.sec { font-size: 22px; margin: 52px 0 6px; }
+p.lead { color: var(--muted); margin: 0 0 22px; max-width: 46em; }
+
+/* 课程路线：每课是运动链上的一个关节 */
+.route { list-style: none; margin: 0; padding: 0; position: relative; }
+.route::before { content: ""; position: absolute; left: 27px; top: 30px; bottom: 30px; width: 4px; border-radius: 2px; background: var(--line); }
+.route li { position: relative; padding-left: 76px; }
+.route li + li { margin-top: 10px; }
+.route .node { position: absolute; left: 6px; top: 16px; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
+               background: var(--paper); border: 3px solid var(--joint); color: var(--joint); font-family: var(--display); font-weight: 600; font-size: 19px; }
+.route li.extra .node { border-style: dashed; }
+.route a.card { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "t l" "w w" "k k" "f f";
+                column-gap: 24px; padding: 16px 22px; background: var(--panel); border: 1px solid var(--line);
+                border-radius: 12px; text-decoration: none; color: var(--ink); }
+.route a.card:hover { border-color: var(--joint); }
+.route a.card:hover h3 { color: var(--joint); }
+.route h3 { grid-area: t; margin: 0; font-size: 19px; line-height: 1.4; }
+.route h3 em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--contact); margin-left: 10px; white-space: nowrap; }
+.route .what { grid-area: w; margin: 2px 0 0; color: var(--muted); font-size: 15px; }
+.route .learn { grid-area: k; margin: 8px 0 0; font-size: 14.5px; }
+.route .files { grid-area: f; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 13px; color: var(--muted); }
+.route .files code { font-size: 12.5px; }
+.route .level { grid-area: l; align-self: center; }
+.level { display: flex; gap: 3px; align-items: center; font-size: 12px; color: var(--muted); }
+.level i { width: 14px; height: 6px; border-radius: 3px; background: var(--line); }
+.level i.on { background: var(--joint); }
+.level b { font-weight: 400; margin-right: 6px; }
+.notes { margin: 22px 0 0 76px; color: var(--muted); font-size: 15px; }
+.notes p { margin: 6px 0; max-width: 52em; }
+
+.how { margin: 0; padding-left: 1.2em; max-width: 50em; }
+.how li { margin: 6px 0; }
+.wide { overflow-x: auto; }
+.wide table { font-size: 15px; display: table; width: 100%; background: var(--panel); }
+.wide td:first-child { white-space: nowrap; }
+details.map { margin: 16px 0 0; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+details.map summary { cursor: pointer; padding: 14px 20px; font-weight: 700; }
+details.map > div { padding: 0 20px 16px; }
+details.map p { color: var(--muted); max-width: 52em; }
+footer { color: var(--muted); font-size: 13px; padding: 48px 0 40px; }
+
+@media (max-width: 820px) {
+  .bar, .wrap { padding-left: 16px; padding-right: 16px; }
+  .jump ol { right: 16px; }
+  article { padding: 4px 18px 28px; border-radius: 0; border-left: 0; border-right: 0; }
+  .hero { grid-template-columns: 1fr; }
+  .hero .copy { padding: 32px 24px 8px; }
+  .hero dl { gap: 10px 24px; }
+  .hero figure { min-height: 300px; }
+  .hero figure img { -webkit-mask-image: linear-gradient(180deg, transparent, #000 20%); mask-image: linear-gradient(180deg, transparent, #000 20%); }
+  .route::before { left: 19px; }
+  .route li { padding-left: 52px; }
+  .route .node { left: 0; width: 40px; height: 40px; font-size: 17px; }
+  .route a.card { grid-template-columns: 1fr; grid-template-areas: "t" "l" "w" "k" "f"; padding: 14px 16px; }
+  .route .level { justify-self: start; margin-top: 4px; }
+  .notes { margin-left: 0; }
+}
 </style>
-<script defer src="katex/katex.min.js"></script><script defer src="katex/contrib/auto-render.min.js"></script>
-</head><body><main>
-<nav class="top"><a href="../index.html">资料包首页</a><a href="index.html">G1 实战目录</a><a href="00_装好环境.html">第 0 课</a><a href="01_认识G1.html">第 1 课</a><a href="02_站着与倒下.html">第 2 课</a><a href="03_吊起来挥手.html">第 3 课</a><a href="04_它感觉到了什么.html">第 4 课</a><a href="05_扛住推力.html">第 5 课</a><a href="06_省力地站.html">第 6 课</a><a href="07_伸手碰球.html">第 7 课</a><a href="08_单腿平衡.html">第 8 课</a><a href="09_让它走起来.html">第 9 课</a><a href="10_录视频与批量实验.html">第 10 课</a><a href="11_附录_往后学什么.html">第 11 课</a></nav>
+</head><body>
+<header class="bar">
+  <nav class="crumb" aria-label="位置"><a href="../index.html">资料包首页</a><span aria-hidden="true">/</span><a href="index.html">G1 实战</a><span aria-hidden="true">/</span><b>第 1 课 认识 G1：打开它，读懂它</b></nav>
+  <details class="jump"><summary>全部课程</summary><ol><li><a href="00_装好环境.html"><span>0</span>装好环境：离线安装与版本核对</a></li><li><a href="01_认识G1.html" aria-current=page><span>1</span>认识 G1：打开它，读懂它</a></li><li><a href="02_站着与倒下.html"><span>2</span>它为什么站着、为什么会倒</a></li><li><a href="03_吊起来挥手.html"><span>3</span>把它吊起来挥手</a></li><li><a href="04_它感觉到了什么.html"><span>4</span>它“感觉”到了什么</a></li><li><a href="05_扛住推力.html"><span>5</span>扛住多大的推力：从侧面推 G1</a></li><li><a href="06_省力地站.html"><span>6</span>省力地站：算出“刚好站住”需要的力矩</a></li><li><a href="07_伸手碰球.html"><span>7</span>伸手碰球：雅可比与逆运动学</a></li><li><a href="08_单腿平衡.html"><span>8</span>单腿平衡：把官方 LQR 搬到 G1 上</a></li><li><a href="09_让它走起来.html"><span>9</span>让它走起来：运行宇树的预训练行走策略</a></li><li><a href="10_录视频与批量实验.html"><span>10</span>录视频、批量做实验</a></li><li><a href="11_附录_往后学什么.html"><span>11</span>附录：往后学什么——从“跑别人的策略”到“自己训练”</a></li></ol></details>
+</header>
+<div class="split">
+<article>
 <h1 id="1-g1">第 1 课　认识 G1：打开它，读懂它</h1>
 <p><strong>对应入门教程</strong>：1、3.1、3.2、3.4、4.1–4.7、5.1–5.4、6.1–6.3、8.1</p>
 <p><strong>本课目标</strong></p>
@@ -148,6 +309,9 @@ python -m mujoco.studio.viewer --model=models/unitree_g1/scene.xml --gfx=web
 </ol>
 <p><strong>观察记录</strong>：＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
 <p>（第 4 题的答案留到第 2 课揭晓。）</p>
+
+<section class="lab" data-spec="{&quot;title&quot;: &quot;在页面右侧看一眼 G1&quot;, &quot;script&quot;: &quot;01_inspect.py&quot;, &quot;run&quot;: [], &quot;stream&quot;: true, &quot;note&quot;: &quot;右侧会实时显示 G1，和用 Studio 打开是同一个模型。选“模型初始状态 qpos0”对照先猜一猜第 1 题，再选 `stand` 对照第 5 题，看手臂有什么不同。左键拖动转视角，滚轮缩放。运行结果里还会打出 1.4 节的清点表，现在可以先不看。&quot;, &quot;fields&quot;: [{&quot;flag&quot;: &quot;--key&quot;, &quot;label&quot;: &quot;初始状态&quot;, &quot;type&quot;: &quot;select&quot;, &quot;value&quot;: &quot;qpos0&quot;, &quot;options&quot;: [[&quot;qpos0&quot;, &quot;模型初始状态 qpos0（ctrl 全 0）&quot;], [&quot;stand&quot;, &quot;stand 关键帧&quot;]], &quot;streamOnly&quot;: true}]}"><header><span class="tag">实验台</span><b>在页面右侧看一眼 G1</b></header><p class="note">右侧会实时显示 G1，和用 Studio 打开是同一个模型。选“模型初始状态 qpos0”对照先猜一猜第 1 题，再选 <code>stand</code> 对照第 5 题，看手臂有什么不同。左键拖动转视角，滚轮缩放。运行结果里还会打出 1.4 节的清点表，现在可以先不看。</p><pre class="lab-cmd"><code>python code/01_inspect.py</code></pre><p class="lab-off">在 <code>G1实战</code> 目录下运行上面的命令；用 <code>启动官方文档.bat</code> 打开本页时，可以直接在这里改参数、运行。</p></section>
+
 <h2 id="13-g1xml">1.3 读懂 g1.xml</h2>
 <p>用编辑器打开 <code>models/unitree_g1/g1.xml</code>，共 343 行。下面按从上到下的顺序分块讲。</p>
 <h3 id="1">① 编译选项和物理选项</h3>
@@ -323,7 +487,12 @@ python -m mujoco.studio.viewer --model=models/unitree_g1/scene.xml --gfx=web
 </table>
 <p>提示：freejoint 的位置用 3 个坐标加一个四元数表示，速度用 3 个线速度加 3 个角速度表示。</p>
 <h3 id="88">脚本 <code>code/01_inspect.py</code></h3>
-<pre><code class="language-python">&quot;&quot;&quot;第 1 课：清点 G1 模型。&quot;&quot;&quot;
+<pre><code class="language-python">&quot;&quot;&quot;第 1 课：清点 G1 模型。
+
+用法：
+    python code/01_inspect.py              # 打印 body 树、关节表、执行器表和 stand 关键帧下的位置
+    python code/01_inspect.py --web 8790   # 打印完再在网页里实时显示 G1 站着（课文页实验台右侧的画面）
+&quot;&quot;&quot;
 import pathlib
 
 import mujoco
@@ -379,6 +548,10 @@ print(&quot;躯干 IMU 位置&quot;, d.site(&quot;imu_in_torso&quot;).xpos.round
 print(&quot;左脚 site   &quot;, d.site(&quot;left_foot&quot;).xpos.round(3))
 print(&quot;整机质心    &quot;, d.subtree_com[0].round(3))
 </code></pre>
+<p>运行 <code>python code/01_inspect.py</code>。文件末尾还有一段 <code>--web</code> 模式，只给课文页实验台右侧的实时画面用，上面没有列出。</p>
+
+<section class="lab" data-spec="{&quot;title&quot;: &quot;清点 G1 模型&quot;, &quot;script&quot;: &quot;01_inspect.py&quot;, &quot;run&quot;: [], &quot;stream&quot;: true, &quot;note&quot;: &quot;先看开头几行的 `nbody`、`njnt`、`nq`、`nv`、`nu`、`ngeom`、`nsensordata`，和上面“先猜一猜”的表格对一对；再看关节表里 `qpos` 和 `qvel` 两列从哪里开始错开一位。右侧同时显示 `stand` 关键帧下站着的 G1，可以对照 body 树找部件。&quot;, &quot;fields&quot;: [{&quot;flag&quot;: &quot;--key&quot;, &quot;label&quot;: &quot;右侧画面的初始状态&quot;, &quot;type&quot;: &quot;select&quot;, &quot;value&quot;: &quot;stand&quot;, &quot;options&quot;: [[&quot;stand&quot;, &quot;stand 关键帧&quot;], [&quot;qpos0&quot;, &quot;模型初始状态 qpos0（ctrl 全 0）&quot;]], &quot;streamOnly&quot;: true}]}"><header><span class="tag">实验台</span><b>清点 G1 模型</b></header><p class="note">先看开头几行的 <code>nbody</code>、<code>njnt</code>、<code>nq</code>、<code>nv</code>、<code>nu</code>、<code>ngeom</code>、<code>nsensordata</code>，和上面“先猜一猜”的表格对一对；再看关节表里 <code>qpos</code> 和 <code>qvel</code> 两列从哪里开始错开一位。右侧同时显示 <code>stand</code> 关键帧下站着的 G1，可以对照 body 树找部件。</p><pre class="lab-cmd"><code>python code/01_inspect.py</code></pre><p class="lab-off">在 <code>G1实战</code> 目录下运行上面的命令；用 <code>启动官方文档.bat</code> 打开本页时，可以直接在这里改参数、运行。</p></section>
+
 <h3 id="_4">观察记录</h3>
 <ol>
 <li>对照“先猜一猜”的表格，哪几个猜错了？为什么 <code>nq</code> 和 <code>nv</code> 不相等？</li>
@@ -536,13 +709,23 @@ print(&quot;整机质心    &quot;, d.subtree_com[0].round(3))
 <strong>练习 3</strong>：左膝范围是 −5° 到 165°。髋 roll 不对称，是因为腿往外张的空间大，往里收很快就会碰到另一条腿。左右腿的范围正好镜像。
 
 </details>
-<nav class="pager"><span><a href="00_装好环境.html">← 第 0 课 装好环境：离线安装与版本核对</a></span><span><a href="02_站着与倒下.html">第 2 课 它为什么站着、为什么会倒 →</a></span></nav>
-</main>
+<nav class="pager" aria-label="翻页"><a class="prev" href="00_装好环境.html"><small>上一课</small>第 0 课 装好环境：离线安装与版本核对</a><a class="next" href="02_站着与倒下.html"><small>下一课</small>第 2 课 它为什么站着、为什么会倒</a></nav>
+</article>
+<aside class="viewer" aria-label="实时仿真画面"><div class="viewer-head"><b>仿真画面</b><span class="viewer-what">还没有运行</span></div><div class="viewer-frame"><p class="viewer-empty">点任一实验台的“运行”，这里会实时播放那次仿真：<br>和实验台用同一组参数，跑完一轮会自动重来。<br>鼠标左键拖动转视角，滚轮缩放。</p></div></aside>
+</div>
+<script defer src="assets/lab.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll(".math").forEach(function (el) {
     renderMathInElement(el, {delimiters: [{left: "\\[", right: "\\]", display: true}, {left: "\\(", right: "\\)", display: false}]});
   });
+});
+</script>
+<script>
+// 点页面其他地方时收起“全部课程”菜单
+document.addEventListener("click", function (e) {
+  var d = document.querySelector(".jump");
+  if (d && d.open && !d.contains(e.target)) d.open = false;
 });
 </script>
 </body></html>

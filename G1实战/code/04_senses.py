@@ -5,6 +5,9 @@
     python code/04_senses.py --force 60    # 换一个推力（N）
     python code/04_senses.py --dir backward   # 换一个方向：从正面往后推
     python code/04_senses.py --view        # 打开查看器实时观看推的过程
+    python code/04_senses.py --web 8790 --force 60    # 网页里实时看（http://127.0.0.1:8790/），每 4 s 重推一次
+    python code/04_senses.py --force 60 --out 04_lab  # 图和 CSV 改存成 output/04_lab_*，不覆盖默认的 04_*
+--force、--dir 对 --view、--web 都有效。
 """
 import argparse
 import pathlib
@@ -112,13 +115,54 @@ def margin(hull, p):
     return dist if inside else -dist
 
 
+def web(force, direction, port):
+    """网页查看器（课文页实验台右侧那个）：站 1 s → 推 0.2 s → 看到 4 s，然后重来，一直循环。"""
+    from webview import open_web                # 同目录的 webview.py
+    m = build_model()
+    d = mujoco.MjData(m)
+    key = m.key("stand").id
+    torso = m.body("torso_link").id
+    t_push, dur, t_end = 1.0, 0.2, 4.0
+    push = force * np.array(DIRS[direction], dtype=float)
+    print(f"每 {t_end:.0f} s 重来一次：第 {t_push} s 起往 {direction} 推躯干 {force:g} N，持续 {dur} s。", flush=True)
+
+    def reset():
+        mujoco.mj_resetDataKeyframe(m, d, key)
+        mujoco.mj_forward(m, d)
+
+    reset()
+    pushing = False
+    with open_web(m, d, port, title="第 4 课：推一下，看传感器") as viewer:
+        while viewer.is_running():
+            step_start = time.time()
+            if d.time >= t_end:
+                reset()
+            now = t_push <= d.time < t_push + dur
+            if now:
+                d.xfrc_applied[torso, :3] = push
+            elif pushing:                       # 推完清零一次，之后不碰，鼠标拖拽仍可用
+                d.xfrc_applied[torso, :3] = 0.0
+            pushing = now
+            mujoco.mj_step(m, d)
+            viewer.sync(m, d)
+            rest = m.opt.timestep - (time.time() - step_start)   # 按真实时间播放
+            if rest > 0:
+                time.sleep(rest)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--force", type=float, default=30.0, help="推力大小 N")
     ap.add_argument("--dir", default="left", choices=list(DIRS),
                     help="把机器人往哪边推：left(+y) right(-y) forward(+x) backward(-x)，默认 left")
     ap.add_argument("--view", action="store_true", help="打开查看器实时观看")
+    ap.add_argument("--web", type=int, metavar="PORT", help="在网页里循环播放 C 段（http://127.0.0.1:PORT/）")
+    ap.add_argument("--out", default="04", metavar="PREFIX",
+                    help="输出文件名前缀，默认 04（04_senses.png 等）；换成 04_lab 就不会覆盖默认结果")
     args = ap.parse_args()
+    if args.web:
+        web(args.force, args.dir, args.web)
+        return
     OUT.mkdir(exist_ok=True)
 
     m = build_model()
@@ -244,7 +288,7 @@ def main():
     data = np.array(rows)
     cols = ["t", "gx", "gy", "gz", "ax", "ay", "az", "Fz_left", "Fz_right",
             "com_x", "com_y", "margin", "knee_L_frc", "pelvis_z", "n_foot_contacts"]
-    csv = OUT / "04_push_log.csv"
+    csv = OUT / f"{args.out}_push_log.csv"
     np.savetxt(csv, data, delimiter=",", header=",".join(cols), comments="", fmt="%.6g")
 
     T = data[:, 0]
@@ -293,7 +337,7 @@ def main():
         a.grid(alpha=0.3)
     fig.suptitle(f"往 {args.dir} 推 {args.force:.0f} N × {dur} s（橙色区间）")
     fig.tight_layout()
-    fig.savefig(OUT / "04_senses.png", dpi=120)
+    fig.savefig(OUT / f"{args.out}_senses.png", dpi=120)
 
     fig, ax = plt.subplots(figsize=(6, 6))
     h = np.vstack([hull_static, hull_static[:1]])
@@ -308,8 +352,8 @@ def main():
     ax.grid(alpha=0.3)
     ax.set_title("俯视：质心投影与支撑区")
     fig.tight_layout()
-    fig.savefig(OUT / "04_support.png", dpi=120)
-    print(f"\n已保存 {OUT / '04_senses.png'}、{OUT / '04_support.png'}、{csv}")
+    fig.savefig(OUT / f"{args.out}_support.png", dpi=120)
+    print(f"\n已保存 {OUT / (args.out + '_senses.png')}、{OUT / (args.out + '_support.png')}、{csv}")
 
     if viewer is not None:                     # 仿真结束后窗口保持打开，手动关掉再退出
         print("仿真已结束，关闭查看器窗口即可退出。")

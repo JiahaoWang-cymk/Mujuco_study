@@ -28,8 +28,13 @@ G1实战\
     以宇树 Unitree G1 人形机器人为案例的实战课程，第 0–10 课加附录。
     入口是 G1实战\index.html（课程目录），每课也有同名的 .md 版本。
     第 0 课讲怎么离线装好课程用到的 Python 包；第 9 课的行走策略装了 PyTorch 会用它运行，没装就自动改用 numpy。
+    课程都在 CPU 上仿真，不需要显卡。附录 11.4 节的 code\11_gpu_rollout.py 会自动识别 NVIDIA GPU（需要装好显卡驱动），
+    有就用 MuJoCo Warp 在 GPU 上批量仿真，没有就改用 CPU 模式跑通。
     code\                       每课的脚本，在 G1实战 目录下运行，例如 python code\01_inspect.py；
                                 图片、视频等输出写到 G1实战\output\
+    实验台                      各课网页里有“实验台”：直接在页面上改参数、运行脚本、看输出图和源码，
+                                点“运行”后，页面右侧实时播放这次仿真（MuJoCo Studio 的网页查看器，只在本机 8790 端口）。
+                                要用“启动官方文档.bat”打开页面，并且启动它的 Python 里装了 mujoco（见第 0 课）。
     models\unitree_g1\          G1 模型（DeepMind MuJoCo Menagerie，BSD-3-Clause）
     models\unitree_rl_gym_g1\   宇树官方 G1 行走策略 motion.pt、部署脚本和 12 自由度模型（unitree_rl_gym，BSD-3-Clause）
 
@@ -38,7 +43,8 @@ G1实战\
 
 启动官方文档.bat
     如果双击 index.html 后文档页面打开是空白，或者搜索不能用，改用这个脚本。
-    它会在本机起一个 HTTP 服务（http://localhost:8765）再打开首页，需要电脑上装有 Python。
+    它运行同目录的 serve.py，在本机起一个服务（http://localhost:8765，只有本机能访问）再打开首页，需要电脑上装有 Python。
+    G1 实战课文页的实验台也靠它运行课程脚本；只能运行 G1实战\code\ 里的脚本。关掉它的窗口就停止服务。
 
 官方仓库_模型与教程\
     model\                示例模型（humanoid、car、flex 等），可直接用查看器打开

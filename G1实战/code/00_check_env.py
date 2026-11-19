@@ -2,7 +2,8 @@
 
 逐项检查：Python 版本、各个包的版本、加载 G1 模型、跑 100 步仿真、
 离屏渲染一张图、用 matplotlib 存一张曲线图、用 imageio-ffmpeg 写一段短视频、
-PyTorch 是否可用（可选，第 9 课可以用它跑官方的策略文件）。每项打 √ 或 ×，最后汇总。
+PyTorch 是否可用（可选，第 9 课可以用它跑官方的策略文件）、有没有 NVIDIA GPU（可选，
+附录 11.4 节用）。每项打 √ 或 ×，最后汇总。
 
 用法：
     python code/00_check_env.py
@@ -214,6 +215,22 @@ def _():
     policy = torch.jit.load(str(POLICY), map_location="cpu")   # 宇树的行走策略
     out = policy(torch.zeros(1, 47))                          # 47 维观测 → 12 维动作
     print(f"  已加载 {POLICY.name}，输入 (1, 47) → 输出 {tuple(out.shape)}")
+
+
+# ---------- 9. NVIDIA GPU（可选） ----------
+@check("NVIDIA GPU", required=False)
+def _():
+    import warp as wp                      # 装 mujoco 4.x 时一起装上的依赖
+    wp.config.quiet = True
+    wp.init()
+    cuda = wp.get_cuda_devices()
+    if not cuda:
+        print(f"  warp {wp.__version__} 没有识别到 CUDA 设备。课程第 0–10 课都不需要 GPU；")
+        print("  附录 11.4 节的 11_gpu_rollout.py 会自动改用 CPU 模式。")
+        raise RuntimeError("没有可用的 NVIDIA GPU")
+    for dev in cuda:
+        print(f"  {dev.alias}：{dev.name}，显存 {dev.total_memory / 2**30:.1f} GB"
+              "（附录 11.4 节的 11_gpu_rollout.py 会自动用它）")
 
 
 # ---------- 汇总 ----------

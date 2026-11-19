@@ -1,4 +1,9 @@
-"""第 1 课：清点 G1 模型。"""
+"""第 1 课：清点 G1 模型。
+
+用法：
+    python code/01_inspect.py              # 打印 body 树、关节表、执行器表和 stand 关键帧下的位置
+    python code/01_inspect.py --web 8790   # 打印完再在网页里实时显示 G1 站着（课文页实验台右侧的画面）
+"""
 import pathlib
 
 import mujoco
@@ -53,3 +58,45 @@ print("骨盆位置    ", d.body("pelvis").xpos.round(3))
 print("躯干 IMU 位置", d.site("imu_in_torso").xpos.round(3))
 print("左脚 site   ", d.site("left_foot").xpos.round(3))
 print("整机质心    ", d.subtree_com[0].round(3))
+
+
+# ---------- 5. 课文页实验台用：在网页里实时看 G1 站着（上面的清点不需要这一段） ----------
+import argparse  # noqa: E402
+import time  # noqa: E402
+
+ap = argparse.ArgumentParser(description="第 1 课：清点 G1 模型")
+ap.add_argument("--web", type=int, metavar="PORT", help="打印完后在网页里实时显示 G1（http://127.0.0.1:PORT/）")
+ap.add_argument("--key", choices=["stand", "qpos0"], default="stand",
+                help="--web 时从哪个状态开始：stand 关键帧，或模型初始状态 qpos0（ctrl 全 0）")
+args = ap.parse_args()
+
+if args.web:
+    from webview import open_web                     # 同目录的 webview.py
+
+    def reset():
+        if args.key == "stand":
+            mujoco.mj_resetDataKeyframe(m, d, key.id)   # qpos 和 ctrl 一起设成 stand
+        else:
+            mujoco.mj_resetData(m, d)                   # qpos0，ctrl 全 0
+        mujoco.mj_forward(m, d)
+
+    reset()
+    print(f"\n从 {args.key} 开始实时仿真：29 个位置伺服一直保持 ctrl 里的目标角度。"
+          "倒地 3 秒后自动重来。", flush=True)
+    pelvis = m.body("pelvis").id
+    down_since = None
+    with open_web(m, d, args.web, title="第 1 课：G1 站着") as viewer:
+        while viewer.is_running():
+            step_start = time.time()
+            mujoco.mj_step(m, d)
+            if d.xpos[pelvis, 2] < 0.4:                 # 骨盆低于 0.4 m 算倒地
+                down_since = d.time if down_since is None else down_since
+                if d.time - down_since > 3.0:
+                    reset()
+                    down_since = None
+            else:
+                down_since = None
+            viewer.sync(m, d)
+            rest = m.opt.timestep - (time.time() - step_start)   # 按真实时间播放
+            if rest > 0:
+                time.sleep(rest)

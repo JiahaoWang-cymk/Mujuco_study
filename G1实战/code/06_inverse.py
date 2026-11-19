@@ -4,6 +4,9 @@
     python code/06_inverse.py                 # 无界面，打印结果并在 output/ 下保存图和 CSV
     python code/06_inverse.py --view          # 打开查看器，看屈膝站 + 前馈 PD（默认 kp=200）
     python code/06_inverse.py --view --kp 300 --noff   # 换增益、去掉前馈再看
+    python code/06_inverse.py --once --kp 200 --noff   # 只跑一组（无界面，几秒）：打印结果，图存到 output/06_once.png
+    python code/06_inverse.py --web 8790 --kp 200      # 像 --view，但显示在网页里（http://127.0.0.1:8790/），每 8 s 重来
+--kp、--noff、--bend 对 --once、--view、--web 都有效。
 """
 import argparse
 import csv
@@ -322,23 +325,83 @@ def main_report():
     print(f"总用时 {time.time() - t_start:.1f} s")
 
 
-def main_view(kp, use_ff, bend):
-    """在查看器里看：屈膝站 + （可选）前馈。"""
-    import mujoco.viewer
+def main_once(kp, use_ff, bend, T=5.0):
+    """只跑一组：kp=500 加前馈站稳 → 换成 kp 跑 T 秒（有/无前馈各跑一次，选中的那组画粗线）。"""
+    t_start = time.time()
+    q = pose(bend)
+    print(f"屈膝 {bend:g} rad，先用 kp=500 站稳并迭代算前馈：")
+    tff, d_ok = settle_with_ff(make_model(500), q)
+    print(f"前馈里左膝 {tff[KNEE]:+.2f} N·m（上限 {LIMIT[KNEE]:.0f}，占 {100 * abs(tff[KNEE]) / LIMIT[KNEE]:.1f}%），"
+          f"最吃力的关节 {SHORT[np.argmax(np.abs(tff) / LIMIT)]}")
+    mm = make_model(kp)
+    logs = {}
+    for ff in (use_ff, not use_ff):
+        dd, fell, rows = run(mm, q, tff * ff, T, start_qpos=d_ok.qpos.copy(), log=True)
+        logs[ff] = (np.array(rows), fell)
+        e = dd.qpos[7:] - q[7:]
+        tag = f"kp={kp:g}，{'有' if ff else '无'}前馈"
+        if fell:
+            res = f"{fell:.2f} s 时倒下"
+        else:
+            res = f"站住了：膝误差 {e[KNEE]:+.4f} rad，最大 {np.abs(e).max():.4f} rad，骨盆前倾 {pitch_deg(dd):+.1f}°"
+        print(("结果　" if ff == use_ff else "对照　") + f"{tag}：{res}")
+
+    fig, axs = plt.subplots(2, 1, figsize=(7, 5.5), sharex=True)
+    for ff in (not use_ff, use_ff):
+        L, fell = logs[ff]
+        style = dict(color=ORANGE if ff else BLUE, lw=2.2 if ff == use_ff else 1.0,
+                     ls="-" if ff == use_ff else "--",
+                     label=f"{'有' if ff else '无'}前馈" + ("" if ff == use_ff else "（对照）")
+                     + (f"，{fell:.2f} s 倒下" if fell else ""))
+        axs[0].plot(L[:, 0], L[:, 1], **style)
+        axs[1].plot(L[:, 0], L[:, 2], **style)
+    axs[0].set_ylabel("左膝误差 q − q_des（rad）")
+    axs[1].set_ylabel("骨盆前倾（°）")
+    axs[1].set_xlabel("时间（s）")
+    axs[0].set_title(f"屈膝 {bend:g} rad，kp={kp:g}")
+    for a in axs:
+        a.grid(alpha=0.3)
+        a.legend(frameon=False)
+    fig.tight_layout()
+    fig.savefig(OUT / "06_once.png", dpi=110)
+    plt.close(fig)
+    print(f"图已保存：{OUT / '06_once.png'}（用时 {time.time() - t_start:.1f} s）")
+
+
+def main_view(kp, use_ff, bend, web_port=None, T_LOOP=8.0):
+    """在查看器里看：屈膝站 + （可选）前馈。web_port 给了端口就用网页查看器，并且每 T_LOOP 秒重来一次。"""
     m500 = make_model(500)
     q = pose(bend)
-    print("先离线算前馈……")
+    print("先离线算前馈……", flush=True)
     tff, d_ok = settle_with_ff(m500, q)
     mm = make_model(kp)
     dd = mujoco.MjData(mm)
-    dd.qpos[:] = d_ok.qpos
-    dd.ctrl[:] = q[7:] + (tff if use_ff else 0) / kp
-    print(f"kp={kp}，{'有' if use_ff else '无'}前馈。关掉窗口结束。")
-    with mujoco.viewer.launch_passive(mm, dd) as viewer:
+
+    def reset():
+        mujoco.mj_resetData(mm, dd)
+        dd.qpos[:] = d_ok.qpos
+        dd.ctrl[:] = q[7:] + (tff if use_ff else 0) / kp
+        mujoco.mj_forward(mm, dd)
+
+    reset()
+    print(f"kp={kp:g}，{'有' if use_ff else '无'}前馈。"
+          + (f"每 {T_LOOP:.0f} s 重来一次。" if web_port else "关掉窗口结束。"), flush=True)
+    if web_port:
+        from webview import open_web                # 同目录的 webview.py
+        viewer_cm = open_web(mm, dd, web_port, title="第 6 课：前馈 + 小增益 PD")
+    else:
+        from mujoco import viewer as mj_viewer
+        viewer_cm = mj_viewer.launch_passive(mm, dd)
+    with viewer_cm as viewer:
         while viewer.is_running():
             t0 = time.time()
+            if web_port and dd.time >= T_LOOP:
+                reset()
             mujoco.mj_step(mm, dd)
-            viewer.sync()
+            if web_port:
+                viewer.sync(mm, dd)
+            else:
+                viewer.sync()
             dt = mm.opt.timestep - (time.time() - t0)
             if dt > 0:
                 time.sleep(dt)
@@ -347,11 +410,15 @@ def main_view(kp, use_ff, bend):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--view", action="store_true", help="打开查看器实时观看")
-    ap.add_argument("--kp", type=float, default=200, help="--view 时使用的 kp")
-    ap.add_argument("--noff", action="store_true", help="--view 时不加前馈")
-    ap.add_argument("--bend", type=float, default=1.2, help="--view 时的膝关节角（rad）")
+    ap.add_argument("--web", type=int, metavar="PORT", help="像 --view 一样实时观看，但显示在网页里（http://127.0.0.1:PORT/）")
+    ap.add_argument("--once", action="store_true", help="只跑一组（无界面），图写到 output/06_once.png")
+    ap.add_argument("--kp", type=float, default=200, help="--once/--view/--web 时使用的 kp")
+    ap.add_argument("--noff", action="store_true", help="--once/--view/--web 时不加前馈")
+    ap.add_argument("--bend", type=float, default=1.2, help="--once/--view/--web 时的膝关节角（rad）")
     args = ap.parse_args()
-    if args.view:
-        main_view(args.kp, not args.noff, args.bend)
+    if args.view or args.web:
+        main_view(args.kp, not args.noff, args.bend, web_port=args.web)
+    elif args.once:
+        main_once(args.kp, not args.noff, args.bend)
     else:
         main_report()

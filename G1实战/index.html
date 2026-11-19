@@ -1,191 +1,294 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>G1 实战：让一台人形机器人动起来（大纲） · G1 实战</title>
-<link rel="stylesheet" href="katex/katex.min.css"><style>
-:root { --ink:#16213a; --muted:#5a6880; --line:#d5dbe4; --accent:#2a4fd6; --bg:#ffffff; --code-bg:#f4f6f9; --quote:#eef3ff; }
+<title>G1 实战 · 让一台人形机器人动起来</title>
+<style>
+:root {
+  --paper:#eef1f5; --panel:#ffffff; --ink:#142038; --muted:#5a6880; --line:#d5dbe4;
+  --joint:#2a4fd6; --contact:#c87414; --code-bg:#f2f4f8; --quote:#eef3ff;
+  --sky-top:#2e4d6c; --sky-low:#22394f; --on-sky:#eaf0f7; --on-sky-muted:#a9bbd0;
+  --display:"Bahnschrift","DIN Alternate","Segoe UI","Microsoft YaHei",sans-serif;
+  --text:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;
+}
 @media (prefers-color-scheme: dark) {
-  :root { --ink:#e5eaf3; --muted:#97a3b8; --line:#2c3a53; --accent:#86a2ff; --bg:#121a29; --code-bg:#1a2438; --quote:#1a2540; }
+  :root { --paper:#121a29; --panel:#172134; --ink:#e6ebf3; --muted:#97a3b8; --line:#2c3a53;
+          --joint:#86a2ff; --contact:#f2ab4f; --code-bg:#1d2840; --quote:#1a2540; }
 }
 * { box-sizing: border-box; }
-html { background: var(--bg); color: var(--ink); font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif; }
+html { background: var(--paper); color: var(--ink); font-family: var(--text); }
 body { margin: 0; line-height: 1.75; font-size: 16px; }
-main { max-width: 860px; margin: 0 auto; padding: 24px 20px 64px; }
-nav.top { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; padding: 10px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
-nav.top a, nav.pager a { color: var(--accent); text-decoration: none; }
-nav.top a:hover, nav.pager a:hover { text-decoration: underline; }
-nav.pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 15px; }
-h1 { font-size: 30px; line-height: 1.3; margin: 24px 0 16px; }
-h2 { font-size: 22px; margin: 40px 0 12px; padding-left: 12px; border-left: 5px solid var(--accent); }
-h3 { font-size: 18px; margin: 28px 0 8px; }
-a { color: var(--accent); }
+a { color: var(--joint); }
+a:focus-visible, summary:focus-visible { outline: 3px solid var(--joint); outline-offset: 3px; border-radius: 4px; }
 code { font-family: Consolas, "Microsoft YaHei", monospace; font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
-pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; line-height: 1.5; }
-pre code { background: none; padding: 0; font-size: 14px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+pre code { background: none; padding: 0; font-size: 14px; white-space: inherit; }
 table { border-collapse: collapse; margin: 12px 0; display: block; overflow-x: auto; }
 th, td { border: 1px solid var(--line); padding: 6px 10px; vertical-align: top; }
 th { background: var(--code-bg); text-align: left; }
-blockquote { margin: 14px 0; padding: 8px 16px; background: var(--quote); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; }
-blockquote p { margin: 6px 0; }
-hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
-details { margin: 24px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
-details summary { cursor: pointer; }
 img { max-width: 100%; }
 .katex-display { overflow-x: auto; overflow-y: hidden; }
+
+/* 顶栏：面包屑 + 课程跳转 */
+.bar { max-width: 1080px; margin: 0 auto; padding: 14px 28px; display: flex; align-items: center; gap: 12px; font-size: 14px; position: relative; }
+.bar .crumb { display: flex; gap: 8px; align-items: center; flex: 1; min-width: 0; color: var(--muted); }
+.bar .crumb a { color: var(--muted); text-decoration: none; }
+.bar .crumb a:hover { color: var(--joint); }
+.bar .crumb b { color: var(--ink); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jump summary { cursor: pointer; list-style: none; padding: 4px 12px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: var(--panel); white-space: nowrap; }
+.jump summary::-webkit-details-marker { display: none; }
+.jump[open] summary { border-color: var(--joint); }
+.jump ol { position: absolute; right: 28px; top: 52px; z-index: 5; margin: 0; padding: 8px 0; list-style: none; width: 300px; max-width: calc(100vw - 32px);
+           background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 30px rgba(20,32,56,.18); }
+.jump li a { display: flex; gap: 10px; padding: 5px 16px; text-decoration: none; color: var(--ink); }
+.jump li a:hover, .jump li a[aria-current] { background: var(--quote); }
+.jump li span { font-family: var(--display); color: var(--joint); width: 1.6em; text-align: right; flex: none; }
+
+/* 课文页 */
+article { max-width: 860px; margin: 0 auto 64px; padding: 8px 48px 40px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+article h1 { font-size: 30px; line-height: 1.3; margin: 28px 0 16px; }
+article h2 { font-size: 22px; margin: 40px 0 12px; padding-left: 12px; border-left: 5px solid var(--joint); }
+article h3 { font-size: 18px; margin: 28px 0 8px; }
+blockquote { margin: 14px 0; padding: 8px 16px; background: var(--quote); border-left: 4px solid var(--joint); border-radius: 0 8px 8px 0; }
+blockquote p { margin: 6px 0; }
+hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
+article details { margin: 24px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
+article details summary { cursor: pointer; }
+nav.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 48px; }
+nav.pager a { display: block; padding: 12px 16px; border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--ink); }
+nav.pager a:hover { border-color: var(--joint); }
+nav.pager small { display: block; color: var(--muted); font-size: 13px; }
+nav.pager .next { text-align: right; grid-column: 2; }
+
+/* 实验台 */
+.lab { margin: 22px 0; padding: 14px 18px 16px; border: 1px solid var(--line); border-left: 4px solid var(--contact); border-radius: 0 10px 10px 0; background: var(--paper); }
+.lab > header { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.lab > header .tag { font-size: 13px; font-weight: 700; color: var(--contact); }
+.lab > header b { font-size: 16px; }
+.lab .note { margin: 6px 0 0; color: var(--muted); font-size: 14.5px; }
+.lab .lab-cmd { margin: 10px 0 0; padding: 8px 12px; font-size: 13.5px; }
+.lab .lab-cmd code { white-space: pre-wrap; word-break: break-all; }
+.lab .lab-off { margin: 8px 0 0; font-size: 14px; color: var(--muted); }
+.lab-fields { display: flex; flex-wrap: wrap; gap: 10px 22px; margin: 12px 0 0; font-size: 14.5px; }
+.lab-fields label { display: inline-flex; align-items: center; gap: 8px; }
+.lab-fields select { font: inherit; padding: 4px 8px; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+.lab-fields input[type=number] { width: 6.5em; padding: 4px 8px; font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+.lab-fields input:focus-visible, .lab button:focus-visible { outline: 3px solid var(--joint); outline-offset: 2px; }
+.lab-fields input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--joint); }
+.lab-fields small { color: var(--muted); }
+.lab-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.lab button { font: inherit; font-size: 14.5px; padding: 5px 14px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.lab button:hover { border-color: var(--joint); }
+.lab button.primary { background: var(--joint); border-color: var(--joint); color: var(--panel); font-weight: 700; }
+.lab button.ghost { background: transparent; }
+.lab button:disabled { opacity: .5; cursor: progress; }
+.lab-status { font-size: 14px; color: var(--muted); margin-left: 4px; }
+.lab-status.ok { color: #2f8a4a; } .lab-status.bad { color: #c2410c; }
+.lab-status.busy::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--contact); animation: pulse 1s infinite alternate; }
+@keyframes pulse { from { opacity: 1; } to { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .lab-status.busy::before { animation: none; } }
+.lab-log { margin: 12px 0 0; max-height: 260px; overflow: auto; font-size: 13px; white-space: pre-wrap; background: #0f1828; color: #d7e0ee; }
+.lab-results figure { margin: 12px 0 0; }
+.lab-results img, .lab-results video { display: block; max-width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+.lab-results figcaption, .lab-file, .lab-hint { font-size: 13px; color: var(--muted); margin: 4px 0; }
+.lab-srcbox { margin-top: 12px; }
+.lab-src { position: relative; margin: 0; max-height: 380px; overflow: auto; padding: 8px 0; font-size: 13px; line-height: 1.5; }
+.lab-src .ln { display: block; padding: 0 12px 0 4.4em; text-indent: -4.4em; white-space: pre-wrap; overflow-wrap: anywhere; }
+.lab-src .ln i { display: inline-block; width: 3.4em; padding-right: 1em; text-align: right; color: var(--muted); font-style: normal; user-select: none; }
+.lab-src .ln.hl { background: color-mix(in srgb, var(--contact) 16%, transparent); }
+
+/* 有实时仿真画面的课：课文在左，画面固定在右 */
+.split { display: grid; grid-template-columns: minmax(0, 800px) minmax(420px, 1fr); gap: 20px; max-width: 1900px; margin: 0 auto; padding: 0 20px 64px; align-items: start; }
+.split article { margin: 0; max-width: none; }
+.viewer { position: sticky; top: 10px; height: calc(100vh - 20px); display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.viewer-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.viewer-head b { font-size: 15px; white-space: nowrap; }
+.viewer-what { flex: 1; min-width: 0; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.viewer-head button { font: inherit; font-size: 13px; padding: 3px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.viewer-head a { font-size: 13px; white-space: nowrap; }
+.viewer-frame { flex: 1; position: relative; background: #1b2a3d; }
+.viewer-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.viewer-empty { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: #a9bbd0; font-size: 15px; line-height: 1.8; }
+.lab.playing { border-left-color: var(--joint); box-shadow: 0 0 0 2px color-mix(in srgb, var(--joint) 35%, transparent); }
+@media (max-width: 1180px) {
+  .split { grid-template-columns: 1fr; padding: 0 0 64px; }
+  .viewer { order: -1; top: 0; height: 46vh; border-radius: 0; border-left: 0; border-right: 0; z-index: 4; }
+}
+
+/* 目录页 */
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+.hero { display: grid; grid-template-columns: 1.15fr 1fr; align-items: stretch; border-radius: 18px; overflow: hidden;
+        background: linear-gradient(180deg, var(--sky-top), var(--sky-low)); color: var(--on-sky); }
+.hero .copy { padding: 52px 8px 44px 48px; display: flex; flex-direction: column; justify-content: center; }
+.hero h1 { font-family: var(--display); font-weight: 600; font-size: clamp(44px, 7vw, 76px); line-height: 1; margin: 0; letter-spacing: -0.5px; }
+.hero h1 span { display: block; font-family: var(--text); font-weight: 700; font-size: 0.4em; letter-spacing: 1px; margin-top: 14px; }
+.hero p { color: var(--on-sky-muted); margin: 18px 0 26px; max-width: 30em; }
+.hero dl { display: flex; flex-wrap: wrap; gap: 12px 30px; margin: 0 0 30px; }
+.hero dt { font-family: var(--display); font-size: 28px; font-weight: 600; line-height: 1.1; color: var(--on-sky); }
+.hero dd { margin: 0; font-size: 13px; color: var(--on-sky-muted); }
+.hero .start { align-self: flex-start; background: var(--on-sky); color: var(--sky-low); font-weight: 700; text-decoration: none; padding: 9px 20px; border-radius: 8px; }
+.hero .start:hover { background: #fff; }
+.hero figure { margin: 0; position: relative; min-height: 360px; }
+.hero figure img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%;
+                   -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%); mask-image: linear-gradient(90deg, transparent, #000 22%); }
+.hero figcaption { position: absolute; right: 14px; bottom: 10px; font-size: 12px; color: var(--on-sky-muted); }
+
+h2.sec { font-size: 22px; margin: 52px 0 6px; }
+p.lead { color: var(--muted); margin: 0 0 22px; max-width: 46em; }
+
+/* 课程路线：每课是运动链上的一个关节 */
+.route { list-style: none; margin: 0; padding: 0; position: relative; }
+.route::before { content: ""; position: absolute; left: 27px; top: 30px; bottom: 30px; width: 4px; border-radius: 2px; background: var(--line); }
+.route li { position: relative; padding-left: 76px; }
+.route li + li { margin-top: 10px; }
+.route .node { position: absolute; left: 6px; top: 16px; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
+               background: var(--paper); border: 3px solid var(--joint); color: var(--joint); font-family: var(--display); font-weight: 600; font-size: 19px; }
+.route li.extra .node { border-style: dashed; }
+.route a.card { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "t l" "w w" "k k" "f f";
+                column-gap: 24px; padding: 16px 22px; background: var(--panel); border: 1px solid var(--line);
+                border-radius: 12px; text-decoration: none; color: var(--ink); }
+.route a.card:hover { border-color: var(--joint); }
+.route a.card:hover h3 { color: var(--joint); }
+.route h3 { grid-area: t; margin: 0; font-size: 19px; line-height: 1.4; }
+.route h3 em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--contact); margin-left: 10px; white-space: nowrap; }
+.route .what { grid-area: w; margin: 2px 0 0; color: var(--muted); font-size: 15px; }
+.route .learn { grid-area: k; margin: 8px 0 0; font-size: 14.5px; }
+.route .files { grid-area: f; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 13px; color: var(--muted); }
+.route .files code { font-size: 12.5px; }
+.route .level { grid-area: l; align-self: center; }
+.level { display: flex; gap: 3px; align-items: center; font-size: 12px; color: var(--muted); }
+.level i { width: 14px; height: 6px; border-radius: 3px; background: var(--line); }
+.level i.on { background: var(--joint); }
+.level b { font-weight: 400; margin-right: 6px; }
+.notes { margin: 22px 0 0 76px; color: var(--muted); font-size: 15px; }
+.notes p { margin: 6px 0; max-width: 52em; }
+
+.how { margin: 0; padding-left: 1.2em; max-width: 50em; }
+.how li { margin: 6px 0; }
+.wide { overflow-x: auto; }
+.wide table { font-size: 15px; display: table; width: 100%; background: var(--panel); }
+.wide td:first-child { white-space: nowrap; }
+details.map { margin: 16px 0 0; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+details.map summary { cursor: pointer; padding: 14px 20px; font-weight: 700; }
+details.map > div { padding: 0 20px 16px; }
+details.map p { color: var(--muted); max-width: 52em; }
+footer { color: var(--muted); font-size: 13px; padding: 48px 0 40px; }
+
+@media (max-width: 820px) {
+  .bar, .wrap { padding-left: 16px; padding-right: 16px; }
+  .jump ol { right: 16px; }
+  article { padding: 4px 18px 28px; border-radius: 0; border-left: 0; border-right: 0; }
+  .hero { grid-template-columns: 1fr; }
+  .hero .copy { padding: 32px 24px 8px; }
+  .hero dl { gap: 10px 24px; }
+  .hero figure { min-height: 300px; }
+  .hero figure img { -webkit-mask-image: linear-gradient(180deg, transparent, #000 20%); mask-image: linear-gradient(180deg, transparent, #000 20%); }
+  .route::before { left: 19px; }
+  .route li { padding-left: 52px; }
+  .route .node { left: 0; width: 40px; height: 40px; font-size: 17px; }
+  .route a.card { grid-template-columns: 1fr; grid-template-areas: "t" "l" "w" "k" "f"; padding: 14px 16px; }
+  .route .level { justify-self: start; margin-top: 4px; }
+  .notes { margin-left: 0; }
+}
 </style>
-<script defer src="katex/katex.min.js"></script><script defer src="katex/contrib/auto-render.min.js"></script>
-</head><body><main>
-<nav class="top"><a href="../index.html">资料包首页</a><a href="index.html">G1 实战目录</a><a href="00_装好环境.html">第 0 课</a><a href="01_认识G1.html">第 1 课</a><a href="02_站着与倒下.html">第 2 课</a><a href="03_吊起来挥手.html">第 3 课</a><a href="04_它感觉到了什么.html">第 4 课</a><a href="05_扛住推力.html">第 5 课</a><a href="06_省力地站.html">第 6 课</a><a href="07_伸手碰球.html">第 7 课</a><a href="08_单腿平衡.html">第 8 课</a><a href="09_让它走起来.html">第 9 课</a><a href="10_录视频与批量实验.html">第 10 课</a><a href="11_附录_往后学什么.html">第 11 课</a></nav>
-<h1 id="g1">G1 实战：让一台人形机器人动起来（大纲）</h1>
-<p>案例机器人：宇树 Unitree G1，29 个关节（腿 6×2、腰 3、手臂 7×2），身高约 1.3 m，模型总质量 33.3 kg。</p>
-<p>用到的开源资源（都已放进资料包）：</p>
-<table>
-<thead>
-<tr>
-<th>资源</th>
-<th>来源</th>
-<th>许可证</th>
-<th>用途</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>unitree_g1</code> 模型</td>
-<td>DeepMind MuJoCo Menagerie（提交 370c439，2026-11-10）</td>
-<td>BSD-3-Clause</td>
-<td>第 1–8、10 课的主角（第 11 课附录还会对照它的 <code>g1_mjx.xml</code>、<code>g1_mjlab.xml</code>）</td>
-</tr>
-<tr>
-<td>G1 行走策略 <code>motion.pt</code> + 12 自由度模型</td>
-<td>宇树 unitree_rl_gym</td>
-<td>BSD-3-Clause</td>
-<td>第 9 课让它走起来</td>
-</tr>
-</tbody>
-</table>
-<h2 id="_1">学习方式</h2>
-<ul>
-<li>每课都有<strong>完整脚本</strong>（<code>code/</code> 目录，文件名以两位课号开头，见下面的课程表）。先读懂代码，再运行。</li>
+</head><body>
+<header class="bar">
+  <nav class="crumb" aria-label="位置"><a href="../index.html">资料包首页</a><span aria-hidden="true">/</span><b>G1 实战</b></nav>
+  <details class="jump"><summary>全部课程</summary><ol><li><a href="00_装好环境.html"><span>0</span>装好环境：离线安装与版本核对</a></li><li><a href="01_认识G1.html"><span>1</span>认识 G1：打开它，读懂它</a></li><li><a href="02_站着与倒下.html"><span>2</span>它为什么站着、为什么会倒</a></li><li><a href="03_吊起来挥手.html"><span>3</span>把它吊起来挥手</a></li><li><a href="04_它感觉到了什么.html"><span>4</span>它“感觉”到了什么</a></li><li><a href="05_扛住推力.html"><span>5</span>扛住多大的推力：从侧面推 G1</a></li><li><a href="06_省力地站.html"><span>6</span>省力地站：算出“刚好站住”需要的力矩</a></li><li><a href="07_伸手碰球.html"><span>7</span>伸手碰球：雅可比与逆运动学</a></li><li><a href="08_单腿平衡.html"><span>8</span>单腿平衡：把官方 LQR 搬到 G1 上</a></li><li><a href="09_让它走起来.html"><span>9</span>让它走起来：运行宇树的预训练行走策略</a></li><li><a href="10_录视频与批量实验.html"><span>10</span>录视频、批量做实验</a></li><li><a href="11_附录_往后学什么.html"><span>11</span>附录：往后学什么——从“跑别人的策略”到“自己训练”</a></li></ol></details>
+</header>
+<main class="wrap">
+<section class="hero">
+  <div class="copy">
+    <h1>G1 实战<span>让一台人形机器人动起来</span></h1>
+    <p>以宇树 Unitree G1 为案例，从打开模型、站立、抗推、逆动力学、单腿平衡，一路做到运行预训练的行走策略。每课都有能直接运行的脚本。</p>
+    <dl><div><dt>29</dt><dd>个关节</dd></div><div><dt>1.3 m</dt><dd>身高</dd></div><div><dt>33.3 kg</dt><dd>模型质量</dd></div><div><dt>12</dt><dd>课（含附录）</dd></div></dl>
+    <a class="start" href="00_装好环境.html">从第 0 课开始</a>
+  </div>
+  <figure><img src="assets/g1_render.jpg" alt="MuJoCo 渲染的宇树 G1 人形机器人，站在格子地面上"><figcaption>用课程里的模型离屏渲染</figcaption></figure>
+</section>
+<h2 class="sec" id="lessons">课程</h2><p class="lead">按顺序学。每课先读正文，再运行 <code>code\</code> 里同课号的脚本。第 8 课是选修挑战，可以跳过。</p><ol class="route"><li class=""><span class="node" aria-hidden="true">0</span>
+  <a class="card" href="00_装好环境.html">
+    <h3><span class="visually">第 0 课 </span>装好环境</h3>
+    
+    <p class="learn">wheel 离线安装、版本核对</p>
+    <span class="level" aria-label="难度 1 / 4"><b>难度</b><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span><div class="files">脚本：<code>00_check_env.py</code>、<code>00_read_report.py</code></div>
+  </a></li><li class=""><span class="node" aria-hidden="true">1</span>
+  <a class="card" href="01_认识G1.html">
+    <h3><span class="visually">第 1 课 </span>认识 G1</h3>
+    <p class="what">用 Studio 打开它、读懂它的 XML</p>
+    <p class="learn">Studio 查看器、body 树、freejoint、visual 与 collision geom、default 类、qpos/qvel 的排布</p>
+    <span class="level" aria-label="难度 1 / 4"><b>难度</b><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span><div class="files">脚本：<code>01_inspect.py</code></div>
+  </a></li><li class=""><span class="node" aria-hidden="true">2</span>
+  <a class="card" href="02_站着与倒下.html">
+    <h3><span class="visually">第 2 课 </span>它为什么站着、为什么会倒</h3>
+    
+    <p class="learn">position 执行器的力公式（kp/kv/forcerange）、关键帧、把 kp 改成 0 看它瘫倒</p>
+    <span class="level" aria-label="难度 2 / 4"><b>难度</b><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span><div class="files">脚本：<code>02_stand_and_fall.py</code></div>
+  </a></li><li class=""><span class="node" aria-hidden="true">3</span>
+  <a class="card" href="03_吊起来挥手.html">
+    <h3><span class="visually">第 3 课 </span>把它吊起来挥手</h3>
+    <p class="what">固定骨盆，让手臂按轨迹运动</p>
+    <p class="learn">用 MjSpec 改模型、轨迹插值、记录数据并画跟踪误差</p>
+    <span class="level" aria-label="难度 2 / 4"><b>难度</b><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span><div class="files">脚本：<code>03_wave.py</code>、<code>03_compare_models.py</code>（练习 3）</div>
+  </a></li><li class=""><span class="node" aria-hidden="true">4</span>
+  <a class="card" href="04_它感觉到了什么.html">
+    <h3><span class="visually">第 4 课 </span>它“感觉”到了什么</h3>
+    
+    <p class="learn">IMU（gyro/accelerometer）、关节传感器、脚底接触力、质心和支撑区域</p>
+    <span class="level" aria-label="难度 2 / 4"><b>难度</b><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span><div class="files">脚本：<code>04_senses.py</code></div>
+  </a></li><li class=""><span class="node" aria-hidden="true">5</span>
+  <a class="card" href="05_扛住推力.html">
+    <h3><span class="visually">第 5 课 </span>扛住多大的推力</h3>
+    <p class="what">站立时从侧面推它</p>
+    <p class="learn"><code>xfrc_applied</code> 外力、直腿与屈膝两种站姿的对比、摩擦与接触参数</p>
+    <span class="level" aria-label="难度 3 / 4"><b>难度</b><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span><div class="files">脚本：<code>05_push.py</code></div>
+  </a></li><li class=""><span class="node" aria-hidden="true">6</span>
+  <a class="card" href="06_省力地站.html">
+    <h3><span class="visually">第 6 课 </span>省力地站</h3>
+    <p class="what">算出“刚好站住”需要的力矩</p>
+    <p class="learn">逆动力学 <code>mj_inverse</code>、重力补偿、力矩与电机上限对比</p>
+    <span class="level" aria-label="难度 3 / 4"><b>难度</b><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span><div class="files">脚本：<code>06_inverse.py</code></div>
+  </a></li><li class=""><span class="node" aria-hidden="true">7</span>
+  <a class="card" href="07_伸手碰球.html">
+    <h3><span class="visually">第 7 课 </span>伸手去碰一个球</h3>
+    <p class="what">站着用手臂够目标</p>
+    <p class="learn">雅可比、阻尼最小二乘逆运动学、用 MjSpec 加 site 和目标物</p>
+    <span class="level" aria-label="难度 3 / 4"><b>难度</b><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span><div class="files">脚本：<code>07_reach.py</code></div>
+  </a></li><li class="extra"><span class="node" aria-hidden="true">8</span>
+  <a class="card" href="08_单腿平衡.html">
+    <h3><span class="visually">第 8 课 </span>单腿平衡<em>选修挑战</em></h3>
+    
+    <p class="learn">线性化 <code>mjd_transitionFD</code>、LQR，对照官方 LQR notebook 改到 G1 上</p>
+    <span class="level" aria-label="难度 4 / 4"><b>难度</b><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span><div class="files">脚本：<code>08_lqr_balance.py</code>、<code>08_notebook_humanoid.py</code>（官方 notebook 的 humanoid 对照）</div>
+  </a></li><li class=""><span class="node" aria-hidden="true">9</span>
+  <a class="card" href="09_让它走起来.html">
+    <h3><span class="visually">第 9 课 </span>让它走起来</h3>
+    <p class="what">运行宇树的预训练行走策略</p>
+    <p class="learn">拆解策略部署脚本：观测向量、控制分频、PD 力矩；改速度指令、推它、改摩擦，测试鲁棒性</p>
+    <span class="level" aria-label="难度 3 / 4"><b>难度</b><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span><div class="files">脚本：<code>09_walk.py</code>、<code>09_compare_models.py</code></div>
+  </a></li><li class=""><span class="node" aria-hidden="true">10</span>
+  <a class="card" href="10_录视频与批量实验.html">
+    <h3><span class="visually">第 10 课 </span>录视频、批量做实验</h3>
+    
+    <p class="learn">离屏渲染、批量随机推力测试、统计摔倒率</p>
+    <span class="level" aria-label="难度 3 / 4"><b>难度</b><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span><div class="files">脚本：<code>10_video.py</code>、<code>10_batch_push.py</code></div>
+  </a></li><li class="extra"><span class="node" aria-hidden="true">11</span>
+  <a class="card" href="11_附录_往后学什么.html">
+    <h3><span class="visually">第 11 课 </span>往后学什么<em>附录</em></h3>
+    
+    <p class="learn">GPU 训练（MuJoCo Playground、mjlab）的入口和所需硬件</p>
+    <div class="files">脚本：<code>11_model_variants.py</code></div>
+  </a></li></ol><div class="notes"><p>正文在 <code>G1实战/</code> 下，脚本在 <code>G1实战/code/</code> 下，脚本输出写到 <code>G1实战/output/</code>。第 9 课的 <code>09_walk.py</code> 有 PyTorch 时用它加载 <code>motion.pt</code>，没有时自动改用 numpy 计算同一个网络，所以 PyTorch 是可选的（见第 0 课 0.6 节）。
+第 0 课注意：MuJoCo 4 起，<code>mujoco</code> 拆成了 <code>mujoco-core</code>（仿真核心）和 <code>mujoco-studio</code>（新查看器，依赖 <code>mujoco-studio-wasm</code>）。离线下载 wheel 时要连同依赖一起下，否则装不全。</p></div>
+<h2 class="sec">学习方式</h2>
+<ul class="how">
+<li>每课都有<strong>完整脚本</strong>（<code>code/</code> 目录，文件名以两位课号开头，见课程表）。先读懂代码，再运行。</li>
 <li>脚本默认不开窗口：跑完打印关键结果，图片（PNG）、视频（mp4）、数据（CSV）都写到 <code>output/</code> 目录。想实时看，第 2–10 课的大部分脚本可以加 <code>--view</code> 打开查看器（第 1 课直接用 Studio 看）。</li>
 <li>运行前，先回答“<strong>先猜一猜</strong>”里的问题；运行时完成“<strong>动手观察</strong>”，运行后填写“<strong>观察记录</strong>”。答案放在每课末尾折叠起来的“<strong>参考答案</strong>”里，跑完再展开对照。</li>
 <li>正文和答案里的数字都是编写时实际运行得到的。耗时、测速这类数字随电脑和负载变化，以你自己运行的结果为准。</li>
 <li>每课末尾附“<strong>练习</strong>”“<strong>如果报错</strong>”和“<strong>延伸阅读</strong>”，延伸阅读链接到中文官方文档的对应章节。</li>
 <li>每课标题下方有一行“<strong>对应入门教程</strong>”，列出可以对照查阅的《MuJoCo 入门教程》章节（对应关系见本文最后一节）。</li>
 </ul>
-<h2 id="_2">课程</h2>
-<table>
-<thead>
-<tr>
-<th>课</th>
-<th>让 G1 做什么</th>
-<th>学到的东西</th>
-<th>难度</th>
-<th>正文</th>
-<th>脚本</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>0</td>
-<td>装好环境</td>
-<td>wheel 离线安装、版本核对</td>
-<td>★</td>
-<td><code>00_装好环境.md</code></td>
-<td><code>00_check_env.py</code>、<code>00_read_report.py</code></td>
-</tr>
-<tr>
-<td>1</td>
-<td><strong>认识 G1</strong>：用 Studio 打开它、读懂它的 XML</td>
-<td>Studio 查看器、body 树、freejoint、visual 与 collision geom、default 类、qpos/qvel 的排布</td>
-<td>★</td>
-<td><code>01_认识G1.md</code></td>
-<td><code>01_inspect.py</code></td>
-</tr>
-<tr>
-<td>2</td>
-<td><strong>它为什么站着、为什么会倒</strong></td>
-<td>position 执行器的力公式（kp/kv/forcerange）、关键帧、把 kp 改成 0 看它瘫倒</td>
-<td>★★</td>
-<td><code>02_站着与倒下.md</code></td>
-<td><code>02_stand_and_fall.py</code></td>
-</tr>
-<tr>
-<td>3</td>
-<td><strong>把它吊起来挥手</strong>：固定骨盆，让手臂按轨迹运动</td>
-<td>用 MjSpec 改模型、轨迹插值、记录数据并画跟踪误差</td>
-<td>★★</td>
-<td><code>03_吊起来挥手.md</code></td>
-<td><code>03_wave.py</code>、<code>03_compare_models.py</code>（练习 3）</td>
-</tr>
-<tr>
-<td>4</td>
-<td><strong>它“感觉”到了什么</strong></td>
-<td>IMU（gyro/accelerometer）、关节传感器、脚底接触力、质心和支撑区域</td>
-<td>★★</td>
-<td><code>04_它感觉到了什么.md</code></td>
-<td><code>04_senses.py</code></td>
-</tr>
-<tr>
-<td>5</td>
-<td><strong>扛住多大的推力</strong>：站立时从侧面推它</td>
-<td><code>xfrc_applied</code> 外力、直腿与屈膝两种站姿的对比、摩擦与接触参数</td>
-<td>★★★</td>
-<td><code>05_扛住推力.md</code></td>
-<td><code>05_push.py</code></td>
-</tr>
-<tr>
-<td>6</td>
-<td><strong>省力地站</strong>：算出“刚好站住”需要的力矩</td>
-<td>逆动力学 <code>mj_inverse</code>、重力补偿、力矩与电机上限对比</td>
-<td>★★★</td>
-<td><code>06_省力地站.md</code></td>
-<td><code>06_inverse.py</code></td>
-</tr>
-<tr>
-<td>7</td>
-<td><strong>伸手去碰一个球</strong>：站着用手臂够目标</td>
-<td>雅可比、阻尼最小二乘逆运动学、用 MjSpec 加 site 和目标物</td>
-<td>★★★</td>
-<td><code>07_伸手碰球.md</code></td>
-<td><code>07_reach.py</code></td>
-</tr>
-<tr>
-<td>8</td>
-<td><strong>单腿平衡</strong>（选修挑战）</td>
-<td>线性化 <code>mjd_transitionFD</code>、LQR，对照官方 LQR notebook 改到 G1 上</td>
-<td>★★★★</td>
-<td><code>08_单腿平衡.md</code></td>
-<td><code>08_lqr_balance.py</code>、<code>08_notebook_humanoid.py</code>（官方 notebook 的 humanoid 对照）</td>
-</tr>
-<tr>
-<td>9</td>
-<td><strong>让它走起来</strong>：运行宇树的预训练行走策略</td>
-<td>拆解策略部署脚本：观测向量、控制分频、PD 力矩；改速度指令、推它、改摩擦，测试鲁棒性</td>
-<td>★★★</td>
-<td><code>09_让它走起来.md</code></td>
-<td><code>09_walk.py</code>、<code>09_compare_models.py</code></td>
-</tr>
-<tr>
-<td>10</td>
-<td><strong>录视频、批量做实验</strong></td>
-<td>离屏渲染、批量随机推力测试、统计摔倒率</td>
-<td>★★★</td>
-<td><code>10_录视频与批量实验.md</code></td>
-<td><code>10_video.py</code>、<code>10_batch_push.py</code></td>
-</tr>
-<tr>
-<td>11（附录）</td>
-<td>往后学什么</td>
-<td>GPU 训练（MuJoCo Playground、mjlab）的入口和所需硬件</td>
-<td>—</td>
-<td><code>11_附录_往后学什么.md</code></td>
-<td><code>11_model_variants.py</code></td>
-</tr>
-</tbody>
-</table>
-<p>正文在 <code>G1实战/</code> 下，脚本在 <code>G1实战/code/</code> 下，脚本输出写到 <code>G1实战/output/</code>。第 9 课的 <code>09_walk.py</code> 有 PyTorch 时用它加载 <code>motion.pt</code>，没有时自动改用 numpy 计算同一个网络，所以 PyTorch 是可选的（见第 0 课 0.6 节）。</p>
-<p>第 0 课注意：MuJoCo 4 起，<code>mujoco</code> 拆成了 <code>mujoco-core</code>（仿真核心）和 <code>mujoco-studio</code>（新查看器，依赖 <code>mujoco-studio-wasm</code>）。离线下载 wheel 时要连同依赖一起下，否则装不全。</p>
-<h2 id="_3">看仿真的几种方式</h2>
-<table>
+<h2 class="sec">看仿真的几种方式</h2>
+<div class="wide"><table>
 <thead>
 <tr>
 <th>方式</th>
@@ -220,9 +323,34 @@ img { max-width: 100%; }
 <td>第 2–10 课：仿真循环在脚本里，用 <code>mujoco.viewer.launch_passive</code> 实时显示</td>
 </tr>
 </tbody>
-</table>
-<h2 id="_4">和原教程的对应关系</h2>
-<p>原来的《MuJoCo 入门教程》改作“参考手册”：查 API、查 MJCF 属性、排查问题时翻它。G1 实战作为学习主线。两边会双向链接：G1 每课标题下列出“对应入门教程：X.X”，原教程每章开头注明“在 G1 上练习 → 第 X 课”。</p>
+</table></div>
+<h2 class="sec">用到的开源资源</h2>
+<p class="lead">都已放进资料包的 <code>G1实战\models\</code>。</p>
+<div class="wide"><table>
+<thead>
+<tr>
+<th>资源</th>
+<th>来源</th>
+<th>许可证</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unitree_g1</code> 模型</td>
+<td>DeepMind MuJoCo Menagerie（提交 370c439，2026-11-10）</td>
+<td>BSD-3-Clause</td>
+<td>第 1–8、10 课的主角（第 11 课附录还会对照它的 <code>g1_mjx.xml</code>、<code>g1_mjlab.xml</code>）</td>
+</tr>
+<tr>
+<td>G1 行走策略 <code>motion.pt</code> + 12 自由度模型</td>
+<td>宇树 unitree_rl_gym</td>
+<td>BSD-3-Clause</td>
+<td>第 9 课让它走起来</td>
+</tr>
+</tbody>
+</table></div>
+<details class="map"><summary>和《MuJoCo 入门教程》各章的对应关系</summary><div><p>原来的《MuJoCo 入门教程》改作“参考手册”：查 API、查 MJCF 属性、排查问题时翻它。G1 实战作为学习主线。两边会双向链接：G1 每课标题下列出“对应入门教程：X.X”，原教程每章开头注明“在 G1 上练习 → 第 X 课”。</p>
 <table>
 <thead>
 <tr>
@@ -368,14 +496,16 @@ img { max-width: 100%; }
 <td>保留在参考手册</td>
 </tr>
 </tbody>
-</table>
-<nav class="pager"><span></span><span><a href="00_装好环境.html">第 0 课 装好环境：离线安装与版本核对 →</a></span></nav>
+</table></div></details>
+<footer>每课也有同名的 Markdown 版（<code>G1实战\*.md</code>）。脚本输出写到 <code>G1实战\output\</code>。</footer>
 </main>
+<style>.visually { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }</style>
+
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-  document.querySelectorAll(".math").forEach(function (el) {
-    renderMathInElement(el, {delimiters: [{left: "\\[", right: "\\]", display: true}, {left: "\\(", right: "\\)", display: false}]});
-  });
+// 点页面其他地方时收起“全部课程”菜单
+document.addEventListener("click", function (e) {
+  var d = document.querySelector(".jump");
+  if (d && d.open && !d.contains(e.target)) d.open = false;
 });
 </script>
 </body></html>

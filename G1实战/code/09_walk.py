@@ -19,6 +19,9 @@
     python code/09_walk.py --push-time 4 --push-fy 150 # 第 4 秒从侧面推 0.1 s
     python code/09_walk.py --friction 0.3              # 地面变滑
     python code/09_walk.py --view                      # 打开查看器实时看
+    python code/09_walk.py --web 8790 --vx 0.8         # 同上，但显示在网页里（http://127.0.0.1:8790/），
+                                                       # 每轮 20 s（或摔倒 2 s 后）从头再走一遍
+除 --view 外，上面这些参数对 --web 都有效；--duration 在 --web 里是每一轮的时长。
 """
 import argparse
 import ast
@@ -33,7 +36,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import mujoco
-import mujoco.viewer
+from mujoco import viewer as mj_viewer
 import numpy as np
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -181,6 +184,78 @@ def pd_control(target_q, q, kp, target_dq, dq, kd):
     return (target_q - q) * kp + (target_dq - dq) * kd
 
 
+def fill_obs(obs, d, cmd, action, counter, P):
+    """按训练时的布局把 47 维观测写进 obs，返回重力投影。P 是从 g1.yaml 读出的缩放系数等。"""
+    n_act = P["n_act"]
+    qj = (d.qpos[7:] - P["default_angles"]) * P["dof_pos_scale"]
+    dqj = d.qvel[6:] * P["dof_vel_scale"]
+    gravity_orientation = get_gravity_orientation(d.qpos[3:7])
+    omega = d.qvel[3:6] * P["ang_vel_scale"]
+
+    period = 0.8
+    phase = counter * P["dt"] % period / period
+    obs[:3] = omega
+    obs[3:6] = gravity_orientation
+    obs[6:9] = cmd * P["cmd_scale"]
+    obs[9:9 + n_act] = qj
+    obs[9 + n_act:9 + 2 * n_act] = dqj
+    obs[9 + 2 * n_act:9 + 3 * n_act] = action
+    obs[9 + 3 * n_act:9 + 3 * n_act + 2] = [np.sin(2 * np.pi * phase), np.cos(2 * np.pi * phase)]
+    return gravity_orientation
+
+
+# ---------------------------------------------------------------- 网页实时查看
+def web_view(m, d, args, P, cmd, decim, port):
+    """和主循环同样的控制管线，在网页查看器里按真实时间播放；每轮结束（或摔倒 2 s 后）从头再来。"""
+    from webview import open_web                    # 同目录的 webview.py
+    pelvis = m.body("pelvis").id
+    episode = args.duration if args.duration else 20.0
+    n_act, n_obs = P["n_act"], P["n_obs"]
+    st = {}
+
+    def reset():
+        mujoco.mj_resetData(m, d)                   # 和无界面运行一样，从 qpos0 开始
+        mujoco.mj_forward(m, d)
+        st["policy"] = make_policy("dummy" if args.dummy_policy else args.policy, n_act)[0]   # LSTM 记忆清零
+        st["action"] = np.zeros(n_act, dtype=np.float32)
+        st["target"] = P["default_angles"].copy()
+        st["counter"] = 0
+        st["fall"] = None
+
+    print(f"每轮 {episode:g} s，摔倒后 2 s 也会重来。", flush=True)
+    obs = np.zeros(n_obs, dtype=np.float32)
+    reset()
+    rounds = 1
+    with open_web(m, d, port, title="第 9 课：G1 行走策略", track_body="pelvis") as viewer:
+        while viewer.is_running():
+            step_start = time.perf_counter()
+            if d.time >= episode or (st["fall"] is not None and d.time >= st["fall"] + 2.0):
+                reset()
+                rounds += 1
+            tau = pd_control(st["target"], d.qpos[7:], P["kps"], np.zeros_like(P["kds"]), d.qvel[6:], P["kds"])
+            d.ctrl[:] = tau
+            if args.push_time is not None:          # 没设推力时不碰 xfrc_applied，鼠标拖拽的推力不会被清掉
+                d.xfrc_applied[pelvis] = 0
+                if args.push_time <= d.time < args.push_time + args.push_dur:
+                    d.xfrc_applied[pelvis, 0] = args.push_fx
+                    d.xfrc_applied[pelvis, 1] = args.push_fy
+            mujoco.mj_step(m, d)
+            st["counter"] += 1
+            if st["counter"] % decim == 0:
+                fill_obs(obs, d, cmd, st["action"], st["counter"], P)
+                st["action"] = st["policy"](obs)
+                st["target"] = st["action"] * P["action_scale"] + P["default_angles"]
+            if st["fall"] is None:
+                tilt = np.degrees(np.arccos(np.clip(-get_gravity_orientation(d.qpos[3:7])[2], -1, 1)))
+                if d.qpos[2] < 0.5 or tilt > 45:
+                    st["fall"] = d.time
+                    print(f"第 {rounds} 轮：t = {d.time:.2f} s 摔倒", flush=True)
+            viewer.sync(m, d)
+            rest = m.opt.timestep - (time.perf_counter() - step_start)   # 按真实时间播放
+            if rest > 0:
+                time.sleep(rest)
+
+
 # ---------------------------------------------------------------- 主程序
 def main():
     ap = argparse.ArgumentParser(description="第 9 课：G1 行走策略")
@@ -199,6 +274,8 @@ def main():
     ap.add_argument("--decimation", type=int, help="改控制分频（默认取 g1.yaml 的 control_decimation=10）")
     ap.add_argument("--tag", default="", help="输出文件名后缀，批量实验时区分")
     ap.add_argument("--view", action="store_true", help="打开查看器实时观看")
+    ap.add_argument("--web", type=int, metavar="PORT",
+                    help="像 --view 一样实时观看，但显示在网页里（http://127.0.0.1:PORT/），循环播放")
     args = ap.parse_args()
 
     # ---------- 1. 读配置（和官方脚本一样的字段）----------
@@ -221,6 +298,9 @@ def main():
     for i, v in enumerate([args.vx, args.vy, args.wz]):
         if v is not None:
             cmd[i] = v
+    P = dict(dt=dt, kps=kps, kds=kds, default_angles=default_angles, ang_vel_scale=ang_vel_scale,
+             dof_pos_scale=dof_pos_scale, dof_vel_scale=dof_vel_scale, action_scale=action_scale,
+             cmd_scale=cmd_scale, n_act=n_act, n_obs=n_obs)
 
     # 观测向量的布局，必须和训练时一致
     layout = [("角速度 omega", 3), ("重力投影 gravity", 3), ("速度指令 cmd", 3),
@@ -254,6 +334,9 @@ def main():
     if args.push_time is not None:
         print(f"推力：t = {args.push_time} s 起 {args.push_dur} s，"
               f"F = ({args.push_fx:+.0f}, {args.push_fy:+.0f}) N，作用在骨盆质心")
+    if args.web:
+        web_view(m, d, args, P, cmd, decim, args.web)
+        return
 
     # ---------- 3. 状态变量（和官方脚本同名）----------
     action = np.zeros(n_act, dtype=np.float32)
@@ -277,7 +360,7 @@ def main():
 
     viewer = None
     if args.view:
-        viewer = mujoco.viewer.launch_passive(m, d)
+        viewer = mj_viewer.launch_passive(m, d)
         with viewer.lock():                       # 镜头跟着骨盆走
             viewer.cam.type = mujoco.mjtCamera.mjCAMERA_TRACKING
             viewer.cam.trackbodyid = pelvis
@@ -307,20 +390,7 @@ def main():
 
         # (c) 每 decim 步：组观测、跑策略、更新目标角
         if counter % decim == 0:
-            qj = (d.qpos[7:] - default_angles) * dof_pos_scale
-            dqj = d.qvel[6:] * dof_vel_scale
-            gravity_orientation = get_gravity_orientation(d.qpos[3:7])
-            omega = d.qvel[3:6] * ang_vel_scale
-
-            period = 0.8
-            phase = counter * dt % period / period
-            obs[:3] = omega
-            obs[3:6] = gravity_orientation
-            obs[6:9] = cmd * cmd_scale
-            obs[9:9 + n_act] = qj
-            obs[9 + n_act:9 + 2 * n_act] = dqj
-            obs[9 + 2 * n_act:9 + 3 * n_act] = action
-            obs[9 + 3 * n_act:9 + 3 * n_act + 2] = [np.sin(2 * np.pi * phase), np.cos(2 * np.pi * phase)]
+            gravity_orientation = fill_obs(obs, d, cmd, action, counter, P)   # 47 维观测，见上面的函数
             if first_obs is None:
                 first_obs = (d.time, obs.copy())
                 # 核对：手写公式 = 骨盆旋转矩阵的转置 × 世界重力方向 (0, 0, -1)

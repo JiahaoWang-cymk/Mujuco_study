@@ -9,6 +9,7 @@
     python 10_batch_push.py --n 1000 --seed 1
     python 10_batch_push.py --skip-serial   # 跳过最慢的串行版
     python 10_batch_push.py --skip-serial --push-chunks 20   # 推 0.2 s
+    python 10_batch_push.py --skip-serial --n 100            # 小规模试跑，几秒钟；文件名带 _n100，不覆盖默认结果
 """
 import argparse
 import concurrent.futures as cf
@@ -206,6 +207,8 @@ def main():
 
     OUT.mkdir(exist_ok=True)
     tag = f"seed{args.seed}" if pc == PUSH_CHUNKS else f"seed{args.seed}_push{push_s:g}s"   # 推的时长不同就另存
+    if args.n != 500:
+        tag += f"_n{args.n}"                  # 次数不是默认的 500 也另存，不覆盖课文里的结果
     png = OUT / f"10_fall_rate_{tag}.png"
     edges, centers, rate, cnt, grp = plot(force, angle, fell, args.n, args.seed, png, push_s)
     print("推力区间 N     次数  摔倒率")

@@ -4,6 +4,9 @@
     python 10_video.py                  # 跟踪相机，输出 output/10_push_track.mp4
     python 10_video.py --camera free    # 固定的自由相机，输出 output/10_push_free.mp4
     python 10_video.py --view           # 不录视频，打开查看器实时看（循环播放）
+    python 10_video.py --web 8790       # 同上，但显示在网页里：浏览器打开 http://127.0.0.1:8790/（不画箭头）
+    python 10_video.py --side 60 --front 90 --tag lab   # 改两次推力的大小，输出另存为 10_push_track_lab.*
+--camera、--side、--front 对录视频、--view、--web 都有效。
 """
 import argparse
 import pathlib
@@ -76,6 +79,8 @@ def record(args):
     cam = make_camera(args.camera, m)
     OUT.mkdir(exist_ok=True)
     tag = args.camera if args.fps == 30 else f"{args.camera}_{args.fps}fps"   # 换帧率时另存一个文件，方便比较
+    if args.tag:
+        tag += f"_{args.tag}"
     path = OUT / f"10_push_{tag}.mp4"
     # 截几帧拼成一张图，方便不打开视频也能看。1.05 s、3.05 s 正在推，图上能看到箭头
     snap_times = [0.9, 1.05, 3.05, 4.5]
@@ -113,15 +118,42 @@ def record(args):
     print(f"截图 {png}")
 
 
-def view(args):
-    """实时查看：用 launch_passive，自己控制仿真循环。"""
-    import mujoco.viewer
+def web_view(args):
+    """和 view() 一样的循环，但显示在网页查看器里（课文页实验台右侧那个）。网页查看器没有 user_scn，不画箭头。"""
+    from webview import open_web                 # 同目录的 webview.py
     m = mujoco.MjModel.from_xml_path(str(XML))
     d = mujoco.MjData(m)
     key = m.key("stand").id
     mujoco.mj_resetDataKeyframe(m, d, key)
     torso = m.body("torso_link").id
-    with mujoco.viewer.launch_passive(m, d) as viewer:
+    print(f"每 {T_END:g} s 重来一次：t = {PUSHES[0][0]:g} s 从右往左推 {PUSHES[0][2][1]:g} N，"
+          f"t = {PUSHES[1][0]:g} s 从正前方往后推 {-PUSHES[1][2][0]:g} N，各 {PUSHES[0][1]:g} s", flush=True)
+    if args.camera == "track":
+        cam = dict(track_body="pelvis", distance=2.6, azimuth=135.0, elevation=-15.0)
+    else:                                        # 没有叫这个名字的 body，就用固定的自由相机
+        cam = dict(track_body="", distance=3.5, azimuth=90.0, elevation=-10.0)
+    with open_web(m, d, args.web, title="第 10 课：推一下，再推一下", **cam) as viewer:
+        while viewer.is_running():
+            step_start = time.time()
+            if d.time >= T_END:                  # 播完一遍就从头再来
+                mujoco.mj_resetDataKeyframe(m, d, key)
+            d.xfrc_applied[torso, :3] = current_force(d.time)
+            mujoco.mj_step(m, d)
+            viewer.sync(m, d)
+            dt = m.opt.timestep - (time.time() - step_start)
+            if dt > 0:
+                time.sleep(dt)
+
+
+def view(args):
+    """实时查看：用 launch_passive，自己控制仿真循环。"""
+    from mujoco import viewer as mj_viewer
+    m = mujoco.MjModel.from_xml_path(str(XML))
+    d = mujoco.MjData(m)
+    key = m.key("stand").id
+    mujoco.mj_resetDataKeyframe(m, d, key)
+    torso = m.body("torso_link").id
+    with mj_viewer.launch_passive(m, d) as viewer:
         cam = make_camera(args.camera, m)
         with viewer.lock():
             viewer.cam.type = cam.type
@@ -152,5 +184,16 @@ if __name__ == "__main__":
     p.add_argument("--height", type=int, default=720)
     p.add_argument("--fps", type=int, default=30)
     p.add_argument("--view", action="store_true", help="打开查看器实时看，不录视频")
+    p.add_argument("--web", type=int, metavar="PORT", help="像 --view 一样实时看，但显示在网页里（http://127.0.0.1:PORT/）")
+    p.add_argument("--side", type=float, default=120.0, help="第 1 次推（t = 1 s，从右往左）的力 N，默认 120")
+    p.add_argument("--front", type=float, default=150.0, help="第 2 次推（t = 3 s，从正前方往后）的力 N，默认 150")
+    p.add_argument("--tag", default="", help="输出文件名后缀，例如 --tag lab 写成 10_push_track_lab.mp4")
     a = p.parse_args()
-    view(a) if a.view else record(a)
+    PUSHES[0] = (PUSHES[0][0], PUSHES[0][1], np.array([0.0, a.side, 0.0]))
+    PUSHES[1] = (PUSHES[1][0], PUSHES[1][1], np.array([-a.front, 0.0, 0.0]))
+    if a.web:
+        web_view(a)
+    elif a.view:
+        view(a)
+    else:
+        record(a)

@@ -13,6 +13,10 @@
     python 03_wave.py                 # 无界面，跑三种方式，输出图、CSV 和 XML
     python 03_wave.py --view          # 实时观看（默认 servo 方式）
     python 03_wave.py --view --mode ff
+    python 03_wave.py --web 8790 --mode ff   # 同 --view，但显示在网页里：浏览器打开 http://127.0.0.1:8790/
+    python 03_wave.py --freq 3 --amp 0.8     # 挥得更快、更大（无界面时三种方式都跑）
+    python 03_wave.py --arm-kp 100           # 练习 1：右臂 7 个执行器的 kp 改成 100
+--amp、--freq、--arm-kp 对无界面运行和 --view、--web 都有效；--mode 只对 --view、--web 有效。
 """
 import argparse
 import pathlib
@@ -40,6 +44,7 @@ Q_RAISE = np.array([0.0, -1.3, -1.57, 0.0, 0.0, 0.0, 0.0])
 WAVE_JOINT = 3                              # 挥手靠肘关节（ARM 里的第 3 个）
 WAVE_AMP = 0.5                              # 挥手幅度，rad
 WAVE_FREQ = 1.5                             # 挥手频率，Hz
+ARM_KP = None                               # 右臂执行器的 kp；None 表示用模型里的 500
 
 # 时间表（秒）：静止 → 抬手 → 挥手 → 放下 → 静止
 T_UP0, T_UP1 = 0.5, 2.0
@@ -77,6 +82,12 @@ def build_spec(mode="servo"):
         # 这个力算到执行器头上（qfrc_actuator），而不是被动力 qfrc_passive
         for joint in spec.joints:
             joint.actgravcomp = True
+
+    if ARM_KP is not None:                  # 练习 1：软一点的伺服（--arm-kp）
+        for name in ARM:
+            act = spec.actuator(name)
+            act.gainprm[0] = ARM_KP         # kp
+            act.biasprm[1] = -ARM_KP        # -kp；biasprm[2] 仍是 dampratio=1，编译时重算 kv
     return spec
 
 
@@ -253,29 +264,48 @@ def snapshot(waver, path, t_shot=2.0 + 1 / (4 * WAVE_FREQ)):
 
 
 # ---------------------------------------------------------------- 实时观看
-def view(mode):
-    import mujoco.viewer
+def view(mode, web_port=None):
+    """实时观看。web_port 为 None 时开桌面查看器；给了端口就用网页查看器（课文页实验台右侧那个）。"""
     w = Waver(mode)
-    print(f"实时观看：{MODE_NAME[mode]}。轨迹每 {T_END} s 重来一遍，关掉窗口结束。")
-    with mujoco.viewer.launch_passive(w.m, w.d) as viewer:
+    print(f"实时观看：{MODE_NAME[mode]}。轨迹每 {T_END} s 重来一遍" + ("。" if web_port else "，关掉窗口结束。"),
+          flush=True)
+    if web_port:
+        from webview import open_web                # 同目录的 webview.py
+        viewer_cm = open_web(w.m, w.d, web_port, title="第 3 课：吊起来挥手",
+                             distance=2.6, azimuth=160.0, elevation=-10.0)
+    else:
+        from mujoco import viewer as mj_viewer
+        viewer_cm = mj_viewer.launch_passive(w.m, w.d)
+    with viewer_cm as viewer:
         while viewer.is_running():
             step_start = time.time()
             if w.d.time >= T_END:
                 w.reset()
             w.step()
-            viewer.sync()
+            if web_port:
+                viewer.sync(w.m, w.d)
+            else:
+                viewer.sync()
             dt = w.m.opt.timestep - (time.time() - step_start)
             if dt > 0:
                 time.sleep(dt)
 
 
 def main():
+    global WAVE_AMP, WAVE_FREQ, ARM_KP
     ap = argparse.ArgumentParser()
     ap.add_argument("--view", action="store_true", help="用 launch_passive 实时观看")
-    ap.add_argument("--mode", choices=MODES, default="servo", help="--view 时用哪种控制方式")
+    ap.add_argument("--web", type=int, metavar="PORT", help="像 --view 一样实时观看，但显示在网页里（http://127.0.0.1:PORT/）")
+    ap.add_argument("--mode", choices=MODES, default="servo", help="--view/--web 时用哪种控制方式")
+    ap.add_argument("--amp", type=float, default=WAVE_AMP, help=f"挥手幅度 (rad)，默认 {WAVE_AMP}")
+    # 挥手段 4 s 要正好是整数个半周期，放下时才不会跳变，所以频率只能从这几个里选
+    ap.add_argument("--freq", type=float, default=WAVE_FREQ, choices=[0.5, 1.0, 1.5, 2.0, 2.5, 3.0],
+                    help=f"挥手频率 (Hz)，默认 {WAVE_FREQ}")
+    ap.add_argument("--arm-kp", type=float, default=None, help="右臂 7 个执行器的 kp（默认 500；kv 按 dampratio=1 重算）")
     args = ap.parse_args()
-    if args.view:
-        view(args.mode)
+    WAVE_AMP, WAVE_FREQ, ARM_KP = args.amp, args.freq, args.arm_kp
+    if args.view or args.web:
+        view(args.mode, web_port=args.web)
         return
 
     OUT.mkdir(exist_ok=True)
@@ -283,6 +313,10 @@ def main():
     w = Waver("servo")
     print(f"原模型：nq={m0.nq} nv={m0.nv}  →  吊起来后：nq={w.m.nq} nv={w.m.nv} nu={w.m.nu}")
     print(f"骨盆位置 {w.m.body('pelvis').pos}，父 body 是 world（id={w.m.body('pelvis').parentid[0]}）")
+    if (WAVE_AMP, WAVE_FREQ, ARM_KP) != (0.5, 1.5, None):
+        elbow = w.m.actuator("right_elbow_joint").id
+        print(f"本次设置：挥手幅度 {WAVE_AMP:g} rad，频率 {WAVE_FREQ:g} Hz，"
+              f"右臂 kp = {w.m.actuator_gainprm[elbow, 0]:g}（右肘 kv = {-w.m.actuator_biasprm[elbow, 2]:.2f}）")
 
     logs = {}
     for mode in MODES:

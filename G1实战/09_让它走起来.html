@@ -1,40 +1,201 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>第 9 课　让它走起来：运行宇树的预训练行走策略 · G1 实战</title>
-<link rel="stylesheet" href="katex/katex.min.css"><style>
-:root { --ink:#16213a; --muted:#5a6880; --line:#d5dbe4; --accent:#2a4fd6; --bg:#ffffff; --code-bg:#f4f6f9; --quote:#eef3ff; }
+<title>第 9 课 让它走起来：运行宇树的预训练行走策略 · G1 实战</title>
+<link rel="stylesheet" href="katex/katex.min.css"><script defer src="katex/katex.min.js"></script><script defer src="katex/contrib/auto-render.min.js"></script><style>
+:root {
+  --paper:#eef1f5; --panel:#ffffff; --ink:#142038; --muted:#5a6880; --line:#d5dbe4;
+  --joint:#2a4fd6; --contact:#c87414; --code-bg:#f2f4f8; --quote:#eef3ff;
+  --sky-top:#2e4d6c; --sky-low:#22394f; --on-sky:#eaf0f7; --on-sky-muted:#a9bbd0;
+  --display:"Bahnschrift","DIN Alternate","Segoe UI","Microsoft YaHei",sans-serif;
+  --text:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;
+}
 @media (prefers-color-scheme: dark) {
-  :root { --ink:#e5eaf3; --muted:#97a3b8; --line:#2c3a53; --accent:#86a2ff; --bg:#121a29; --code-bg:#1a2438; --quote:#1a2540; }
+  :root { --paper:#121a29; --panel:#172134; --ink:#e6ebf3; --muted:#97a3b8; --line:#2c3a53;
+          --joint:#86a2ff; --contact:#f2ab4f; --code-bg:#1d2840; --quote:#1a2540; }
 }
 * { box-sizing: border-box; }
-html { background: var(--bg); color: var(--ink); font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif; }
+html { background: var(--paper); color: var(--ink); font-family: var(--text); }
 body { margin: 0; line-height: 1.75; font-size: 16px; }
-main { max-width: 860px; margin: 0 auto; padding: 24px 20px 64px; }
-nav.top { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; padding: 10px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
-nav.top a, nav.pager a { color: var(--accent); text-decoration: none; }
-nav.top a:hover, nav.pager a:hover { text-decoration: underline; }
-nav.pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 15px; }
-h1 { font-size: 30px; line-height: 1.3; margin: 24px 0 16px; }
-h2 { font-size: 22px; margin: 40px 0 12px; padding-left: 12px; border-left: 5px solid var(--accent); }
-h3 { font-size: 18px; margin: 28px 0 8px; }
-a { color: var(--accent); }
+a { color: var(--joint); }
+a:focus-visible, summary:focus-visible { outline: 3px solid var(--joint); outline-offset: 3px; border-radius: 4px; }
 code { font-family: Consolas, "Microsoft YaHei", monospace; font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
-pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; line-height: 1.5; }
-pre code { background: none; padding: 0; font-size: 14px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+pre code { background: none; padding: 0; font-size: 14px; white-space: inherit; }
 table { border-collapse: collapse; margin: 12px 0; display: block; overflow-x: auto; }
 th, td { border: 1px solid var(--line); padding: 6px 10px; vertical-align: top; }
 th { background: var(--code-bg); text-align: left; }
-blockquote { margin: 14px 0; padding: 8px 16px; background: var(--quote); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; }
-blockquote p { margin: 6px 0; }
-hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
-details { margin: 24px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
-details summary { cursor: pointer; }
 img { max-width: 100%; }
 .katex-display { overflow-x: auto; overflow-y: hidden; }
+
+/* 顶栏：面包屑 + 课程跳转 */
+.bar { max-width: 1080px; margin: 0 auto; padding: 14px 28px; display: flex; align-items: center; gap: 12px; font-size: 14px; position: relative; }
+.bar .crumb { display: flex; gap: 8px; align-items: center; flex: 1; min-width: 0; color: var(--muted); }
+.bar .crumb a { color: var(--muted); text-decoration: none; }
+.bar .crumb a:hover { color: var(--joint); }
+.bar .crumb b { color: var(--ink); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jump summary { cursor: pointer; list-style: none; padding: 4px 12px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: var(--panel); white-space: nowrap; }
+.jump summary::-webkit-details-marker { display: none; }
+.jump[open] summary { border-color: var(--joint); }
+.jump ol { position: absolute; right: 28px; top: 52px; z-index: 5; margin: 0; padding: 8px 0; list-style: none; width: 300px; max-width: calc(100vw - 32px);
+           background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 30px rgba(20,32,56,.18); }
+.jump li a { display: flex; gap: 10px; padding: 5px 16px; text-decoration: none; color: var(--ink); }
+.jump li a:hover, .jump li a[aria-current] { background: var(--quote); }
+.jump li span { font-family: var(--display); color: var(--joint); width: 1.6em; text-align: right; flex: none; }
+
+/* 课文页 */
+article { max-width: 860px; margin: 0 auto 64px; padding: 8px 48px 40px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+article h1 { font-size: 30px; line-height: 1.3; margin: 28px 0 16px; }
+article h2 { font-size: 22px; margin: 40px 0 12px; padding-left: 12px; border-left: 5px solid var(--joint); }
+article h3 { font-size: 18px; margin: 28px 0 8px; }
+blockquote { margin: 14px 0; padding: 8px 16px; background: var(--quote); border-left: 4px solid var(--joint); border-radius: 0 8px 8px 0; }
+blockquote p { margin: 6px 0; }
+hr { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
+article details { margin: 24px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
+article details summary { cursor: pointer; }
+nav.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 48px; }
+nav.pager a { display: block; padding: 12px 16px; border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--ink); }
+nav.pager a:hover { border-color: var(--joint); }
+nav.pager small { display: block; color: var(--muted); font-size: 13px; }
+nav.pager .next { text-align: right; grid-column: 2; }
+
+/* 实验台 */
+.lab { margin: 22px 0; padding: 14px 18px 16px; border: 1px solid var(--line); border-left: 4px solid var(--contact); border-radius: 0 10px 10px 0; background: var(--paper); }
+.lab > header { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.lab > header .tag { font-size: 13px; font-weight: 700; color: var(--contact); }
+.lab > header b { font-size: 16px; }
+.lab .note { margin: 6px 0 0; color: var(--muted); font-size: 14.5px; }
+.lab .lab-cmd { margin: 10px 0 0; padding: 8px 12px; font-size: 13.5px; }
+.lab .lab-cmd code { white-space: pre-wrap; word-break: break-all; }
+.lab .lab-off { margin: 8px 0 0; font-size: 14px; color: var(--muted); }
+.lab-fields { display: flex; flex-wrap: wrap; gap: 10px 22px; margin: 12px 0 0; font-size: 14.5px; }
+.lab-fields label { display: inline-flex; align-items: center; gap: 8px; }
+.lab-fields select { font: inherit; padding: 4px 8px; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+.lab-fields input[type=number] { width: 6.5em; padding: 4px 8px; font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+.lab-fields input:focus-visible, .lab button:focus-visible { outline: 3px solid var(--joint); outline-offset: 2px; }
+.lab-fields input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--joint); }
+.lab-fields small { color: var(--muted); }
+.lab-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.lab button { font: inherit; font-size: 14.5px; padding: 5px 14px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.lab button:hover { border-color: var(--joint); }
+.lab button.primary { background: var(--joint); border-color: var(--joint); color: var(--panel); font-weight: 700; }
+.lab button.ghost { background: transparent; }
+.lab button:disabled { opacity: .5; cursor: progress; }
+.lab-status { font-size: 14px; color: var(--muted); margin-left: 4px; }
+.lab-status.ok { color: #2f8a4a; } .lab-status.bad { color: #c2410c; }
+.lab-status.busy::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--contact); animation: pulse 1s infinite alternate; }
+@keyframes pulse { from { opacity: 1; } to { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .lab-status.busy::before { animation: none; } }
+.lab-log { margin: 12px 0 0; max-height: 260px; overflow: auto; font-size: 13px; white-space: pre-wrap; background: #0f1828; color: #d7e0ee; }
+.lab-results figure { margin: 12px 0 0; }
+.lab-results img, .lab-results video { display: block; max-width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+.lab-results figcaption, .lab-file, .lab-hint { font-size: 13px; color: var(--muted); margin: 4px 0; }
+.lab-srcbox { margin-top: 12px; }
+.lab-src { position: relative; margin: 0; max-height: 380px; overflow: auto; padding: 8px 0; font-size: 13px; line-height: 1.5; }
+.lab-src .ln { display: block; padding: 0 12px 0 4.4em; text-indent: -4.4em; white-space: pre-wrap; overflow-wrap: anywhere; }
+.lab-src .ln i { display: inline-block; width: 3.4em; padding-right: 1em; text-align: right; color: var(--muted); font-style: normal; user-select: none; }
+.lab-src .ln.hl { background: color-mix(in srgb, var(--contact) 16%, transparent); }
+
+/* 有实时仿真画面的课：课文在左，画面固定在右 */
+.split { display: grid; grid-template-columns: minmax(0, 800px) minmax(420px, 1fr); gap: 20px; max-width: 1900px; margin: 0 auto; padding: 0 20px 64px; align-items: start; }
+.split article { margin: 0; max-width: none; }
+.viewer { position: sticky; top: 10px; height: calc(100vh - 20px); display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.viewer-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.viewer-head b { font-size: 15px; white-space: nowrap; }
+.viewer-what { flex: 1; min-width: 0; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.viewer-head button { font: inherit; font-size: 13px; padding: 3px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.viewer-head a { font-size: 13px; white-space: nowrap; }
+.viewer-frame { flex: 1; position: relative; background: #1b2a3d; }
+.viewer-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.viewer-empty { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: #a9bbd0; font-size: 15px; line-height: 1.8; }
+.lab.playing { border-left-color: var(--joint); box-shadow: 0 0 0 2px color-mix(in srgb, var(--joint) 35%, transparent); }
+@media (max-width: 1180px) {
+  .split { grid-template-columns: 1fr; padding: 0 0 64px; }
+  .viewer { order: -1; top: 0; height: 46vh; border-radius: 0; border-left: 0; border-right: 0; z-index: 4; }
+}
+
+/* 目录页 */
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+.hero { display: grid; grid-template-columns: 1.15fr 1fr; align-items: stretch; border-radius: 18px; overflow: hidden;
+        background: linear-gradient(180deg, var(--sky-top), var(--sky-low)); color: var(--on-sky); }
+.hero .copy { padding: 52px 8px 44px 48px; display: flex; flex-direction: column; justify-content: center; }
+.hero h1 { font-family: var(--display); font-weight: 600; font-size: clamp(44px, 7vw, 76px); line-height: 1; margin: 0; letter-spacing: -0.5px; }
+.hero h1 span { display: block; font-family: var(--text); font-weight: 700; font-size: 0.4em; letter-spacing: 1px; margin-top: 14px; }
+.hero p { color: var(--on-sky-muted); margin: 18px 0 26px; max-width: 30em; }
+.hero dl { display: flex; flex-wrap: wrap; gap: 12px 30px; margin: 0 0 30px; }
+.hero dt { font-family: var(--display); font-size: 28px; font-weight: 600; line-height: 1.1; color: var(--on-sky); }
+.hero dd { margin: 0; font-size: 13px; color: var(--on-sky-muted); }
+.hero .start { align-self: flex-start; background: var(--on-sky); color: var(--sky-low); font-weight: 700; text-decoration: none; padding: 9px 20px; border-radius: 8px; }
+.hero .start:hover { background: #fff; }
+.hero figure { margin: 0; position: relative; min-height: 360px; }
+.hero figure img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%;
+                   -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%); mask-image: linear-gradient(90deg, transparent, #000 22%); }
+.hero figcaption { position: absolute; right: 14px; bottom: 10px; font-size: 12px; color: var(--on-sky-muted); }
+
+h2.sec { font-size: 22px; margin: 52px 0 6px; }
+p.lead { color: var(--muted); margin: 0 0 22px; max-width: 46em; }
+
+/* 课程路线：每课是运动链上的一个关节 */
+.route { list-style: none; margin: 0; padding: 0; position: relative; }
+.route::before { content: ""; position: absolute; left: 27px; top: 30px; bottom: 30px; width: 4px; border-radius: 2px; background: var(--line); }
+.route li { position: relative; padding-left: 76px; }
+.route li + li { margin-top: 10px; }
+.route .node { position: absolute; left: 6px; top: 16px; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
+               background: var(--paper); border: 3px solid var(--joint); color: var(--joint); font-family: var(--display); font-weight: 600; font-size: 19px; }
+.route li.extra .node { border-style: dashed; }
+.route a.card { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "t l" "w w" "k k" "f f";
+                column-gap: 24px; padding: 16px 22px; background: var(--panel); border: 1px solid var(--line);
+                border-radius: 12px; text-decoration: none; color: var(--ink); }
+.route a.card:hover { border-color: var(--joint); }
+.route a.card:hover h3 { color: var(--joint); }
+.route h3 { grid-area: t; margin: 0; font-size: 19px; line-height: 1.4; }
+.route h3 em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--contact); margin-left: 10px; white-space: nowrap; }
+.route .what { grid-area: w; margin: 2px 0 0; color: var(--muted); font-size: 15px; }
+.route .learn { grid-area: k; margin: 8px 0 0; font-size: 14.5px; }
+.route .files { grid-area: f; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 13px; color: var(--muted); }
+.route .files code { font-size: 12.5px; }
+.route .level { grid-area: l; align-self: center; }
+.level { display: flex; gap: 3px; align-items: center; font-size: 12px; color: var(--muted); }
+.level i { width: 14px; height: 6px; border-radius: 3px; background: var(--line); }
+.level i.on { background: var(--joint); }
+.level b { font-weight: 400; margin-right: 6px; }
+.notes { margin: 22px 0 0 76px; color: var(--muted); font-size: 15px; }
+.notes p { margin: 6px 0; max-width: 52em; }
+
+.how { margin: 0; padding-left: 1.2em; max-width: 50em; }
+.how li { margin: 6px 0; }
+.wide { overflow-x: auto; }
+.wide table { font-size: 15px; display: table; width: 100%; background: var(--panel); }
+.wide td:first-child { white-space: nowrap; }
+details.map { margin: 16px 0 0; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+details.map summary { cursor: pointer; padding: 14px 20px; font-weight: 700; }
+details.map > div { padding: 0 20px 16px; }
+details.map p { color: var(--muted); max-width: 52em; }
+footer { color: var(--muted); font-size: 13px; padding: 48px 0 40px; }
+
+@media (max-width: 820px) {
+  .bar, .wrap { padding-left: 16px; padding-right: 16px; }
+  .jump ol { right: 16px; }
+  article { padding: 4px 18px 28px; border-radius: 0; border-left: 0; border-right: 0; }
+  .hero { grid-template-columns: 1fr; }
+  .hero .copy { padding: 32px 24px 8px; }
+  .hero dl { gap: 10px 24px; }
+  .hero figure { min-height: 300px; }
+  .hero figure img { -webkit-mask-image: linear-gradient(180deg, transparent, #000 20%); mask-image: linear-gradient(180deg, transparent, #000 20%); }
+  .route::before { left: 19px; }
+  .route li { padding-left: 52px; }
+  .route .node { left: 0; width: 40px; height: 40px; font-size: 17px; }
+  .route a.card { grid-template-columns: 1fr; grid-template-areas: "t" "l" "w" "k" "f"; padding: 14px 16px; }
+  .route .level { justify-self: start; margin-top: 4px; }
+  .notes { margin-left: 0; }
+}
 </style>
-<script defer src="katex/katex.min.js"></script><script defer src="katex/contrib/auto-render.min.js"></script>
-</head><body><main>
-<nav class="top"><a href="../index.html">资料包首页</a><a href="index.html">G1 实战目录</a><a href="00_装好环境.html">第 0 课</a><a href="01_认识G1.html">第 1 课</a><a href="02_站着与倒下.html">第 2 课</a><a href="03_吊起来挥手.html">第 3 课</a><a href="04_它感觉到了什么.html">第 4 课</a><a href="05_扛住推力.html">第 5 课</a><a href="06_省力地站.html">第 6 课</a><a href="07_伸手碰球.html">第 7 课</a><a href="08_单腿平衡.html">第 8 课</a><a href="09_让它走起来.html">第 9 课</a><a href="10_录视频与批量实验.html">第 10 课</a><a href="11_附录_往后学什么.html">第 11 课</a></nav>
+</head><body>
+<header class="bar">
+  <nav class="crumb" aria-label="位置"><a href="../index.html">资料包首页</a><span aria-hidden="true">/</span><a href="index.html">G1 实战</a><span aria-hidden="true">/</span><b>第 9 课 让它走起来：运行宇树的预训练行走策略</b></nav>
+  <details class="jump"><summary>全部课程</summary><ol><li><a href="00_装好环境.html"><span>0</span>装好环境：离线安装与版本核对</a></li><li><a href="01_认识G1.html"><span>1</span>认识 G1：打开它，读懂它</a></li><li><a href="02_站着与倒下.html"><span>2</span>它为什么站着、为什么会倒</a></li><li><a href="03_吊起来挥手.html"><span>3</span>把它吊起来挥手</a></li><li><a href="04_它感觉到了什么.html"><span>4</span>它“感觉”到了什么</a></li><li><a href="05_扛住推力.html"><span>5</span>扛住多大的推力：从侧面推 G1</a></li><li><a href="06_省力地站.html"><span>6</span>省力地站：算出“刚好站住”需要的力矩</a></li><li><a href="07_伸手碰球.html"><span>7</span>伸手碰球：雅可比与逆运动学</a></li><li><a href="08_单腿平衡.html"><span>8</span>单腿平衡：把官方 LQR 搬到 G1 上</a></li><li><a href="09_让它走起来.html" aria-current=page><span>9</span>让它走起来：运行宇树的预训练行走策略</a></li><li><a href="10_录视频与批量实验.html"><span>10</span>录视频、批量做实验</a></li><li><a href="11_附录_往后学什么.html"><span>11</span>附录：往后学什么——从“跑别人的策略”到“自己训练”</a></li></ol></details>
+</header>
+<div class="split">
+<article>
 <h1 id="9">第 9 课　让它走起来：运行宇树的预训练行走策略</h1>
 <p><strong>对应入门教程</strong>：7.1、7.4、8.6、10.4</p>
 <p><strong>本课目标</strong></p>
@@ -338,6 +499,9 @@ obs[45:47] = [sin(2π·phase), cos(2π·phase)]
 <h3 id="_3">运行</h3>
 <pre><code class="language-bash">python code/09_walk.py --dummy-policy
 </code></pre>
+
+<section class="lab" data-spec="{&quot;title&quot;: &quot;零动作：先把管线跑通&quot;, &quot;script&quot;: &quot;09_walk.py&quot;, &quot;run&quot;: [&quot;--dummy-policy&quot;, &quot;--tag&quot;, &quot;lab&quot;], &quot;stream&quot;: true, &quot;streamRun&quot;: [&quot;--dummy-policy&quot;], &quot;show&quot;: [&quot;output/09_walk_dummy_lab.png&quot;], &quot;focus&quot;: &quot;fill_obs&quot;, &quot;note&quot;: &quot;先什么都不改，运行一次，对照下面的“实际输出”和核对表。右边的画面每轮倒下 2 s 后从头再来，看它是不是向前倒。再填上“推的时刻”（例如 0.3）和推力，看倒向变成哪边。结果另存为 `09_walk_dummy_lab.*`，不覆盖课文里的图。&quot;, &quot;fields&quot;: [{&quot;flag&quot;: &quot;--push-time&quot;, &quot;label&quot;: &quot;推的时刻&quot;, &quot;unit&quot;: &quot;s&quot;, &quot;value&quot;: null, &quot;min&quot;: 0, &quot;max&quot;: 10, &quot;step&quot;: 0.1, &quot;placeholder&quot;: &quot;不推&quot;}, {&quot;flag&quot;: &quot;--push-fy&quot;, &quot;label&quot;: &quot;侧推力（向左为正）&quot;, &quot;unit&quot;: &quot;N&quot;, &quot;value&quot;: 300, &quot;min&quot;: -800, &quot;max&quot;: 800, &quot;step&quot;: 10}, {&quot;flag&quot;: &quot;--friction&quot;, &quot;label&quot;: &quot;摩擦系数&quot;, &quot;value&quot;: 1, &quot;min&quot;: 0.05, &quot;max&quot;: 2, &quot;step&quot;: 0.05}]}"><header><span class="tag">实验台</span><b>零动作：先把管线跑通</b></header><p class="note">先什么都不改，运行一次，对照下面的“实际输出”和核对表。右边的画面每轮倒下 2 s 后从头再来，看它是不是向前倒。再填上“推的时刻”（例如 0.3）和推力，看倒向变成哪边。结果另存为 <code>09_walk_dummy_lab.*</code>，不覆盖课文里的图。</p><pre class="lab-cmd"><code>python code/09_walk.py --dummy-policy --tag lab --push-fy 300 --friction 1</code></pre><p class="lab-off">在 <code>G1实战</code> 目录下运行上面的命令；用 <code>启动官方文档.bat</code> 打开本页时，可以直接在这里改参数、运行。</p></section>
+
 <p>实际输出：</p>
 <pre><code class="language-text">仿真步长 0.002 s（500 Hz），策略每 10 步算一次（50 Hz）
 观测向量布局：
@@ -442,7 +606,11 @@ PD 力矩超出关节力矩上限、被截断的次数：0（共 60000 个关节
 <h2 id="95">9.5 换上真策略</h2>
 <pre><code class="language-bash">python code/09_walk.py                  # 默认指令 vx = 0.5 m/s，跑 10 s
 python code/09_walk.py --view           # 打开查看器实时看（默认跑 60 s，可以关窗口提前结束）
+python code/09_walk.py --web 8790       # 同上，但显示在网页里（浏览器打开 http://127.0.0.1:8790/），每轮 20 s 循环
 </code></pre>
+
+<section class="lab" data-spec="{&quot;title&quot;: &quot;真策略：改速度指令&quot;, &quot;script&quot;: &quot;09_walk.py&quot;, &quot;run&quot;: [&quot;--tag&quot;, &quot;lab&quot;], &quot;stream&quot;: true, &quot;show&quot;: [&quot;output/09_walk_policy_lab.png&quot;], &quot;focus&quot;: &quot;web_view&quot;, &quot;note&quot;: &quot;默认就是课文的 vx = 0.5 m/s。运行后看终端里“2 s 以后的平均速度”和终点位置，右边画面的镜头跟着骨盆走。试试 vx 设 0（原地踏步）、1.0（快走）、-0.3（倒退），或者给一点 wz 让它转圈。结果另存为 `09_walk_policy_lab.*`。&quot;, &quot;fields&quot;: [{&quot;flag&quot;: &quot;--vx&quot;, &quot;label&quot;: &quot;前进 vx&quot;, &quot;unit&quot;: &quot;m/s&quot;, &quot;value&quot;: 0.5, &quot;min&quot;: -1, &quot;max&quot;: 1.5, &quot;step&quot;: 0.1}, {&quot;flag&quot;: &quot;--vy&quot;, &quot;label&quot;: &quot;侧移 vy&quot;, &quot;unit&quot;: &quot;m/s&quot;, &quot;value&quot;: 0, &quot;min&quot;: -0.6, &quot;max&quot;: 0.6, &quot;step&quot;: 0.1}, {&quot;flag&quot;: &quot;--wz&quot;, &quot;label&quot;: &quot;转向 wz&quot;, &quot;unit&quot;: &quot;rad/s&quot;, &quot;value&quot;: 0, &quot;min&quot;: -1.5, &quot;max&quot;: 1.5, &quot;step&quot;: 0.1}]}"><header><span class="tag">实验台</span><b>真策略：改速度指令</b></header><p class="note">默认就是课文的 vx = 0.5 m/s。运行后看终端里“2 s 以后的平均速度”和终点位置，右边画面的镜头跟着骨盆走。试试 vx 设 0（原地踏步）、1.0（快走）、-0.3（倒退），或者给一点 wz 让它转圈。结果另存为 <code>09_walk_policy_lab.*</code>。</p><pre class="lab-cmd"><code>python code/09_walk.py --tag lab --vx 0.5 --vy 0 --wz 0</code></pre><p class="lab-off">在 <code>G1实战</code> 目录下运行上面的命令；用 <code>启动官方文档.bat</code> 打开本页时，可以直接在这里改参数、运行。</p></section>
+
 <p><code>--view</code> 用的是 <code>mujoco.viewer.launch_passive</code>：仿真循环仍在我们的脚本里，每步调用一次 <code>viewer.sync()</code> 刷新画面，再 <code>sleep</code> 到和墙钟同步。镜头设成跟踪骨盆。查看器里也可以像第 1 课那样，双击选中躯干后按住 <code>Ctrl</code> 用右键拖动，亲手推它（脚本只在设了 <code>--push-time</code> 时才会改 <code>xfrc_applied</code>，所以不会把你的推力清掉）。</p>
 <h3 id="_6">先猜一猜</h3>
 <ol>
@@ -541,6 +709,9 @@ python code/09_walk.py --view           # 打开查看器实时看（默认跑 6
 <li>在第 4 s 从侧面推 0.1 s，多大的力会让它摔倒？从前后方向推呢？</li>
 <li>摩擦系数降到多少，它会开始打滑摔倒？</li>
 </ol>
+
+<section class="lab" data-spec="{&quot;title&quot;: &quot;推它、换滑地面&quot;, &quot;script&quot;: &quot;09_walk.py&quot;, &quot;run&quot;: [&quot;--tag&quot;, &quot;lab&quot;], &quot;stream&quot;: true, &quot;show&quot;: [&quot;output/09_walk_policy_lab.png&quot;], &quot;focus&quot;: &quot;main&quot;, &quot;note&quot;: &quot;默认是第 4 s 从右往左推 300 N、持续 0.1 s。先在 150、300、500 N 之间找出它扛不住的侧推力，再把侧推清零、改推前后方向（fx），比比哪个方向更经推。最后把推的时刻清空（不推），只降摩擦系数，看它从多少开始打滑摔倒。终端里“被截断的次数”也值得看一眼。&quot;, &quot;fields&quot;: [{&quot;flag&quot;: &quot;--push-time&quot;, &quot;label&quot;: &quot;推的时刻&quot;, &quot;unit&quot;: &quot;s&quot;, &quot;value&quot;: 4, &quot;min&quot;: 0, &quot;max&quot;: 20, &quot;step&quot;: 0.5, &quot;placeholder&quot;: &quot;不推&quot;}, {&quot;flag&quot;: &quot;--push-fy&quot;, &quot;label&quot;: &quot;侧推 fy（向左为正）&quot;, &quot;unit&quot;: &quot;N&quot;, &quot;value&quot;: 300, &quot;min&quot;: -800, &quot;max&quot;: 800, &quot;step&quot;: 10}, {&quot;flag&quot;: &quot;--push-fx&quot;, &quot;label&quot;: &quot;前后推 fx（向前为正）&quot;, &quot;unit&quot;: &quot;N&quot;, &quot;value&quot;: 0, &quot;min&quot;: -800, &quot;max&quot;: 800, &quot;step&quot;: 10}, {&quot;flag&quot;: &quot;--friction&quot;, &quot;label&quot;: &quot;摩擦系数&quot;, &quot;value&quot;: 1, &quot;min&quot;: 0.05, &quot;max&quot;: 2, &quot;step&quot;: 0.05}]}"><header><span class="tag">实验台</span><b>推它、换滑地面</b></header><p class="note">默认是第 4 s 从右往左推 300 N、持续 0.1 s。先在 150、300、500 N 之间找出它扛不住的侧推力，再把侧推清零、改推前后方向（fx），比比哪个方向更经推。最后把推的时刻清空（不推），只降摩擦系数，看它从多少开始打滑摔倒。终端里“被截断的次数”也值得看一眼。</p><pre class="lab-cmd"><code>python code/09_walk.py --tag lab --push-time 4 --push-fy 300 --push-fx 0 --friction 1</code></pre><p class="lab-off">在 <code>G1实战</code> 目录下运行上面的命令；用 <code>启动官方文档.bat</code> 打开本页时，可以直接在这里改参数、运行。</p></section>
+
 <h3 id="_9">观察记录</h3>
 <p>每行跑一次，填写结果（“摔倒时刻”没摔就写“未倒”）：</p>
 <table>
@@ -638,6 +809,9 @@ python code/09_walk.py --view           # 打开查看器实时看（默认跑 6
 <li><strong>观测打乱会怎样？</strong> 把 <code>obs[3:6]</code> 的重力投影故意写成 <code>-gravity_orientation</code>（相当于告诉策略“天在下面”），用真策略跑一次，看多久摔倒。这就是 9.4 节说的“不报错、只摔倒”的部署 bug。</li>
 <li><strong>思考题。</strong> 观测里没有骨盆位置和线速度，策略怎么知道自己走得快了还是慢了？LSTM 的“记忆”在这里起什么作用？</li>
 </ol>
+
+<section class="lab" data-spec="{&quot;title&quot;: &quot;练习 1：改控制分频&quot;, &quot;script&quot;: &quot;09_walk.py&quot;, &quot;run&quot;: [&quot;--tag&quot;, &quot;lab&quot;], &quot;stream&quot;: true, &quot;show&quot;: [&quot;output/09_walk_policy_lab.png&quot;], &quot;focus&quot;: &quot;fill_obs&quot;, &quot;note&quot;: &quot;选一个分频运行，看终端里“策略调用 N 次”和摔没摔。10 是训练时的设置；分别试 5、20、40，右边画面里看它步态有什么变化。&quot;, &quot;fields&quot;: [{&quot;flag&quot;: &quot;--decimation&quot;, &quot;label&quot;: &quot;控制分频&quot;, &quot;type&quot;: &quot;select&quot;, &quot;value&quot;: &quot;10&quot;, &quot;options&quot;: [[&quot;5&quot;, &quot;5（100 Hz）&quot;], [&quot;10&quot;, &quot;10（50 Hz，训练时的设置）&quot;], [&quot;20&quot;, &quot;20（25 Hz）&quot;], [&quot;40&quot;, &quot;40（12.5 Hz）&quot;]]}, {&quot;flag&quot;: &quot;--vx&quot;, &quot;label&quot;: &quot;前进 vx&quot;, &quot;unit&quot;: &quot;m/s&quot;, &quot;value&quot;: 0.5, &quot;min&quot;: -1, &quot;max&quot;: 1.5, &quot;step&quot;: 0.1}]}"><header><span class="tag">实验台</span><b>练习 1：改控制分频</b></header><p class="note">选一个分频运行，看终端里“策略调用 N 次”和摔没摔。10 是训练时的设置；分别试 5、20、40，右边画面里看它步态有什么变化。</p><pre class="lab-cmd"><code>python code/09_walk.py --tag lab --decimation 10 --vx 0.5</code></pre><p class="lab-off">在 <code>G1实战</code> 目录下运行上面的命令；用 <code>启动官方文档.bat</code> 打开本页时，可以直接在这里改参数、运行。</p></section>
+
 <h2 id="_11">如果报错</h2>
 <table>
 <thead>
@@ -766,13 +940,23 @@ d.ctrl[:] = target_dof_pos            # 代替 pd_control
 <strong>练习 5</strong>：策略只能从关节角、关节速度、角速度这些“本体感觉”推断自己的速度，就像人闭着眼走路也大致知道自己走多快。单个时刻的观测信息不够，LSTM 把过去若干拍的观测“记”在隐状态里，相当于积累了一段历史，这样才能估计出速度、地面软硬这类看不见的量。这也是 9.5 节里机器人会慢慢偏离直线的原因：它估计的是速度，不是位置，误差会累积。
 
 </details>
-<nav class="pager"><span><a href="08_单腿平衡.html">← 第 8 课 单腿平衡：把官方 LQR 搬到 G1 上</a></span><span><a href="10_录视频与批量实验.html">第 10 课 录视频、批量做实验 →</a></span></nav>
-</main>
+<nav class="pager" aria-label="翻页"><a class="prev" href="08_单腿平衡.html"><small>上一课</small>第 8 课 单腿平衡：把官方 LQR 搬到 G1 上</a><a class="next" href="10_录视频与批量实验.html"><small>下一课</small>第 10 课 录视频、批量做实验</a></nav>
+</article>
+<aside class="viewer" aria-label="实时仿真画面"><div class="viewer-head"><b>仿真画面</b><span class="viewer-what">还没有运行</span></div><div class="viewer-frame"><p class="viewer-empty">点任一实验台的“运行”，这里会实时播放那次仿真：<br>和实验台用同一组参数，跑完一轮会自动重来。<br>鼠标左键拖动转视角，滚轮缩放。</p></div></aside>
+</div>
+<script defer src="assets/lab.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll(".math").forEach(function (el) {
     renderMathInElement(el, {delimiters: [{left: "\\[", right: "\\]", display: true}, {left: "\\(", right: "\\)", display: false}]});
   });
+});
+</script>
+<script>
+// 点页面其他地方时收起“全部课程”菜单
+document.addEventListener("click", function (e) {
+  var d = document.querySelector(".jump");
+  if (d && d.open && !d.contains(e.target)) d.open = false;
 });
 </script>
 </body></html>
