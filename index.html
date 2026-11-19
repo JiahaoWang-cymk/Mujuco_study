@@ -83,6 +83,9 @@
   .res a { font-weight: 700; text-decoration: none; color: var(--joint); }
   .res a:hover { text-decoration: underline; }
   .res span { color: var(--muted); font-size: 15px; }
+  .res span a { font-weight: 600; }
+  .live-hint { display: block; font-style: normal; color: var(--contact); margin-top: 4px; }
+  .live-hint[hidden] { display: none; }
   code { font-family: Consolas, monospace; font-size: 0.92em; background: color-mix(in srgb, var(--ink) 7%, transparent); padding: 1px 5px; border-radius: 4px; }
 
   footer { color: var(--muted); font-size: 13px; padding: 0 0 40px; }
@@ -105,7 +108,7 @@
   <section class="hero">
     <div>
       <h1>MuJoCo<span class="sub">离线学习资料包</span></h1>
-      <p>为内网环境整理的 MuJoCo 资料：中文入门教程、完整官方文档（中英两版）、示例模型和官方 notebook。全部内容在本地，断网也能用。</p>
+      <p>MuJoCo 学习资料：中文入门教程、完整官方文档（中英两版）、示例模型和官方 notebook。</p>
       <ul class="facts">
         <li><b>4.0.1</b>对应版本</li>
         <li><b>32 万字</b>中文官方文档</li>
@@ -149,6 +152,11 @@
 
   <h3 class="sec">其他资料</h3>
   <ul class="res">
+    <li><a class="live-link" href="MuJoCo_Live/index.html">MuJoCo Live · 浏览器仿真</a><span>免装 Python，整个 MuJoCo 在浏览器里运行（官方 live.mujoco.org 的离线版）。默认打开 G1 人形机器人；也可以直接打开
+      <a class="live-link" href="MuJoCo_Live/index.html?model=../官方仓库_模型与教程/model/humanoid/humanoid.xml">humanoid</a>、
+      <a class="live-link" href="MuJoCo_Live/index.html?model=../官方仓库_模型与教程/model/car/car.xml">car</a>、
+      <a class="live-link" href="MuJoCo_Live/index.html?model=../官方仓库_模型与教程/model/mug/mug.xml">mug</a>，或把任意 .xml / .zip 模型拖进页面。
+      <em class="live-hint" hidden>需要先运行同目录的 <code>启动官方文档.bat</code>，再从它打开的页面点进来。</em></span></li>
     <li><a href="官方文档_HTML/index.html">官方文档 · 英文原版</a><span>中文版有疑问时以它为准。</span></li>
     <li><a href="官方仓库_模型与教程/model/">示例模型</a><span>humanoid、car、flex 等官方 MJCF 模型，可直接拖进查看器。</span></li>
     <li><a href="官方仓库_模型与教程/python/">Python 教程 notebook</a><span>tutorial、LQR、least_squares、rollout、mjspec；MJX 的在 <code>官方仓库_模型与教程\mjx\</code>。</span></li>
@@ -163,6 +171,14 @@
 </main>
 
 <script>
+// MuJoCo Live 需要 http 才能加载 WebAssembly；直接双击打开（file://）时给出提示。
+if (location.protocol === 'file:') {
+  document.querySelectorAll('.live-hint').forEach(el => { el.hidden = false; });
+  document.querySelectorAll('.live-link').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();
+    alert('MuJoCo Live 需要通过本机服务打开：\n请双击资料包里的“启动官方文档.bat”，再从它打开的页面点进来。');
+  }));
+}
 (function () {
   const canvas = document.getElementById('sim');
   const ctx = canvas.getContext('2d');

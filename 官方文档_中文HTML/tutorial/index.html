@@ -21,7 +21,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
     <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=8d83ad8c" />
     <link rel="stylesheet" type="text/css" href="../_static/theme_overrides_mjwarp.css?v=e08d3b36" />
-    <link rel="stylesheet" type="text/css" href="../_static/zh_overrides.css?v=ee52c62c" />
+    <link rel="stylesheet" type="text/css" href="../_static/zh_overrides.css?v=08b20782" />
     
     
 
@@ -376,7 +376,7 @@
 <p>本教程基于 MuJoCo 4.0.1，更新于 2026-11-16。每个小节开头的“对应官方文档”方框可以直接跳到中文官方文档里讲同一主题的部分。</p>
 <section id="id2">
 <h2>0. 前言<a class="headerlink" href="#id2" title="链接到此标题。">#</a></h2>
-<p>本教程面向 MuJoCo 初学者，内容以 2026 年 11 月的最新版本 <strong>MuJoCo 4.0.1</strong>（2026-11-11 发布）为准，可在无网络环境下独立阅读。所有代码均为可直接运行的 Python 示例，资料来自官方文档、官方 GitHub 与 changelog，链接列在文末。</p>
+<p>本教程面向 MuJoCo 初学者，内容以 2026 年 11 月的最新版本 <strong>MuJoCo 4.0.1</strong>（2026-11-11 发布）为准。所有代码均为可直接运行的 Python 示例，资料来自官方文档、官方 GitHub 与 changelog，链接列在文末。</p>
 <p><strong>适用读者</strong>：会用 Python 和 NumPy，了解基础刚体力学（位姿、关节、力矩）即可。不需要 C/C++ 基础。</p>
 <p><strong>建议学习路线</strong>（约 1～2 周）：</p>
 <ol class="arabic simple">
@@ -387,7 +387,7 @@
 <li><p>第 10 章：按需进入 GPU 并行仿真与强化学习（MJX、MuJoCo Warp、Playground）。</p></li>
 <li><p>第 11～12 章：遇到问题时查阅的排错清单与速查表。</p></li>
 </ol>
-<p><strong>版本提醒</strong>：MuJoCo 更新很快（2026 年 10～11 月就发布了 3.16、3.17、4.0.0、4.0.1 四个版本）。网上很多老教程基于 <code class="docutils literal notranslate"><span class="pre">mujoco-py</span></code> 或 2.x 版本，其 API 已过时，请以本教程和随包附带的官方文档为准。4.0 起 pip 包内自带完整 Sphinx 手册（位于 <code class="docutils literal notranslate"><span class="pre">mujoco/doc/</span></code> 目录），公司内网环境下可直接查阅。</p>
+<p><strong>版本提醒</strong>：MuJoCo 更新很快（2026 年 10～11 月就发布了 3.16、3.17、4.0.0、4.0.1 四个版本）。网上很多老教程基于 <code class="docutils literal notranslate"><span class="pre">mujoco-py</span></code> 或 2.x 版本，其 API 已过时，请以本教程和随包附带的官方文档为准。4.0 起 pip 包内自带完整 Sphinx 手册（位于 <code class="docutils literal notranslate"><span class="pre">mujoco/doc/</span></code> 目录），可直接查阅。</p>
 </section>
 <section id="mujoco">
 <h2>1. MuJoCo 简介<a class="headerlink" href="#mujoco" title="链接到此标题。">#</a></h2>
@@ -512,20 +512,20 @@ pip<span class="w"> </span>install<span class="w"> </span>mujoco-menagerie<span 
 </div>
 </section>
 <section id="id6">
-<h3>2.3 公司内网离线安装<a class="headerlink" href="#id6" title="链接到此标题。">#</a></h3>
-<p>在一台能上网、且<strong>操作系统和 Python 版本与内网机器一致</strong>的电脑上打包依赖：</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 在外网机器上</span>
+<h3>2.3 离线安装<a class="headerlink" href="#id6" title="链接到此标题。">#</a></h3>
+<p>在一台能上网、且<strong>操作系统和 Python 版本与目标机器一致</strong>的电脑上打包依赖：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 在能上网的机器上</span>
 mkdir<span class="w"> </span>wheels
 pip<span class="w"> </span>download<span class="w"> </span>mujoco<span class="w"> </span>mediapy<span class="w"> </span>imageio<span class="w"> </span>-d<span class="w"> </span>wheels
 <span class="c1"># 如果两台机器平台不同，显式指定目标平台，例如 Windows x64 + Python 3.12：</span>
 pip<span class="w"> </span>download<span class="w"> </span>mujoco<span class="w"> </span>-d<span class="w"> </span>wheels<span class="w"> </span>--platform<span class="w"> </span>win_amd64<span class="w"> </span>--python-version<span class="w"> </span><span class="m">3</span>.12<span class="w"> </span>--only-binary<span class="o">=</span>:all:
 </pre></div>
 </div>
-<p>把 <code class="docutils literal notranslate"><span class="pre">wheels</span></code> 文件夹拷进内网后：</p>
+<p>把 <code class="docutils literal notranslate"><span class="pre">wheels</span></code> 文件夹拷到目标机器后：</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>--no-index<span class="w"> </span>--find-links<span class="o">=</span>wheels<span class="w"> </span>mujoco<span class="w"> </span>mediapy<span class="w"> </span>imageio
 </pre></div>
 </div>
-<p>另外建议一并带入：<code class="docutils literal notranslate"><span class="pre">mujoco</span></code> 官方 GitHub 仓库的 <code class="docutils literal notranslate"><span class="pre">model/</span></code> 目录（含 humanoid、car 等示例模型）、<code class="docutils literal notranslate"><span class="pre">mujoco_menagerie</span></code> 仓库（约数百 MB）、官方 Colab 教程 notebook。离线文档已随包位于 <code class="docutils literal notranslate"><span class="pre">site-packages/mujoco/doc/</span></code>。</p>
+<p>另外建议一并下载：<code class="docutils literal notranslate"><span class="pre">mujoco</span></code> 官方 GitHub 仓库的 <code class="docutils literal notranslate"><span class="pre">model/</span></code> 目录（含 humanoid、car 等示例模型）、<code class="docutils literal notranslate"><span class="pre">mujoco_menagerie</span></code> 仓库（约数百 MB）、官方 Colab 教程 notebook。离线文档已随包位于 <code class="docutils literal notranslate"><span class="pre">site-packages/mujoco/doc/</span></code>。</p>
 </section>
 <section id="id7">
 <h3>2.4 验证安装<a class="headerlink" href="#id7" title="链接到此标题。">#</a></h3>
@@ -565,7 +565,7 @@ pip<span class="w"> </span>download<span class="w"> </span>mujoco<span class="w"
 <tr class="row-odd"><td><p>macOS 上 <code class="docutils literal notranslate"><span class="pre">launch_passive</span></code> 报错</p></td>
 <td><p>macOS 需用 <code class="docutils literal notranslate"><span class="pre">mjpython</span></code> 而不是 <code class="docutils literal notranslate"><span class="pre">python</span></code> 运行脚本</p></td>
 </tr>
-<tr class="row-even"><td><p>内网 pip 报找不到 numpy/glfw</p></td>
+<tr class="row-even"><td><p>离线安装时 pip 报找不到 numpy/glfw</p></td>
 <td><p>离线打包时漏了依赖，用 <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">download</span></code> （不加 <code class="docutils literal notranslate"><span class="pre">--no-deps</span></code>）重新打包</p></td>
 </tr>
 </tbody>
@@ -2185,7 +2185,7 @@ pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"mujo
 </tbody>
 </table>
 </div>
-<p><strong>自助查证技巧</strong>（无网络时尤其有用）：</p>
+<p><strong>自助查证技巧</strong>：</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">help(mujoco.mj_jacSite)</span></code> 或 <code class="docutils literal notranslate"><span class="pre">mujoco.mj_jacSite.__doc__</span></code>：查看任意函数的参数和说明。</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">[x</span> <span class="pre">for</span> <span class="pre">x</span> <span class="pre">in</span> <span class="pre">dir(mujoco)</span> <span class="pre">if</span> <span class="pre">&quot;jac&quot;</span> <span class="pre">in</span> <span class="pre">x]</span></code>：按关键字搜函数名。</p></li>
@@ -2387,7 +2387,7 @@ mjpython<span class="w"> </span>script.py<span class="w">                       
 </ul>
 <p><strong>代码仓库与包</strong>：</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/google-deepmind/mujoco">google-deepmind/mujoco</a>：源码、<code class="docutils literal notranslate"><span class="pre">model/</span></code> 示例模型、<code class="docutils literal notranslate"><span class="pre">python/</span></code> 下的官方 Colab 教程（<code class="docutils literal notranslate"><span class="pre">tutorial.ipynb</span></code>、<code class="docutils literal notranslate"><span class="pre">LQR.ipynb</span></code>、<code class="docutils literal notranslate"><span class="pre">rollout.ipynb</span></code>、mjspec.ipynb、least_squares.ipynb，建议下载后带进内网）。</p></li>
+<li><p><a class="reference external" href="https://github.com/google-deepmind/mujoco">google-deepmind/mujoco</a>：源码、<code class="docutils literal notranslate"><span class="pre">model/</span></code> 示例模型、<code class="docutils literal notranslate"><span class="pre">python/</span></code> 下的官方 Colab 教程（<code class="docutils literal notranslate"><span class="pre">tutorial.ipynb</span></code>、<code class="docutils literal notranslate"><span class="pre">LQR.ipynb</span></code>、<code class="docutils literal notranslate"><span class="pre">rollout.ipynb</span></code>、mjspec.ipynb、least_squares.ipynb）。</p></li>
 <li><p><a class="reference external" href="https://pypi.org/project/mujoco/">PyPI: mujoco</a> 与 <a class="reference external" href="https://pypi.org/project/mujoco-core/">PyPI: mujoco-core</a>。</p></li>
 <li><p><a class="reference external" href="https://github.com/google-deepmind/mujoco_menagerie">MuJoCo Menagerie</a>：机器人模型库。</p></li>
 <li><p><a class="reference external" href="https://github.com/google-deepmind/mujoco_playground">MuJoCo Playground</a>：RL 环境套件。</p></li>
@@ -2464,7 +2464,7 @@ mjpython<span class="w"> </span>script.py<span class="w">                       
 <li><a class="reference internal" href="#id3">2. 安装与环境配置</a><ul>
 <li><a class="reference internal" href="#id4">2.1 环境要求</a></li>
 <li><a class="reference internal" href="#id5">2.2 联网安装</a></li>
-<li><a class="reference internal" href="#id6">2.3 公司内网离线安装</a></li>
+<li><a class="reference internal" href="#id6">2.3 离线安装</a></li>
 <li><a class="reference internal" href="#id7">2.4 验证安装</a></li>
 <li><a class="reference internal" href="#id8">2.5 常见安装问题</a></li>
 </ul>

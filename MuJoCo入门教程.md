@@ -4,7 +4,7 @@
 
 ## 0. 前言
 
-本教程面向 MuJoCo 初学者，内容以 2026 年 11 月的最新版本 **MuJoCo 4.0.1**（2026-11-11 发布）为准，可在无网络环境下独立阅读。所有代码均为可直接运行的 Python 示例，资料来自官方文档、官方 GitHub 与 changelog，链接列在文末。
+本教程面向 MuJoCo 初学者，内容以 2026 年 11 月的最新版本 **MuJoCo 4.0.1**（2026-11-11 发布）为准。所有代码均为可直接运行的 Python 示例，资料来自官方文档、官方 GitHub 与 changelog，链接列在文末。
 
 **适用读者**：会用 Python 和 NumPy，了解基础刚体力学（位姿、关节、力矩）即可。不需要 C/C++ 基础。
 
@@ -17,7 +17,7 @@
 5. 第 10 章：按需进入 GPU 并行仿真与强化学习（MJX、MuJoCo Warp、Playground）。
 6. 第 11～12 章：遇到问题时查阅的排错清单与速查表。
 
-**版本提醒**：MuJoCo 更新很快（2026 年 10～11 月就发布了 3.16、3.17、4.0.0、4.0.1 四个版本）。网上很多老教程基于 `mujoco-py` 或 2.x 版本，其 API 已过时，请以本教程和随包附带的官方文档为准。4.0 起 pip 包内自带完整 Sphinx 手册（位于 `mujoco/doc/` 目录），公司内网环境下可直接查阅。
+**版本提醒**：MuJoCo 更新很快（2026 年 10～11 月就发布了 3.16、3.17、4.0.0、4.0.1 四个版本）。网上很多老教程基于 `mujoco-py` 或 2.x 版本，其 API 已过时，请以本教程和随包附带的官方文档为准。4.0 起 pip 包内自带完整 Sphinx 手册（位于 `mujoco/doc/` 目录），可直接查阅。
 
 ## 1. MuJoCo 简介
 
@@ -85,25 +85,25 @@ pip install mujoco-warp          # NVIDIA GPU 高吞吐版
 pip install mujoco-menagerie     # 一键获取 Menagerie 机器人模型（首次使用会联网下载）
 ```
 
-### 2.3 公司内网离线安装
+### 2.3 离线安装
 
-在一台能上网、且**操作系统和 Python 版本与内网机器一致**的电脑上打包依赖：
+在一台能上网、且**操作系统和 Python 版本与目标机器一致**的电脑上打包依赖：
 
 ```bash
-# 在外网机器上
+# 在能上网的机器上
 mkdir wheels
 pip download mujoco mediapy imageio -d wheels
 # 如果两台机器平台不同，显式指定目标平台，例如 Windows x64 + Python 3.12：
 pip download mujoco -d wheels --platform win_amd64 --python-version 3.12 --only-binary=:all:
 ```
 
-把 `wheels` 文件夹拷进内网后：
+把 `wheels` 文件夹拷到目标机器后：
 
 ```bash
 pip install --no-index --find-links=wheels mujoco mediapy imageio
 ```
 
-另外建议一并带入：`mujoco` 官方 GitHub 仓库的 `model/` 目录（含 humanoid、car 等示例模型）、`mujoco_menagerie` 仓库（约数百 MB）、官方 Colab 教程 notebook。离线文档已随包位于 `site-packages/mujoco/doc/`。
+另外建议一并下载：`mujoco` 官方 GitHub 仓库的 `model/` 目录（含 humanoid、car 等示例模型）、`mujoco_menagerie` 仓库（约数百 MB）、官方 Colab 教程 notebook。离线文档已随包位于 `site-packages/mujoco/doc/`。
 
 ### 2.4 验证安装
 
@@ -131,7 +131,7 @@ python -m mujoco.viewer          # 打开空查看器，可把 XML 文件拖进�
 | 在 Python 3.10 上只能装到 3.x | 4.0 不再支持 3.10，升级 Python 或固定使用 3.x 版本 |
 | Linux 服务器上渲染报 OpenGL 错误 | 无显示器时设置环境变量 `MUJOCO_GL=egl`（有 NVIDIA 驱动）或 `MUJOCO_GL=osmesa`（纯软件渲染，较慢） |
 | macOS 上 `launch_passive` 报错 | macOS 需用 `mjpython` 而不是 `python` 运行脚本 |
-| 内网 pip 报找不到 numpy/glfw | 离线打包时漏了依赖，用 `pip download` （不加 `--no-deps`）重新打包 |
+| 离线安装时 pip 报找不到 numpy/glfw | 离线打包时漏了依赖，用 `pip download` （不加 `--no-deps`）重新打包 |
 
 ## 3. 核心概念
 
@@ -1086,7 +1086,7 @@ for _ in range(1000):
 | 网上代码报 `AttributeError` | 老版本 API（`mujoco_py`、`d.qM` 等） | 对照本教程或随包文档改写；用 `help(mujoco.函数名)` 查签名 |
 | MJX 比 CPU 还慢 | 只跑了单个环境；包含编译时间 | 用 vmap 批量化；计时前先预热一次 |
 
-**自助查证技巧**（无网络时尤其有用）：
+**自助查证技巧**：
 
 - `help(mujoco.mj_jacSite)` 或 `mujoco.mj_jacSite.__doc__`：查看任意函数的参数和说明。
 - `[x for x in dir(mujoco) if "jac" in x]`：按关键字搜函数名。
@@ -1175,7 +1175,7 @@ mjpython script.py                                        # macOS 上运行带 l
 
 **代码仓库与包**：
 
-- [google-deepmind/mujoco](https://github.com/google-deepmind/mujoco)：源码、`model/` 示例模型、`python/` 下的官方 Colab 教程（`tutorial.ipynb`、`LQR.ipynb`、`rollout.ipynb`、mjspec.ipynb、least\_squares.ipynb，建议下载后带进内网）。
+- [google-deepmind/mujoco](https://github.com/google-deepmind/mujoco)：源码、`model/` 示例模型、`python/` 下的官方 Colab 教程（`tutorial.ipynb`、`LQR.ipynb`、`rollout.ipynb`、mjspec.ipynb、least\_squares.ipynb）。
 - [PyPI: mujoco](https://pypi.org/project/mujoco/) 与 [PyPI: mujoco-core](https://pypi.org/project/mujoco-core/)。
 - [MuJoCo Menagerie](https://github.com/google-deepmind/mujoco_menagerie)：机器人模型库。
 - [MuJoCo Playground](https://github.com/google-deepmind/mujoco_playground)：RL 环境套件。

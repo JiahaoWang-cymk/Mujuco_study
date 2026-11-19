@@ -16,8 +16,18 @@ MuJoCo入门教程.pdf / .docx / .md
 
 官方文档_HTML\
     英文原版官方文档，用官方 GitHub 仓库 main 分支源码（提交 aa9a0ea，2026-11-16）在本地编译而成。
-    数学公式所需的 KaTeX 字体和样式已放到本地，断网也能正常显示。
-    已知限制：页面里嵌入的 YouTube 视频、指向外部网站的链接在内网无法打开。
+    数学公式所需的 KaTeX 字体和样式已放到本地。
+    已知限制：页面里嵌入的 YouTube 视频、指向外部网站的链接需要联网才能打开。
+
+MuJoCo_Live\
+    官方 live.mujoco.org 的离线版：整个 MuJoCo（物理仿真 + 渲染 + 界面）编译成 WebAssembly 在浏览器里运行，不用装 Python 也能看模型。
+    要通过“启动官方文档.bat”打开（直接双击 html 不行），首页“其他资料”里有入口，默认打开 G1 人形机器人。
+    详见 MuJoCo_Live\说明.txt。
+
+G1实战\（编写中）
+    以宇树 Unitree G1 人形机器人为案例的实战课程。
+    models\unitree_g1\          G1 模型（DeepMind MuJoCo Menagerie，BSD-3-Clause）
+    models\unitree_rl_gym_g1\   宇树官方 G1 行走策略 motion.pt、部署脚本和 12 自由度模型（unitree_rl_gym，BSD-3-Clause）
 
 术语表.md
     中文版用到的术语对照，例如 actuator 译作“执行器”。
@@ -31,4 +41,4 @@ MuJoCo入门教程.pdf / .docx / .md
     python\*.ipynb        官方 Python 教程 notebook（tutorial、LQR、least_squares、rollout、mjspec）
     mjx\*.ipynb           MJX 教程 notebook（tutorial、training_apg）
     LICENSE               MuJoCo 的 Apache 2.0 许可证
-    注意：notebook 里用到的 pip install、git clone、下载模型等步骤在内网需要改成离线方式。
+    注意：notebook 里用到的 pip install、git clone、下载模型等步骤需要联网；没有网络时改用本地的 wheel 和模型文件。
